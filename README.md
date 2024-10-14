@@ -1,4 +1,4 @@
-# Takin - an inelastic neutron scattering suite (test).
+# Takin - an inelastic neutron scattering suite.
 Version 2.8.  
 [![DOI: 10.5281/zenodo.4117437](https://zenodo.org/badge/DOI/10.5281/zenodo.4117437.svg)](https://doi.org/10.5281/zenodo.4117437)
 
