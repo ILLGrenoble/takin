@@ -278,8 +278,8 @@ requires tl2::is_basic_mat<t_mat> && tl2::is_dyn_mat<t_mat>
 {
 	t_mat mat(mat1.size1(), mat1.size2());
 
-	for(std::size_t i=0; i<mat1.size1(); ++i)
-		for(std::size_t j=0; j<mat1.size2(); ++j)
+	for(std::size_t i = 0; i < mat1.size1(); ++i)
+		for(std::size_t j = 0; j < mat1.size2(); ++j)
 			mat(i,j) = -mat1(i,j);
 
 	return mat;
@@ -298,8 +298,8 @@ requires tl2::is_basic_mat<t_mat> && tl2::is_dyn_mat<t_mat>
 
 	t_mat mat(mat1.size1(), mat1.size2());
 
-	for(std::size_t i=0; i<mat1.size1(); ++i)
-		for(std::size_t j=0; j<mat1.size2(); ++j)
+	for(std::size_t i = 0; i < mat1.size1(); ++i)
+		for(std::size_t j = 0; j < mat1.size2(); ++j)
 			mat(i,j) = mat1(i,j) + mat2(i,j);
 
 	return mat;
@@ -326,8 +326,8 @@ requires tl2::is_basic_mat<t_mat> && tl2::is_dyn_mat<t_mat>
 {
 	t_mat mat(mat1.size1(), mat1.size2());
 
-	for(std::size_t i=0; i<mat1.size1(); ++i)
-		for(std::size_t j=0; j<mat1.size2(); ++j)
+	for(std::size_t i = 0; i < mat1.size1(); ++i)
+		for(std::size_t j = 0; j < mat1.size2(); ++j)
 			mat(i,j) = mat1(i,j) * d;
 
 	return mat;
@@ -437,9 +437,9 @@ requires tl2::is_basic_mat<t_mat> && tl2::is_dyn_mat<t_mat>
 	const std::size_t ROWS = mat.size1();
 	const std::size_t COLS = mat.size2();
 
-	for(std::size_t row=0; row<ROWS; ++row)
+	for(std::size_t row = 0; row < ROWS; ++row)
 	{
-		for(std::size_t col=0; col<COLS; ++col)
+		for(std::size_t col = 0; col < COLS; ++col)
 		{
 			ostr << mat(row, col);
 			if(col < COLS-1)
@@ -476,10 +476,10 @@ requires tl2::is_basic_mat<t_mat> && tl2::is_dyn_mat<t_mat>
 
 	t_vec vecRet(mat.size1());
 
-	for(std::size_t row=0; row<mat.size1(); ++row)
+	for(std::size_t row = 0; row < mat.size1(); ++row)
 	{
 		vecRet[row] = typename t_vec::value_type{/*0*/};
-		for(std::size_t col=0; col<mat.size2(); ++col)
+		for(std::size_t col = 0; col < mat.size2(); ++col)
 		{
 			auto elem = mat(row, col) * vec[col];
 			vecRet[row] = vecRet[row] + elem;

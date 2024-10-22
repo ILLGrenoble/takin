@@ -130,17 +130,22 @@ public:
 	void SetSqwParam(const std::string& name, t_real_reso val);
 
 	// [ ident, value, error ]
-	void SetSqwParams(const std::vector<std::tuple<std::string, std::string, std::string>>& sqwparams);
+	void SetSqwParams(const std::vector<std::tuple<
+		std::string, std::string, std::string>>& sqwparams);
 
 
 	// [ ident, type, value, error, fit?, range ]
-	using t_sqwparams = std::vector<std::tuple<std::string, std::string, std::string, std::string, bool, std::string>>;
+	using t_sqwparams = std::vector<std::tuple<
+		std::string, std::string, std::string, std::string, bool, std::string>>;
 	t_sqwparams GetSqwParams(bool only_fitparams) const;
 
 
-	void StartSim1D(bool bForceDeferred=false, unsigned int seed=tl::get_rand_seed());
+	void StartSim1D(bool bForceDeferred = false, unsigned int seed = tl::get_rand_seed());
 
-	bool StopRequested() const { return m_atStop.load(); }
+	bool StopRequested() const
+	{
+		return m_atStop.load();
+	}
 
 
 protected slots:

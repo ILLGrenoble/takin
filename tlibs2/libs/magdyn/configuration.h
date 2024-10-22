@@ -4,16 +4,6 @@
  * @date 2022 - 2024
  * @license GPLv3, see 'LICENSE' file
  *
- * References:
- *   - (Toth 2015) S. Toth and B. Lake, J. Phys.: Condens. Matter 27 166002 (2015):
- *                 https://doi.org/10.1088/0953-8984/27/16/166002
- *                 https://arxiv.org/abs/1402.6069
- *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
- *                      ferromagnetic case, personal communications, 2021/2022.
- *
- * @desc This file implements the formalism given by (Toth 2015).
- * @desc For further references, see the 'LITERATURE' file.
- *
  * ----------------------------------------------------------------------------
  * tlibs
  * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),

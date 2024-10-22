@@ -251,7 +251,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	}
 
 	m_progress->setValue(0);
-	m_status->setText("Performing calculation.");
+	m_status->setText("Calculating grid.");
 
 	std::deque<std::uint64_t> hklindices;
 	if(format == EXPORT_GRID)  // Takin grid format

@@ -187,7 +187,7 @@ MAGDYN_TEMPL
 MAGDYN_TYPE::SofQEs
 MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 	t_real h_end, t_real k_end, t_real l_end, t_size num_Qs,
-	t_size num_threads, const bool *stop_request) const
+	t_size num_threads, std::function<bool(int, int)> *progress_fkt) const
 {
 	// determine number of threads
 	if(num_threads == 0)
@@ -205,7 +205,7 @@ MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 	// calculate dispersion
 	for(t_size i = 0; i < num_Qs; ++i)
 	{
-		if(stop_request && *stop_request)
+		if(progress_fkt && !(*progress_fkt)(0, num_Qs))
 			break;
 
 		auto task = [this, i, num_Qs,
@@ -236,13 +236,15 @@ MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 	SofQEs results;
 	results.reserve(tasks.size());
 
+	t_size Qs_finished = 0;
 	for(auto& task : tasks)
 	{
-		if(stop_request && *stop_request)
+		if(progress_fkt && !(*progress_fkt)(Qs_finished + 1, num_Qs))
 			break;
 
 		const SofQE& result = task->get_future().get();
 		results.push_back(result);
+		++Qs_finished;
 	}
 
 	return results;

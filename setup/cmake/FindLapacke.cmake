@@ -60,7 +60,6 @@ if(Lapacke_INCLUDE_DIRS AND Lapacke_LIBRARIES AND Lapack_LIBRARIES)
 	message("Lapacke include directories: ${Lapacke_INCLUDE_DIRS}")
 	message("Lapack library: ${Lapack_LIBRARIES}")
 	message("Lapacke library: ${Lapacke_LIBRARIES}")
-	message("BLAS library: ${BLAS_LIBRARIES}")
 else()
 	set(Lapacke_FOUND FALSE)
 

@@ -639,7 +639,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 			bool bJustAddedSeparator = false;
 
 			// add all menu entries
-			for(std::size_t entry=0; 1; ++entry)
+			for(std::size_t entry = 0; true; ++entry)
 			{
 				std::ostringstream _xmlpath;
 				_xmlpath << "tools/entry_" << entry;
@@ -1014,7 +1014,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	m_sceneRecip.emitUpdate();
 	//m_sceneRecip.emitAllParams();
 
-	setAcceptDrops(1);
+	setAcceptDrops(true);
 }
 
 
@@ -1121,10 +1121,10 @@ void TazDlg::showEvent(QShowEvent *pEvt)
 {
 	QMainWindow::showEvent(pEvt);
 
-	static bool bInitialShow = 1;
+	static bool bInitialShow = true;
 	if(bInitialShow)
 	{
-		bInitialShow = 0;
+		bInitialShow = false;
 
 		if(m_pviewRecip) m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
 		if(m_pviewProjRecip) m_pviewProjRecip->centerOn(0.,0.);
@@ -1143,9 +1143,11 @@ void TazDlg::dragEnterEvent(QDragEnterEvent *pEvt)
 
 void TazDlg::dropEvent(QDropEvent *pEvt)
 {
-	if(!pEvt) return;
+	if(!pEvt)
+		return;
 	const QMimeData* pMime = pEvt->mimeData();
-	if(!pMime) return;
+	if(!pMime)
+		return;
 
 	std::string strFiles = pMime->text().toStdString();
 	std::vector<std::string> vecFiles;
@@ -1187,8 +1189,8 @@ void TazDlg::UpdateDs()
 	m_sceneRecip.SetDs(dMonoD, dAnaD);
 
 	ResoParams resoparams;
-	resoparams.bMonoDChanged = 1;
-	resoparams.bAnaDChanged = 1;
+	resoparams.bMonoDChanged = true;
+	resoparams.bAnaDChanged = true;
 	resoparams.dMonoD = dMonoD;
 	resoparams.dAnaD = dAnaD;
 

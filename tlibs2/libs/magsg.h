@@ -43,7 +43,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/info_parser.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-namespace ptree = boost::property_tree;
 
 
 
@@ -236,6 +235,7 @@ template<class t_mat, class t_vec>
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
 bool Spacegroups<t_mat, t_vec>::Load(const std::string& strFile)
 {
+	namespace ptree = boost::property_tree;
 	using t_real = typename t_mat::value_type;
 
 	// load xml database

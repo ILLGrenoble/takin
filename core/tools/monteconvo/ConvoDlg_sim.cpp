@@ -314,7 +314,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 					{
-						if(this->StopRequested()) return std::pair<bool, t_real>(false, 0.);
+						if(this->StopRequested())
+							return std::pair<bool, t_real>(false, 0.);
 
 						dS += (*m_pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 

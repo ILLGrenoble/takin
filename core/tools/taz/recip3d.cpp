@@ -46,7 +46,7 @@ Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pStatus(new QStatusBar(this)),
 	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 
 	setWindowTitle("Reciprocal Space");
 	m_pStatus->setSizeGripEnabled(1);
@@ -86,7 +86,7 @@ Recip3DDlg::Recip3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_vecQ_rlu = m_vecQ = tl::ublas::zero_vector<t_real>(3);
 
 	m_pPlot->SetLabels("a", "b", "c");
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
@@ -94,7 +94,7 @@ Recip3DDlg::~Recip3DDlg()
 {
 	if(m_pPlot)
 	{
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 		delete m_pPlot;
 		m_pPlot = 0;
 	}
@@ -137,96 +137,94 @@ void Recip3DDlg::CalcPeaks(const xtl::LatticeCommon<t_real_glob>& recipcommon)
 
 	std::vector<Peak3d> vecPeaks;
 
-	for(t_real h=-m_dMaxPeaks; h<=m_dMaxPeaks; h+=1.)
-		for(t_real k=-m_dMaxPeaks; k<=m_dMaxPeaks; k+=1.)
-			for(t_real l=-m_dMaxPeaks; l<=m_dMaxPeaks; l+=1.)
+	for(t_real h = -m_dMaxPeaks; h <= m_dMaxPeaks; h += 1.)
+	for(t_real k = -m_dMaxPeaks; k <= m_dMaxPeaks; k += 1.)
+	for(t_real l = -m_dMaxPeaks; l <= m_dMaxPeaks; l += 1.)
+	{
+		int ih = int(h), ik = int(k), il = int(l);
+		if(pSpaceGroup)
+		{
+			// if reflection is not allowed, skip it
+			if(!pSpaceGroup->HasReflection(ih, ik, il))
+				continue;
+		}
+
+		Peak3d peak;
+		peak.vecPeak = recip.GetPos(h,k,l);
+		for(int i=0; i<3; ++i)
+		{
+			vecMin[i] = std::min(peak.vecPeak[i], vecMin[i]);
+			vecMax[i] = std::max(peak.vecPeak[i], vecMax[i]);
+		}
+
+
+		// -------------------------------------------------------------
+		// get structure factor
+		std::string strStructfact;
+		t_real dFsq = -1.;
+
+		if(pSpaceGroup && recipcommon.CanCalcStructFact())
+		{
+			std::tie(std::ignore, peak.dF, dFsq) =
+				recipcommon.GetStructFact(peak.vecPeak);
+
+			tl::set_eps_0(dFsq, g_dEpsGfx);
+			tl::set_eps_0(peak.dF, g_dEpsGfx);
+
+			dMinF = std::min(peak.dF, dMinF);
+			dMaxF = std::max(peak.dF, dMaxF);
+
+			std::ostringstream ostrStructfact;
+			ostrStructfact.precision(g_iPrecGfx);
+			if(g_bShowFsq)
+				ostrStructfact << "\nS = " << dFsq;
+			else
+				ostrStructfact << "\nF = " << peak.dF;
+			strStructfact = ostrStructfact.str();
+		}
+		// -------------------------------------------------------------
+
+
+		// -------------------------------------------------------------
+		// is the reflection in the scattering plane?
+		t_real dDist = 0.;
+		t_vec vecDropped = plane.GetDroppedPerp(peak.vecPeak, &dDist);
+
+		peak.pvecColor = &vecColPeak;
+		if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
+		{
+			// (000) peak?
+			if(tl::float_equal<t_real>(h, 0., g_dEps) &&
+				tl::float_equal<t_real>(k, 0., g_dEps) &&
+				tl::float_equal<t_real>(l, 0., g_dEps))
 			{
-				int ih = int(h), ik = int(k), il = int(l);
-				if(pSpaceGroup)
-				{
-					// if reflection is not allowed, skip it
-					if(!pSpaceGroup->HasReflection(ih, ik, il))
-						continue;
-				}
-
-				Peak3d peak;
-				peak.vecPeak = recip.GetPos(h,k,l);
-				for(int i=0; i<3; ++i)
-				{
-					vecMin[i] = std::min(peak.vecPeak[i], vecMin[i]);
-					vecMax[i] = std::max(peak.vecPeak[i], vecMax[i]);
-				}
-
-
-				// -------------------------------------------------------------
-				// get structure factor
-				std::string strStructfact;
-				t_real dFsq = -1.;
-
-				if(pSpaceGroup && recipcommon.CanCalcStructFact())
-				{
-					std::tie(std::ignore, peak.dF, dFsq) =
-						recipcommon.GetStructFact(peak.vecPeak);
-
-					tl::set_eps_0(dFsq, g_dEpsGfx);
-					tl::set_eps_0(peak.dF, g_dEpsGfx);
-
-					dMinF = std::min(peak.dF, dMinF);
-					dMaxF = std::max(peak.dF, dMaxF);
-
-					std::ostringstream ostrStructfact;
-					ostrStructfact.precision(g_iPrecGfx);
-					if(g_bShowFsq)
-						ostrStructfact << "\nS = " << dFsq;
-					else
-						ostrStructfact << "\nF = " << peak.dF;
-					strStructfact = ostrStructfact.str();
-				}
-				// -------------------------------------------------------------
-
-
-				// -------------------------------------------------------------
-				// is the reflection in the scattering plane?
-				t_real dDist = 0.;
-				t_vec vecDropped = plane.GetDroppedPerp(peak.vecPeak, &dDist);
-
-				bool bInScatteringPlane = 0;
-
-				peak.pvecColor = &vecColPeak;
-				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
-				{
-					// (000) peak?
-					if(tl::float_equal<t_real>(h, 0., g_dEps) &&
-						tl::float_equal<t_real>(k, 0., g_dEps) &&
-						tl::float_equal<t_real>(l, 0., g_dEps))
-					{
-						peak.pvecColor = &vecCol000;
-					}
-					else
-					{
-						peak.pvecColor = &vecColPeakPlane;
-					}
-
-					bInScatteringPlane = 1;
-				}
-				// -------------------------------------------------------------
-
-
-				std::ostringstream ostrLab;
-				ostrLab << "(" << ih << " " << ik << " " << il << ")"
-					<< strStructfact;
-				peak.strName = ostrLab.str();
-
-				vecPeaks.emplace_back(std::move(peak));
+				peak.pvecColor = &vecCol000;
 			}
+			else
+			{
+				peak.pvecColor = &vecColPeakPlane;
+			}
+		}
+		// -------------------------------------------------------------
+
+
+		std::ostringstream ostrLab;
+		ostrLab << "(" << ih << " " << ik << " " << il << ")"
+			<< strStructfact;
+		peak.strName = ostrLab.str();
+
+		vecPeaks.emplace_back(std::move(peak));
+	}
 
 
 
 	std::size_t iObjCnt = vecPeaks.size();
-	if(bShowScatPlane) iObjCnt += 2;
-	if(bShowCurQ) ++iObjCnt;
+	if(bShowScatPlane)
+		iObjCnt += 2;
+	if(bShowCurQ)
+		++iObjCnt;
 
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 	m_pPlot->clear();
 	m_pPlot->SetObjectCount(iObjCnt);
 
@@ -294,7 +292,7 @@ void Recip3DDlg::CalcPeaks(const xtl::LatticeCommon<t_real_glob>& recipcommon)
 	}
 
 	m_pPlot->SetMinMax(vecMin, vecMax);
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
@@ -309,8 +307,7 @@ void Recip3DDlg::RecipParamsChanged(const RecipParams& recip)
 	// if a 3d object is already assigned, update it
 	if(m_pPlot && m_iQIdx)
 	{
-		m_pPlot->SetEnabled(0);
-
+		m_pPlot->SetEnabled(false);
 		m_pPlot->PlotSphere(m_vecQ, 0.04, *m_iQIdx);
 
 		// current Q label
@@ -320,7 +317,7 @@ void Recip3DDlg::RecipParamsChanged(const RecipParams& recip)
 		ostrTip << "\nQ = (" << m_vecQ[0] << ", " << m_vecQ[1] << ", " << m_vecQ[2] << ") 1/A";
 		m_pPlot->SetObjectLabel(*m_iQIdx, ostrTip.str());
 
-		m_pPlot->SetEnabled(1);
+		m_pPlot->SetEnabled(true);
 	}
 }
 
@@ -344,7 +341,7 @@ void Recip3DDlg::closeEvent(QCloseEvent *pEvt)
 
 void Recip3DDlg::hideEvent(QHideEvent *pEvt)
 {
-	if(m_pPlot) m_pPlot->SetEnabled(0);
+	if(m_pPlot) m_pPlot->SetEnabled(false);
 	QDialog::hideEvent(pEvt);
 }
 
@@ -352,7 +349,7 @@ void Recip3DDlg::hideEvent(QHideEvent *pEvt)
 void Recip3DDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
-	if(m_pPlot) m_pPlot->SetEnabled(1);
+	if(m_pPlot) m_pPlot->SetEnabled(true);
 }
 
 

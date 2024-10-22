@@ -249,14 +249,18 @@ void TazDlg::CalcPeaks()
 		if(m_pGotoDlg)
 		{
 			m_pGotoDlg->SetLattice(lattice);
-			m_pGotoDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
+			m_pGotoDlg->SetScatteringPlane(
+				tl::make_vec({dX0, dX1, dX2}),
+				tl::make_vec({dY0, dY1, dY2}));
 			m_pGotoDlg->CalcSample();
 		}
 
 		if(m_pElasticDlg)
 		{
 			m_pElasticDlg->SetLattice(lattice);
-			m_pElasticDlg->SetScatteringPlane(tl::make_vec({dX0, dX1, dX2}), tl::make_vec({dY0, dY1, dY2}));
+			m_pElasticDlg->SetScatteringPlane(
+				tl::make_vec({dX0, dX1, dX2}),
+				tl::make_vec({dY0, dY1, dY2}));
 			m_pElasticDlg->CalcSpuriousPositions();
 		}
 
@@ -292,7 +296,8 @@ void TazDlg::CalcPeaks()
 		xtl::SpaceGroup<t_real>* pSpaceGroup = nullptr;
 		int iSpaceGroupIdx = comboSpaceGroups->currentIndex();
 		if(iSpaceGroupIdx != 0)
-			pSpaceGroup = (xtl::SpaceGroup<t_real>*)comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
+			pSpaceGroup = (xtl::SpaceGroup<t_real>*)
+				comboSpaceGroups->itemData(iSpaceGroupIdx).value<void*>();
 
 		if(pSpaceGroup)
 			strCryTy = pSpaceGroup->GetCrystalSystemName();
@@ -305,7 +310,8 @@ void TazDlg::CalcPeaks()
 		{
 			m_sceneRecip.GetTriangle()->CalcPeaks(m_latticecommon, bPowder);
 			if(m_sceneRecip.getSnapq())
-				m_sceneRecip.GetTriangle()->SnapToNearestPeak(m_sceneRecip.GetTriangle()->GetNodeGq());
+				m_sceneRecip.GetTriangle()->SnapToNearestPeak(
+					m_sceneRecip.GetTriangle()->GetNodeGq());
 			m_sceneRecip.emitUpdate();
 
 			m_sceneProjRecip.GetLattice()->CalcPeaks(m_latticecommon, true);
@@ -616,7 +622,8 @@ void TazDlg::ShowSpurionDlg()
 	if(!m_pSpuri)
 	{
 		m_pSpuri = new SpurionDlg(this, &m_settings);
-		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged, m_pSpuri, &SpurionDlg::paramsChanged);
+		QObject::connect(&m_sceneRecip, &ScatteringTriangleScene::paramsChanged,
+			m_pSpuri, &SpurionDlg::paramsChanged);
 
 		m_sceneRecip.emitAllParams();
 	}

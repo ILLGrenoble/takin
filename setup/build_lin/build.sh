@@ -63,6 +63,7 @@ cd "${TAKIN_ROOT}"
 TAKIN_ROOT=$(pwd)
 
 NUM_CORES=$(nproc)
+BUILD_DIR=build
 
 echo -e "Takin root dir: \"${TAKIN_ROOT}\"."
 echo -e "Distribution name: \"${distri}\"."
@@ -151,12 +152,12 @@ if [ $build_takin -ne 0 ]; then
 	pushd "${TAKIN_ROOT}/core"
 		../setup/build_general/clean.sh
 
-		if ! cmake -DDEBUG=False -B build . ; then
+		if ! cmake -DDEBUG=False -B ${BUILD_DIR} . ; then
 			echo -e "Failed configuring core package."
 			exit -1
 		fi
 
-		if ! cmake --build build --parallel ${NUM_CORES} ; then
+		if ! cmake --build ${BUILD_DIR} --parallel ${NUM_CORES} ; then
 			echo -e "Failed building core package."
 			exit -1
 		fi
@@ -170,42 +171,42 @@ if [ $build_takin2 -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/mag-core"
-		rm -rf build
+		rm -rf ${BUILD_DIR}
 
 		if ! cmake -DCMAKE_BUILD_TYPE=Release \
 			-DONLY_BUILD_FINISHED=True -DBUILD_PY_MODULES=$__BUILD_PY_MODULES \
-			-B build . ; then
+			-B ${BUILD_DIR} . ; then
 			echo -e "Failed configuring mag-core package."
 			exit -1
 		fi
 
-		if ! cmake --build build --parallel ${NUM_CORES} ; then
+		if ! cmake --build ${BUILD_DIR} --parallel ${NUM_CORES} ; then
 			echo -e "Failed building mag-core package."
 			exit -1
 		fi
 
 		# copy tools to Takin main dir
-		cp -v build/tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/pol/takin_pol "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/structfact/takin_structfact "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/magstructfact/takin_magstructfact "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/magdyn/takin_magdyn "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/pol/takin_pol "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/structfact/takin_structfact "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/magstructfact/takin_magstructfact "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/magdyn/takin_magdyn "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
 
 		# copy py modules
 		if [ $build_py_modules -ne 0 ]; then
-			cp -v build/tools_py/magdyn/_magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
-			cp -v build/tools_py/magdyn/magdyn.py "${TAKIN_ROOT}"/core/pymods/
+			cp -v ${BUILD_DIR}/tools_py/magdyn/_magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v ${BUILD_DIR}/tools_py/magdyn/magdyn.py "${TAKIN_ROOT}"/core/pymods/
 
-			cp -v build/tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/
-			cp -v build/tools_py/instr/instr.py "${TAKIN_ROOT}"/core/pymods/
+			cp -v ${BUILD_DIR}/tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v ${BUILD_DIR}/tools_py/instr/instr.py "${TAKIN_ROOT}"/core/pymods/
 
-			cp -v build/tools_py/bz/_bz_py.so "${TAKIN_ROOT}"/core/pymods/
-			cp -v build/tools_py/bz/bzcalc.py "${TAKIN_ROOT}"/core/pymods/
+			cp -v ${BUILD_DIR}/tools_py/bz/_bz_py.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v ${BUILD_DIR}/tools_py/bz/bzcalc.py "${TAKIN_ROOT}"/core/pymods/
 		fi
 	popd
 fi
@@ -217,20 +218,20 @@ if [ $build_plugins -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/magnon-plugin"
-		rm -rf build
+		rm -rf ${BUILD_DIR}
 
-		if ! cmake -DCMAKE_BUILD_TYPE=Release -B build . ; then
+		if ! cmake --DCMAKE_BUILD_TYPE=Release -B ${BUILD_DIR} . ; then
 			echo -e "Failed configuring magnon plugin."
 			exit -1
 		fi
 
-		if ! cmake --build build --parallel ${NUM_CORES} ; then
+		if ! cmake --build ${BUILD_DIR} --parallel ${NUM_CORES} ; then
 			echo -e "Failed building magnon plugin."
 			exit -1
 		fi
 
 		# copy plugin to Takin main dir
-		cp -v build/libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/
+		cp -v ${BUILD_DIR}/libmagnonmod.so "${TAKIN_ROOT}"/core/plugins/
 	popd
 fi
 

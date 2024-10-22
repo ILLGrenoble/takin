@@ -170,7 +170,7 @@ ScatteringTriangle::ScatteringTriangle(ScatteringTriangleScene& scene)
 	m_pNodeKfQ->setData(TRIANGLE_NODE_TYPE_KEY, NODE_Q);
 	m_pNodeGq->setData(TRIANGLE_NODE_TYPE_KEY, NODE_q);
 
-	AllowMouseMove(1);
+	AllowMouseMove(true);
 
 	m_pNodeKiQ->setPos(0., 0.);
 	m_pNodeKiKf->setPos(80., -150.);
@@ -1045,151 +1045,150 @@ void ScatteringTriangle::CalcPeaks(const xtl::LatticeCommon<t_real>& recipcommon
 	t_real dMinF = std::numeric_limits<t_real>::max(), dMaxF = -1.;
 
 	const int iMaxNN = g_iMaxNN <= 4 ? 2 : g_iMaxNN-2;	// TODO
+
 	// iterate over all bragg peaks
 	const int iMaxPeaks = bIsPowder ? m_iMaxPeaks/2 : m_iMaxPeaks;
-	for(int ih=-iMaxPeaks; ih<=iMaxPeaks; ++ih)
+	for(int ih = -iMaxPeaks; ih <= iMaxPeaks; ++ih)
+	for(int ik = -iMaxPeaks; ik <= iMaxPeaks; ++ik)
+	for(int il = -iMaxPeaks; il <= iMaxPeaks; ++il)
 	{
-		for(int ik=-iMaxPeaks; ik<=iMaxPeaks; ++ik)
+		const t_real h = t_real(ih);
+		const t_real k = t_real(ik);
+		const t_real l = t_real(il);
+		const t_vec vecPeakHKL = tl::make_vec<t_vec>({ h, k, l });
+
+		bool bHasRefl = true;
+		bool bHasGenRefl = true;
+
+		if(recipcommon.pSpaceGroup)
 		{
-			for(int il=-iMaxPeaks; il<=iMaxPeaks; ++il)
+			bHasRefl = recipcommon.pSpaceGroup->HasReflection(ih, ik, il);
+			bHasGenRefl = recipcommon.pSpaceGroup->HasGenReflection(ih, ik, il);
+		}
+
+		if(!bHasGenRefl)
+			continue;
+
+		t_vec vecPeak = m_recip.GetPos(h, k, l);
+
+		// add peak in 1/A and rlu units (only 1/A vectors are used for kd calculation)
+		lstPeaksForKd.push_back(std::vector<t_real>
+			{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
+
+		// add peaks for 3d calculation of 1st BZ
+		if(g_b3dBZ && bHasGenRefl)
+		{
+			if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
+				m_bz3.SetCentralReflex(vecPeak, &vecPeakHKL);
+			else if(std::abs(ih-veciCent[0]) <= iMaxNN &&
+				std::abs(ik-veciCent[1]) <= iMaxNN &&
+				std::abs(il-veciCent[2]) <= iMaxNN)
+				m_bz3.AddReflex(vecPeak, &vecPeakHKL);
+		}
+
+		t_real dDist = 0.;
+		t_vec vecDropped = m_plane.GetDroppedPerp(vecPeak, &dDist);
+		bool bInPlane = tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance);
+
+		// --------------------------------------------------------------------
+		// structure factors
+		std::complex<t_real> cF(-1., -1.);
+		t_real dF = -1., dFsq = -1.;
+
+		if(bHasRefl && recipcommon.CanCalcStructFact() && (bInPlane || bIsPowder))
+		{
+			std::tie(cF, dF, dFsq) =
+				recipcommon.GetStructFact(vecPeak);
+
+			//dFsq *= tl::lorentz_factor(dAngle);
+			tl::set_eps_0(dFsq, g_dEpsGfx);
+
+			tl::set_eps_0(dF, g_dEpsGfx);
+			dMinF = std::min(dF, dMinF);
+			dMaxF = std::max(dF, dMaxF);
+		}
+		// --------------------------------------------------------------------
+
+		t_vec vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
+		t_real dX = vecCoord[0];
+		t_real dY = -vecCoord[1];
+
+		if(bIsPowder && (bHasRefl || m_bShowAllPeaks))
+			powder.AddPeak(ih, ik, il, dF);
+
+		// ignore peaks that are not in the scattering plane
+		if(!bInPlane)
+			continue;
+
+		// (000), i.e. direct beam, also needed for powder
+		if(bIsPowder && (ih != 0 || ik != 0 || il != 0))
+			continue;
+
+		if(bHasRefl || m_bShowAllPeaks)
+		{
+			RecipPeak *pPeak = new RecipPeak();
+			if(ih==0 && ik==0 && il==0)
+				pPeak->SetColor(bHasRefl ? colPeakOrigin : colPeakForbidden);
+			else
+				pPeak->SetColor(bHasRefl ? colPeakAllowed : colPeakForbidden);
+
+			pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+			pPeak->SetRadius(dF >= 0. ? dF : 1.);
+			pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
+
+			std::ostringstream ostrLabel, ostrTip;
+			ostrLabel.precision(g_iPrecGfx);
+			ostrTip.precision(g_iPrec);
+
+			ostrLabel << "(" << ih << " " << ik << " " << il << ")";
+			ostrTip << "G = (" << ih << " " << ik << " " << il << ") rlu";
+
+			tl::set_eps_0(vecPeak, g_dEps);
+			ostrTip << "\nG = (" << vecPeak[0] << ", "
+				<< vecPeak[1] << ", "
+				<< vecPeak[2] << ") " << strAA;
+
+			if(dFsq > -1.)
 			{
-				const t_real h=t_real(ih); const t_real k=t_real(ik); const t_real l=t_real(il);
-				const t_vec vecPeakHKL = tl::make_vec<t_vec>({h,k,l});
+				if(g_bShowFsq)
+					ostrLabel << "\nS = " << dFsq;
+				else
+					ostrLabel << "\nF = " << dF;
 
-				bool bHasRefl = true;
-				bool bHasGenRefl = true;
-
-				if(recipcommon.pSpaceGroup)
-				{
-					bHasRefl = recipcommon.pSpaceGroup->HasReflection(ih, ik, il);
-					bHasGenRefl = recipcommon.pSpaceGroup->HasGenReflection(ih, ik, il);
-				}
-
-				if(!bHasGenRefl)
-					continue;
-
-				t_vec vecPeak = m_recip.GetPos(h, k, l);
-
-				// add peak in 1/A and rlu units (only 1/A vectors are used for kd calculation)
-				lstPeaksForKd.push_back(std::vector<t_real>
-					{ vecPeak[0],vecPeak[1],vecPeak[2], h,k,l/*, dF*/ });
-
-				// add peaks for 3d calculation of 1st BZ
-				if(g_b3dBZ && bHasGenRefl)
-				{
-					if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
-						m_bz3.SetCentralReflex(vecPeak, &vecPeakHKL);
-					else if(std::abs(ih-veciCent[0]) <= iMaxNN &&
-						std::abs(ik-veciCent[1]) <= iMaxNN &&
-						std::abs(il-veciCent[2]) <= iMaxNN)
-						m_bz3.AddReflex(vecPeak, &vecPeakHKL);
-				}
-
-				t_real dDist = 0.;
-				t_vec vecDropped = m_plane.GetDroppedPerp(vecPeak, &dDist);
-				bool bInPlane = tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance);
-
-				// --------------------------------------------------------------------
-				// structure factors
-				std::complex<t_real> cF(-1., -1.);
-				t_real dF = -1., dFsq = -1.;
-
-				if(bHasRefl && recipcommon.CanCalcStructFact() && (bInPlane || bIsPowder))
-				{
-					std::tie(cF, dF, dFsq) =
-						recipcommon.GetStructFact(vecPeak);
-
-					//dFsq *= tl::lorentz_factor(dAngle);
-					tl::set_eps_0(dFsq, g_dEpsGfx);
-
-					tl::set_eps_0(dF, g_dEpsGfx);
-					dMinF = std::min(dF, dMinF);
-					dMaxF = std::max(dF, dMaxF);
-				}
-				// --------------------------------------------------------------------
-
-				t_vec vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
-				t_real dX = vecCoord[0];
-				t_real dY = -vecCoord[1];
-
-				// in scattering plane?
-				if(bInPlane)
-				{
-					// (000), i.e. direct beam, also needed for powder
-					if(!bIsPowder || (ih==0 && ik==0 && il==0))
-					{
-						if(bHasRefl || m_bShowAllPeaks)
-						{
-							RecipPeak *pPeak = new RecipPeak();
-							if(ih==0 && ik==0 && il==0)
-								pPeak->SetColor(bHasRefl ? colPeakOrigin : colPeakForbidden);
-							else
-								pPeak->SetColor(bHasRefl ? colPeakAllowed : colPeakForbidden);
-
-							pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
-							pPeak->SetRadius(dF >= 0. ? dF : 1.);
-							pPeak->setData(TRIANGLE_NODE_TYPE_KEY, NODE_BRAGG);
-
-							std::ostringstream ostrLabel, ostrTip;
-							ostrLabel.precision(g_iPrecGfx);
-							ostrTip.precision(g_iPrec);
-
-							ostrLabel << "(" << ih << " " << ik << " " << il << ")";
-							ostrTip << "G = (" << ih << " " << ik << " " << il << ") rlu";
-
-							tl::set_eps_0(vecPeak, g_dEps);
-							ostrTip << "\nG = (" << vecPeak[0] << ", "
-								<< vecPeak[1] << ", "
-								<< vecPeak[2] << ") " << strAA;
-
-							if(dFsq > -1.)
-							{
-								if(g_bShowFsq)
-									ostrLabel << "\nS = " << dFsq;
-								else
-									ostrLabel << "\nF = " << dF;
-
-								ostrTip << "\nF = " << print_complex<t_real>(cF) << " fm";
-								ostrTip << "\nS = " << dFsq << " fm" << strSup2;
-							}
-							else if(!bHasRefl)
-							{
-								pPeak->SetPeakAllowed(0);
-								//pPeak->SetRadius(0.);
-								ostrTip << "\nStructurally forbidden reflection.";
-							}
+				ostrTip << "\nF = " << print_complex<t_real>(cF) << " fm";
+				ostrTip << "\nS = " << dFsq << " fm" << strSup2;
+			}
+			else if(!bHasRefl)
+			{
+				pPeak->SetPeakAllowed(0);
+				//pPeak->SetRadius(0.);
+				ostrTip << "\nStructurally forbidden reflection.";
+			}
 
 
-							pPeak->SetLabel(ostrLabel.str().c_str());
-							pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+			pPeak->SetLabel(ostrLabel.str().c_str());
+			pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
 
-							m_vecPeaks.push_back(pPeak);
-							m_scene.addItem(pPeak);
-						}
+			m_vecPeaks.push_back(pPeak);
+			m_scene.addItem(pPeak);
+		}
 
 
-						// add peaks for 2d approximation of 1st BZ
-						if(!g_b3dBZ && bHasGenRefl)
-						{
-							t_vec vecN = tl::make_vec({dX, dY});
-							if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
-							{
-								m_bz.SetCentralReflex(vecN, &vecPeakHKL);
-							}
-							else if(std::abs(ih-veciCent[0])<=2 && std::abs(ik-veciCent[1])<=2
-								&& std::abs(il-veciCent[2])<=2)
-							{
-								m_bz.AddReflex(vecN, &vecPeakHKL);
-							}
-						}
-					}
-				}
-
-				if(bIsPowder && (bHasRefl || m_bShowAllPeaks))
-					powder.AddPeak(ih, ik, il, dF);
+		// add peaks for 2d approximation of 1st BZ
+		if(!g_b3dBZ && bHasGenRefl)
+		{
+			t_vec vecN = tl::make_vec({dX, dY});
+			if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
+			{
+				m_bz.SetCentralReflex(vecN, &vecPeakHKL);
+			}
+			else if(std::abs(ih-veciCent[0])<=2 && std::abs(ik-veciCent[1])<=2
+				&& std::abs(il-veciCent[2])<=2)
+			{
+				m_bz.AddReflex(vecN, &vecPeakHKL);
 			}
 		}
-	}
+	}  // peak iteration
 
 	// single crystal
 	if(!bIsPowder)
@@ -1685,7 +1684,7 @@ void ScatteringTriangleScene::emitAllParams()
 	tl::set_eps_0(vecG, g_dEps); tl::set_eps_0(vecGrlu, g_dEps);
 
 
-	for(unsigned i=0; i<3; ++i)
+	for(unsigned i = 0; i < 3; ++i)
 	{
 		parms.Q[i] = vecQ.size() ? vecQ[i] : 0.;
 		parms.Q_rlu[i] = vecQrlu.size() ? vecQrlu[i] : 0.;
@@ -1857,7 +1856,7 @@ void ScatteringTriangleScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		t_vec vecHKL = m_pTri->GetHKLFromPlanePos(dX, dY);
 		tl::set_eps_0(vecHKL, g_dEps);
 
-		if(vecHKL.size()==3)
+		if(vecHKL.size() == 3)
 		{
 			const std::vector<t_real>* pvecNearest = nullptr;
 

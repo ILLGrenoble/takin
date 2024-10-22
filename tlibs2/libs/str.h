@@ -52,9 +52,6 @@
 #include "expr.h"
 
 
-namespace algo = boost::algorithm;
-
-
 namespace tl2 {
 
 template<class t_str/*=std::string*/, class t_val/*=double*/>
@@ -106,9 +103,11 @@ t_str str_to_lower(const t_str& str)
 
 
 template<class t_str = std::string>
-bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase = false)
+bool str_is_equal(const t_str& str0, const t_str& str1, bool use_case = false)
 {
-	if(bCase)
+	namespace algo = boost::algorithm;
+
+	if(use_case)
 		return algo::equals(str0, str1, algo::is_equal());
 	else
 		return algo::equals(str0, str1, algo::is_iequal(std::locale()));
@@ -117,19 +116,21 @@ bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase = false)
 
 template<class t_str = std::string>
 bool str_is_equal_to_either(const t_str& str0,
-	const std::initializer_list<t_str>& lststr1, bool bCase = false)
+	const std::initializer_list<t_str>& lststr1, bool use_case = false)
 {
 	for(const t_str& str1 : lststr1)
-		if(str_is_equal<t_str>(str0, str1, bCase))
+		if(str_is_equal<t_str>(str0, str1, use_case))
 			return true;
 	return false;
 }
 
 
 template<class t_str = std::string>
-bool str_contains(const t_str& str, const t_str& strSub, bool bCase = false)
+bool str_contains(const t_str& str, const t_str& strSub, bool use_case = false)
 {
-	if(bCase)
+	namespace algo = boost::algorithm;
+
+	if(use_case)
 		return algo::contains(str, strSub, algo::is_equal());
 	else
 		return algo::contains(str, strSub, algo::is_iequal(std::locale()));
@@ -258,9 +259,11 @@ t_str insert_before(const t_str& str, const t_str& strChar, const t_str& strInse
 
 
 template<class t_str = std::string>
-bool begins_with(const t_str& str, const t_str& strBeg, bool bCase = true)
+bool begins_with(const t_str& str, const t_str& strBeg, bool use_case = true)
 {
-	if(bCase)
+	namespace algo = boost::algorithm;
+
+	if(use_case)
 		return algo::starts_with(str, strBeg, algo::is_equal());
 	else
 		return algo::starts_with(str, strBeg, algo::is_iequal(std::locale()));
@@ -268,9 +271,11 @@ bool begins_with(const t_str& str, const t_str& strBeg, bool bCase = true)
 
 
 template<class t_str = std::string>
-bool ends_with(const t_str& str, const t_str& strEnd, bool bCase = true)
+bool ends_with(const t_str& str, const t_str& strEnd, bool use_case = true)
 {
-	if(bCase)
+	namespace algo = boost::algorithm;
+
+	if(use_case)
 		return algo::ends_with(str, strEnd, algo::is_equal());
 	else
 		return algo::ends_with(str, strEnd, algo::is_iequal(std::locale()));
@@ -381,17 +386,20 @@ void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 /**
  * tokenises string on strDelim
  */
-template<class T, class t_str = std::string, template<class...> class t_cont = std::vector>
-void get_tokens_seq(const t_str& str, const t_str& strDelim, t_cont<T>& vecRet, bool bCase = true)
+template<class T, class t_str = std::string,
+	template<class...> class t_cont = std::vector>
+void get_tokens_seq(const t_str& str, const t_str& strDelim,
+	t_cont<T>& vecRet, bool use_case = true)
 {
+	namespace algo = boost::algorithm;
 	using t_char = typename t_str::value_type;
 
 	std::locale loc;
 	t_cont<t_str> vecStr;
 	algo::iter_split(vecStr, str, algo::first_finder(strDelim,
-		[bCase, &loc](t_char c1, t_char c2) -> bool
+		[use_case, &loc](t_char c1, t_char c2) -> bool
 		{
-			if(!bCase)
+			if(!use_case)
 			{
 				c1 = std::tolower(c1, loc);
 				c2 = std::tolower(c2, loc);
@@ -681,7 +689,7 @@ t_str cont_to_str(const t_cont& cont, const char* pcDelim=",",
 template<typename t_char=char>
 bool skip_after_line(std::basic_istream<t_char>& istr,
 	const std::basic_string<t_char>& strLineBegin,
-	bool bTrim = true, bool bCase = false)
+	bool bTrim = true, bool use_case = false)
 {
 	while(!istr.eof())
 	{
@@ -695,7 +703,7 @@ bool skip_after_line(std::basic_istream<t_char>& istr,
 
 		std::basic_string<t_char> strSub = strLine.substr(0, strLineBegin.size());
 
-		if(str_is_equal<std::basic_string<t_char>>(strSub, strLineBegin, bCase))
+		if(str_is_equal<std::basic_string<t_char>>(strSub, strLineBegin, use_case))
 			return true;
 	}
 	return false;
@@ -703,11 +711,11 @@ bool skip_after_line(std::basic_istream<t_char>& istr,
 
 
 template<typename t_char = char>
-void skip_after_char(std::basic_istream<t_char>& istr, t_char ch,
-	bool bCase = false)
+void skip_after_char(std::basic_istream<t_char>& istr,
+	t_char ch, bool use_case = false)
 {
 	std::locale loc;
-	if(!bCase)
+	if(!use_case)
 		ch = std::tolower(ch, loc);
 
 	while(!istr.eof())
@@ -715,7 +723,8 @@ void skip_after_char(std::basic_istream<t_char>& istr, t_char ch,
 		t_char c;
 		istr.get(c);
 
-		if(!bCase) c = std::tolower(c, loc);
+		if(!use_case)
+			c = std::tolower(c, loc);
 
 		if(c == ch)
 			break;

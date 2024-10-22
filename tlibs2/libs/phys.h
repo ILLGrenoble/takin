@@ -1,8 +1,7 @@
 /**
- * tlibs2
- * physics library
+ * tlibs2 -- physics library
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
- * @date 2012 - 2023
+ * @date 2012 - 2024
  * @license GPLv3, see 'LICENSE' file
  *
  * @note Forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
@@ -13,7 +12,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -345,7 +344,7 @@ std::tuple<bool, t_real, t_real, t_real> calc_tas_a3a4(
 requires is_basic_mat<t_mat> && is_basic_vec<t_vec>
 {
 	// metric from crystal B matrix
-	t_mat G = tl2::metric<t_mat>(B);
+	t_mat G = metric<t_mat>(B);
 
 	// length of Q vector
 	t_real Q_len_lab = norm<t_mat, t_vec>(G, Q_rlu);
@@ -1036,60 +1035,6 @@ requires is_vec<t_vec> && is_mat<t_mat>
 
 /**
  * Blume-Maleev equation
- * @returns scattering intensity and final polarisation vector
- *
- * @see https://doi.org/10.1016/B978-044451050-1/50006-9 - p. 225-226
- */
-template<class t_vec, typename t_cplx = typename t_vec::value_type>
-std::tuple<t_cplx, t_vec> blume_maleev(const t_vec& P_i, const t_vec& Mperp, const t_cplx& N)
-requires is_vec<t_vec>
-{
-	const t_vec MperpConj = conj(Mperp);
-	const t_cplx NConj = std::conj(N);
-	constexpr t_cplx imag(0, 1);
-
-	// ------------------------------------------------------------------------
-	// intensity
-	// nuclear
-	t_cplx I = NConj*N;
-
-	// nuclear-magnetic
-	I += NConj*inner<t_vec>(P_i, Mperp);
-	I += N*inner<t_vec>(Mperp, P_i);
-
-	// magnetic, non-chiral
-	I += inner<t_vec>(Mperp, Mperp);
-
-	// magnetic, chiral
-	I += imag * inner<t_vec>(P_i, cross<t_vec>({ MperpConj, Mperp }));
-	// ------------------------------------------------------------------------
-
-	// ------------------------------------------------------------------------
-	// polarisation vector
-	// nuclear
-	t_vec P_f = P_i * N*NConj;
-
-	// nuclear-magnetic
-	P_f += NConj * Mperp;
-	P_f += N * MperpConj;
-	P_f += imag * N * cross<t_vec>({ P_i, MperpConj });
-	P_f += -imag * NConj * cross<t_vec>({ P_i, Mperp });
-
-	// magnetic, non-chiral
-	P_f += Mperp * inner<t_vec>(Mperp, P_i);
-	P_f += MperpConj * inner<t_vec>(P_i, Mperp);
-	P_f += -P_i * inner<t_vec>(Mperp, Mperp);
-
-	// magnetic, chiral
-	P_f += imag * cross<t_vec>({ Mperp, MperpConj });
-	// ------------------------------------------------------------------------
-
-	return std::make_tuple(I, P_f/I);
-}
-
-
-/**
- * Blume-Maleev equation
  * calculate equation indirectly with density matrix
  *   (based on a proof from a lecture by P. J. Brown, 2006)
  *
@@ -1102,7 +1047,8 @@ requires is_vec<t_vec>
  * @see https://doi.org/10.1016/B978-044451050-1/50006-9 - p. 225-226
  */
 template<class t_mat, class t_vec, typename t_cplx = typename t_vec::value_type>
-std::tuple<t_cplx, t_vec> blume_maleev_indir(const t_vec& P_i, const t_vec& Mperp, const t_cplx& N)
+std::tuple<t_cplx, t_vec>
+blume_maleev_indir(const t_vec& P_i, const t_vec& Mperp, const t_cplx& N)
 requires is_mat<t_mat> && is_vec<t_vec>
 {
 	// spin-1/2
@@ -1133,6 +1079,127 @@ requires is_mat<t_mat> && is_vec<t_vec>
 	// ------------------------------------------------------------------------
 
 	return std::make_tuple(I, P_f/I);
+}
+
+
+/**
+ * Blume-Maleev equation
+ * @returns scattering intensity and final polarisation vector
+ *
+ * @see https://doi.org/10.1016/B978-044451050-1/50006-9 - p. 225-226
+ */
+template<class t_vec, typename t_cplx = typename t_vec::value_type>
+std::tuple<t_cplx, t_vec>
+blume_maleev(const t_vec& P_i, const t_vec& Mperp, const t_cplx& N)
+requires is_vec<t_vec>
+{
+	using t_real = typename t_cplx::value_type;
+
+	const t_vec MperpConj = conj(Mperp);
+	const t_cplx NConj = std::conj(N);
+	constexpr t_cplx imag(0, 1);
+
+	t_cplx N2 = N * NConj;
+	t_cplx M2 = inner<t_vec>(Mperp, Mperp);
+	t_vec Mx2 = cross<t_vec>({ MperpConj, Mperp });
+
+	// ------------------------------------------------------------------------
+	// intensity
+	// nuclear and magnetic non-chiral
+	t_cplx I = N2 + M2;
+
+	// magnetic chiral
+	I += imag * inner<t_vec>(P_i, Mx2);
+
+	// nuclear-magnetic
+	t_cplx I_nm = N * inner<t_vec>(Mperp, P_i);
+	I += I_nm + std::conj(I_nm);
+	// ------------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
+	// polarisation vector
+	// nuclear
+	t_vec P_f = N2 * P_i;                           // rotates P
+
+	// magnetic non-chiral
+	t_vec rot_ch = Mperp * inner<t_vec>(Mperp, P_i);
+	P_f += rot_ch + tl2::conj(rot_ch);              // rotates P
+	P_f -= M2 * P_i;                                // rotates P
+
+	// magnetic chiral
+	P_f -= imag * Mx2;                              // creates P
+
+	// nuclear-magnetic
+	t_vec rot_nm = imag * NConj * cross<t_vec>({ Mperp, P_i });
+	t_vec create_nm = NConj * Mperp;
+	P_f += rot_nm + tl2::conj(rot_nm);              // rotates P
+	P_f += create_nm + tl2::conj(create_nm);        // creates P
+	// ------------------------------------------------------------------------
+
+	return std::make_tuple(I, P_f/I);
+}
+
+
+/**
+ * Blume-Maleev in tensor form
+ *   (based on a lecture by P. J. Brown, 2006, 2009)
+ *
+ * @see https://doi.org/10.1016/B978-044451050-1/50006-9 - p. 225-226
+ */
+template<class t_mat, class t_vec, typename t_cplx = typename t_vec::value_type>
+std::tuple<t_cplx, t_mat, t_vec, t_vec>
+blume_maleev_tensor(const t_vec& P_i, const t_vec& Mperp, const t_cplx& N)
+requires is_mat<t_mat> && is_vec<t_vec>
+{
+	using t_real = typename t_cplx::value_type;
+
+	const t_vec MperpConj = conj(Mperp);
+	const t_cplx NConj = std::conj(N);
+
+	t_cplx N2 = N * NConj;
+	t_cplx M2 = inner<t_vec>(Mperp, Mperp);
+	t_mat Mo = t_real(2) * outer<t_mat, t_vec>(Mperp, Mperp);
+	t_vec NM = t_real(2) * N * MperpConj;
+
+	auto [ Mor, Moi ] = split_cplx<t_mat, t_mat>(Mo);
+	auto [ NMr, NMi ] = split_cplx<t_vec, t_vec>(NM);
+
+	// cross product vector of imaginary component of Mo
+	t_vec Moivec = create<t_vec>({ Moi(2, 1), Moi(0, 2), Moi(1, 0) });
+
+	// ------------------------------------------------------------------------
+	// intensity
+	// nuclear-magnetic and magnetic chiral intensity
+	t_cplx I = inner<t_vec>(P_i, NMr + Moivec);
+
+	// nuclear and magnetic non-chiral intensity
+	I += N2 + M2;
+	// ------------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
+	// rotates polarisation
+	// nuclear and magnetic non-chiral components
+	t_mat Prot = diag<t_mat>({ N2 - M2, N2 - M2, N2 - M2 });
+
+	// magnetic non-chiral component
+	// Mor * P_i corresponds to rot_ch + tl2::conj(rot_ch) in the case above
+	Prot += Mor;
+
+	// nuclear-magnetic component
+	Prot += skewsymmetric<t_mat>(NMi);
+
+	Prot /= I;
+	// ------------------------------------------------------------------------
+
+	// ------------------------------------------------------------------------
+	// creates polarisation (nuclear-magnetic and magnetic chiral components)
+	// Moivec correspond to imag * Mx2 in the case above
+	t_vec Pcreate = NMr - Moivec;
+	Pcreate /= I;
+	// ------------------------------------------------------------------------
+
+	t_vec P_f = Prot * P_i + Pcreate;
+	return std::make_tuple(I, Prot, Pcreate, P_f);
 }
 
 

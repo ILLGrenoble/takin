@@ -49,7 +49,7 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pStatus(new QStatusBar(this)),
 	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 
 	setWindowTitle("Reciprocal Space / Brillouin Zone");
 	m_pStatus->setSizeGripEnabled(1);
@@ -91,14 +91,14 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_vecq_rlu = m_vecq = tl::ublas::zero_vector<t_real>(3);
 	m_pPlot->SetLabels("x (1/A)", "y (1/A)", "z (1/A)");
 	m_pPlot->SetDrawMinMax(0);
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
 BZ3DDlg::~BZ3DDlg()
 {
 	if(m_pPlot)
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 }
 
 
@@ -124,15 +124,15 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	static const std::vector<t_real> vecColScatPlane = { 1., 1., 0., 1. };
 	static const std::vector<t_real> vecColCurq = { 0., 0., 0., 1. };
 
-	m_pPlot->SetEnabled(0);
+	m_pPlot->SetEnabled(false);
 	m_pPlot->clear();
 
 	t_mat matBinv = tl::transpose(lattice.matA) / (tl::get_pi<t_real>()*t_real(2));
 
 
-	const bool bShowVerts = 0;
-	const bool bShowSymmPts = 1;
-	const bool bShowCurq = 1;
+	const bool bShowVerts = false;
+	const bool bShowSymmPts = true;
+	const bool bShowCurq = true;
 
 	// all objects: polys + edges
 	std::size_t iNumObjs =  2*bz.GetPolys().size();
@@ -252,7 +252,7 @@ void BZ3DDlg::RenderBZ(const tl::Brillouin3D<t_real_glob>& bz,
 	}
 
 	m_pPlot->SetMinMax(vecMin, vecMax);
-	m_pPlot->SetEnabled(1);
+	m_pPlot->SetEnabled(true);
 }
 
 
@@ -270,7 +270,7 @@ void BZ3DDlg::RecipParamsChanged(const RecipParams& recip)
 	// if a 3d object is already assigned, update it
 	if(m_pPlot && m_iqIdx)
 	{
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 
 		m_pPlot->PlotSphere(m_vecq, 0.02/**0.1*g_dFontSize*/, *m_iqIdx);
 
@@ -281,7 +281,7 @@ void BZ3DDlg::RecipParamsChanged(const RecipParams& recip)
 		ostrTip << "\nq = (" << m_vecq[0] << ", " << m_vecq[1] << ", " << m_vecq[2] << ") 1/A";
 		m_pPlot->SetObjectLabel(*m_iqIdx, ostrTip.str());
 
-		m_pPlot->SetEnabled(1);
+		m_pPlot->SetEnabled(true);
 	}
 }
 
@@ -309,7 +309,7 @@ void BZ3DDlg::closeEvent(QCloseEvent* pEvt)
 void BZ3DDlg::hideEvent(QHideEvent *pEvt)
 {
 	if(m_pPlot)
-		m_pPlot->SetEnabled(0);
+		m_pPlot->SetEnabled(false);
 	QDialog::hideEvent(pEvt);
 }
 
@@ -318,7 +318,7 @@ void BZ3DDlg::showEvent(QShowEvent *pEvt)
 {
 	QDialog::showEvent(pEvt);
 	if(m_pPlot)
-		m_pPlot->SetEnabled(1);
+		m_pPlot->SetEnabled(true);
 }
 
 

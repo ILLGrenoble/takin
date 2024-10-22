@@ -335,8 +335,8 @@ protected:
 	void ExportSQE();
 
 	void SavePlotFigure();
-	void SaveDispersion();
-	void SaveMultiDispersion();
+	void SaveDispersion(bool as_scr = false);
+	void SaveMultiDispersion(bool as_scr = false);
 
 	void MirrorAtoms();
 	void RotateField(bool ccw = true);

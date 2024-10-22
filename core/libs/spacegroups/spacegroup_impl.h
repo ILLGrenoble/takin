@@ -117,7 +117,7 @@ bool SpaceGroups<t_real>::LoadSpaceGroups(const std::string& strFile, bool bMand
 		vecTrafos.reserve(iNumTrafos);
 
 		unsigned int iTrafo = 0;
-		while(1)
+		while(true)
 		{
 			std::ostringstream ostrTrafo;
 			ostrTrafo << strGroup << "/trafo_" << iTrafo;

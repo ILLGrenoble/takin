@@ -65,14 +65,14 @@ PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real dMouseScale) :
 	m_dMouseScale = dMouseScale;
 	updateViewMatrix();
 
-	setUpdatesEnabled(1);
-	QTimer::setSingleShot(0);
+	setUpdatesEnabled(true);
+	QTimer::setSingleShot(false);
 }
 
 
 PlotGl::~PlotGl()
 {
-	SetEnabled(0);
+	SetEnabled(false);
 }
 // ----------------------------------------------------------------------------
 
@@ -190,14 +190,14 @@ void PlotGl::initializeGL()
 	m_pFont = new tl::GlFontMap<t_real>(strFont.c_str(), g_iFontGLSize);
 
 	QTimer::start(g_iTimerInterval);
-	QWidget::setMouseTracking(1);
+	QWidget::setMouseTracking(true);
 }
 
 
 void PlotGl::freeGL()
 {
-	SetEnabled(0);
-	QWidget::setMouseTracking(0);
+	SetEnabled(false);
+	QWidget::setMouseTracking(false);
 
 	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
 		glDeleteLists(m_iLstSphere[iSphere], 1);
@@ -223,8 +223,10 @@ void PlotGl::SetPerspective(int w, int h)
 
 void PlotGl::resizeGL(int w, int h)
 {
-	if(w <= 0) w = 1;
-	if(h <= 0) h = 1;
+	if(w <= 0)
+		w = 1;
+	if(h <= 0)
+		h = 1;
 
 	m_size.iW = w;
 	m_size.iH = h;
@@ -361,7 +363,7 @@ void PlotGl::paintGL()
 	if(m_bResetPrespective)
 	{
 		SetPerspective(m_size.iW, m_size.iH);
-		m_bResetPrespective = 0;
+		m_bResetPrespective = false;
 	}
 
 	glMatrixMode(GL_MODELVIEW);
@@ -419,7 +421,7 @@ void PlotGl::paintGL()
 		if(iObjIdx >= m_vecObjs.size())
 			continue;
 		const PlotObjGl& obj = m_vecObjs[iObjIdx];
-		bool bIsSphereLikeObj = 0;
+		bool bIsSphereLikeObj = false;
 
 		if(obj.bCull)
 			glEnable(GL_CULL_FACE);
@@ -450,7 +452,7 @@ void PlotGl::paintGL()
 					obj.vecScale[0] * obj.dScaleMult,
 					obj.vecScale[0] * obj.dScaleMult);
 
-				bIsSphereLikeObj = 1;
+				bIsSphereLikeObj = true;
 			}
 		}
 		else if(obj.plttype == PLOT_ELLIPSOID)
@@ -469,7 +471,7 @@ void PlotGl::paintGL()
 					obj.vecScale[1] * obj.dScaleMult,
 					obj.vecScale[2] * obj.dScaleMult);
 
-				bIsSphereLikeObj = 1;
+				bIsSphereLikeObj = true;
 			}
 		}
 		else if(obj.plttype == PLOT_POLY)
@@ -655,8 +657,8 @@ void PlotGl::PlotEllipsoid(const ublas::vector<t_real>& widths,
 		obj.vecRotMat.resize(9);
 
 	std::size_t iNum = 0;
-	for(std::size_t i=0; i<3; ++i)
-		for(std::size_t j=0; j<3; ++j)
+	for(std::size_t i = 0; i < 3; ++i)
+		for(std::size_t j = 0; j < 3; ++j)
 			obj.vecRotMat[iNum++] = rot(j,i);
 }
 
@@ -706,14 +708,14 @@ void PlotGl::mousePressEvent(QMouseEvent *event)
 {
 	if(event->buttons() & Qt::LeftButton)
 	{
-		m_bMouseRotateActive = 1;
+		m_bMouseRotateActive = true;
 		m_dMouseBegin[0] = event->POS_F().x();
 		m_dMouseBegin[1] = event->POS_F().y();
 	}
 
 	if(event->buttons() & Qt::RightButton)
 	{
-		m_bMouseScaleActive = 1;
+		m_bMouseScaleActive = true;
 		m_dMouseScaleBegin = event->POS_F().y();
 	}
 }
@@ -722,10 +724,10 @@ void PlotGl::mousePressEvent(QMouseEvent *event)
 void PlotGl::mouseReleaseEvent(QMouseEvent *event)
 {
 	if((event->buttons() & Qt::LeftButton) == 0)
-		m_bMouseRotateActive = 0;
+		m_bMouseRotateActive = false;
 
 	if((event->buttons() & Qt::RightButton) == 0)
-		m_bMouseScaleActive = 0;
+		m_bMouseScaleActive = false;
 }
 
 
@@ -734,7 +736,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	t_real dNewX = t_real(pEvt->POS_F().x());
 	t_real dNewY = t_real(pEvt->POS_F().y());
 
-	bool bUpdateView = 0;
+	bool bUpdateView = false;
 	if(m_bMouseRotateActive)
 	{
 		m_dMouseRot[0] += dNewX - m_dMouseBegin[0];
@@ -743,7 +745,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		m_dMouseBegin[0] = dNewX;
 		m_dMouseBegin[1] = dNewY;
 
-		bUpdateView = 1;
+		bUpdateView = true;
 	}
 
 	if(m_bMouseScaleActive)
@@ -751,7 +753,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 		m_dMouseScale *= 1.-(dNewY - m_dMouseScaleBegin)/t_real(height()) * 2.;
 		m_dMouseScaleBegin = dNewY;
 
-		bUpdateView = 1;
+		bUpdateView = true;
 	}
 
 	if(bUpdateView)
@@ -763,7 +765,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 	t_real dMouseY = -(2.*dNewY /**m_size.dDPIScale*/ /t_real(m_size.iH) - 1.);
 	//tl::log_debug("mouse: ", dNewX, " ", dNewY, ", scaled mouse: ", dMouseX, " ", dMouseY);
 
-	bool bHasSelected = 0;
+	bool bHasSelected = false;
 	if(m_bEnabled)
 	{
 		mouseSelectObj(dMouseX, dMouseY);
@@ -773,7 +775,7 @@ void PlotGl::mouseMoveEvent(QMouseEvent *pEvt)
 			if(obj.bSelected)
 			{
 				m_sigHover(&obj);
-				bHasSelected = 1;
+				bHasSelected = true;
 				break;
 			}
 		}
@@ -798,7 +800,7 @@ void PlotGl::wheelEvent(QWheelEvent* pEvt)
 void PlotGl::TogglePerspective()
 {
 	m_bPerspective = !m_bPerspective;
-	m_bResetPrespective = 1;
+	m_bResetPrespective = true;
 }
 
 
@@ -847,7 +849,7 @@ void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 
 	for(PlotObjGl& obj : m_vecObjs)
 	{
-		obj.bSelected = 0;
+		obj.bSelected = false;
 
 		std::unique_ptr<tl::Quadric<t_real>> pQuad;
 		t_vec3 vecOffs = ublas::zero_vector<t_real>(3);
@@ -886,7 +888,7 @@ void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 			{
 				if(t < 0.) continue; // beyond "near" plane
 				if(t > 1.) continue; // beyond "far" plane
-				obj.bSelected = 1;
+				obj.bSelected = true;
 			}
 		}
 	}

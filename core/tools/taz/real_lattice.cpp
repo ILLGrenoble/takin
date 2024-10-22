@@ -129,12 +129,12 @@ RealLattice::RealLattice(LatticeScene& scene)
 {
 	setFlag(QGraphicsItem::ItemIgnoresTransformations);
 	setAcceptedMouseButtons(Qt::NoButton);
-	m_bReady = 1;
+	m_bReady = true;
 }
 
 RealLattice::~RealLattice()
 {
-	m_bReady = 0;
+	m_bReady = false;
 	ClearPeaks();
 }
 
@@ -164,64 +164,64 @@ void RealLattice::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWi
 {
 	pPainter->setFont(g_fontGfx);
 
-	// Brillouin zone
-	if(m_bShowWS && (m_ws.IsValid() || m_ws3.IsValid()))
-	{
-		QPen penOrg = pPainter->pen();
-		QPen penGray(Qt::darkGray);
-		penGray.setWidthF(g_dFontSize*0.1);
-		pPainter->setPen(penGray);
+	if(!m_bShowWS || (!m_ws.IsValid() && !m_ws3.IsValid()))
+		return;
 
-		t_vec vecCentral2d;
-		std::vector<QPointF> vecWS3;
+	// Brillouin zone
+	QPen penOrg = pPainter->pen();
+	QPen penGray(Qt::darkGray);
+	penGray.setWidthF(g_dFontSize*0.1);
+	pPainter->setPen(penGray);
+
+	t_vec vecCentral2d;
+	std::vector<QPointF> vecWS3;
+
+	// use 3d BZ code
+	if(g_b3dBZ && m_ws3.IsValid())
+	{
+		// convert vertices to QPointFs
+		vecWS3.reserve(m_vecWS3Verts.size());
+		for(const auto& vecVert : m_vecWS3Verts)
+			vecWS3.push_back(vec_to_qpoint(vecVert * m_dScaleFactor * m_dZoom));
+	}
+	// use 2d BZ code
+	else if(m_ws.IsValid())
+	{
+		vecCentral2d = m_ws.GetCentralReflex() * m_dScaleFactor*m_dZoom;
+	}
+
+	for(const LatticePoint* pPeak : m_vecPeaks)
+	{
+		QPointF peakPos = pPeak->pos();
+		peakPos *= m_dZoom;
 
 		// use 3d BZ code
 		if(g_b3dBZ && m_ws3.IsValid())
 		{
-			// convert vertices to QPointFs
-			vecWS3.reserve(m_vecWS3Verts.size());
-			for(const auto& vecVert : m_vecWS3Verts)
-				vecWS3.push_back(vec_to_qpoint(vecVert * m_dScaleFactor * m_dZoom));
+			std::vector<QPointF> vecWS3_peak = vecWS3;
+			for(auto& vecVert : vecWS3_peak)
+				vecVert += peakPos;
+			pPainter->drawPolygon(vecWS3_peak.data(), vecWS3_peak.size());
 		}
 		// use 2d BZ code
 		else if(m_ws.IsValid())
 		{
-			vecCentral2d = m_ws.GetCentralReflex() * m_dScaleFactor*m_dZoom;
-		}
-
-		for(const LatticePoint* pPeak : m_vecPeaks)
-		{
-			QPointF peakPos = pPeak->pos();
-			peakPos *= m_dZoom;
-
-			// use 3d BZ code
-			if(g_b3dBZ && m_ws3.IsValid())
+			const tl::Brillouin2D<t_real>::t_vertices<t_real>& verts = m_ws.GetVertices();
+			for(const tl::Brillouin2D<t_real>::t_vecpair<t_real>& vertpair : verts)
 			{
-				std::vector<QPointF> vecWS3_peak = vecWS3;
-				for(auto& vecVert : vecWS3_peak)
-					vecVert += peakPos;
-				pPainter->drawPolygon(vecWS3_peak.data(), vecWS3_peak.size());
-			}
-			// use 2d BZ code
-			else if(m_ws.IsValid())
-			{
-				const tl::Brillouin2D<t_real>::t_vertices<t_real>& verts = m_ws.GetVertices();
-				for(const tl::Brillouin2D<t_real>::t_vecpair<t_real>& vertpair : verts)
-				{
-					const t_vec& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
-					const t_vec& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
+				const t_vec& vec1 = vertpair.first * m_dScaleFactor * m_dZoom;
+				const t_vec& vec2 = vertpair.second * m_dScaleFactor * m_dZoom;
 
-					QPointF pt1 = vec_to_qpoint(vec1 - vecCentral2d) + peakPos;
-					QPointF pt2 = vec_to_qpoint(vec2 - vecCentral2d) + peakPos;
+				QPointF pt1 = vec_to_qpoint(vec1 - vecCentral2d) + peakPos;
+				QPointF pt2 = vec_to_qpoint(vec2 - vecCentral2d) + peakPos;
 
-					QLineF lineWS(pt1, pt2);
-					pPainter->drawLine(lineWS);
-				}
+				QLineF lineWS(pt1, pt2);
+				pPainter->drawLine(lineWS);
 			}
 		}
-
-		pPainter->setPen(penOrg);
 	}
+
+	pPainter->setPen(penOrg);
 }
 
 
@@ -251,7 +251,7 @@ void RealLattice::CalcPeaks(const xtl::LatticeCommon<t_real>& latticecommon)
 	std::vector<QColor> colors = {QColor(127,0,0), QColor(0,127,0), QColor(0,0,127),
 		QColor(127,127,0), QColor(0,127,127), QColor(127,0,127)};
 
-	for(std::size_t iAtom=0; iAtom<latticecommon.vecAllAtoms.size(); ++iAtom)
+	for(std::size_t iAtom = 0; iAtom < latticecommon.vecAllAtoms.size(); ++iAtom)
 	{
 		const std::string& strElem = latticecommon.vecAllNames[iAtom];
 		const t_vec& vecThisAtom = latticecommon.vecAllAtoms[iAtom];
@@ -295,76 +295,76 @@ void RealLattice::CalcPeaks(const xtl::LatticeCommon<t_real>& latticecommon)
 
 	std::list<std::vector<t_real>> lstPeaksForKd;
 
-	for(int ih=-m_iMaxPeaks; ih<=m_iMaxPeaks; ++ih)
-		for(int ik=-m_iMaxPeaks; ik<=m_iMaxPeaks; ++ik)
-			for(int il=-m_iMaxPeaks; il<=m_iMaxPeaks; ++il)
+	for(int ih = -m_iMaxPeaks; ih <= m_iMaxPeaks; ++ih)
+	for(int ik = -m_iMaxPeaks; ik <= m_iMaxPeaks; ++ik)
+	for(int il = -m_iMaxPeaks; il <= m_iMaxPeaks; ++il)
+	{
+		const t_real h = t_real(ih), k = t_real(ik), l = t_real(il);
+		const t_vec vecPeakHKL = tl::make_vec<t_vec>({h,k,l});
+		t_vec vecPeak = m_lattice.GetPos(h,k,l);
+
+		// 3d unit cell
+		if(g_b3dBZ)
+		{
+			if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
+				m_ws3.SetCentralReflex(vecPeak, &vecPeakHKL);
+			else if(std::abs(ih-veciCent[0]) <= 2 && std::abs(ik-veciCent[1]) <= 2 && std::abs(il-veciCent[2]) <= 2)
+				m_ws3.AddReflex(vecPeak, &vecPeakHKL);
+		}
+
+		// add peak in A and in fractional units
+		lstPeaksForKd.push_back(std::vector<t_real>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
+
+		t_real dDist = 0.;
+		t_vec vecDropped = latticecommon.planeReal.GetDroppedPerp(vecPeak, &dDist);
+
+		if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
+		{
+			t_vec vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
+			t_real dX = vecCoord[0], dY = -vecCoord[1];
+
+			LatticePoint *pPeak = new LatticePoint();
+			if(ih==0 && ik==0 && il==0)
+				pPeak->SetColor(Qt::darkGreen);
+			pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
+			pPeak->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE);
+
+			std::ostringstream ostrTip;
+			ostrTip.precision(g_iPrecGfx);
+
+			ostrTip << "(" << ih << " " << ik << " " << il << ")";
+			pPeak->SetLabel(ostrTip.str().c_str());
+
+			tl::set_eps_0(vecPeak, g_dEps);
+			ostrTip << " frac\n";
+			ostrTip << "("
+				<< vecPeak[0] << ", "
+				<< vecPeak[1] << ", "
+				<< vecPeak[2] << ") " << strAA;
+			pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
+
+			m_vecPeaks.push_back(pPeak);
+			m_scene.addItem(pPeak);
+
+
+			// 2d unit cell
+			if(!g_b3dBZ)
 			{
-				const t_real h = t_real(ih), k = t_real(ik), l = t_real(il);
-				const t_vec vecPeakHKL = tl::make_vec<t_vec>({h,k,l});
-				t_vec vecPeak = m_lattice.GetPos(h,k,l);
-
-				// 3d unit cell
-				if(g_b3dBZ)
+				if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
 				{
-					if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
-						m_ws3.SetCentralReflex(vecPeak, &vecPeakHKL);
-					else if(std::abs(ih-veciCent[0]) <= 2 && std::abs(ik-veciCent[1]) <= 2 && std::abs(il-veciCent[2]) <= 2)
-						m_ws3.AddReflex(vecPeak, &vecPeakHKL);
+					t_vec vecCentral = tl::make_vec({dX, dY});
+					m_ws.SetCentralReflex(vecCentral, &vecPeakHKL);
 				}
-
-				// add peak in A and in fractional units
-				lstPeaksForKd.push_back(std::vector<t_real>{vecPeak[0],vecPeak[1],vecPeak[2], h,k,l});
-
-				t_real dDist = 0.;
-				t_vec vecDropped = latticecommon.planeReal.GetDroppedPerp(vecPeak, &dDist);
-
-				if(tl::float_equal<t_real>(dDist, 0., m_dPlaneDistTolerance))
+				// TODO: check if 2 next neighbours is sufficient for all space groups
+				else if(std::abs(ih-veciCent[0])<=2 && std::abs(ik-veciCent[1])<=2
+					&& std::abs(il-veciCent[2])<=2)
 				{
-					t_vec vecCoord = ublas::prod(m_matPlane_inv, vecDropped);
-					t_real dX = vecCoord[0], dY = -vecCoord[1];
-
-					LatticePoint *pPeak = new LatticePoint();
-					if(ih==0 && ik==0 && il==0)
-						pPeak->SetColor(Qt::darkGreen);
-					pPeak->setPos(dX * m_dScaleFactor, dY * m_dScaleFactor);
-					pPeak->setData(REAL_LATTICE_NODE_TYPE_KEY, NODE_REAL_LATTICE);
-
-					std::ostringstream ostrTip;
-					ostrTip.precision(g_iPrecGfx);
-
-					ostrTip << "(" << ih << " " << ik << " " << il << ")";
-					pPeak->SetLabel(ostrTip.str().c_str());
-
-					tl::set_eps_0(vecPeak, g_dEps);
-					ostrTip << " frac\n";
-					ostrTip << "("
-							<< vecPeak[0] << ", "
-							<< vecPeak[1] << ", "
-							<< vecPeak[2] << ") " << strAA;
-					pPeak->setToolTip(QString::fromUtf8(ostrTip.str().c_str(), ostrTip.str().length()));
-
-					m_vecPeaks.push_back(pPeak);
-					m_scene.addItem(pPeak);
-
-
-					// 2d unit cell
-					if(!g_b3dBZ)
-					{
-						if(ih==veciCent[0] && ik==veciCent[1] && il==veciCent[2])
-						{
-							t_vec vecCentral = tl::make_vec({dX, dY});
-							m_ws.SetCentralReflex(vecCentral, &vecPeakHKL);
-						}
-						// TODO: check if 2 next neighbours is sufficient for all space groups
-						else if(std::abs(ih-veciCent[0])<=2 && std::abs(ik-veciCent[1])<=2
-							&& std::abs(il-veciCent[2])<=2)
-						{
-							t_vec vecN = tl::make_vec({dX, dY});
-							m_ws.AddReflex(vecN, &vecPeakHKL);
-						}
-					}
+					t_vec vecN = tl::make_vec({dX, dY});
+					m_ws.AddReflex(vecN, &vecPeakHKL);
 				}
 			}
+		}
+	}
 
 	if(g_b3dBZ)
 	{
@@ -455,13 +455,14 @@ LatticeScene::~LatticeScene()
 
 void LatticeScene::scaleChanged(t_real dTotalScale)
 {
-	if(!m_pLatt) return;
+	if(!m_pLatt)
+		return;
 	m_pLatt->SetZoom(dTotalScale);
 }
 
 void LatticeScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
 {
-	m_bMousePressed = 1;
+	m_bMousePressed = true;
 	QGraphicsScene::mousePressEvent(pEvt);
 }
 
@@ -474,8 +475,8 @@ void LatticeScene::drawBackground(QPainter* pPainter, const QRectF& rect)
 
 void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 {
-	bool bHandled = 0;
-	bool bAllowed = 1;
+	bool bHandled = false;
+	bool bAllowed = true;
 
 
 	// tooltip
@@ -487,7 +488,7 @@ void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		t_vec vecHKL = m_pLatt->GetHKLFromPlanePos(dX, dY);
 		tl::set_eps_0(vecHKL, g_dEps);
 
-		if(vecHKL.size()==3)
+		if(vecHKL.size() == 3)
 		{
 			const std::vector<t_real>* pvecNearest = nullptr;
 
@@ -533,7 +534,7 @@ void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 
 void LatticeScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
 {
-	m_bMousePressed = 0;
+	m_bMousePressed = false;
 
 	QGraphicsScene::mouseReleaseEvent(pEvt);
 }
@@ -541,7 +542,7 @@ void LatticeScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
 void LatticeScene::keyPressEvent(QKeyEvent *pEvt)
 {
 	if(pEvt->key() == Qt::Key_Control)
-		m_bSnap = 1;
+		m_bSnap = true;
 
 	QGraphicsScene::keyPressEvent(pEvt);
 }
@@ -549,7 +550,7 @@ void LatticeScene::keyPressEvent(QKeyEvent *pEvt)
 void LatticeScene::keyReleaseEvent(QKeyEvent *pEvt)
 {
 	if(pEvt->key() == Qt::Key_Control)
-		m_bSnap = 0;
+		m_bSnap = false;
 
 	QGraphicsScene::keyReleaseEvent(pEvt);
 }
@@ -566,7 +567,7 @@ LatticeView::LatticeView(QWidget* pParent)
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
 	setDragMode(QGraphicsView::ScrollHandDrag);
-	setMouseTracking(1);
+	setMouseTracking(true);
 	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
 

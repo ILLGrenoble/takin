@@ -85,11 +85,11 @@ struct PlotObjGl
 	std::vector<ublas::vector<t_real_glob>> vecVertices;
 	ublas::vector<t_real_glob> vecNorm;
 
-	bool bSelected = 0;
-	bool bUseLOD = 1;
-	bool bCull = 1;
+	bool bSelected = false;
+	bool bUseLOD = true;
+	bool bCull = true;
 
-	bool bAnimated = 0;
+	bool bAnimated = false;
 	t_real_glob dScaleMult = 1.;
 
 	std::string strLabel;
@@ -116,13 +116,13 @@ protected:
 
 	static constexpr t_real_glob m_dFOV = 45./180.*M_PI;
 	tl::t_mat4_gen<t_real_glob> m_matProj, m_matView;
-	bool m_bPerspective = 1;	// perspective or orthogonal projection?
-	bool m_bResetPrespective = 0;
+	bool m_bPerspective = true;	// perspective or orthogonal projection?
+	bool m_bResetPrespective = false;
 	ublas::vector<t_real_glob> m_vecCam;
-	bool m_bDoZTest = 0;
-	bool m_bDrawPolys = 1;
-	bool m_bDrawLines = 1;
-	bool m_bDrawSpheres = 1;
+	bool m_bDoZTest = false;
+	bool m_bDrawPolys = true;
+	bool m_bDrawLines = true;
+	bool m_bDrawSpheres = true;
 
 	tl::GlFontMap<t_real_glob> *m_pFont = nullptr;
 
@@ -131,7 +131,7 @@ protected:
 	QString m_strLabels[3];
 
 	std::size_t m_iPrec = 6;
-	bool m_bDrawMinMax = 1;
+	bool m_bDrawMinMax = true;
 
 	t_real_glob m_dTime = 0.;
 
@@ -143,11 +143,11 @@ protected:
 	t_real_glob m_dXMinMaxOffs, m_dYMinMaxOffs, m_dZMinMaxOffs;
 
 	// mouse stuff
-	bool m_bMouseRotateActive = 0;
+	bool m_bMouseRotateActive = false;
 	t_real_glob m_dMouseRot[2];
 	t_real_glob m_dMouseBegin[2];
 
-	bool m_bMouseScaleActive = 0;
+	bool m_bMouseScaleActive = false;
 	t_real_glob m_dMouseScale;
 	t_real_glob m_dMouseScaleBegin;
 
@@ -157,7 +157,7 @@ protected:
 protected:
 	virtual void timerEvent(QTimerEvent *pEvt) override;
 
-	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a=1.);
+	void SetColor(t_real_glob r, t_real_glob g, t_real_glob b, t_real_glob a = 1.);
 	void SetColor(std::size_t iIdx);
 
 	virtual void initializeGL() override;
@@ -182,7 +182,7 @@ protected:
 
 
 public:
-	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_glob dMouseScale=25.);
+	PlotGl(QWidget* pParent, QSettings *pSettings=nullptr, t_real_glob dMouseScale = 25.);
 	virtual ~PlotGl();
 
 	virtual void AddHoverSlot(const typename t_sigHover::slot_type& conn);
@@ -194,7 +194,7 @@ public:
 	virtual void ToggleDrawLines() { m_bDrawLines = !m_bDrawLines; }
 	virtual void ToggleDrawSpheres() { m_bDrawSpheres = !m_bDrawSpheres; }
 
-	virtual void PlotSphere(const ublas::vector<t_real_glob>& vecPos, t_real_glob dRadius, int iObjIdx=-1);
+	virtual void PlotSphere(const ublas::vector<t_real_glob>& vecPos, t_real_glob dRadius, int iObjIdx = -1);
 	virtual void PlotEllipsoid(const ublas::vector<t_real_glob>& widths,
 		const ublas::vector<t_real_glob>& offsets,
 		const ublas::matrix<t_real_glob>& rot,
@@ -221,7 +221,7 @@ public:
 
 
 	template<class t_vec>
-	/*virtual*/ void SetMinMax(const t_vec& vecMin, const t_vec& vecMax, const t_vec* pOffs=0)
+	/*virtual*/ void SetMinMax(const t_vec& vecMin, const t_vec& vecMax, const t_vec* pOffs = nullptr)
 	{
 		m_dXMin = vecMin[0]; m_dXMax = vecMax[0];
 		m_dYMin = vecMin[1]; m_dYMax = vecMax[1];
@@ -233,7 +233,7 @@ public:
 	}
 
 	template<class t_vec=ublas::vector<t_real_glob>>
-	/*virtual*/ void SetMinMax(const t_vec& vec, const t_vec* pOffs=0)
+	/*virtual*/ void SetMinMax(const t_vec& vec, const t_vec* pOffs = nullptr)
 	{
 		m_dXMin = -vec[0]; m_dXMax = vec[0];
 		m_dYMin = -vec[1]; m_dYMax = vec[1];

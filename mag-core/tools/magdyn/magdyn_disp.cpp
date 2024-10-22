@@ -351,7 +351,7 @@ void MagDynDlg::CalcDispersion()
 		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
 
-	m_status->setText("Performing calculation.");
+	m_status->setText("Calculating dispersion.");
 
 	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)
 	{

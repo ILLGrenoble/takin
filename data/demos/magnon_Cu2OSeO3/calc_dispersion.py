@@ -62,7 +62,7 @@ dispersion = [ pt_G, pt_X1, pt_M1, pt_R ]
 branch_labels = [ "Γ", "X", "M", "R" ]
 branch_colours = [ "#ffffff", "#eeeeee", "#ffffff" ]
 
-width_ratios = []                   # lengths from one dispersion point to the nexts
+width_ratios = []                   # lengths from one dispersion point to the next
 num_branches = len(dispersion) - 1  # number of dispersion braches
 # -----------------------------------------------------------------------------
 

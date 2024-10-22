@@ -11,7 +11,7 @@
  *   - (Heinsdorf 2021) N. Heinsdorf, manual example calculation for a simple
  *                      ferromagnetic case, personal communications, 2021/2022.
  *
- * @desc This file implements the formalism given by (Toth 2015).
+ * @desc The magdyn library implements the formalism given by (Toth 2015).
  * @desc For further references, see the 'LITERATURE' file.
  *
  * ----------------------------------------------------------------------------
