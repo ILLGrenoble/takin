@@ -48,16 +48,8 @@ using namespace tl2_ops;
 namespace odeint = boost::numeric::odeint;
 
 // mark custom vector as resizeable
-template<> struct odeint::is_resizeable<tl2::vec<float, std::vector>>
-{
-	using type = typename boost::true_type;
-	static const bool value = type::value;
-};
-template<> struct odeint::is_resizeable<tl2::vec<double, std::vector>>
-{
-	using type = typename boost::true_type;
-	static const bool value = type::value;
-};
+template<> struct odeint::is_resizeable<tl2::vec<float, std::vector>> : std::true_type {};
+template<> struct odeint::is_resizeable<tl2::vec<double, std::vector>> : std::true_type {};
 
 template<class t_mat, class t_vec, class t_val=typename t_vec::value_type>
 t_vec odesys(const t_mat& C, const t_vec& y0, t_val x_start, t_val x_end, t_val x_step = 0.01)
@@ -105,7 +97,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_ode, t_real, t_types)
 	std::cout << std::endl;
 #endif
 
-	for(t_cplx x=0; x.real()<10; x+=1)
+	for(t_cplx x = 0; x.real() < 10; x += 1)
 	{
 		auto [ok, f] = tl2_la::odesys_const<t_mat_cplx, t_vec_cplx, t_cplx>(coeff, x, x0, f0);
 		BOOST_TEST(ok);
@@ -121,7 +113,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_ode, t_real, t_types)
 		std::cout << "x = " << x << std::endl;
 		std::cout << "ok = " << std::boolalpha << ok << std::endl;
 
-		for(std::size_t i=0; i<f.size(); ++i)
+		for(std::size_t i = 0; i < f.size(); ++i)
 			std::cout << "f_" << i << " = " << f[i] << std::endl;
 		std::cout << std::endl;
 #endif
@@ -129,8 +121,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(test_ode, t_real, t_types)
 
 
 	std::size_t idx=0;
-	const t_cplx fibo[] = {1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89};
-	for(t_cplx n=0; n.real()<10; n+=1)
+	const t_cplx fibo[] = { 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89 };
+	for(t_cplx n = 0; n.real() < 10; n += 1)
 	{
 		auto [ok, f] = tl2_la::diffsys_const<t_mat_cplx, t_vec_cplx, t_cplx>(coeff, n, n0, f0);
 		BOOST_TEST(ok);

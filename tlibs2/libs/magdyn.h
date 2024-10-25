@@ -53,7 +53,7 @@
 #include "magdyn/structs.h"
 #include "magdyn/helpers.h"
 #include "magdyn/getters.h"
-#include "magdyn/gen.h"
+#include "magdyn/generators.h"
 #include "magdyn/file.h"
 #include "magdyn/configuration.h"
 #include "magdyn/groundstate.h"

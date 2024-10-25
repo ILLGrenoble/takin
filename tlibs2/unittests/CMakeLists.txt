@@ -62,6 +62,7 @@ message("Using Boost version ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boo
 
 # -----------------------------------------------------------------------------
 # Lapacke
+find_package(GFortran)
 find_package(Lapacke REQUIRED)
 add_definitions(-DUSE_LAPACK)
 # -----------------------------------------------------------------------------
@@ -108,17 +109,19 @@ add_executable(magdyn magdyn.cpp)
 add_executable(magdyn2 magdyn2.cpp)
 
 target_link_libraries(expr Threads::Threads)
-target_link_libraries(magdyn ${Lapacke_LIBRARIES} ${Minuit2_LIBRARIES} Threads::Threads)
-target_link_libraries(magdyn2 ${Lapacke_LIBRARIES} ${Minuit2_LIBRARIES} Threads::Threads)
-target_link_libraries(mat0 ${Lapacke_LIBRARIES})
-target_link_libraries(mat2 ${Lapacke_LIBRARIES})
-target_link_libraries(mat3 ${Lapacke_LIBRARIES})
-target_link_libraries(rotation ${Lapacke_LIBRARIES})
-target_link_libraries(cryst ${Lapacke_LIBRARIES})
-target_link_libraries(leastsq ${Lapacke_LIBRARIES})
-target_link_libraries(eig ${Lapacke_LIBRARIES})
-target_link_libraries(chol ${Lapacke_LIBRARIES})
-target_link_libraries(ode ${Lapacke_LIBRARIES})
+target_link_libraries(magdyn ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES}
+	${GFortran_LIBRARIES} ${Minuit2_LIBRARIES} Threads::Threads)
+target_link_libraries(magdyn2 ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES}
+	${GFortran_LIBRARIES} ${Minuit2_LIBRARIES} Threads::Threads)
+target_link_libraries(mat0 ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(mat2 ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(mat3 ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(rotation ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(cryst ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(leastsq ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(eig ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(chol ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
+target_link_libraries(ode ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
 target_link_libraries(min0 ${Minuit2_LIBRARIES} Threads::Threads) #OpenMP::OpenMP_CXX)
 target_link_libraries(min1 ${Minuit2_LIBRARIES} Threads::Threads) #OpenMP::OpenMP_CXX)
 target_link_libraries(fit0 ${Minuit2_LIBRARIES} Threads::Threads) #OpenMP::OpenMP_CXX)

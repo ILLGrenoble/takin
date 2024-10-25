@@ -71,7 +71,7 @@
 %include "../../tlibs2/libs/magdyn/structs.h"
 %include "../../tlibs2/libs/magdyn/helpers.h"
 %include "../../tlibs2/libs/magdyn/getters.h"
-%include "../../tlibs2/libs/magdyn/gen.h"
+%include "../../tlibs2/libs/magdyn/generators.h"
 %include "../../tlibs2/libs/magdyn/file.h"
 %include "../../tlibs2/libs/magdyn/configuration.h"
 %include "../../tlibs2/libs/magdyn/groundstate.h"

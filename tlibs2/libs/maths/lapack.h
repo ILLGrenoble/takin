@@ -339,7 +339,7 @@ requires tl2::is_mat<t_mat>
 
 
 /**
- * cholesky decomposition of a hermitian, positive-definite matrix, mat = C^H C
+ * upper cholesky decomposition of a hermitian, positive-definite matrix, mat = C^H C
  * @returns [ok, C]
  * @see http://www.math.utah.edu/software/lapack/lapack-d/dpotrf.html
  * @see http://www.math.utah.edu/software/lapack/lapack-z/zpotrf.html
@@ -429,7 +429,7 @@ requires tl2::is_mat<t_mat>
 
 
 /**
- * cholesky decomposition of a hermitian, positive-semidefinite matrix, mat = C^H C
+ * upper cholesky decomposition of a hermitian, positive-semidefinite matrix, mat = C^H C
  * @returns [ok, C, P]
  * @see https://netlib.org/lapack/explore-html/db/dba/zpstrf_8f_source.html
  */

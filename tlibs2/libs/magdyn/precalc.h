@@ -199,12 +199,12 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 			// in case they are explicitly given
 
 #ifdef __TLIBS2_MAGDYN_DEBUG_OUTPUT__
-			std::cout << "Site " << site.name << " u = "
+			std::cout << "Site " << site.name << ": u = "
 				<< site.trafo_plane_calc[0] << " "
 				<< site.trafo_plane_calc[1] << " "
 				<< site.trafo_plane_calc[2]
 				<< std::endl;
-			std::cout << "Site " << site.name << " v = "
+			std::cout << "Site " << site.name << ": v = "
 				<< site.trafo_z_calc[0] << " "
 				<< site.trafo_z_calc[1] << " "
 				<< site.trafo_z_calc[2]
@@ -379,6 +379,40 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerms()
 	for(ExchangeTerm& term : GetExchangeTerms())
 		CalcExchangeTerm(term);
 }
+
+
+
+/**
+ * converts the rotation matrix rotating the local spins to ferromagnetic
+ * [001] directions into the vectors comprised of the matrix columns
+ * @see equation (9) and (51) from (Toth 2015)
+ */
+MAGDYN_TEMPL
+std::tuple<t_vec, t_vec> MAGDYN_INST::rot_to_trafo(const t_mat& R)
+{
+	const t_vec xy_plane = tl2::col<t_mat, t_vec>(R, 0)
+		+ s_imag * tl2::col<t_mat, t_vec>(R, 1);
+	const t_vec z = tl2::col<t_mat, t_vec>(R, 2);
+
+	return std::make_tuple(xy_plane, z);
+}
+
+
+
+/**
+ * rotate local spin to ferromagnetic [001] direction
+ * @see equations (7) and (9) from (Toth 2015)
+ */
+MAGDYN_TEMPL
+std::tuple<t_vec, t_vec> MAGDYN_INST::spin_to_trafo(const t_vec_real& spin_dir)
+{
+	const t_mat_real _rot = tl2::rotation<t_mat_real, t_vec_real>(
+		spin_dir, m_zdir, &m_rotaxis, m_eps);
+
+	const t_mat rot = tl2::convert<t_mat, t_mat_real>(_rot);
+	return rot_to_trafo(rot);
+}
 // --------------------------------------------------------------------
+
 
 #endif
