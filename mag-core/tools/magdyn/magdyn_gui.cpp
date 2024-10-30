@@ -96,7 +96,7 @@ void MagDynDlg::CreateMainWindow()
 	// fixed status
 	m_statusFixed = new QLabel(this);
 	m_statusFixed->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_statusFixed->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	m_statusFixed->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 	m_statusFixed->setFrameShape(QFrame::Panel);
 	m_statusFixed->setFrameShadow(QFrame::Sunken);
 	m_statusFixed->setText("Ready.");
@@ -104,7 +104,7 @@ void MagDynDlg::CreateMainWindow()
 	// expanding status
 	m_status = new QLabel(this);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	m_status->setFrameShape(QFrame::Panel);
 	m_status->setFrameShadow(QFrame::Sunken);
 
@@ -289,25 +289,13 @@ void MagDynDlg::CreateSitesPanel()
 	btnGenBySG->setToolTip("Create site positions from space group"
 		" symmetry operators and existing positions.");
 
-	btnAdd->setFocusPolicy(Qt::StrongFocus);
-	btnDel->setFocusPolicy(Qt::StrongFocus);
-	btnUp->setFocusPolicy(Qt::StrongFocus);
-	btnDown->setFocusPolicy(Qt::StrongFocus);
-	btnGenBySG->setFocusPolicy(Qt::StrongFocus);
-	btnExtCell->setFocusPolicy(Qt::StrongFocus);
+	for(QPushButton *btn : { btnAdd, btnDel, btnUp, btnDown, btnGenBySG, btnExtCell })
+	{
+		btn->setFocusPolicy(Qt::StrongFocus);
+		btn->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
 
-	btnAdd->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDel->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnUp->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDown->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnGenBySG->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnExtCell->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
 
 	auto grid = new QGridLayout(m_sitespanel);
 	grid->setSpacing(4);
@@ -555,19 +543,12 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	btnUp->setToolTip("Move selected coupling(s) up.");
 	btnDown->setToolTip("Move selected coupling(s) down.");
 
-	btnAdd->setFocusPolicy(Qt::StrongFocus);
-	btnDel->setFocusPolicy(Qt::StrongFocus);
-	btnUp->setFocusPolicy(Qt::StrongFocus);
-	btnDown->setFocusPolicy(Qt::StrongFocus);
-
-	btnAdd->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDel->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnUp->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDown->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
+	for(QPushButton *btn : { btnAdd, btnDel, btnUp, btnDown })
+	{
+		btn->setFocusPolicy(Qt::StrongFocus);
+		btn->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
 
 
 	// couplings from distances
@@ -1019,25 +1000,22 @@ void MagDynDlg::CreateVariablesPanel()
 	QPushButton *btnDown = new QPushButton(
 		QIcon::fromTheme("go-down"),
 		"Down", m_varspanel);
+	QPushButton *btnReplace = new QPushButton(
+		QIcon::fromTheme("edit-find-replace"),
+		"Replace Values", m_varspanel);
 
 	btnAdd->setToolTip("Add a variable.");
 	btnDel->setToolTip("Delete selected variables(s).");
 	btnUp->setToolTip("Move selected variable(s) up.");
 	btnDown->setToolTip("Move selected variable(s) down.");
+	btnReplace->setToolTip("Replace numeric values with variable names.");
 
-	btnAdd->setFocusPolicy(Qt::StrongFocus);
-	btnDel->setFocusPolicy(Qt::StrongFocus);
-	btnUp->setFocusPolicy(Qt::StrongFocus);
-	btnDown->setFocusPolicy(Qt::StrongFocus);
-
-	btnAdd->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDel->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnUp->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDown->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
+	for(QPushButton *btn : { btnAdd, btnDel, btnUp, btnDown, btnReplace })
+	{
+		btn->setFocusPolicy(Qt::StrongFocus);
+		btn->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
 
 
 	// grid
@@ -1051,6 +1029,7 @@ void MagDynDlg::CreateVariablesPanel()
 	grid->addWidget(btnDel, y,1,1,1);
 	grid->addWidget(btnUp, y,2,1,1);
 	grid->addWidget(btnDown, y++,3,1,1);
+	grid->addWidget(btnReplace, y++,0,1,1);
 
 
 	// table CustomContextMenu
@@ -1094,6 +1073,8 @@ void MagDynDlg::CreateVariablesPanel()
 		[this]() { this->MoveTabItemUp(m_varstab); });
 	connect(btnDown, &QAbstractButton::clicked,
 		[this]() { this->MoveTabItemDown(m_varstab); });
+	connect(btnReplace, &QAbstractButton::clicked,
+		this, &MagDynDlg::ReplaceValuesWithVariables);
 
 	connect(m_varstab, &QTableWidget::itemSelectionChanged, [this]()
 	{
@@ -1228,19 +1209,12 @@ void MagDynDlg::CreateSampleEnvPanel()
 	QPushButton *btnSetField = new QPushButton("Set Field", m_sampleenviropanel);
 	btnSetField->setToolTip("Set the selected field as the currently active one.");
 
-	btnAddField->setFocusPolicy(Qt::StrongFocus);
-	btnDelField->setFocusPolicy(Qt::StrongFocus);
-	btnFieldUp->setFocusPolicy(Qt::StrongFocus);
-	btnFieldDown->setFocusPolicy(Qt::StrongFocus);
-
-	btnAddField->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDelField->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnFieldUp->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnFieldDown->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
+	for(QPushButton *btn : { btnAddField, btnDelField, btnFieldUp, btnFieldDown })
+	{
+		btn->setFocusPolicy(Qt::StrongFocus);
+		btn->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
 
 
 	// table CustomContextMenu
@@ -1754,19 +1728,12 @@ void MagDynDlg::CreateCoordinatesPanel()
 	btnSetDispersion->setToolTip("Calculate the dispersion relation for the currently selected Q path.");
 	btnSetHamilton->setToolTip("Calculate the Hamiltonian for the currently selected Q coordinate.");
 
-	btnAddCoord->setFocusPolicy(Qt::StrongFocus);
-	btnDelCoord->setFocusPolicy(Qt::StrongFocus);
-	btnCoordUp->setFocusPolicy(Qt::StrongFocus);
-	btnCoordDown->setFocusPolicy(Qt::StrongFocus);
-
-	btnAddCoord->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnDelCoord->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnCoordUp->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
-	btnCoordDown->setSizePolicy(QSizePolicy{
-		QSizePolicy::Expanding, QSizePolicy::Fixed});
+	for(QPushButton *btn : { btnAddCoord, btnDelCoord, btnCoordUp, btnCoordDown })
+	{
+		btn->setFocusPolicy(Qt::StrongFocus);
+		btn->setSizePolicy(QSizePolicy{
+			QSizePolicy::Expanding, QSizePolicy::Fixed});
+	}
 
 
 	// table CustomContextMenu

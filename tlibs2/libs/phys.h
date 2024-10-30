@@ -1093,8 +1093,6 @@ std::tuple<t_cplx, t_vec>
 blume_maleev(const t_vec& P_i, const t_vec& Mperp, const t_cplx& N)
 requires is_vec<t_vec>
 {
-	using t_real = typename t_cplx::value_type;
-
 	const t_vec MperpConj = conj(Mperp);
 	const t_cplx NConj = std::conj(N);
 	constexpr t_cplx imag(0, 1);

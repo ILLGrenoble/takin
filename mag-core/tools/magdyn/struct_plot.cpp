@@ -106,7 +106,9 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 
 	m_status = new QLabel(this);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	m_status->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+	m_status->setFrameShape(QFrame::Panel);
+	m_status->setFrameShadow(QFrame::Sunken);
 
 	QPushButton *btnOk = new QPushButton("OK", this);
 
@@ -246,7 +248,17 @@ void StructPlotDlg::PickerIntersection(
 	{
 		m_cur_site = iter_sites->second.name;
 		HighlightSite(*m_cur_site);
-		m_status->setText(("Site: " + *m_cur_site).c_str());
+
+		std::ostringstream ostr;
+		ostr.precision(g_prec_gui);
+		ostr << "Site: " << *m_cur_site
+			<< " (position: " << iter_sites->second.sc_pos;
+		if(!tl2::equals<t_vec_real>(iter_sites->second.uc_pos,
+			iter_sites->second.sc_pos, g_eps))
+			ostr << ", unit cell: " << iter_sites->second.uc_pos;
+		ostr << ")";
+
+		m_status->setText(ostr.str().c_str());
 	}
 
 	// look for exchange terms
@@ -601,12 +613,16 @@ void StructPlotDlg::Sync()
 
 	// calculate the hash of a magnetic site
 	auto get_site_hash = [](const t_magdyn::MagneticSite& site,
-		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
-			-> t_size
+		const t_vec_real* sc_dist = nullptr) -> t_size
 	{
-		int _sc_x = int(std::round(sc_x));
-		int _sc_y = int(std::round(sc_y));
-		int _sc_z = int(std::round(sc_z));
+		// super cell index
+		int _sc_x = 0, _sc_y = 0, _sc_z = 0;
+		if(sc_dist)
+		{
+			_sc_x = int(std::round((*sc_dist)[0]));
+			_sc_y = int(std::round((*sc_dist)[1]));
+			_sc_z = int(std::round((*sc_dist)[2]));
+		}
 
 		t_size hash = 0;
 		boost::hash_combine(hash, std::hash<std::string>{}(site.name));
@@ -620,9 +636,9 @@ void StructPlotDlg::Sync()
 	// check if the magnetic site has already been seen
 	auto site_not_yet_seen = [&site_hashes, &get_site_hash](
 		const t_magdyn::MagneticSite& site,
-		t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
+		const t_vec_real& sc_dist)
 	{
-		t_size hash = get_site_hash(site, sc_x, sc_y, sc_z);
+		t_size hash = get_site_hash(site, &sc_dist);
 		return site_hashes.find(hash) == site_hashes.end();
 	};
 
@@ -633,12 +649,16 @@ void StructPlotDlg::Sync()
 			t_size site_idx,
 			const t_magdyn::MagneticSite& site,
 			const t_magdyn::ExternalField& field,
-			t_real_gl sc_x, t_real_gl sc_y, t_real_gl sc_z)
+			const t_vec_real* sc_dist = nullptr)
 	{
 		// super cell index
-		int _sc_x = int(std::round(sc_x));
-		int _sc_y = int(std::round(sc_y));
-		int _sc_z = int(std::round(sc_z));
+		int _sc_x = 0, _sc_y = 0, _sc_z = 0;
+		if(sc_dist)
+		{
+			_sc_x = int(std::round((*sc_dist)[0]));
+			_sc_y = int(std::round((*sc_dist)[1]));
+			_sc_z = int(std::round((*sc_dist)[2]));
+		}
 
 		// default colour for unit cell magnetic sites
 		t_real_gl rgb[3] { 0., 0., 1. };
@@ -648,7 +668,8 @@ void StructPlotDlg::Sync()
 		if(m_sitestab && site_idx < t_size(m_sitestab->rowCount()))
 		{
 			user_col = get_colour<t_real_gl>(
-				m_sitestab->item(site_idx, COL_SITE_RGB)->text().toStdString(), rgb);
+				m_sitestab->item(site_idx, COL_SITE_RGB)->
+					text().toStdString(), rgb);
 		}
 
 		// no user-defined colour -> use default for super-cell magnetic sites
@@ -670,21 +691,21 @@ void StructPlotDlg::Sync()
 		std::size_t arrow = m_structplot->GetRenderer()->AddLinkedObject(
 			m_arrow, 0,0,0, rgb[0], rgb[1], rgb[2], 1);
 
+		t_vec_real _pos_vec = site.pos_calc;
+		if(sc_dist)
+			_pos_vec += *sc_dist;
+		t_vec_gl pos_vec = tl2::convert<t_vec_gl>(_pos_vec);
+		t_vec_gl spin_vec;
+
 		{
 			MagneticSiteInfo siteinfo;
 			siteinfo.name = site.name;
+			siteinfo.uc_pos = site.pos_calc;
+			siteinfo.sc_pos = _pos_vec;
 
 			m_sites.emplace(std::make_pair(obj, siteinfo));
 			m_sites.emplace(std::make_pair(arrow, std::move(siteinfo)));
 		}
-
-		t_vec_gl pos_vec = tl2::create<t_vec_gl>({
-			t_real_gl(site.pos_calc[0]) + sc_x,
-			t_real_gl(site.pos_calc[1]) + sc_y,
-			t_real_gl(site.pos_calc[2]) + sc_z,
-		});
-
-		t_vec_gl spin_vec;
 
 		// align spin to external field?
 		if(field.align_spins)
@@ -706,7 +727,11 @@ void StructPlotDlg::Sync()
 			if(is_incommensurate)
 			{
 				// rotate spin vector for incommensurate structures
-				t_vec_gl sc_vec = tl2::create<t_vec_gl>({sc_x, sc_y, sc_z});
+				t_vec_gl sc_vec;
+				if(sc_dist)
+					sc_vec = tl2::convert<t_vec_gl>(*sc_dist);
+				else
+					sc_vec = tl2::zero<t_vec_gl>(3);
 
 				tl2_mag::rotate_spin_incommensurate<t_mat_gl, t_vec_gl, t_real_gl>(
 					spin_vec, sc_vec,
@@ -734,7 +759,7 @@ void StructPlotDlg::Sync()
 		//m_structplot->GetRenderer()->SetObjectLabel(arrow, site.name);
 
 		// mark the magnetic site as already seen
-		t_size hash = get_site_hash(site, sc_x, sc_y, sc_z);
+		t_size hash = get_site_hash(site, sc_dist);
 		site_hashes.insert(hash);
 
 		m_centre += pos_vec;
@@ -744,7 +769,7 @@ void StructPlotDlg::Sync()
 
 	// iterate and add unit cell magnetic sites
 	for(t_size site_idx = 0; site_idx < sites.size(); ++site_idx)
-		add_site(site_idx, sites[site_idx], field, 0, 0, 0);
+		add_site(site_idx, sites[site_idx], field);
 
 
 	// iterate and add exchange terms
@@ -762,9 +787,7 @@ void StructPlotDlg::Sync()
 		const t_site& site1 = sites[term.site1_calc];
 		const t_site& site2 = sites[term.site2_calc];
 
-		t_real_gl sc_x = t_real_gl(term.dist_calc[0]);
-		t_real_gl sc_y = t_real_gl(term.dist_calc[1]);
-		t_real_gl sc_z = t_real_gl(term.dist_calc[2]);
+		const t_vec_real& sc_dist = term.dist_calc;
 
 		// get colour
 		t_real_gl rgb[3] {0., 0.75, 0.};
@@ -788,22 +811,14 @@ void StructPlotDlg::Sync()
 		}
 
 		// connection from unit cell magnetic site...
-		const t_vec_gl pos1_vec = tl2::create<t_vec_gl>({
-			t_real_gl(site1.pos_calc[0]),
-			t_real_gl(site1.pos_calc[1]),
-			t_real_gl(site1.pos_calc[2]),
-		});
+		const t_vec_gl pos1_vec = tl2::convert<t_vec_gl>(site1.pos_calc);
 
 		// ... to magnetic site in super cell
-		const t_vec_gl pos2_vec = tl2::create<t_vec_gl>({
-			t_real_gl(site2.pos_calc[0]) + sc_x,
-			t_real_gl(site2.pos_calc[1]) + sc_y,
-			t_real_gl(site2.pos_calc[2]) + sc_z,
-		});
+		const t_vec_gl pos2_vec = tl2::convert<t_vec_gl>(site2.pos_calc + sc_dist);
 
 		// add the supercell site if it hasn't been inserted yet
-		if(site_not_yet_seen(site2, sc_x, sc_y, sc_z))
-			add_site(term.site2_calc, site2, field, sc_x, sc_y, sc_z);
+		if(site_not_yet_seen(site2, sc_dist))
+			add_site(term.site2_calc, site2, field, &sc_dist);
 
 		t_vec_gl dir_vec = pos2_vec - pos1_vec;
 		t_real_gl dir_len = tl2::norm<t_vec_gl>(dir_vec);

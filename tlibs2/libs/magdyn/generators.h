@@ -132,9 +132,9 @@ void MAGDYN_INST::SymmetriseExchangeTerms(const std::vector<t_mat_real>& symops)
 			}
 			else
 			{
-				CERR_OPT << "Magdyn error: Parsing DMI component " << dmi_idx
-					<< " of term \"" << term.name << "\"."
-					<< std::endl;
+				CERR_OPT << "Magdyn error: Parsing DMI component "
+					<< int(dmi_idx) << " of term \"" << term.name
+					<< "\"." << std::endl;
 			}
 		}
 
@@ -160,7 +160,7 @@ void MAGDYN_INST::SymmetriseExchangeTerms(const std::vector<t_mat_real>& symops)
 				else
 				{
 					CERR_OPT << "Magdyn error: Parsing general J component ("
-						<< J_idx1 << ", " << J_idx2
+						<< int(J_idx1) << ", " << int(J_idx2)
 						<< ") of term \"" << term.name << "\"."
 						<< std::endl;
 				}

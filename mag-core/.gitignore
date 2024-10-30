@@ -10,7 +10,7 @@
 *.so
 *.dylib
 *.dll
-!tools_py/magdyn/_magdyn_py.so
+!tools_py/magdyn/tests/_magdyn_py.so
 
 # Compiled Static libraries
 *.lai

@@ -38,6 +38,7 @@
 #include <unordered_set>
 
 #include "tlibs2/libs/qt/numerictablewidgetitem.h"
+using t_numitem = tl2::NumericTableWidgetItem<t_real>;
 
 
 
@@ -179,19 +180,16 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_PHI:
 		{
 			// get phi and theta
-			auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_THETA));
+			auto *item_phi = static_cast<t_numitem*>(item);
+			auto *item_theta = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_THETA));
 
 			// calculate new u and v
 			const auto [ u, v ] = tl2::sph_to_uv<t_real>(
 				tl2::d2r(item_phi->GetValue()), tl2::d2r(item_theta->GetValue()));
 
 			// set new u and v
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
 
 			break;
 		}
@@ -200,19 +198,16 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_THETA:
 		{
 			// get phi and theta
-			auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_PHI));
+			auto *item_theta = static_cast<t_numitem*>(item);
+			auto *item_phi = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_PHI));
 
 			// calculate new u and v
 			const auto [ u, v ] = tl2::sph_to_uv<t_real>(
 				tl2::d2r(item_phi->GetValue()), tl2::d2r(item_theta->GetValue()));
 
 			// set new u and v
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_U))->SetValue(u);
+			static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_V))->SetValue(v);
 
 			break;
 		}
@@ -221,18 +216,17 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_U:
 		{
 			// get u and v
-			auto *item_u = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_v = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_V));
+			auto *item_u = static_cast<t_numitem*>(item);
+			auto *item_v = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_V));
 
 			// calculate new phi and theta
 			const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(
 				item_u->GetValue(), item_v->GetValue());
 
 			// set new phi and theta
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_PHI))->SetValue(tl2::r2d(phi));
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_THETA))->SetValue(tl2::r2d(theta));
 
 			break;
@@ -242,18 +236,17 @@ void GroundStateDlg::SpinsTableItemChanged(QTableWidgetItem *item)
 		case COL_SPIN_V:
 		{
 			// get u and v
-			auto *item_v = static_cast<tl2::NumericTableWidgetItem<t_real>*>(item);
-			auto *item_u = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_spinstab->item(row, COL_SPIN_U));
+			auto *item_v = static_cast<t_numitem*>(item);
+			auto *item_u = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_U));
 
 			// calculate new phi and theta
 			const auto [ phi, theta ] = tl2::uv_to_sph<t_real>(
 				item_u->GetValue(), item_v->GetValue());
 
 			// set new phi and theta
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_PHI))->SetValue(tl2::r2d(phi));
-			static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+			static_cast<t_numitem*>(
 				m_spinstab->item(row, COL_SPIN_THETA))->SetValue(tl2::r2d(theta));
 
 			break;
@@ -291,10 +284,8 @@ void GroundStateDlg::UpdateSpinFromTable(int row)
 	std::string site_name = m_spinstab->item(row, COL_SPIN_NAME)->text().toStdString();
 
 	// get phi and theta
-	auto *item_phi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_spinstab->item(row, COL_SPIN_PHI));
-	auto *item_theta = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_spinstab->item(row, COL_SPIN_THETA));
+	auto *item_phi = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_PHI));
+	auto *item_theta = static_cast<t_numitem*>(m_spinstab->item(row, COL_SPIN_THETA));
 
 	if(!item_phi || !item_theta)
 		return;
@@ -368,10 +359,10 @@ void GroundStateDlg::SyncFromKernel(const t_magdyn *dyn,
 		m_spinstab->insertRow(row);
 
 		QTableWidgetItem *item_name = new QTableWidgetItem(site.name.c_str());
-		QTableWidgetItem *item_phi = new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(phi));
-		QTableWidgetItem *item_theta = new tl2::NumericTableWidgetItem<t_real>(tl2::r2d(theta));
-		QTableWidgetItem *item_u = new tl2::NumericTableWidgetItem<t_real>(u);
-		QTableWidgetItem *item_v = new tl2::NumericTableWidgetItem<t_real>(v);
+		QTableWidgetItem *item_phi = new t_numitem(tl2::r2d(phi));
+		QTableWidgetItem *item_theta = new t_numitem(tl2::r2d(theta));
+		QTableWidgetItem *item_u = new t_numitem(u);
+		QTableWidgetItem *item_v = new t_numitem(v);
 
 		// write-protect site identifier
 		item_name->setFlags(item_name->flags() & ~Qt::ItemIsEditable);

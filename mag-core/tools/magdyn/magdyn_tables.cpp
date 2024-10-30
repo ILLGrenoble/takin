@@ -33,6 +33,11 @@
 #include <boost/scope_exit.hpp>
 
 
+// types
+using t_numitem = tl2::NumericTableWidgetItem<t_real>;
+using t_sizeitem = tl2::NumericTableWidgetItem<t_size>;
+
+
 
 /**
  * set a unique name for the given table item
@@ -130,31 +135,20 @@ void MagDynDlg::AddSiteTabItem(
 	{
 		m_sitestab->setItem(row, COL_SITE_NAME,
 			new QTableWidgetItem(name.c_str()));
-		m_sitestab->setItem(row, COL_SITE_POS_X,
-			new tl2::NumericTableWidgetItem<t_real>(x));
-		m_sitestab->setItem(row, COL_SITE_POS_Y,
-			new tl2::NumericTableWidgetItem<t_real>(y));
-		m_sitestab->setItem(row, COL_SITE_POS_Z,
-			new tl2::NumericTableWidgetItem<t_real>(z));
-		m_sitestab->setItem(row, COL_SITE_SYM_IDX,
-			new tl2::NumericTableWidgetItem<t_size>(sym_idx));
-		m_sitestab->setItem(row, COL_SITE_SPIN_X,
-			new tl2::NumericTableWidgetItem<t_real>(sx));
-		m_sitestab->setItem(row, COL_SITE_SPIN_Y,
-			new tl2::NumericTableWidgetItem<t_real>(sy));
-		m_sitestab->setItem(row, COL_SITE_SPIN_Z,
-			new tl2::NumericTableWidgetItem<t_real>(sz));
-		m_sitestab->setItem(row, COL_SITE_SPIN_MAG,
-			new tl2::NumericTableWidgetItem<t_real>(S));
+		m_sitestab->setItem(row, COL_SITE_POS_X, new t_numitem(x));
+		m_sitestab->setItem(row, COL_SITE_POS_Y, new t_numitem(y));
+		m_sitestab->setItem(row, COL_SITE_POS_Z, new t_numitem(z));
+		m_sitestab->setItem(row, COL_SITE_SYM_IDX, new t_sizeitem(sym_idx));
+		m_sitestab->setItem(row, COL_SITE_SPIN_X, new t_numitem(sx));
+		m_sitestab->setItem(row, COL_SITE_SPIN_Y, new t_numitem(sy));
+		m_sitestab->setItem(row, COL_SITE_SPIN_Z, new t_numitem(sz));
+		m_sitestab->setItem(row, COL_SITE_SPIN_MAG, new t_numitem(S));
 		m_sitestab->setItem(row, COL_SITE_RGB, new QTableWidgetItem(rgb.c_str()));
 		if(m_allow_ortho_spin)
 		{
-			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_X,
-				new tl2::NumericTableWidgetItem<t_real>(sox));
-			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Y,
-				new tl2::NumericTableWidgetItem<t_real>(soy));
-			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Z,
-				new tl2::NumericTableWidgetItem<t_real>(soz));
+			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_X, new t_numitem(sox));
+			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Y, new t_numitem(soy));
+			m_sitestab->setItem(row, COL_SITE_SPIN_ORTHO_Z, new t_numitem(soz));
 		}
 	}
 
@@ -370,43 +364,26 @@ void MagDynDlg::AddTermTabItem(
 		m_termstab->setItem(row, COL_XCH_ATOM1_IDX, combo1);
 		m_termstab->setItem(row, COL_XCH_ATOM2_IDX, combo2);
 
-		m_termstab->setItem(row, COL_XCH_DIST_X,
-			new tl2::NumericTableWidgetItem<t_real>(dist_x));
-		m_termstab->setItem(row, COL_XCH_DIST_Y,
-			new tl2::NumericTableWidgetItem<t_real>(dist_y));
-		m_termstab->setItem(row, COL_XCH_DIST_Z,
-			new tl2::NumericTableWidgetItem<t_real>(dist_z));
-		m_termstab->setItem(row, COL_XCH_SYM_IDX,
-			new tl2::NumericTableWidgetItem<t_size>(sym_idx));
-		m_termstab->setItem(row, COL_XCH_INTERACTION,
-			new tl2::NumericTableWidgetItem<t_real>(J));
-		m_termstab->setItem(row, COL_XCH_DMI_X,
-			new tl2::NumericTableWidgetItem<t_real>(dmi_x));
-		m_termstab->setItem(row, COL_XCH_DMI_Y,
-			new tl2::NumericTableWidgetItem<t_real>(dmi_y));
-		m_termstab->setItem(row, COL_XCH_DMI_Z,
-			new tl2::NumericTableWidgetItem<t_real>(dmi_z));
+		m_termstab->setItem(row, COL_XCH_DIST_X, new t_numitem(dist_x));
+		m_termstab->setItem(row, COL_XCH_DIST_Y, new t_numitem(dist_y));
+		m_termstab->setItem(row, COL_XCH_DIST_Z, new t_numitem(dist_z));
+		m_termstab->setItem(row, COL_XCH_SYM_IDX, new t_sizeitem(sym_idx));
+		m_termstab->setItem(row, COL_XCH_INTERACTION, new t_numitem(J));
+		m_termstab->setItem(row, COL_XCH_DMI_X, new t_numitem(dmi_x));
+		m_termstab->setItem(row, COL_XCH_DMI_Y, new t_numitem(dmi_y));
+		m_termstab->setItem(row, COL_XCH_DMI_Z, new t_numitem(dmi_z));
 		m_termstab->setItem(row, COL_XCH_RGB, new QTableWidgetItem(rgb.c_str()));
 		if(m_allow_general_J)
 		{
-			m_termstab->setItem(row, COL_XCH_GEN_XX,
-				new tl2::NumericTableWidgetItem<t_real>(gen_xx));
-			m_termstab->setItem(row, COL_XCH_GEN_XY,
-				new tl2::NumericTableWidgetItem<t_real>(gen_xy));
-			m_termstab->setItem(row, COL_XCH_GEN_XZ,
-				new tl2::NumericTableWidgetItem<t_real>(gen_xz));
-			m_termstab->setItem(row, COL_XCH_GEN_YX,
-				new tl2::NumericTableWidgetItem<t_real>(gen_yx));
-			m_termstab->setItem(row, COL_XCH_GEN_YY,
-				new tl2::NumericTableWidgetItem<t_real>(gen_yy));
-			m_termstab->setItem(row, COL_XCH_GEN_YZ,
-				new tl2::NumericTableWidgetItem<t_real>(gen_yz));
-			m_termstab->setItem(row, COL_XCH_GEN_ZX,
-				new tl2::NumericTableWidgetItem<t_real>(gen_zx));
-			m_termstab->setItem(row, COL_XCH_GEN_ZY,
-				new tl2::NumericTableWidgetItem<t_real>(gen_zy));
-			m_termstab->setItem(row, COL_XCH_GEN_ZZ,
-				new tl2::NumericTableWidgetItem<t_real>(gen_zz));
+			m_termstab->setItem(row, COL_XCH_GEN_XX, new t_numitem(gen_xx));
+			m_termstab->setItem(row, COL_XCH_GEN_XY, new t_numitem(gen_xy));
+			m_termstab->setItem(row, COL_XCH_GEN_XZ, new t_numitem(gen_xz));
+			m_termstab->setItem(row, COL_XCH_GEN_YX, new t_numitem(gen_yx));
+			m_termstab->setItem(row, COL_XCH_GEN_YY, new t_numitem(gen_yy));
+			m_termstab->setItem(row, COL_XCH_GEN_YZ, new t_numitem(gen_yz));
+			m_termstab->setItem(row, COL_XCH_GEN_ZX, new t_numitem(gen_zx));
+			m_termstab->setItem(row, COL_XCH_GEN_ZY, new t_numitem(gen_zy));
+			m_termstab->setItem(row, COL_XCH_GEN_ZZ, new t_numitem(gen_zz));
 		}
 	}
 
@@ -461,12 +438,9 @@ void MagDynDlg::AddVariableTabItem(int row, const std::string& name, const t_cpl
 	}
 	else
 	{
-		m_varstab->setItem(row, COL_VARS_NAME,
-			new QTableWidgetItem(name.c_str()));
-		m_varstab->setItem(row, COL_VARS_VALUE_REAL,
-			new tl2::NumericTableWidgetItem<t_real>(value.real()));
-		m_varstab->setItem(row, COL_VARS_VALUE_IMAG,
-			new tl2::NumericTableWidgetItem<t_real>(value.imag()));
+		m_varstab->setItem(row, COL_VARS_NAME, new QTableWidgetItem(name.c_str()));
+		m_varstab->setItem(row, COL_VARS_VALUE_REAL, new t_numitem(value.real()));
+		m_varstab->setItem(row, COL_VARS_VALUE_IMAG, new t_numitem(value.imag()));
 	}
 
 	set_unique_tab_item_name(m_varstab, m_varstab->item(row, COL_VARS_NAME),
@@ -515,14 +489,10 @@ void MagDynDlg::AddFieldTabItem(int row,
 	}
 	else
 	{
-		m_fieldstab->setItem(row, COL_FIELD_H,
-			new tl2::NumericTableWidgetItem<t_real>(Bh));
-		m_fieldstab->setItem(row, COL_FIELD_K,
-			new tl2::NumericTableWidgetItem<t_real>(Bk));
-		m_fieldstab->setItem(row, COL_FIELD_L,
-			new tl2::NumericTableWidgetItem<t_real>(Bl));
-		m_fieldstab->setItem(row, COL_FIELD_MAG,
-			new tl2::NumericTableWidgetItem<t_real>(Bmag));
+		m_fieldstab->setItem(row, COL_FIELD_H, new t_numitem(Bh));
+		m_fieldstab->setItem(row, COL_FIELD_K, new t_numitem(Bk));
+		m_fieldstab->setItem(row, COL_FIELD_L, new t_numitem(Bl));
+		m_fieldstab->setItem(row, COL_FIELD_MAG, new t_numitem(Bmag));
 	}
 
 	m_fieldstab->scrollToItem(m_fieldstab->item(row, 0));
@@ -569,12 +539,9 @@ void MagDynDlg::AddCoordinateTabItem(int row, const std::string& name,
 	{
 		m_coordinatestab->setItem(row, COL_COORD_NAME,
 			new QTableWidgetItem(name.c_str()));
-		m_coordinatestab->setItem(row, COL_COORD_H,
-			new tl2::NumericTableWidgetItem<t_real>(h));
-		m_coordinatestab->setItem(row, COL_COORD_K,
-			new tl2::NumericTableWidgetItem<t_real>(k));
-		m_coordinatestab->setItem(row, COL_COORD_L,
-			new tl2::NumericTableWidgetItem<t_real>(l));
+		m_coordinatestab->setItem(row, COL_COORD_H, new t_numitem(h));
+		m_coordinatestab->setItem(row, COL_COORD_K, new t_numitem(k));
+		m_coordinatestab->setItem(row, COL_COORD_L, new t_numitem(l));
 	}
 
 	m_coordinatestab->scrollToItem(m_coordinatestab->item(row, 0));
@@ -934,12 +901,9 @@ void MagDynDlg::FlipSiteSpin(const std::string& site)
 	if(t_size idx = m_dyn.GetMagneticSiteIndex(site);
 		idx < m_dyn.GetMagneticSitesCount())
 	{
-		auto *spin_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(idx, COL_SITE_SPIN_X));
-		auto *spin_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(idx, COL_SITE_SPIN_Y));
-		auto *spin_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(idx, COL_SITE_SPIN_Z));
+		auto *spin_x = static_cast<t_numitem*>(m_sitestab->item(idx, COL_SITE_SPIN_X));
+		auto *spin_y = static_cast<t_numitem*>(m_sitestab->item(idx, COL_SITE_SPIN_Y));
+		auto *spin_z = static_cast<t_numitem*>(m_sitestab->item(idx, COL_SITE_SPIN_Z));
 
 		spin_x->SetValue(-spin_x->GetValue());
 		spin_y->SetValue(-spin_y->GetValue());
@@ -976,3 +940,133 @@ void MagDynDlg::DeleteTerm(const std::string& term)
 		DelTabItem(m_termstab, idx, idx + 1);
 	}
 }
+
+
+
+/**
+ * get all entries from the variables table
+ */
+std::vector<t_magdyn::Variable> MagDynDlg::GetVariables() const
+{
+	std::vector<t_magdyn::Variable> vars;
+	vars.reserve(m_varstab->rowCount());
+
+	// iterate all variables
+	for(int row = 0; row < m_varstab->rowCount(); ++row)
+	{
+		auto *name = m_varstab->item(row, COL_VARS_NAME);
+		auto *val_re = static_cast<t_numitem*>(m_varstab->item(row, COL_VARS_VALUE_REAL));
+		auto *val_im = static_cast<t_numitem*>(m_varstab->item(row, COL_VARS_VALUE_IMAG));
+
+		if(!name || !val_re || !val_im)
+		{
+			std::cerr << "Invalid entry in variables table row "
+				<< row << "." << std::endl;
+			continue;
+		}
+
+		t_magdyn::Variable var;
+		var.name = name->text().toStdString();
+		var.value = val_re->GetValue() + val_im->GetValue() * t_cplx(0, 1);
+
+		vars.emplace_back(std::move(var));
+	}
+
+	return vars;
+}
+
+
+
+/**
+ * replace numeric values in the tables with variable names
+ */
+t_size MagDynDlg::ReplaceValuesWithVariables()
+{
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_ignoreCalc = false;
+		this_->m_ignoreSitesCalc = false;
+	} BOOST_SCOPE_EXIT_END
+
+	m_ignoreCalc = true;
+	m_ignoreSitesCalc = true;
+
+	t_size num_replacements = 0;
+	for(const t_magdyn::Variable& var : GetVariables())
+		num_replacements += ReplaceValueWithVariable(var.name, var.value);
+
+	m_status->setText(QString("Replaced %1 values.").arg(num_replacements));
+	return num_replacements;
+}
+
+
+
+/**
+ * replace numeric values in the tables with a variable name
+ */
+t_size MagDynDlg::ReplaceValueWithVariable(const std::string& var, const t_cplx& val)
+{
+	// replace the item's numeric value if it's equal to the variable
+	auto replace = [&var, &val](t_numitem* item) -> bool
+	{
+		bool val_ok = false;
+		if(bool equ = tl2::equals<t_cplx>(item->GetValue(&val_ok), val, g_eps);
+			equ && val_ok)
+		{
+			// variable is equal to table value
+			item->setText(var.c_str());
+			return true;
+		}
+		else if(bool equ = tl2::equals<t_cplx>(item->GetValue(&val_ok), -val, g_eps);
+			equ && val_ok)
+		{
+			// variable is equal to negative table value
+			item->setText(("-" + var).c_str());
+			return true;
+		}
+
+		return false;
+	};
+
+
+	// iterate lines in the exchange terms table and replace the values
+	t_size num_replacements = 0;
+	for(int row = 0; row < m_termstab->rowCount(); ++row)
+	{
+		t_numitem *xch = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_INTERACTION));
+		t_numitem *dmi_x = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DMI_X));
+		t_numitem *dmi_y = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DMI_Y));
+		t_numitem *dmi_z = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DMI_Z));
+
+		t_numitem *gen_xx = nullptr, *gen_xy = nullptr, *gen_xz = nullptr;
+		t_numitem *gen_yx = nullptr, *gen_yy = nullptr, *gen_yz = nullptr;
+		t_numitem *gen_zx = nullptr, *gen_zy = nullptr, *gen_zz = nullptr;
+		if(m_allow_general_J)
+		{
+			gen_xx = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_XX));
+			gen_xy = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_XY));
+			gen_xz = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_XZ));
+			gen_yx = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_YX));
+			gen_yy = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_YY));
+			gen_yz = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_YZ));
+			gen_zx = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_ZX));
+			gen_zy = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_ZY));
+			gen_zz = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_ZZ));
+		}
+
+		for(t_numitem *item : { xch, dmi_x, dmi_y, dmi_z,
+			gen_xx, gen_xy, gen_xz,
+			gen_yx, gen_yy, gen_yz,
+			gen_zx, gen_zy, gen_zz })
+		{
+			if(!item)
+				continue;
+
+			if(replace(item))
+				++num_replacements;
+		}
+	}
+
+	return num_replacements;
+}
+

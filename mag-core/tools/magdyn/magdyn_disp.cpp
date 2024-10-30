@@ -739,16 +739,15 @@ void MagDynDlg::SetCoordinates(const t_vec_real& Qi, const t_vec_real& Qf, bool 
  */
 void MagDynDlg::SetCurrentCoordinate(int which)
 {
+	using t_item = tl2::NumericTableWidgetItem<t_real>;
+
 	int idx_i = m_coordinates_cursor_row;
 	if(idx_i < 0 || idx_i >= m_coordinatestab->rowCount())
 		return;
 
-	const auto* hi = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(idx_i, COL_COORD_H));
-	const auto* ki = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(idx_i, COL_COORD_K));
-	const auto* li = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-		m_coordinatestab->item(idx_i, COL_COORD_L));
+	const auto* hi = static_cast<t_item*>(m_coordinatestab->item(idx_i, COL_COORD_H));
+	const auto* ki = static_cast<t_item*>(m_coordinatestab->item(idx_i, COL_COORD_K));
+	const auto* li = static_cast<t_item*>(m_coordinatestab->item(idx_i, COL_COORD_L));
 
 	// set dispersion start and end coordinates
 	if(which == 0)
@@ -764,12 +763,9 @@ void MagDynDlg::SetCurrentCoordinate(int which)
 		if(idx_f < 0 || idx_f >= m_coordinatestab->rowCount())
 			return;
 
-		const auto* hf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_coordinatestab->item(idx_f, COL_COORD_H));
-		const auto* kf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_coordinatestab->item(idx_f, COL_COORD_K));
-		const auto* lf = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_coordinatestab->item(idx_f, COL_COORD_L));
+		const auto* hf = static_cast<t_item*>(m_coordinatestab->item(idx_f, COL_COORD_H));
+		const auto* kf = static_cast<t_item*>(m_coordinatestab->item(idx_f, COL_COORD_K));
+		const auto* lf = static_cast<t_item*>(m_coordinatestab->item(idx_f, COL_COORD_L));
 
 		if(!hi || !ki || !li || !hf || !kf || !lf)
 			return;

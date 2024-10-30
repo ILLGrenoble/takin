@@ -172,6 +172,8 @@ void MagDynDlg::SyncTermsFromKernel(boost::optional<const pt::ptree&> extra_info
  */
 void MagDynDlg::SyncSymmetryIndicesFromKernel()
 {
+	using t_sizeitem = tl2::NumericTableWidgetItem<t_size>;
+
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->m_ignoreCalc = false;
@@ -187,7 +189,7 @@ void MagDynDlg::SyncSymmetryIndicesFromKernel()
 		for(int row = 0; row < m_sitestab->rowCount(); ++row)
 		{
 			auto *name = m_sitestab->item(row, COL_SITE_NAME);
-			auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
+			auto *sym_idx = static_cast<t_sizeitem*>(
 				m_sitestab->item(row, COL_SITE_SYM_IDX));
 
 			if(!name || !sym_idx)
@@ -207,7 +209,7 @@ void MagDynDlg::SyncSymmetryIndicesFromKernel()
 		for(int row = 0; row < m_termstab->rowCount(); ++row)
 		{
 			auto *name = m_termstab->item(row, COL_XCH_NAME);
-			auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
+			auto *sym_idx = static_cast<t_sizeitem*>(
 				m_termstab->item(row, COL_XCH_SYM_IDX));
 
 			if(!name || !sym_idx)
@@ -229,6 +231,9 @@ void MagDynDlg::SyncSymmetryIndicesFromKernel()
  */
 void MagDynDlg::SyncToKernel()
 {
+	using t_numitem = tl2::NumericTableWidgetItem<t_real>;
+	using t_sizeitem = tl2::NumericTableWidgetItem<t_size>;
+
 	if(m_ignoreCalc)
 		return;
 	m_dyn.Clear();
@@ -243,28 +248,10 @@ void MagDynDlg::SyncToKernel()
 	m_termstab->blockSignals(true);
 	m_varstab->blockSignals(true);
 
-	// transfer variables
-	for(int row = 0; row < m_varstab->rowCount(); ++row)
-	{
-		auto *name = m_varstab->item(row, COL_VARS_NAME);
-		auto *val_re = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_varstab->item(row, COL_VARS_VALUE_REAL));
-		auto *val_im = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_varstab->item(row, COL_VARS_VALUE_IMAG));
-
-		if(!name || !val_re || !val_im)
-		{
-			std::cerr << "Invalid entry in variables table row "
-				<< row << "." << std::endl;
-			continue;
-		}
-
-		t_magdyn::Variable var;
-		var.name = name->text().toStdString();
-		var.value = val_re->GetValue() + val_im->GetValue() * t_cplx(0, 1);
-
+	// get and transfer variables
+	std::vector<t_magdyn::Variable> vars = GetVariables();
+	for(t_magdyn::Variable& var : vars)
 		m_dyn.AddVariable(std::move(var));
-	}
 
 	// transfer crystal lattice
 	m_dyn.SetCrystalLattice(
@@ -335,34 +322,23 @@ void MagDynDlg::SyncToKernel()
 	for(int row = 0; row < m_sitestab->rowCount(); ++row)
 	{
 		auto *name = m_sitestab->item(row, COL_SITE_NAME);
-		auto *pos_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_POS_X));
-		auto *pos_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_POS_Y));
-		auto *pos_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_POS_Z));
-		auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
-			m_sitestab->item(row, COL_SITE_SYM_IDX));
-		auto *spin_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_SPIN_X));
-		auto *spin_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_SPIN_Y));
-		auto *spin_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_SPIN_Z));
-		auto *spin_mag = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_SPIN_MAG));
+		auto *pos_x = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_POS_X));
+		auto *pos_y = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_POS_Y));
+		auto *pos_z = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_POS_Z));
+		auto *sym_idx = static_cast<t_sizeitem*>(m_sitestab->item(row, COL_SITE_SYM_IDX));
+		auto *spin_x = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_SPIN_X));
+		auto *spin_y = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_SPIN_Y));
+		auto *spin_z = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_SPIN_Z));
+		auto *spin_mag = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_SPIN_MAG));
 
-		tl2::NumericTableWidgetItem<t_real> *spin_ortho_x = nullptr;
-		tl2::NumericTableWidgetItem<t_real> *spin_ortho_y = nullptr;
-		tl2::NumericTableWidgetItem<t_real> *spin_ortho_z = nullptr;
+		t_numitem *spin_ortho_x = nullptr;
+		t_numitem *spin_ortho_y = nullptr;
+		t_numitem *spin_ortho_z = nullptr;
 		if(m_allow_ortho_spin)
 		{
-			spin_ortho_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X));
-			spin_ortho_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y));
-			spin_ortho_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z));
+			spin_ortho_x = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_SPIN_ORTHO_X));
+			spin_ortho_y = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Y));
+			spin_ortho_z = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_SPIN_ORTHO_Z));
 		}
 
 		if(!name || !pos_x || !pos_y || !pos_z || !sym_idx ||
@@ -414,56 +390,33 @@ void MagDynDlg::SyncToKernel()
 	for(int row = 0; row < m_termstab->rowCount(); ++row)
 	{
 		auto *name = m_termstab->item(row, COL_XCH_NAME);
-		auto *dist_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_DIST_X));
-		auto *dist_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_DIST_Y));
-		auto *dist_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_DIST_Z));
-		auto *sym_idx = static_cast<tl2::NumericTableWidgetItem<t_size>*>(
-			m_termstab->item(row, COL_XCH_SYM_IDX));
-		auto *interaction = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_INTERACTION));
-		auto *dmi_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_DMI_X));
-		auto *dmi_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_DMI_Y));
-		auto *dmi_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_termstab->item(row, COL_XCH_DMI_Z));
+		auto *dist_x = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DIST_X));
+		auto *dist_y = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DIST_Y));
+		auto *dist_z = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DIST_Z));
+		auto *sym_idx = static_cast<t_sizeitem*>(m_termstab->item(row, COL_XCH_SYM_IDX));
+		auto *interaction = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_INTERACTION));
+		auto *dmi_x = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DMI_X));
+		auto *dmi_y = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DMI_Y));
+		auto *dmi_z = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_DMI_Z));
 		QComboBox *site_1 = reinterpret_cast<QComboBox*>(
 			m_termstab->cellWidget(row, COL_XCH_ATOM1_IDX));
 		QComboBox *site_2 = reinterpret_cast<QComboBox*>(
 			m_termstab->cellWidget(row, COL_XCH_ATOM2_IDX));
 
-		tl2::NumericTableWidgetItem<t_real>* gen_xx = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_xy = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_xz = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_yx = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_yy = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_yz = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_zx = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_zy = nullptr;
-		tl2::NumericTableWidgetItem<t_real>* gen_zz = nullptr;
+		t_numitem *gen_xx = nullptr, *gen_xy = nullptr, *gen_xz = nullptr;
+		t_numitem *gen_yx = nullptr, *gen_yy = nullptr, *gen_yz = nullptr;
+		t_numitem *gen_zx = nullptr, *gen_zy = nullptr, *gen_zz = nullptr;
 		if(m_allow_general_J)
 		{
-			gen_xx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_XX));
-			gen_xy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_XY));
-			gen_xz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_XZ));
-			gen_yx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_YX));
-			gen_yy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_YY));
-			gen_yz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_YZ));
-			gen_zx = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_ZX));
-			gen_zy = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_ZY));
-			gen_zz = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_termstab->item(row, COL_XCH_GEN_ZZ));
+			gen_xx = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_XX));
+			gen_xy = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_XY));
+			gen_xz = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_XZ));
+			gen_yx = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_YX));
+			gen_yy = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_YY));
+			gen_yz = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_YZ));
+			gen_zx = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_ZX));
+			gen_zy = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_ZY));
+			gen_zz = static_cast<t_numitem*>(m_termstab->item(row, COL_XCH_GEN_ZZ));
 		}
 
 		if(!name || !site_1 || !site_2 || !sym_idx ||

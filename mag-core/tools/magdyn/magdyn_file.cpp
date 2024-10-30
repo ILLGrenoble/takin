@@ -151,6 +151,8 @@ void MagDynDlg::SaveDispersion(bool as_scr)
  */
 void MagDynDlg::SaveMultiDispersion(bool as_scr)
 {
+	using t_item = tl2::NumericTableWidgetItem<t_real>;
+
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->EnableInput();
@@ -168,11 +170,11 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 	{
 		std::string name = m_coordinatestab->item(
 			coord_row, COL_COORD_NAME)->text().toStdString();
-		t_real h = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+		t_real h = static_cast<t_item*>(
 			m_coordinatestab->item(coord_row, COL_COORD_H))->GetValue();
-		t_real k = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+		t_real k = static_cast<t_item*>(
 			m_coordinatestab->item(coord_row, COL_COORD_K))->GetValue();
-		t_real l = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+		t_real l = static_cast<t_item*>(
 			m_coordinatestab->item(coord_row, COL_COORD_L))->GetValue();
 
 		Q_names.emplace_back(std::move(name));

@@ -132,7 +132,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcMagneticSite(MagneticSite& site)
 					CERR_OPT << "Magdyn error: Parsing position \""
 						<< site.pos[idx] << "\""
 						<< " for site \"" << site.name << "\""
-						<< " and component " << idx
+						<< " and component " << int(idx)
 						<< "." << std::endl;
 				}
 			}
@@ -309,7 +309,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 				{
 					CERR_OPT << "Magdyn error: Parsing distance term \""
 						<< term.dist[i]
-						<< "\" (index " << i << ")"
+						<< "\" (index " << int(i) << ")"
 						<< "." << std::endl;
 				}
 			}
@@ -325,7 +325,7 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 				{
 					CERR_OPT << "Magdyn error: Parsing DMI term \""
 						<< term.dmi[i]
-						<< "\" (index " << i << ")"
+						<< "\" (index " << int(i) << ")"
 						<< "." << std::endl;
 				}
 			}
@@ -344,8 +344,8 @@ MAGDYN_TEMPL void MAGDYN_INST::CalcExchangeTerm(MAGDYN_TYPE::ExchangeTerm& term)
 				{
 					CERR_OPT << "Magdyn error: Parsing general term \""
 						<< term.Jgen[i][j]
-						<< "\" (indices " << i << ", " << j << ")"
-						<< "." << std::endl;
+						<< "\" (indices " << int(i) << ", "
+						<< int(j) << ")" << "." << std::endl;
 				}
 			}
 		}

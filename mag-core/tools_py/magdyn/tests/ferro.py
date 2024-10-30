@@ -1,6 +1,6 @@
 #
-# testing the lswt algorithm (https://arxiv.org/abs/1402.6069)
-# for a 1d ferromagnetic and an antiferromagnetic chain
+# testing the lswt algorithm (https://arxiv.org/abs/1402.6069) directly for comparison,
+# both for a 1d ferromagnetic and for an antiferromagnetic chain
 # @author Tobias Weber <tweber@ill.fr>
 # @date 24-oct-2024
 # @license GPLv3, see 'LICENSE' file
@@ -11,8 +11,14 @@ import numpy.linalg as la
 import matplotlib.pyplot as plt
 
 
-# choose ferromagnetic or antiferromagnetic 1d spin chain
-is_ferromagnetic = True
+is_ferromagnetic = True  # choose ferromagnetic or antiferromagnetic 1d spin chain
+only_pos_E = True        # hide magnon annihilation?
+verbose_print = False    # print intermediate results
+
+
+def print_infos(str):
+	if verbose_print:
+		print(str)
 
 
 #
@@ -22,7 +28,7 @@ is_ferromagnetic = True
 #
 if is_ferromagnetic:
 	sites = [
-		{ "S" : 1., "Sdir" : [ 0, 0, -1 ] },
+		{ "S" : 1., "Sdir" : [ 0, 0, 1 ] },
 	]
 else:  # antiferromagnetic
 	sites = [
@@ -78,11 +84,11 @@ for site in sites:
 
 	# rotation via rodrigues' formula, see (Arens 2015), p. 718 and p. 816
 	rot = (1. - c) * np.outer(rotaxis, rotaxis) + np.diag([ c, c, c ]) - skew(rotaxis)*s
-	site["u"] = rot[0, :] + 1j  * rot[1, :]
+	site["u"] = rot[0, :] + 1j * rot[1, :]
 	site["v"] = rot[2, :]
 
-	#print(np.dot(rot, Sdir))
-	#print("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
+	print_infos(np.dot(rot, Sdir))
+	print_infos("\nrot = \n%s\nu = %s\nv = %s" % (rot, site["u"], site["v"]))
 
 
 
@@ -90,13 +96,12 @@ for site in sites:
 for coupling in couplings:
 	J = coupling["J"]
 	coupling["J_real"] = np.diag([ J, J, J ]) + skew(coupling["DMI"])
-
-	#print("\nJ_real =\n%s" % coupling["J_real"])
+	print_infos("\nJ_real =\n%s" % coupling["J_real"])
 
 
 # get the energies of the dispersion at the momentum transfer Qvec
 def get_energies(Qvec):
-	#print("\n\nQ = %s" % Qvec)
+	print_infos("\n\nQ = %s" % Qvec)
 
 	# fourier transform interaction matrices
 	num_sites = len(sites)
@@ -115,7 +120,7 @@ def get_energies(Qvec):
 		J0_fourier[site1, site2] += J_real
 		J0_fourier[site2, site1] += J_real.transpose().conj()
 
-	#print("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
+	print_infos("\nJ_fourier =\n%s\n\nJ0_fourier =\n%s" % (J_fourier, J0_fourier))
 
 
 	# hamiltonian
@@ -143,29 +148,37 @@ def get_energies(Qvec):
 			H[num_sites + i, j] += \
 				(S * np.dot(u_j, np.dot(J_fourier[j, i], u_i))).conj()
 
-	#print("\nH =\n%s" % H)
+	print_infos("\nH =\n%s" % H)
 
 
 	# trafo
 	C = la.cholesky(H)
 	signs = np.diag(np.concatenate((np.repeat(1, num_sites), np.repeat(-1, num_sites))))
 	H_trafo = np.dot(C.transpose().conj(), np.dot(signs, C))
-
-	#print("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
+	print_infos("\nC =\n%s\n\nH_trafo =\n%s" % (C, H_trafo))
 
 
 	# the eigenvalues of H give the energies
 	Es = np.real(la.eigvals(H_trafo))
+	print_infos("\nEs = %s" % Es)
+
 	return Es
+
+
+# calculate a single point
+#get_energies([0.2, 0., 0.])
+#exit(0)
 
 
 # plot a dispersion branch
 hs = []
 Es = []
-for h in np.linspace(-1, 1, 256):
+for h in np.linspace(-1, 1, 1024):
 	try:
 		Qvec = np.array([ h, 0, 0 ])
 		for E in get_energies(Qvec):
+			if only_pos_E and E < 0.:
+				continue
 			hs.append(h)
 			Es.append(E)
 	except la.LinAlgError:

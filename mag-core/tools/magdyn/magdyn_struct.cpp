@@ -29,6 +29,8 @@
 #include <iostream>
 #include <boost/scope_exit.hpp>
 
+using t_numitem = tl2::NumericTableWidgetItem<t_real>;
+
 
 
 /**
@@ -48,12 +50,9 @@ void MagDynDlg::MirrorAtoms()
 	// iterate the magnetic sites
 	for(int row=0; row<m_sitestab->rowCount(); ++row)
 	{
-		auto *pos_x = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_POS_X));
-		auto *pos_y = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_POS_Y));
-		auto *pos_z = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-			m_sitestab->item(row, COL_SITE_POS_Z));
+		auto *pos_x = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_POS_X));
+		auto *pos_y = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_POS_Y));
+		auto *pos_z = static_cast<t_numitem*>(m_sitestab->item(row, COL_SITE_POS_Z));
 
 		if(!pos_x || !pos_y || !pos_z)
 		{
@@ -119,13 +118,13 @@ void MagDynDlg::SetCurrentField()
 	if(m_fields_cursor_row < 0 || m_fields_cursor_row >= m_fieldstab->rowCount())
 		return;
 
-	const auto* Bh = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+	const auto* Bh = static_cast<t_numitem*>(
 		m_fieldstab->item(m_fields_cursor_row, COL_FIELD_H));
-	const auto* Bk = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+	const auto* Bk = static_cast<t_numitem*>(
 		m_fieldstab->item(m_fields_cursor_row, COL_FIELD_K));
-	const auto* Bl = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+	const auto* Bl = static_cast<t_numitem*>(
 		m_fieldstab->item(m_fields_cursor_row, COL_FIELD_L));
-	const auto* Bmag = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
+	const auto* Bmag = static_cast<t_numitem*>(
 		m_fieldstab->item(m_fields_cursor_row, COL_FIELD_MAG));
 
 	if(!Bh || !Bk || !Bl || !Bmag)

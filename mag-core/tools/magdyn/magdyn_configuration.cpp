@@ -611,6 +611,8 @@ void MagDynDlg::SaveAs()
  */
 bool MagDynDlg::Save(const QString& filename)
 {
+	using t_item = tl2::NumericTableWidgetItem<t_real>;
+
 	try
 	{
 		SyncToKernel();
@@ -694,14 +696,10 @@ bool MagDynDlg::Save(const QString& filename)
 		// saved fields
 		for(int field_row = 0; field_row < m_fieldstab->rowCount(); ++field_row)
 		{
-			const auto* Bh = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_fieldstab->item(field_row, COL_FIELD_H));
-			const auto* Bk = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_fieldstab->item(field_row, COL_FIELD_K));
-			const auto* Bl = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_fieldstab->item(field_row, COL_FIELD_L));
-			const auto* Bmag = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_fieldstab->item(field_row, COL_FIELD_MAG));
+			const auto* Bh = static_cast<t_item*>(m_fieldstab->item(field_row, COL_FIELD_H));
+			const auto* Bk = static_cast<t_item*>(m_fieldstab->item(field_row, COL_FIELD_K));
+			const auto* Bl = static_cast<t_item*>(m_fieldstab->item(field_row, COL_FIELD_L));
+			const auto* Bmag = static_cast<t_item*>(m_fieldstab->item(field_row, COL_FIELD_MAG));
 
 			boost::property_tree::ptree itemNode;
 			itemNode.put<t_real>("direction_h", Bh ? Bh->GetValue() : 0.);
@@ -753,14 +751,10 @@ bool MagDynDlg::Save(const QString& filename)
 		// saved coordinates
 		for(int coord_row = 0; coord_row < m_coordinatestab->rowCount(); ++coord_row)
 		{
-			std::string name = m_coordinatestab->item(
-				coord_row, COL_COORD_NAME)->text().toStdString();
-			const auto* h = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_H));
-			const auto* k = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_K));
-			const auto* l = static_cast<tl2::NumericTableWidgetItem<t_real>*>(
-				m_coordinatestab->item(coord_row, COL_COORD_L));
+			std::string name = m_coordinatestab->item(coord_row, COL_COORD_NAME)->text().toStdString();
+			const auto* h = static_cast<t_item*>(m_coordinatestab->item(coord_row, COL_COORD_H));
+			const auto* k = static_cast<t_item*>(m_coordinatestab->item(coord_row, COL_COORD_K));
+			const auto* l = static_cast<t_item*>(m_coordinatestab->item(coord_row, COL_COORD_L));
 
 			boost::property_tree::ptree itemNode;
 			itemNode.put<std::string>("name", name);
