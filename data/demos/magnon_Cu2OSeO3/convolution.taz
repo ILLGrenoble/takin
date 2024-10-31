@@ -36,8 +36,8 @@
 		<ana_foc>1</ana_foc>
 		<autosave>out.dat</autosave>
 		<crys>sample.taz</crys>
-		<filter_col>PAL</filter_col>
-		<filter_val>2</filter_val>
+		<filter_col></filter_col>
+		<filter_val></filter_val>
 		<fixedk>1</fixedk>
 		<h_from>1.500000e+00</h_from>
 		<h_to>2.500000e+00</h_to>
