@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<taz>
+	<convofit>
+		<counter/>
+		<field_override/>
+		<flip_coords>0</flip_coords>
+		<max_calls>250</max_calls>
+		<minimiser>0</minimiser>
+		<monitor/>
+		<normalise>1</normalise>
+		<recycle_neutrons>1</recycle_neutrons>
+		<scanaxis>4</scanaxis>
+		<scanaxis2>0</scanaxis2>
+		<strategy>1</strategy>
+		<temp_override/>
+		<tolerance>2.500000e+01</tolerance>
+	</convofit>
+	<meta>
+		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
+		<info>Created with Takin/Convo.</info>
+		<module>takin/convo</module>
+		<timestamp>1730381450.411351</timestamp>
+		<url>https://github.com/ILLGrenoble/takin</url>
+		<user>tw</user>
+		<version>2.8.0</version>
+	</meta>
+	<monteconvo>
+		<E_from>-1.000000e+01</E_from>
+		<E_to>1.000000e+01</E_to>
+		<E_to_2>-3.000000e-01</E_to_2>
+		<S_offs>1e-3</S_offs>
+		<S_scale>30</S_scale>
+		<S_slope>0</S_slope>
+		<algo>pop</algo>
+		<algo_idx>2</algo_idx>
+		<allow_scan_merging>0</allow_scan_merging>
+		<ana_foc>1</ana_foc>
+		<autosave/>
+		<crys/>
+		<eps_plane_dist>0.0005</eps_plane_dist>
+		<eps_rlu>0.001</eps_rlu>
+		<filter_col/>
+		<filter_val/>
+		<fixedk>1</fixedk>
+		<h_from>1.500000e+00</h_from>
+		<h_to>1.500000e+00</h_to>
+		<h_to_2>9.300000e-01</h_to_2>
+		<has_scanfile>1</has_scanfile>
+		<instr>instr.taz</instr>
+		<k_from>1.000000e+00</k_from>
+		<k_to>1.000000e+00</k_to>
+		<k_to_2>1.070000e+00</k_to_2>
+		<kfix>2.662000e+00</kfix>
+		<l_from>0.000000e+00</l_from>
+		<l_to>0.000000e+00</l_to>
+		<l_to_2>0.000000e+00</l_to_2>
+		<mono_foc>1</mono_foc>
+		<neutron_count>500</neutron_count>
+		<sample_step_count>1</sample_step_count>
+		<scan_2d>0</scan_2d>
+		<scanfile>data.dat</scanfile>
+		<sqw>magnonmod</sqw>
+		<sqw_conf>model.magdyn</sqw_conf>
+		<sqw_errors>
+			<B_align_spins>0</B_align_spins>
+			<B_dir>0</B_dir>
+			<B_mag>0</B_mag>
+			<J>0</J>
+			<S0>0</S0>
+			<T>0</T>
+			<channel>0</channel>
+			<cutoff>0</cutoff>
+			<inc_amp>0</inc_amp>
+			<inc_sigma>0</inc_sigma>
+			<sigma>0</sigma>
+		</sqw_errors>
+		<sqw_fitvar>
+			<B_align_spins>0</B_align_spins>
+			<B_dir>0</B_dir>
+			<B_mag>0</B_mag>
+			<J>0</J>
+			<S0>0</S0>
+			<T>0</T>
+			<channel>0</channel>
+			<cutoff>0</cutoff>
+			<inc_amp>0</inc_amp>
+			<inc_sigma>0</inc_sigma>
+			<sigma>0</sigma>
+		</sqw_fitvar>
+		<sqw_params>
+			<B_align_spins>0</B_align_spins>
+			<B_dir>0 0 1 </B_dir>
+			<B_mag>0</B_mag>
+			<J>-1</J>
+			<S0>1</S0>
+			<T>50</T>
+			<channel>-1</channel>
+			<cutoff>0.025</cutoff>
+			<inc_amp>0</inc_amp>
+			<inc_sigma>0.025</inc_sigma>
+			<sigma>1</sigma>
+		</sqw_params>
+		<sqw_ranges>
+			<B_align_spins>open : open</B_align_spins>
+			<B_dir>open : open</B_dir>
+			<B_mag>open : open</B_mag>
+			<J>open : open</J>
+			<S0>open : open</S0>
+			<T>open : open</T>
+			<channel>open : open</channel>
+			<cutoff>open : open</cutoff>
+			<inc_amp>open : open</inc_amp>
+			<inc_sigma>open : open</inc_sigma>
+			<sigma>open : open</sigma>
+		</sqw_ranges>
+		<step_count>128</step_count>
+	</monteconvo>
+</taz>
