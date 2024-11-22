@@ -1,6 +1,7 @@
 /**
  * 3d unit cell drawing
  * @author Tobias Weber <tobias.weber@tum.de>
+ * @modif_by Victor Mecoli <mecoli@ill.fr>
  * @date oct-2016
  * @license GPLv2
  *
@@ -31,6 +32,7 @@
 
 #include <QDialog>
 #include <QStatusBar>
+#include <QCheckBox>
 
 #include <memory>
 
@@ -46,6 +48,7 @@ class Real3DDlg : public QDialog
 protected:
 	QSettings *m_pSettings = nullptr;
 	QStatusBar *m_pStatus = nullptr;
+	QCheckBox *m_pCheckBox = nullptr;
 	std::unique_ptr<PlotGl> m_pPlot;
 
 public:
@@ -61,6 +64,7 @@ protected:
 	virtual void closeEvent(QCloseEvent*) override;
 
 	virtual void keyPressEvent(QKeyEvent*) override;
+	virtual void onCheckBoxToggled(bool checked);
 };
 
 #endif

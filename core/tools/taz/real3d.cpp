@@ -1,6 +1,7 @@
 /**
  * 3d unit cell drawing
  * @author Tobias Weber <tobias.weber@tum.de>
+ * @modif_by Victor Mecoli <mecoli@ill.fr>
  * @date oct-2016
  * @license GPLv2
  *
@@ -43,6 +44,7 @@ using t_mat = ublas::matrix<t_real>;
 Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	: QDialog(pParent, Qt::Tool), m_pSettings(pSettings),
 	m_pStatus(new QStatusBar(this)),
+	m_pCheckBox(new QCheckBox("Perspective projection", pParent)),
 	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
 	m_pPlot->SetEnabled(false);
@@ -66,10 +68,13 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
+	connect(m_pCheckBox, &QCheckBox::toggled, this, &Real3DDlg::onCheckBoxToggled);
+
 	QGridLayout *gridLayout = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);
 	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 1);
-	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
+	gridLayout->addWidget(m_pCheckBox, 1, 0, 1, 1);
+	gridLayout->addWidget(m_pStatus, 2, 0, 1, 1);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
 	{
@@ -314,5 +319,14 @@ void Real3DDlg::showEvent(QShowEvent *pEvt)
 		m_pPlot->SetEnabled(true);
 }
 
+
+void Real3DDlg::onCheckBoxToggled(bool checked)
+{
+	if (checked) {
+		m_pPlot->TogglePerspective();
+	} else {
+		m_pPlot->TogglePerspective();
+	}
+}
 
 #include "moc_real3d.cpp"
