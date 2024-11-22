@@ -222,6 +222,7 @@ void MagDynDlg::CreateMainWindow()
 		else
 			m_stopRequested = true;
 	});
+
 	connect(btnShowStruct, &QAbstractButton::clicked, this, &MagDynDlg::ShowStructPlotDlg);
 }
 

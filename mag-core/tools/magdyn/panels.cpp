@@ -56,35 +56,22 @@ void MagDynDlg::CreateSitesPanel()
 
 	m_sitestab->setColumnCount(NUM_SITE_COLS);
 
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_NAME,
-		new QTableWidgetItem{"Name"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_X,
-		new QTableWidgetItem{"x"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_Y,
-		new QTableWidgetItem{"y"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_Z,
-		new QTableWidgetItem{"z"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SYM_IDX,
-		new QTableWidgetItem{"Sym. Idx."});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_X,
-		new QTableWidgetItem{"Spin x"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_Y,
-		new QTableWidgetItem{"Spin y"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_Z,
-		new QTableWidgetItem{"Spin z"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_MAG,
-		new QTableWidgetItem{"Spin |S|"});
-	m_sitestab->setHorizontalHeaderItem(COL_SITE_RGB,
-		new QTableWidgetItem{"Colour"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_NAME, new QTableWidgetItem{"Name"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_X, new QTableWidgetItem{"x"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_Y, new QTableWidgetItem{"y"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_POS_Z, new QTableWidgetItem{"z"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SYM_IDX, new QTableWidgetItem{"Sym. Idx."});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_X, new QTableWidgetItem{"Spin x"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_Y, new QTableWidgetItem{"Spin y"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_Z, new QTableWidgetItem{"Spin z"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_MAG, new QTableWidgetItem{"Spin |S|"});
+	m_sitestab->setHorizontalHeaderItem(COL_SITE_RGB, new QTableWidgetItem{"Colour"});
 
 	if(m_allow_ortho_spin)
 	{
-		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_X,
-			new QTableWidgetItem{"Spin ux"});
-		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Y,
-			new QTableWidgetItem{"Spin uy"});
-		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Z,
-			new QTableWidgetItem{"Spin uz"});
+		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_X, new QTableWidgetItem{"Spin ux"});
+		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Y, new QTableWidgetItem{"Spin uy"});
+		m_sitestab->setHorizontalHeaderItem(COL_SITE_SPIN_ORTHO_Z, new QTableWidgetItem{"Spin uz"});
 	}
 	else
 	{
@@ -293,51 +280,30 @@ void MagDynDlg::CreateExchangeTermsPanel()
 	m_termstab->verticalHeader()->setVisible(true);
 
 	m_termstab->setColumnCount(NUM_XCH_COLS);
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_NAME, new QTableWidgetItem{"Name"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_ATOM1_IDX, new QTableWidgetItem{"Site 1"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_ATOM2_IDX, new QTableWidgetItem{"Site 2"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_DIST_X, new QTableWidgetItem{"Cell Δx"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_DIST_Y, new QTableWidgetItem{"Cell Δy"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_DIST_Z, new QTableWidgetItem{"Cell Δz"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_SYM_IDX, new QTableWidgetItem{"Sym. Idx."});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_INTERACTION, new QTableWidgetItem{"Exch. J"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_DMI_X, new QTableWidgetItem{"DMI x"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_DMI_Y, new QTableWidgetItem{"DMI y"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_DMI_Z, new QTableWidgetItem{"DMI z"});
-	m_termstab->setHorizontalHeaderItem(
-		COL_XCH_RGB, new QTableWidgetItem{"Colour"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_NAME, new QTableWidgetItem{"Name"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_ATOM1_IDX, new QTableWidgetItem{"Site 1"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_ATOM2_IDX, new QTableWidgetItem{"Site 2"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_DIST_X, new QTableWidgetItem{"Cell Δx"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_DIST_Y, new QTableWidgetItem{"Cell Δy"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_DIST_Z, new QTableWidgetItem{"Cell Δz"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_SYM_IDX, new QTableWidgetItem{"Sym. Idx."});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_INTERACTION, new QTableWidgetItem{"Exch. J"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_DMI_X, new QTableWidgetItem{"DMI x"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_DMI_Y, new QTableWidgetItem{"DMI y"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_DMI_Z, new QTableWidgetItem{"DMI z"});
+	m_termstab->setHorizontalHeaderItem(COL_XCH_RGB, new QTableWidgetItem{"Colour"});
 
 	if(m_allow_general_J)
 	{
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_XX, new QTableWidgetItem{"J xx"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_XY, new QTableWidgetItem{"J xy"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_XZ, new QTableWidgetItem{"J xz"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_YX, new QTableWidgetItem{"J yx"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_YY, new QTableWidgetItem{"J yy"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_YZ, new QTableWidgetItem{"J yz"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_ZX, new QTableWidgetItem{"J zx"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_ZY, new QTableWidgetItem{"J zy"});
-		m_termstab->setHorizontalHeaderItem(
-			COL_XCH_GEN_ZZ, new QTableWidgetItem{"J zz"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_XX, new QTableWidgetItem{"J xx"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_XY, new QTableWidgetItem{"J xy"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_XZ, new QTableWidgetItem{"J xz"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_YX, new QTableWidgetItem{"J yx"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_YY, new QTableWidgetItem{"J yy"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_YZ, new QTableWidgetItem{"J yz"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_ZX, new QTableWidgetItem{"J zx"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_ZY, new QTableWidgetItem{"J zy"});
+		m_termstab->setHorizontalHeaderItem(COL_XCH_GEN_ZZ, new QTableWidgetItem{"J zz"});
 	}
 	else
 	{
@@ -967,14 +933,10 @@ void MagDynDlg::CreateSampleEnvPanel()
 	m_fieldstab->verticalHeader()->setVisible(true);
 
 	m_fieldstab->setColumnCount(NUM_FIELD_COLS);
-	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_H,
-		new QTableWidgetItem{"Bh"});
-	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_K,
-		new QTableWidgetItem{"Bk"});
-	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_L,
-		new QTableWidgetItem{"Bl"});
-	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_MAG,
-		new QTableWidgetItem{"|B|"});
+	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_H, new QTableWidgetItem{"Bh"});
+	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_K, new QTableWidgetItem{"Bk"});
+	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_L, new QTableWidgetItem{"Bl"});
+	m_fieldstab->setHorizontalHeaderItem(COL_FIELD_MAG, new QTableWidgetItem{"|B|"});
 
 	m_fieldstab->setColumnWidth(COL_FIELD_H, 150);
 	m_fieldstab->setColumnWidth(COL_FIELD_K, 150);
@@ -1442,14 +1404,10 @@ void MagDynDlg::CreateCoordinatesPanel()
 	m_coordinatestab->verticalHeader()->setVisible(true);
 
 	m_coordinatestab->setColumnCount(NUM_COORD_COLS);
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_NAME,
-		new QTableWidgetItem{"Name"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_H,
-		new QTableWidgetItem{"h"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_K,
-		new QTableWidgetItem{"k"});
-	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_L,
-		new QTableWidgetItem{"l"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_NAME, new QTableWidgetItem{"Name"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_H, new QTableWidgetItem{"h"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_K, new QTableWidgetItem{"k"});
+	m_coordinatestab->setHorizontalHeaderItem(COL_COORD_L, new QTableWidgetItem{"l"});
 
 	m_coordinatestab->setColumnWidth(COL_COORD_NAME, 90);
 	m_coordinatestab->setColumnWidth(COL_COORD_H, 90);

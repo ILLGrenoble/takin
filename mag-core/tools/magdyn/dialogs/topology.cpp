@@ -49,15 +49,13 @@ namespace asio = boost::asio;
 // ============================================================================
 // topology dialog
 // ============================================================================
+
 /**
  * sets up the topology dialog
  */
 TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	: QDialog{parent}, m_sett{sett}
 {
-	// ------------------------------------------------------------------------
-	// general dialog
-	// ------------------------------------------------------------------------
 	setWindowTitle("Topology");
 	setSizeGripEnabled(true);
 
@@ -80,14 +78,86 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	maingrid->addWidget(m_status, 1, 0, 1, 3);
 	maingrid->addWidget(btnOk, 1, 3, 1, 1);
 
+	// tab panels
+	m_tabs->addTab(CreateBerryCurvaturePanel(), "Berry Curvature");
+
 	// connections
 	connect(btnOk, &QAbstractButton::clicked, this, &QDialog::accept);
-	// ------------------------------------------------------------------------
+}
 
 
-	// ------------------------------------------------------------------------
-	// berry curvature tab
-	// ------------------------------------------------------------------------
+
+TopologyDlg::~TopologyDlg()
+{
+}
+
+
+
+/**
+ * set a pointer to the main magdyn kernel
+ */
+void TopologyDlg::SetKernel(const t_magdyn* dyn)
+{
+	m_dyn = dyn;
+}
+
+
+
+/**
+ * set the Q start and end points from the main window's dispersion
+ */
+void TopologyDlg::SetDispersionQ(const t_vec_real& Qstart, const t_vec_real& Qend)
+{
+	m_Qstart = Qstart;
+	m_Qend = Qend;
+}
+
+
+
+void TopologyDlg::ShowError(const char* msg)
+{
+	QMessageBox::critical(this, windowTitle() + " -- Error", msg);
+}
+
+
+
+/**
+ * dialog is closing
+ */
+void TopologyDlg::accept()
+{
+	if(m_sett)
+	{
+		m_sett->setValue("topology/geo", saveGeometry());
+		m_sett->setValue("topology/splitter", m_split_plot->saveState());
+	}
+
+	QDialog::accept();
+}
+// ============================================================================
+
+
+
+// ============================================================================
+// calculate berry curvature
+// ============================================================================
+
+/**
+ * column indices in magnon band table for the berry curvature
+ */
+enum : int
+{
+	COL_BC_BAND = 0,
+	NUM_COLS_BC,
+};
+
+
+
+/**
+ * create the panel for the berry curvature tab
+ */
+QWidget* TopologyDlg::CreateBerryCurvaturePanel()
+{
 	QWidget *panelBerryCurvature = new QWidget(this);
 
 	// plotter
@@ -99,6 +169,31 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	m_plot_bc->setInteraction(QCP::iRangeZoom, true);
 	m_plot_bc->setSelectionRectMode(QCP::srmZoom);
 	m_plot_bc->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+
+	// magnon band table
+	m_tableBands = new QTableWidget(panelBerryCurvature);
+	m_tableBands->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+	m_tableBands->setShowGrid(true);
+	m_tableBands->setSortingEnabled(false);
+	m_tableBands->setSelectionBehavior(QTableWidget::SelectRows);
+	m_tableBands->setSelectionMode(QTableWidget::SingleSelection);
+	m_tableBands->verticalHeader()->setDefaultSectionSize(fontMetrics().lineSpacing() + 4);
+	m_tableBands->verticalHeader()->setVisible(false);
+	m_tableBands->setColumnCount(NUM_COLS_BC);
+
+	m_tableBands->setHorizontalHeaderItem(COL_BC_BAND, new QTableWidgetItem{"Band"});
+	m_tableBands->setColumnWidth(COL_BC_BAND, 70);
+
+	// splitter for plot and magnon band list
+	m_split_plot = new QSplitter(panelBerryCurvature);
+	m_split_plot->setOrientation(Qt::Horizontal);
+	m_split_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+	m_split_plot->addWidget(m_plot_bc);
+	m_split_plot->addWidget(m_tableBands);
+	m_split_plot->setCollapsible(0, false);
+	m_split_plot->setCollapsible(1, true);
+	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_plot_bc), 24);
+	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_tableBands), 1);
 
 	// context menu for plotter
 	m_menuPlot_bc = new QMenu("Plotter", panelBerryCurvature);
@@ -231,7 +326,7 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->setContentsMargins(6, 6, 6, 6);
 
 	int y = 0;
-	grid->addWidget(m_plot_bc, y++, 0, 1, 4);
+	grid->addWidget(m_split_plot, y++, 0, 1, 4);
 	grid->addWidget(new QLabel("Start Q (rlu):", panelBerryCurvature), y, 0, 1, 1);
 	grid->addWidget(m_Q_start_bc[0], y, 1, 1, 1);
 	grid->addWidget(m_Q_start_bc[1], y, 2, 1, 1);
@@ -254,10 +349,16 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	grid->addWidget(m_btnStartStop_bc, y++, 3, 1, 1);
 
 	// restore settings
-	if(m_sett && m_sett->contains("topology/geo"))
-		restoreGeometry(m_sett->value("topology/geo").toByteArray());
-	else
-		resize(640, 640);
+	if(m_sett)
+	{
+		if(m_sett->contains("topology/geo"))
+			restoreGeometry(m_sett->value("topology/geo").toByteArray());
+		else
+			resize(640, 640);
+
+		if(m_sett->contains("topology/splitter"))
+			m_split_plot->restoreState(m_sett->value("topology/splitter").toByteArray());
+	}
 
 	// connections
 	connect(m_plot_bc, &QCustomPlot::mouseMove, this, &TopologyDlg::BerryCurvaturePlotMouseMove);
@@ -289,67 +390,47 @@ TopologyDlg::TopologyDlg(QWidget *parent, QSettings *sett)
 	connect(m_S_filter_bc, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 		this, &TopologyDlg::PlotBerryCurvature);
 
-	m_tabs->addTab(panelBerryCurvature, "Berry Curvature");
-
 	m_B_filter_bc->setEnabled(m_B_filter_enable_bc->isChecked());
 	m_S_filter_bc->setEnabled(m_S_filter_enable_bc->isChecked());
 	EnableBerryCurvatureCalculation();
-	// ------------------------------------------------------------------------
-}
 
-
-
-TopologyDlg::~TopologyDlg()
-{
+	return panelBerryCurvature;
 }
 
 
 
 /**
- * set a pointer to the main magdyn kernel
+ * clears the table of magnon bands
  */
-void TopologyDlg::SetKernel(const t_magdyn* dyn)
+void TopologyDlg::ClearBerryCurvatureBands()
 {
-	m_dyn = dyn;
+	m_tableBands->clearContents();
+	m_tableBands->setRowCount(0);
 }
 
 
 
 /**
- * set the Q start and end points from the main window's dispersion
+ * adds a magnon band to the table
  */
-void TopologyDlg::SetDispersionQ(const t_vec_real& Qstart, const t_vec_real& Qend)
+void TopologyDlg::AddBerryCurvatureBand(const std::string& name, const QColor& colour)
 {
-	m_Qstart = Qstart;
-	m_Qend = Qend;
+	int row = m_tableBands->rowCount();
+	m_tableBands->insertRow(row);
+
+	QTableWidgetItem *item = new QTableWidgetItem{name.c_str()};
+	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+
+	QBrush bg = item->background();
+	bg.setColor(colour);
+	bg.setStyle(Qt::SolidPattern);
+	item->setBackground(bg);
+
+	m_tableBands->setItem(row, COL_BC_BAND, item);
 }
 
 
 
-void TopologyDlg::ShowError(const char* msg)
-{
-	QMessageBox::critical(this, windowTitle() + " -- Error", msg);
-}
-
-
-
-/**
- * dialog is closing
- */
-void TopologyDlg::accept()
-{
-	if(m_sett)
-		m_sett->setValue("topology/geo", saveGeometry());
-
-	QDialog::accept();
-}
-// ============================================================================
-
-
-
-// ============================================================================
-// calculate berry curvature
-// ============================================================================
 /**
  * calculate the filtered data sets and plot the berry curvature
  */
@@ -358,6 +439,7 @@ void TopologyDlg::PlotBerryCurvature()
 	if(!m_plot_bc)
 		return;
 
+	ClearBerryCurvatureBands();
 	ClearBerryCurvaturePlot(false);
 
 	if(m_data_bc.size() == 0)
@@ -446,17 +528,30 @@ void TopologyDlg::PlotBerryCurvature()
 		}
 	}
 
-	// plot berry curvatures per band
+	// how many bands do actually have data?
+	t_size num_effective_bands = 0;
 	for(t_size band = 0; band < num_bands; ++band)
 	{
+		if(Bs_data_bc[band].size() != 0)
+			++num_effective_bands;
+	}
+
+	// plot berry curvatures per band
+	t_size effective_band = 0;
+	for(t_size band = 0; band < num_bands; ++band)
+	{
+		// ignore bands with no data
+		if(Bs_data_bc[band].size() == 0)
+			continue;
+
 		QCPCurve *curve = new QCPCurve(m_plot_bc->xAxis, m_plot_bc->yAxis);
 
-		// colour
+		// colour for this magnon band
 		QPen pen = curve->pen();
 		int col[3] = {
-			int(std::lerp(1., 0., t_real(band) / t_real(num_bands - 1)) * 255.),
+			int(std::lerp(1., 0., t_real(effective_band) / t_real(num_effective_bands - 1)) * 255.),
 			0x00,
-			int(std::lerp(0., 1., t_real(band) / t_real(num_bands - 1)) * 255.),
+			int(std::lerp(0., 1., t_real(effective_band) / t_real(num_effective_bands - 1)) * 255.),
 		};
 
 		//get_colour<int>(g_colPlot, col);
@@ -471,6 +566,8 @@ void TopologyDlg::PlotBerryCurvature()
 		curve->setData(Qs_data_bc[band], Bs_data_bc[band]);
 
 		m_curves_bc.push_back(curve);
+		AddBerryCurvatureBand("#" + tl2::var_to_str(effective_band + 1), colFull);
+		++effective_band;
 	}
 
 	// set labels

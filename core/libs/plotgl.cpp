@@ -58,7 +58,7 @@ static const int g_iTimerInterval = int(t_real(1e3) / t_real(RENDER_FPS));
 
 
 PlotGl::PlotGl(QWidget* pParent, QSettings *pSettings, t_real dMouseScale) :
-	t_qglwidget(pParent), m_pSettings(pSettings),
+	QOpenGLWidget(pParent), m_pSettings(pSettings),
 	m_bEnabled(true), m_matProj(tl::unit_m<t_mat4>(4)), m_matView(tl::unit_m<t_mat4>(4))
 {
 	m_dMouseRot[0] = m_dMouseRot[1] = 0.;
@@ -516,20 +516,32 @@ void PlotGl::paintGL()
 
 			glCallList(m_iLstSphere[iLOD]);
 		}
+		glPopMatrix();
+	}
 
+
+	// draw object labels (after all objects to make sure they are drawn last)
+	for(std::size_t iObjIdx : GetObjSortOrder())
+	{
+		//tl::log_debug("Plotting object ", iObjIdx);
+		if(iObjIdx >= m_vecObjs.size())
+			continue;
+		const PlotObjGl& obj = m_vecObjs[iObjIdx];
 
 		// draw label of selected object
 		if(obj.bSelected && obj.strLabel.length() && m_pFont && m_pFont->IsOk())
 		{
+			glPushMatrix();
 			glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_LIGHTING_BIT | GL_DEPTH_BUFFER_BIT);
 
 			m_pFont->BindTexture();
+			tl::gl_traits<t_real>::SetTranslate(obj.vecPos[0], obj.vecPos[1], obj.vecPos[2]);
 			tl::gl_traits<t_real>::SetColor(0., 0., 0., 1.);
 			m_pFont->DrawText(0., 0., 0., obj.strLabel);
 
 			glPopAttrib();
+			glPopMatrix();
 		}
-		glPopMatrix();
 	}
 
 
@@ -916,5 +928,5 @@ void PlotGl::keyPressEvent(QKeyEvent* pEvt)
 	else if(pEvt->key() == Qt::Key_S)
 		ToggleDrawSpheres();
 
-	t_qglwidget::keyPressEvent(pEvt);
+	QOpenGLWidget::keyPressEvent(pEvt);
 }

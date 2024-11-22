@@ -30,12 +30,14 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QTableWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QAction>
 #include <QtWidgets/QDoubleSpinBox>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QProgressBar>
+#include <QtWidgets/QAction>
 
 #include <qcustomplot.h>
 #include <vector>
@@ -79,6 +81,9 @@ protected:
 
 	// ------------------------------------------------------------------------
 	// berry curvature tab
+	QWidget* CreateBerryCurvaturePanel();
+
+	// plot functions
 	void RescaleBerryCurvaturePlot();
 	void ClearBerryCurvaturePlot(bool replot = true);
 	void PlotBerryCurvature();
@@ -86,6 +91,11 @@ protected:
 	void BerryCurvaturePlotMouseMove(QMouseEvent *evt);
 	void BerryCurvaturePlotMousePress(QMouseEvent *evt);
 
+	// band table functions
+	void ClearBerryCurvatureBands();
+	void AddBerryCurvatureBand(const std::string& name, const QColor& colour);
+
+	// calculation functions
 	void EnableBerryCurvatureCalculation(bool enable = true);
 	void CalculateBerryCurvature();
 	void SaveBerryCurvatureData();
@@ -113,6 +123,9 @@ private:
 	std::vector<QCPCurve*> m_curves_bc{};  // berry curvature plot curves
 	t_size m_Q_idx_bc{};                // index of dominant Q component
 	t_real m_Q_min_bc{}, m_Q_max_bc{};  // range of dominant Q component
+
+	QSplitter *m_split_plot{};
+	QTableWidget *m_tableBands{};       // table listing the magnon bands
 
 	QDoubleSpinBox *m_Q_start_bc[3]{};  // Q start coordinate
 	QDoubleSpinBox *m_Q_end_bc[3]{};    // Q end coordinate

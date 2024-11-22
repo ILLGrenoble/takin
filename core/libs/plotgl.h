@@ -50,9 +50,6 @@ namespace ublas = boost::numeric::ublas;
 namespace sig = boost::signals2;
 
 
-using t_qglwidget = QOpenGLWidget;
-
-
 /**
  * types of plottable objects
  */
@@ -104,7 +101,7 @@ struct PlotGlSize
 };
 
 
-class PlotGl : public t_qglwidget, public QTimer
+class PlotGl : public QOpenGLWidget, public QTimer
 {
 public:
 	using t_sigHover = sig::signal<void(const PlotObjGl*)>;
