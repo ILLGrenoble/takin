@@ -816,6 +816,31 @@ void PlotGl::TogglePerspective()
 }
 
 
+void PlotGl::ToggleZTest()
+{
+	m_bDoZTest = !m_bDoZTest;
+}
+
+
+void PlotGl::ToggleDrawPolys()
+{
+	m_bDrawPolys = !m_bDrawPolys;
+}
+
+
+void PlotGl::ToggleDrawLines()
+{
+	m_bDrawLines = !m_bDrawLines;
+}
+
+
+void PlotGl::ToggleDrawSpheres()
+{
+	m_bDrawSpheres = !m_bDrawSpheres;
+}
+
+
+
 // ----------------------------------------------------------------------------
 
 

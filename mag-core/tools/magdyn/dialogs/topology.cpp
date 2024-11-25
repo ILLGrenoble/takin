@@ -148,6 +148,7 @@ void TopologyDlg::accept()
 enum : int
 {
 	COL_BC_BAND = 0,
+	COL_BC_ACTIVE,
 	NUM_COLS_BC,
 };
 
@@ -182,7 +183,10 @@ QWidget* TopologyDlg::CreateBerryCurvaturePanel()
 	m_tableBands->setColumnCount(NUM_COLS_BC);
 
 	m_tableBands->setHorizontalHeaderItem(COL_BC_BAND, new QTableWidgetItem{"Band"});
-	m_tableBands->setColumnWidth(COL_BC_BAND, 70);
+	m_tableBands->setHorizontalHeaderItem(COL_BC_ACTIVE, new QTableWidgetItem{"Act."});
+	m_tableBands->setColumnWidth(COL_BC_BAND, 40);
+	m_tableBands->setColumnWidth(COL_BC_ACTIVE, 25);
+	m_tableBands->resizeColumnsToContents();
 
 	// splitter for plot and magnon band list
 	m_split_plot = new QSplitter(panelBerryCurvature);
@@ -381,14 +385,14 @@ QWidget* TopologyDlg::CreateBerryCurvaturePanel()
 	});
 
 	// replotting
-	connect(m_E_positive, &QAction::toggled, this, &TopologyDlg::PlotBerryCurvature);
-	connect(m_imag_bc, &QAction::toggled, this, &TopologyDlg::PlotBerryCurvature);
-	connect(m_B_filter_enable_bc, &QCheckBox::toggled, this, &TopologyDlg::PlotBerryCurvature);
-	connect(m_S_filter_enable_bc, &QCheckBox::toggled, this, &TopologyDlg::PlotBerryCurvature);
+	connect(m_E_positive, &QAction::toggled, [this]() { PlotBerryCurvature(); });
+	connect(m_imag_bc, &QAction::toggled, [this]() { PlotBerryCurvature(); });
+	connect(m_B_filter_enable_bc, &QCheckBox::toggled, [this]() { PlotBerryCurvature(); });
+	connect(m_S_filter_enable_bc, &QCheckBox::toggled, [this]() { PlotBerryCurvature(); });
 	connect(m_B_filter_bc, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-		this, &TopologyDlg::PlotBerryCurvature);
+		[this]() { PlotBerryCurvature(); });
 	connect(m_S_filter_bc, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-		this, &TopologyDlg::PlotBerryCurvature);
+		[this]() { PlotBerryCurvature(); });
 
 	m_B_filter_bc->setEnabled(m_B_filter_enable_bc->isChecked());
 	m_S_filter_bc->setEnabled(m_S_filter_enable_bc->isChecked());
@@ -413,8 +417,11 @@ void TopologyDlg::ClearBerryCurvatureBands()
 /**
  * adds a magnon band to the table
  */
-void TopologyDlg::AddBerryCurvatureBand(const std::string& name, const QColor& colour)
+void TopologyDlg::AddBerryCurvatureBand(const std::string& name, const QColor& colour, bool enabled)
 {
+	if(!m_tableBands)
+		return;
+
 	int row = m_tableBands->rowCount();
 	m_tableBands->insertRow(row);
 
@@ -426,7 +433,34 @@ void TopologyDlg::AddBerryCurvatureBand(const std::string& name, const QColor& c
 	bg.setStyle(Qt::SolidPattern);
 	item->setBackground(bg);
 
+	QBrush fg = item->foreground();
+	fg.setColor(QColor{0xff, 0xff, 0xff});
+	fg.setStyle(Qt::SolidPattern);
+	item->setForeground(fg);
+
+	QCheckBox *checkBand = new QCheckBox(m_tableBands);
+	checkBand->setChecked(enabled);
+	connect(checkBand, &QCheckBox::toggled, [this]() { PlotBerryCurvature(false); });
+
 	m_tableBands->setItem(row, COL_BC_BAND, item);
+	m_tableBands->setCellWidget(row, COL_BC_ACTIVE, checkBand);
+}
+
+
+
+/**
+ * verifies if the band's checkbox is checked
+ */
+bool TopologyDlg::IsBerryCurvatureBandEnabled(t_size idx) const
+{
+	if(!m_tableBands || int(idx) >= m_tableBands->rowCount())
+		return true;
+
+	QCheckBox* box = reinterpret_cast<QCheckBox*>(m_tableBands->cellWidget(int(idx), COL_BC_ACTIVE));
+	if(!box)
+		return true;
+
+	return box->isChecked();
 }
 
 
@@ -434,10 +468,19 @@ void TopologyDlg::AddBerryCurvatureBand(const std::string& name, const QColor& c
 /**
  * calculate the filtered data sets and plot the berry curvature
  */
-void TopologyDlg::PlotBerryCurvature()
+void TopologyDlg::PlotBerryCurvature(bool clear_settings)
 {
 	if(!m_plot_bc)
 		return;
+
+	// keep some settings from previous plot, e.g. the band visibility flags
+	std::vector<bool> enabled_bands;
+	if(!clear_settings)
+	{
+		enabled_bands.reserve(m_tableBands->rowCount());
+		for(int row = 0; row < m_tableBands->rowCount(); ++row)
+			enabled_bands.push_back(IsBerryCurvatureBandEnabled(t_size(row)));
+	}
 
 	ClearBerryCurvatureBands();
 	ClearBerryCurvaturePlot(false);
@@ -540,6 +583,8 @@ void TopologyDlg::PlotBerryCurvature()
 	t_size effective_band = 0;
 	for(t_size band = 0; band < num_bands; ++band)
 	{
+		bool enabled = effective_band < enabled_bands.size() ? enabled_bands[effective_band] : true;
+
 		// ignore bands with no data
 		if(Bs_data_bc[band].size() == 0)
 			continue;
@@ -564,9 +609,10 @@ void TopologyDlg::PlotBerryCurvature()
 		curve->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssNone, 1));
 		curve->setAntialiased(true);
 		curve->setData(Qs_data_bc[band], Bs_data_bc[band]);
+		curve->setVisible(enabled);
 
 		m_curves_bc.push_back(curve);
-		AddBerryCurvatureBand("#" + tl2::var_to_str(effective_band + 1), colFull);
+		AddBerryCurvatureBand("#" + tl2::var_to_str(effective_band + 1), colFull, enabled);
 		++effective_band;
 	}
 
@@ -746,7 +792,7 @@ void TopologyDlg::CalculateBerryCurvature()
 
 	m_data_bc = tl2::reorder(m_data_bc, perm_all);
 
-	PlotBerryCurvature();
+	PlotBerryCurvature(true);
 }
 
 

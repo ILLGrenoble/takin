@@ -86,14 +86,15 @@ protected:
 	// plot functions
 	void RescaleBerryCurvaturePlot();
 	void ClearBerryCurvaturePlot(bool replot = true);
-	void PlotBerryCurvature();
+	void PlotBerryCurvature(bool clear_settings = true);
 	void SaveBerryCurvaturePlotFigure();
 	void BerryCurvaturePlotMouseMove(QMouseEvent *evt);
 	void BerryCurvaturePlotMousePress(QMouseEvent *evt);
 
 	// band table functions
 	void ClearBerryCurvatureBands();
-	void AddBerryCurvatureBand(const std::string& name, const QColor& colour);
+	void AddBerryCurvatureBand(const std::string& name, const QColor& colour, bool enabled = true);
+	bool IsBerryCurvatureBandEnabled(t_size idx) const;
 
 	// calculation functions
 	void EnableBerryCurvatureCalculation(bool enable = true);
