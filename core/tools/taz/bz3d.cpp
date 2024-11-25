@@ -94,7 +94,7 @@ BZ3DDlg::BZ3DDlg(QWidget *pParent, QSettings *pSettings)
 	gridButton->addWidget(m_pDrawEdges, 1, 2, 1, 2);
 	gridButton->addWidget(m_pDrawSpheres, 1, 4, 1, 2);
 
-	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
+	gridLayout->addWidget(m_pStatus, 2, 0, 1, 1);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
 	{
