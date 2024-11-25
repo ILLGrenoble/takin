@@ -32,7 +32,7 @@
 
 #include <QDialog>
 #include <QStatusBar>
-#include <QCheckBox>
+#include <QPushButton>
 
 #include <memory>
 
@@ -48,7 +48,11 @@ class Real3DDlg : public QDialog
 protected:
 	QSettings *m_pSettings = nullptr;
 	QStatusBar *m_pStatus = nullptr;
-	QCheckBox *m_pCheckBox = nullptr;
+	QPushButton *m_pPerspective = nullptr;
+	QPushButton *m_pTransparency = nullptr;
+	QPushButton *m_pDrawFaces = nullptr;
+	QPushButton *m_pDrawEdges = nullptr;
+	QPushButton *m_pDrawSpheres = nullptr;
 	std::unique_ptr<PlotGl> m_pPlot;
 
 public:
@@ -64,7 +68,11 @@ protected:
 	virtual void closeEvent(QCloseEvent*) override;
 
 	virtual void keyPressEvent(QKeyEvent*) override;
-	virtual void onCheckBoxToggled(bool checked);
+	virtual void onPerspectiveClicked();
+	virtual void onTransparencyClicked();
+	virtual void onDrawFacesClicked();
+	virtual void onDrawEdgesClicked();
+	virtual void onDrawSpheresClicked();
 };
 
 #endif

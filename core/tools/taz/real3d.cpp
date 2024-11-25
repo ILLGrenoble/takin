@@ -44,7 +44,11 @@ using t_mat = ublas::matrix<t_real>;
 Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	: QDialog(pParent, Qt::Tool), m_pSettings(pSettings),
 	m_pStatus(new QStatusBar(this)),
-	m_pCheckBox(new QCheckBox("Perspective projection", pParent)),
+	m_pPerspective(new QPushButton("Perspective projection", pParent)),
+	m_pTransparency(new QPushButton("Transparency", pParent)),
+	m_pDrawFaces(new QPushButton("Draw Faces", pParent)),
+	m_pDrawEdges(new QPushButton("Draw Edges", pParent)),
+	m_pDrawSpheres(new QPushButton("Draw Spheres", pParent)),
 	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
 	m_pPlot->SetEnabled(false);
@@ -68,12 +72,24 @@ Real3DDlg::Real3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
-	connect(m_pCheckBox, &QCheckBox::toggled, this, &Real3DDlg::onCheckBoxToggled);
+	connect(m_pPerspective, &QPushButton::clicked, this, &Real3DDlg::onPerspectiveClicked);
+	connect(m_pTransparency, &QPushButton::clicked, this, &Real3DDlg::onTransparencyClicked);
+	connect(m_pDrawFaces, &QPushButton::clicked, this, &Real3DDlg::onDrawFacesClicked);
+	connect(m_pDrawEdges, &QPushButton::clicked, this, &Real3DDlg::onDrawEdgesClicked);
+	connect(m_pDrawSpheres, &QPushButton::clicked, this, &Real3DDlg::onDrawSpheresClicked);
 
 	QGridLayout *gridLayout = new QGridLayout(this);
+	QGridLayout *gridButton = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);
 	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 1);
-	gridLayout->addWidget(m_pCheckBox, 1, 0, 1, 1);
+
+	gridLayout->addLayout(gridButton, 1, 0, 1, 1);
+	gridButton->addWidget(m_pPerspective, 0, 0, 1, 3);
+	gridButton->addWidget(m_pTransparency, 0, 3, 1, 3);
+	gridButton->addWidget(m_pDrawFaces, 1, 0, 1, 2);
+	gridButton->addWidget(m_pDrawEdges, 1, 2, 1, 2);
+	gridButton->addWidget(m_pDrawSpheres, 1, 4, 1, 2);
+
 	gridLayout->addWidget(m_pStatus, 2, 0, 1, 1);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
@@ -320,13 +336,29 @@ void Real3DDlg::showEvent(QShowEvent *pEvt)
 }
 
 
-void Real3DDlg::onCheckBoxToggled(bool checked)
+void Real3DDlg::onPerspectiveClicked()
 {
-	if (checked) {
-		m_pPlot->TogglePerspective();
-	} else {
-		m_pPlot->TogglePerspective();
-	}
+	m_pPlot->TogglePerspective();
+}
+
+void Real3DDlg::onTransparencyClicked()
+{
+	m_pPlot->ToggleZTest();
+}
+
+void Real3DDlg::onDrawFacesClicked()
+{
+	m_pPlot->ToggleDrawPolys();
+}
+
+void Real3DDlg::onDrawEdgesClicked()
+{
+	m_pPlot->ToggleDrawLines();
+}
+
+void Real3DDlg::onDrawSpheresClicked()
+{
+	m_pPlot->ToggleDrawSpheres();
 }
 
 #include "moc_real3d.cpp"

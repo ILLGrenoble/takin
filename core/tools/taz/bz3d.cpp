@@ -1,6 +1,7 @@
 /**
  * 3d Brillouin zone drawing
  * @author Tobias Weber <tobias.weber@tum.de>
+ * @modif_by Victor Mecoli <mecoli@ill.fr>
  * @date apr-2017
  * @license GPLv2
  *
@@ -44,9 +45,14 @@ using t_mat = ublas::matrix<t_real>;
 
 
 
-BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
+BZ3DDlg::BZ3DDlg(QWidget *pParent, QSettings *pSettings)
 	: QDialog(pParent, Qt::Tool), m_pSettings(pSettings),
 	m_pStatus(new QStatusBar(this)),
+	m_pPerspective(new QPushButton("Perspective projection", pParent)),
+	m_pTransparency(new QPushButton("Transparency", pParent)),
+	m_pDrawFaces(new QPushButton("Draw Faces", pParent)),
+	m_pDrawEdges(new QPushButton("Draw Edges", pParent)),
+	m_pDrawSpheres(new QPushButton("Draw Spheres", pParent)),
 	m_pPlot(new PlotGl(this, pSettings, 0.25))
 {
 	m_pPlot->SetEnabled(false);
@@ -70,9 +76,24 @@ BZ3DDlg::BZ3DDlg(QWidget* pParent, QSettings *pSettings)
 	m_pPlot->SetPrec(g_iPrecGfx);
 	m_pPlot->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
+	connect(m_pPerspective, &QPushButton::clicked, this, &BZ3DDlg::onPerspectiveClicked);
+	connect(m_pTransparency, &QPushButton::clicked, this, &BZ3DDlg::onTransparencyClicked);
+	connect(m_pDrawFaces, &QPushButton::clicked, this, &BZ3DDlg::onDrawFacesClicked);
+	connect(m_pDrawEdges, &QPushButton::clicked, this, &BZ3DDlg::onDrawEdgesClicked);
+	connect(m_pDrawSpheres, &QPushButton::clicked, this, &BZ3DDlg::onDrawSpheresClicked);
+
 	QGridLayout *gridLayout = new QGridLayout(this);
+	QGridLayout *gridButton = new QGridLayout(this);
 	gridLayout->setContentsMargins(4, 4, 4, 4);
 	gridLayout->addWidget(m_pPlot.get(), 0, 0, 1, 1);
+
+	gridLayout->addLayout(gridButton, 1, 0, 1, 1);
+	gridButton->addWidget(m_pPerspective, 0, 0, 1, 3);
+	gridButton->addWidget(m_pTransparency, 0, 3, 1, 3);
+	gridButton->addWidget(m_pDrawFaces, 1, 0, 1, 2);
+	gridButton->addWidget(m_pDrawEdges, 1, 2, 1, 2);
+	gridButton->addWidget(m_pDrawSpheres, 1, 4, 1, 2);
+
 	gridLayout->addWidget(m_pStatus, 1, 0, 1, 1);
 
 	m_pPlot->AddHoverSlot([this](const PlotObjGl* pObj)
@@ -321,5 +342,29 @@ void BZ3DDlg::showEvent(QShowEvent *pEvt)
 		m_pPlot->SetEnabled(true);
 }
 
+void BZ3DDlg::onPerspectiveClicked()
+{
+	m_pPlot->TogglePerspective();
+}
+
+void BZ3DDlg::onTransparencyClicked()
+{
+	m_pPlot->ToggleZTest();
+}
+
+void BZ3DDlg::onDrawFacesClicked()
+{
+	m_pPlot->ToggleDrawPolys();
+}
+
+void BZ3DDlg::onDrawEdgesClicked()
+{
+	m_pPlot->ToggleDrawLines();
+}
+
+void BZ3DDlg::onDrawSpheresClicked()
+{
+	m_pPlot->ToggleDrawSpheres();
+}
 
 #include "moc_bz3d.cpp"
