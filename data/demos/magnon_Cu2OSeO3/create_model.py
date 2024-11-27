@@ -24,7 +24,7 @@
 #
 
 import numpy
-import magdyn
+from takin import magdyn
 
 
 # -----------------------------------------------------------------------------

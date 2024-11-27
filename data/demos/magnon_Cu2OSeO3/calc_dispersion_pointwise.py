@@ -27,7 +27,7 @@
 import os
 import time
 import numpy
-import magdyn
+from takin import magdyn
 
 
 # -----------------------------------------------------------------------------

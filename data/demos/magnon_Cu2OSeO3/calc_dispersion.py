@@ -26,7 +26,7 @@
 import time
 import numpy
 import numpy.linalg
-import magdyn
+from takin import magdyn
 
 
 # -----------------------------------------------------------------------------
