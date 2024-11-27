@@ -24,7 +24,13 @@
 #
 
 import numpy
-from takin import magdyn
+
+try:
+	# try importing packaged version
+	from takin import magdyn
+except ModuleNotFoundError:
+	# try importing unpackaged version
+	import magdyn
 
 
 # options
