@@ -31,6 +31,7 @@ $loc << ENDDATA
 01/2023    65379    32871     21102     25193      6525      27647
 01/2024    68828    33806     25031     25771      6673      28708
 09/2024    70201    33847     26978     27597      7372      28726
+11/2024    70386    34004     30036     29447      7409      28732
 ENDDATA
 
 
@@ -42,7 +43,7 @@ col_plug = "#5500aa00"
 col_paths = "#55aaaa00"
 col_total = "#00000000"
 
-ymax = 200000
+ymax = 210000
 
 set timefmt "%m/%Y"
 set xdata time
@@ -53,11 +54,11 @@ set ylabel "Lines of code"
 
 set xtics rotate by 45 right
 
-set xrange [ "03/2014" : "09/2024" ]
+set xrange [ "03/2014" : "12/2024" ]
 set yrange [0 : ymax]
 
 # Version 1
-labels_yoffs = 80000
+labels_yoffs = 40000
 line_width = 6
 set arrow 1 from "6/2016", 0 to "6/2016", ymax dt 2 lw line_width nohead front
 set label 1 at "3/2016", labels_yoffs "Version 1.0" rotate by 90 front
