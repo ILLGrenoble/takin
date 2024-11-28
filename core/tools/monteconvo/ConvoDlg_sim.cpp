@@ -297,8 +297,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 						if(!localreso.SetHKLE(dCurH, dCurK, dCurL, dCurE))
 						{
 							std::ostringstream ostrErr;
-							ostrErr << "Invalid crystal position: (" <<
-								dCurH << " " << dCurK << " " << dCurL << ") rlu, "
+							ostrErr << "Invalid crystal position: ("
+								<< dCurH << " " << dCurK << " " << dCurL << ") rlu, "
 								<< dCurE << " meV.";
 							throw tl::Err(ostrErr.str().c_str());
 						}
@@ -309,8 +309,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 						return std::pair<bool, t_real>(false, 0.);
 					}
 
-					Ellipsoid4d<t_real> elli =
-						localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
+					Ellipsoid4d<t_real> elli = localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 					{
@@ -825,8 +824,7 @@ void ConvoDlg::Start2D()
 						return std::pair<bool, t_real>(false, 0.);
 					}
 
-					Ellipsoid4d<t_real> elli =
-						localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
+					Ellipsoid4d<t_real> elli = localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
 					{

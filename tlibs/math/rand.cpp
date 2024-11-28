@@ -34,14 +34,16 @@
 #include <time.h>
 #include <sys/time.h>
 
+
 namespace tl {
+
 // thread-global engine to use if a thread-local has not been seeded
 static std::mt19937 g_randeng_fallback;
-static bool g_bFallbackInited = 0;
+static bool g_bFallbackInited = false;
 
 static thread_local std::mt19937/*_64*/ g_randeng;
-static thread_local bool g_bHasEntropy = 0;
-static thread_local bool g_bIsSeeded = 0;
+static thread_local bool g_bHasEntropy = false;
+static thread_local bool g_bIsSeeded = false;
 
 
 std::mt19937& get_randeng()
@@ -85,22 +87,26 @@ void init_rand()
 }
 
 
-void init_rand_seed(unsigned int uiSeed)
+void init_rand_seed(unsigned int uiSeed, bool debug_msg)
 {
 	std::string strEntr;
-	if(!g_bHasEntropy)
-		strEntr = ", but entropy is zero";
-	log_debug("Random seed: ", uiSeed, strEntr, ".");
+
+	if(debug_msg)
+	{
+		if(!g_bHasEntropy)
+			strEntr = ", but entropy is zero";
+		log_debug("Random seed: ", uiSeed, strEntr, ".");
+	}
 
 	srand(uiSeed);
 	g_randeng = std::mt19937/*_64*/(uiSeed);
-	g_bIsSeeded = 1;
+	g_bIsSeeded = true;
 
 	// copy first engine to thread-global fallback
 	if(!g_bFallbackInited)
 	{
 		g_randeng_fallback = g_randeng;
-		g_bFallbackInited = 1;
+		g_bFallbackInited = true;
 	}
 }
 

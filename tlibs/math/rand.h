@@ -54,7 +54,7 @@ extern std::mt19937& get_randeng();
 
 extern unsigned int get_rand_seed();
 extern void init_rand();
-extern void init_rand_seed(unsigned int uiSeed);
+extern void init_rand_seed(unsigned int uiSeed, bool debug_msg = true);
 
 
 

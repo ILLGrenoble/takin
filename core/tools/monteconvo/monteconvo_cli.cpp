@@ -460,7 +460,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
 	auto& lstFuts = tp.GetResults();
 
-	for(unsigned int iStep=0; iStep<cfg.step_count; ++iStep)
+	for(unsigned int iStep = 0; iStep < cfg.step_count; ++iStep)
 	{
 		t_real dCurH = vecH[iStep];
 		t_real dCurK = vecK[iStep];
@@ -848,15 +848,14 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
 	auto& lstFuts = tp.GetResults();
 
-	for(unsigned int iStep=0; iStep<cfg.step_count*cfg.step_count; ++iStep)
+	for(unsigned int iStep = 0; iStep < cfg.step_count*cfg.step_count; ++iStep)
 	{
 		t_real dCurH = vecH[iStep];
 		t_real dCurK = vecK[iStep];
 		t_real dCurL = vecL[iStep];
 		t_real dCurE = vecE[iStep];
 
-		tp.AddTask(
-		[&reso, dCurH, dCurK, dCurL, dCurE, pSqw, &cfg]()
+		tp.AddTask([&reso, dCurH, dCurK, dCurL, dCurE, pSqw, &cfg]()
 			-> std::pair<bool, t_real>
 		{
 			t_real dS = 0.;
@@ -887,7 +886,6 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 				}
 				catch(const std::exception& ex)
 				{
-					//QMessageBox::critical(this, "Error", ex.what());
 					tl::log_err(ex.what());
 					return std::pair<bool, t_real>(false, 0.);
 				}

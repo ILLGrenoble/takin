@@ -33,6 +33,8 @@
 #include <vector>
 #include <string>
 
+#include <boost/optional.hpp>
+
 #include "tlibs/fit/minuit.h"
 #include <Minuit2/FunctionMinimum.h>
 #include <Minuit2/MnMigrad.h>
@@ -61,6 +63,7 @@ protected:
 	std::vector<std::string> m_vecSqwParams;
 	unsigned int m_iNumNeutrons = 1000;
 	bool m_bUseThreads = true;
+	boost::optional<unsigned int> m_iSeed;
 
 	ublas::vector<t_real_mod> m_vecScanOrigin;	// hklE
 	ublas::vector<t_real_mod> m_vecScanDir;		// hklE
@@ -160,6 +163,7 @@ public:
 	void SetSqwParamOverrides(const std::vector<std::string>& params) { m_vecSqwParams = params; }
 	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
 	void SetUseThreads(bool b) { m_bUseThreads = b; }
+	void SetSeed(unsigned int iSeed) { m_iSeed = iSeed; }
 
 	void SetScanOrigin(t_real_mod h, t_real_mod k, t_real_mod l, t_real_mod E)
 	{ m_vecScanOrigin = tl::make_vec({h,k,l,E}); }

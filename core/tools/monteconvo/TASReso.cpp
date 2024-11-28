@@ -450,9 +450,9 @@ bool TASReso::SetLattice(t_real a, t_real b, t_real c,
 
 	for(ublas::matrix<t_real> *pMat : pMats)
 	{
-		pMat->resize(4,4,1);
+		pMat->resize(4, 4, 1);
 
-		for(int i0=0; i0<3; ++i0)
+		for(int i0 = 0; i0 < 3; ++i0)
 			(*pMat)(i0,3) = (*pMat)(3,i0) = 0.;
 		(*pMat)(3,3) = 1.;
 	}
@@ -648,7 +648,7 @@ Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& ve
 		vecNeutrons.resize(iNum*iIter);
 
 	Ellipsoid4d<t_real> ell4dret;
-	for(std::size_t iCurIter=0; iCurIter<iIter; ++iCurIter)
+	for(std::size_t iCurIter = 0; iCurIter < iIter; ++iCurIter)
 	{
 		const ResoResults& resores = m_res[iCurIter];
 
@@ -660,7 +660,7 @@ Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& ve
 		std::size_t iRemaining = iNum % iNumThreads;
 
 		tl::ThreadPool<void()> tp(iNumThreads);
-		for(unsigned iThread=0; iThread<iNumThreads; ++iThread)
+		for(unsigned iThread = 0; iThread < iNumThreads; ++iThread)
 		{
 			std::vector<t_vec>::iterator iterBegin = vecNeutrons.begin() + iNumPerThread*iThread + iCurIter*iNum;
 			std::size_t iNumNeutr = iNumPerThread;

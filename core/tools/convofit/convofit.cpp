@@ -330,7 +330,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	unsigned iNumNeutrons = prop.Query<unsigned>("montecarlo/neutrons", 1000);
 	unsigned iNumSample = prop.Query<unsigned>("montecarlo/sample_positions", 1);
-	bool bRecycleMC = prop.Query<bool>("montecarlo/recycle_neutrons", true);
+	int iRecycleMC = prop.Query<int>("montecarlo/recycle_neutrons", 1);
 
 	// global override
 	if(g_iNumNeutrons > 0)
@@ -347,11 +347,7 @@ bool Convofit::run_job(const std::string& _strJob)
 	std::string strMinimiser = prop.Query<std::string>("fitter/minimiser");
 	int iStrat = prop.Query<int>("fitter/strategy", 0);
 	t_real dSigma = prop.Query<t_real>("fitter/sigma", 1.);
-	unsigned iNumThreads = prop.Query<unsigned>("fitter/num_threads", 0);
-
-	// global override
-	if(g_iMaxThreads > 0)
-		iNumThreads = g_iMaxThreads;
+	unsigned iNumThreads = prop.Query<unsigned>("fitter/num_threads", g_iMaxThreads);
 
 	bool bDoFit = prop.Query<bool>("fitter/do_fit", true);
 	if(g_bSkipFit) bDoFit = 0;
@@ -683,7 +679,7 @@ bool Convofit::run_job(const std::string& _strJob)
 
 	// callback for changed parameters
 	mod.AddParamsChangedSlot(
-	[&vecModPlotX, &vecModPlotY, bPlotIntermediate, iSeed, bRecycleMC](const std::string& strDescr)
+	[&vecModPlotX, &vecModPlotY, bPlotIntermediate, iSeed, iRecycleMC](const std::string& strDescr)
 	{
 		tl::log_info("Changed model parameters: ", strDescr);
 
@@ -694,7 +690,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		}
 
 		// do we use the same MC neutrons again?
-		if(bRecycleMC)
+		if(iRecycleMC)
 		{
 			tl::init_rand_seed(iSeed);
 			tl::log_debug("Resetting random seed to ", iSeed, ".");
@@ -706,10 +702,14 @@ bool Convofit::run_job(const std::string& _strJob)
 	if(vecSc.size() > 1)
 		mod.SetScans(&vecSc);
 
-	tl::log_info("Number of neutrons: ", iNumNeutrons, ".");
 	mod.SetNumNeutrons(iNumNeutrons);
 	// execution has to be in a determined order to recycle the same neutrons
-	mod.SetUseThreads(!bRecycleMC);
+	mod.SetUseThreads(iRecycleMC == 0);
+
+	// if threads are used in the fitter or in the chi^2 function, we need to
+	// even more aggressively recycle neutrons before the mc generation step
+	if(iNumThreads && iRecycleMC == 2)
+		mod.SetSeed(iSeed);
 
 	if(bTempOverride)
 	{
@@ -732,11 +732,13 @@ bool Convofit::run_job(const std::string& _strJob)
 	// base parameter set for single-fits
 	set_model_params_from_scan(mod, vecSc[0]);
 
-	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", vecSc[0].dTemp);
-	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", vecSc[0].dField);
-
 	// set the given individual global model parameters
 	mod.GetSqwBase()->SetVars(strSetParams);
+
+	tl::log_info("Number of neutrons: ", iNumNeutrons, ".");
+	tl::log_info("Number of threads: ", iNumThreads, ".");
+	tl::log_info("Model temperature variable: \"", strTempVar, "\", value: ", vecSc[0].dTemp);
+	tl::log_info("Model field variable: \"", strFieldVar, "\", value: ", vecSc[0].dField);
 	// --------------------------------------------------------------------
 
 
@@ -782,7 +784,6 @@ bool Convofit::run_job(const std::string& _strJob)
 	mod.SetNonSQEParams(vecNonSQEParms);
 
 
-	tl::log_info("Number of threads: ", iNumThreads, ".");
 	tl::Chi2Function_mult<t_real_sc, std::vector> chi2fkt;
 	// the vecSc[0] data sets are the default data set (will not be used if scan groups are defined)
 	chi2fkt.AddFunc(&mod, vecSc[0].vecX.size(), vecSc[0].vecX.data(), vecSc[0].vecCts.data(), vecSc[0].vecCtsErr.data());

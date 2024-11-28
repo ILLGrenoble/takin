@@ -109,8 +109,10 @@ montecarlo
     ; number of Monte-Carlo neutrons
     neutrons 1000
 
-    ; keep the same random seed for more stability
-    recycle_neutrons 1
+    ; 0: generate fully random neutrons
+    ; 1: keep the same random seed after each parameter change for more stability
+    ; 2: keep the same random seed before each mc neutron generation for multi-threading stability
+    recycle_neutrons 2
 
     ; perform a secondary convolution of the sample shape (still beta, keep at 1)
     sample_positions 1
@@ -139,6 +141,9 @@ fitter
     ; using the initial values?
     do_fit        1
 
+    ; number of parallel threads of execution
+    num_threads   4
+
     ; number of maximum function calls
     max_funccalls 250
 
@@ -151,5 +156,5 @@ fitter
     strategy 1
 
     ; Minuit's targeted "estimated distance to minimum"
-    tolerance 2.500000e+01
+    tolerance 25
 }

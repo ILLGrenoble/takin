@@ -104,9 +104,18 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x_principal) const
 	std::vector<ublas::vector<t_real_reso>> vecNeutrons;
 	Ellipsoid4d<t_real_reso> elli;
 	if(m_bUseThreads)
+	{
 		elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
+	}
 	else
+	{
+		if(m_iSeed)
+		{
+			// reset the seed here in case chi^2 runs multi-threaded and neutron recycling is enabled
+			tl::init_rand_seed(*m_iSeed, false);
+		}
 		elli = reso.GenerateMC_deferred(m_iNumNeutrons, vecNeutrons);
+	}
 
 	t_real dS = 0.;
 	t_real dhklE_mean[4] = { 0., 0., 0., 0. };
@@ -155,6 +164,7 @@ SqwFuncModel* SqwFuncModel::copy() const
 
 	pMod->m_iNumNeutrons = this->m_iNumNeutrons;
 	pMod->m_bUseThreads = this->m_bUseThreads;
+	pMod->m_iSeed = this->m_iSeed;
 
 	pMod->m_dScale = this->m_dScale;
 	pMod->m_dSlope = this->m_dSlope;
