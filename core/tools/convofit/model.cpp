@@ -103,7 +103,7 @@ tl::t_real_min SqwFuncModel::operator()(tl::t_real_min x_principal) const
 
 	std::vector<ublas::vector<t_real_reso>> vecNeutrons;
 	Ellipsoid4d<t_real_reso> elli;
-	if(m_bUseThreads)
+	if(m_bUseThreadedMC)
 	{
 		elli = reso.GenerateMC(m_iNumNeutrons, vecNeutrons);
 	}
@@ -163,7 +163,7 @@ SqwFuncModel* SqwFuncModel::copy() const
 	pMod->m_dPrincipalAxisMax = this->m_dPrincipalAxisMax;
 
 	pMod->m_iNumNeutrons = this->m_iNumNeutrons;
-	pMod->m_bUseThreads = this->m_bUseThreads;
+	pMod->m_bUseThreadedMC = this->m_bUseThreadedMC;
 	pMod->m_iSeed = this->m_iSeed;
 
 	pMod->m_dScale = this->m_dScale;

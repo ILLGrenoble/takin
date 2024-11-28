@@ -1352,16 +1352,6 @@
           <property name="verticalSpacing">
            <number>2</number>
           </property>
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="checkRnd">
-            <property name="text">
-             <string>Keep Random Seed</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
            <widget class="QCheckBox" name="checkFlip">
             <property name="text">
@@ -1387,6 +1377,28 @@
             <property name="checked">
              <bool>true</bool>
             </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QComboBox" name="comboRnd">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>Fully Random Neutrons</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Keep Neutrons (Stability)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Keep Neutrons (Multi-Threaded)</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -2183,15 +2195,15 @@
   <tabstop>btnStart</tabstop>
   <tabstop>btnStartFit</tabstop>
   <tabstop>btnStop</tabstop>
-  <tabstop>checkRnd</tabstop>
-  <tabstop>checkNorm</tabstop>
+  <tabstop>comboRnd</tabstop>
   <tabstop>checkFlip</tabstop>
+  <tabstop>checkNorm</tabstop>
   <tabstop>checkRel</tabstop>
   <tabstop>editEpsRlu</tabstop>
   <tabstop>editEpsPlaneDist</tabstop>
   <tabstop>comboFitter</tabstop>
-  <tabstop>spinStrategy</tabstop>
   <tabstop>spinMaxCalls</tabstop>
+  <tabstop>spinStrategy</tabstop>
   <tabstop>spinTolerance</tabstop>
   <tabstop>editCounter</tabstop>
   <tabstop>editMonitor</tabstop>
@@ -2201,6 +2213,7 @@
   <tabstop>textResult</tabstop>
   <tabstop>editAutosave</tabstop>
   <tabstop>btnBrowseAutosave</tabstop>
+  <tabstop>btnSaveResults</tabstop>
   <tabstop>editScale</tabstop>
   <tabstop>editSlope</tabstop>
   <tabstop>editOffs</tabstop>

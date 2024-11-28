@@ -38,6 +38,7 @@ using t_real = t_real_reso;
 using t_stopwatch = tl::Stopwatch<t_real>;
 
 
+
 /**
  * create 1d convolution
  */
@@ -45,6 +46,17 @@ void ConvoDlg::Start1D()
 {
 	StartSim1D(false, tl::get_rand_seed());
 }
+
+
+
+/**
+ * create 2d convolution
+ */
+void ConvoDlg::Start2D()
+{
+	StartSim2D(false, tl::get_rand_seed());
+}
+
 
 
 /**
@@ -60,7 +72,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 	t_real dSlope = tl::str_to_var<t_real>(editSlope->text().toStdString());
 	t_real dOffs = tl::str_to_var<t_real>(editOffs->text().toStdString());
 
-	bool bRecycleNeutrons = checkRnd->isChecked();
+	int iRecycleNeutrons = comboRnd->currentIndex();
 	bool bFlipCoords = checkFlip->isChecked();
 	bool bLiveResults = m_pLiveResults->isChecked();
 	bool bLivePlots = m_pLivePlots->isChecked();
@@ -84,7 +96,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		: Qt::ConnectionType::BlockingQueuedConnection;
 
 	std::function<void()> fkt = [this, connty, bForceDeferred, bUseScan, bFlipCoords,
-		seed, bRecycleNeutrons, dScale, dSlope, dOffs, bLiveResults, bLivePlots, strAutosave]
+		seed, iRecycleNeutrons, dScale, dSlope, dOffs, bLiveResults, bLivePlots, strAutosave]
 	{
 		std::function<void()> fktEnableButtons = [this]
 		{
@@ -248,10 +260,9 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
 		// function to be called before each thread
-		auto th_start_func = [seed, bRecycleNeutrons, bForceDeferred]
+		auto th_start_func = [seed, iRecycleNeutrons]
 		{
-			// TODO: init random seeds for non-deferred, threaded simulation
-			if(bRecycleNeutrons && bForceDeferred)
+			if(iRecycleNeutrons > 0)
 				tl::init_rand_seed(seed);
 			else
 				tl::init_rand();
@@ -271,8 +282,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			t_real dCurL = vecL[iStep];
 			t_real dCurE = vecE[iStep];
 
-			tp.AddTask(
-			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, iNumSampleSteps, this]()
+			tp.AddTask([this, &reso, dCurH, dCurK, dCurL, dCurE,
+				iNumNeutrons, iNumSampleSteps, iRecycleNeutrons, seed]()
 				-> std::pair<bool, t_real>
 			{
 				if(this->StopRequested())
@@ -309,6 +320,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 						return std::pair<bool, t_real>(false, 0.);
 					}
 
+					if(iRecycleNeutrons == 2)
+						tl::init_rand_seed(seed, false);
 					Ellipsoid4d<t_real> elli = localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)
@@ -530,10 +543,11 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 /**
  * create 2d convolution
  */
-void ConvoDlg::Start2D()
+void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 {
 	m_atStop.store(false);
 
+	int iRecycleNeutrons = comboRnd->currentIndex();
 	bool bFlipCoords = checkFlip->isChecked();
 	bool bLiveResults = m_pLiveResults->isChecked();
 	bool bLivePlots = m_pLivePlots->isChecked();
@@ -552,13 +566,12 @@ void ConvoDlg::Start2D()
 	btnStop->setEnabled(true);
 	tabWidget->setCurrentWidget(tabPlot2d);
 
-	bool bForceDeferred = false;
 	Qt::ConnectionType connty = bForceDeferred
 		? Qt::ConnectionType::DirectConnection
 		: Qt::ConnectionType::BlockingQueuedConnection;
 
 	std::function<void()> fkt = [this, connty, bFlipCoords, bForceDeferred,
-		bLiveResults, bLivePlots, strAutosave]
+		seed, iRecycleNeutrons, bLiveResults, bLivePlots, strAutosave]
 	{
 		std::function<void()> fktEnableButtons = [this]
 		{
@@ -775,8 +788,20 @@ void ConvoDlg::Start2D()
 		unsigned int iNumThreads = get_max_threads();
 		tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
-		void (*pThStartFunc)() = []{ tl::init_rand(); };
-		tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
+		// function to be called before each thread
+		auto th_start_func = [seed, iRecycleNeutrons]
+		{
+			if(iRecycleNeutrons > 0)
+				tl::init_rand_seed(seed);
+			else
+				tl::init_rand();
+		};
+
+		// call the start function directly in non-threaded mode
+		if(bForceDeferred)
+			th_start_func();
+
+		tl::ThreadPool<std::pair<bool, t_real>(), decltype(th_start_func)> tp(iNumThreads, &th_start_func);
 		auto& lstFuts = tp.GetResults();
 
 		for(unsigned int iStep = 0; iStep < iNumSteps*iNumSteps; ++iStep)
@@ -786,8 +811,8 @@ void ConvoDlg::Start2D()
 			t_real dCurL = vecL[iStep];
 			t_real dCurE = vecE[iStep];
 
-			tp.AddTask(
-			[&reso, dCurH, dCurK, dCurL, dCurE, iNumNeutrons, iNumSampleSteps, this]()
+			tp.AddTask([this, &reso, dCurH, dCurK, dCurL, dCurE,
+				iNumNeutrons, iNumSampleSteps, iRecycleNeutrons, seed]()
 				-> std::pair<bool, t_real>
 			{
 				if(this->StopRequested())
@@ -824,6 +849,8 @@ void ConvoDlg::Start2D()
 						return std::pair<bool, t_real>(false, 0.);
 					}
 
+					if(iRecycleNeutrons == 2)
+						tl::init_rand_seed(seed, false);
 					Ellipsoid4d<t_real> elli = localreso.GenerateMC_deferred(iNumNeutrons, vecNeutrons);
 
 					for(const ublas::vector<t_real>& vecHKLE : vecNeutrons)

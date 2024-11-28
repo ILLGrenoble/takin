@@ -62,7 +62,7 @@ protected:
 	std::vector<TASReso> m_vecResos;
 	std::vector<std::string> m_vecSqwParams;
 	unsigned int m_iNumNeutrons = 1000;
-	bool m_bUseThreads = true;
+	bool m_bUseThreadedMC = true;
 	boost::optional<unsigned int> m_iSeed;
 
 	ublas::vector<t_real_mod> m_vecScanOrigin;	// hklE
@@ -162,7 +162,7 @@ public:
 	void SetResos(const std::vector<TASReso>& vecResos) { m_vecResos = vecResos; }
 	void SetSqwParamOverrides(const std::vector<std::string>& params) { m_vecSqwParams = params; }
 	void SetNumNeutrons(unsigned int iNum) { m_iNumNeutrons = iNum; }
-	void SetUseThreads(bool b) { m_bUseThreads = b; }
+	void SetThreadedMC(bool b) { m_bUseThreadedMC = b; }
 	void SetSeed(unsigned int iSeed) { m_iSeed = iSeed; }
 
 	void SetScanOrigin(t_real_mod h, t_real_mod k, t_real_mod l, t_real_mod E)

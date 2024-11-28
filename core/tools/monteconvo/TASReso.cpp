@@ -637,11 +637,6 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
  */
 Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& vecNeutrons) const
 {
-	// use deferred version if threading is disabled
-	//if(!m_bEnableThreads)
-	//	return GenerateMC_deferred(iNum, vecNeutrons);
-
-
 	// number of iterations over random sample positions
 	std::size_t iIter = m_res.size();
 	if(vecNeutrons.size() != iNum*iIter)

@@ -89,7 +89,7 @@ struct ConvoConfig
 	unsigned int step_count{256};
 
 	bool scan_2d{false};
-	bool recycle_neutrons{true};
+	int recycle_neutrons{1};
 	bool normalise{true};
 	bool flip_coords{false};
 	bool allow_scan_merging{false};
@@ -163,7 +163,7 @@ static ConvoConfig load_config(const tl::Prop<std::string>& xml)
 	// bool values
 	boost::optional<int> obVal;
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/scan_2d"); if(obVal) cfg.scan_2d = (*obVal != 0);
-	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/recycle_neutrons"); if(obVal) cfg.recycle_neutrons = (*obVal != 0);
+	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/recycle_neutrons"); if(obVal) cfg.recycle_neutrons = *obVal;
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/normalise"); if(obVal) cfg.normalise = (*obVal != 0);
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"convofit/flip_coords"); if(obVal) cfg.flip_coords = (*obVal != 0);
 	obVal = xml.QueryOpt<int>(g_strXmlRoot+"monteconvo/allow_scan_merging"); if(obVal) cfg.allow_scan_merging = (*obVal != 0);
@@ -456,9 +456,25 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	unsigned int iNumThreads = get_max_threads();
 	tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
-	void (*pThStartFunc)() = []{ tl::init_rand(); };
-	tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
+
+	const unsigned int seed = tl::get_rand_seed();
+
+	// function to be called before each thread
+	auto th_start_func = [seed, &cfg]
+	{
+		if(cfg.recycle_neutrons > 0)
+			tl::init_rand_seed(seed);
+		else
+			tl::init_rand();
+	};
+
+	// call the start function directly in deferred mode
+	if(iNumThreads == 0)
+		th_start_func();
+
+	tl::ThreadPool<std::pair<bool, t_real>(), decltype(th_start_func)> tp(iNumThreads, &th_start_func);
 	auto& lstFuts = tp.GetResults();
+
 
 	for(unsigned int iStep = 0; iStep < cfg.step_count; ++iStep)
 	{
@@ -467,7 +483,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 		t_real dCurL = vecL[iStep];
 		t_real dCurE = vecE[iStep];
 
-		tp.AddTask([&reso, dCurH, dCurK, dCurL, dCurE, pSqw, &cfg]()
+		tp.AddTask([&reso, dCurH, dCurK, dCurL, dCurE, pSqw, &cfg, seed]()
 			-> std::pair<bool, t_real>
 		{
 			t_real dS = 0.;
@@ -502,6 +518,8 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 					return std::pair<bool, t_real>(false, 0.);
 				}
 
+				if(cfg.recycle_neutrons == 2)
+					tl::init_rand_seed(seed, false);
 				Ellipsoid4d<t_real> elli =
 					localreso.GenerateMC_deferred(cfg.neutron_count, vecNeutrons);
 
@@ -844,9 +862,26 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	unsigned int iNumThreads = get_max_threads();
 	tl::log_debug("Calculating using ", iNumThreads, (iNumThreads == 1 ? " thread." : " threads."));
 
-	void (*pThStartFunc)() = []{ tl::init_rand(); };
-	tl::ThreadPool<std::pair<bool, t_real>()> tp(iNumThreads, pThStartFunc);
+
+	const unsigned int seed = tl::get_rand_seed();
+
+	// function to be called before each thread
+	auto th_start_func = [seed, &cfg]
+	{
+		if(cfg.recycle_neutrons > 0)
+			tl::init_rand_seed(seed);
+		else
+			tl::init_rand();
+	};
+
+	// call the start function directly in deferred mode
+	if(iNumThreads == 0)
+		th_start_func();
+
+	tl::ThreadPool<std::pair<bool, t_real>(), decltype(th_start_func)> tp(iNumThreads, &th_start_func);
+
 	auto& lstFuts = tp.GetResults();
+
 
 	for(unsigned int iStep = 0; iStep < cfg.step_count*cfg.step_count; ++iStep)
 	{
@@ -855,7 +890,7 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 		t_real dCurL = vecL[iStep];
 		t_real dCurE = vecE[iStep];
 
-		tp.AddTask([&reso, dCurH, dCurK, dCurL, dCurE, pSqw, &cfg]()
+		tp.AddTask([&reso, dCurH, dCurK, dCurL, dCurE, pSqw, &cfg, seed]()
 			-> std::pair<bool, t_real>
 		{
 			t_real dS = 0.;
@@ -890,6 +925,8 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 					return std::pair<bool, t_real>(false, 0.);
 				}
 
+				if(cfg.recycle_neutrons == 2)
+					tl::init_rand_seed(seed, false);
 				Ellipsoid4d<t_real> elli =
 					localreso.GenerateMC_deferred(cfg.neutron_count, vecNeutrons);
 

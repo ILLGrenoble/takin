@@ -451,7 +451,7 @@ bool Convofit::run_job(const std::string& _strJob)
 			//for(const auto& pair : mapHdr)
 			//	std::cout << pair.first << ", " << pair.second << std::endl;
 
-			for(std::size_t iParam=0; iParam<vecFitParams.size(); ++iParam)
+			for(std::size_t iParam = 0; iParam < vecFitParams.size(); ++iParam)
 			{
 				auto iterParam = mapHdr.find(vecFitParams[iParam]);
 				if(iterParam != mapHdr.end())
@@ -703,11 +703,13 @@ bool Convofit::run_job(const std::string& _strJob)
 		mod.SetScans(&vecSc);
 
 	mod.SetNumNeutrons(iNumNeutrons);
-	// execution has to be in a determined order to recycle the same neutrons
-	mod.SetUseThreads(iRecycleMC == 0);
 
-	// if threads are used in the fitter or in the chi^2 function, we need to
-	// even more aggressively recycle neutrons before the mc generation step
+	// execution has to be in a determined order to recycle the same neutrons
+	mod.SetThreadedMC(iRecycleMC == 0);
+
+	// if threads are used in the fitter via the chi^2 function, we need to
+	// even more aggressively recycle neutrons before each mc generation step
+	// because they can be out-of-order for the different scan points
 	if(iNumThreads && iRecycleMC == 2)
 		mod.SetSeed(iSeed);
 

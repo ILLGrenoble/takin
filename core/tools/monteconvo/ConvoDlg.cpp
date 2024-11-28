@@ -127,15 +127,17 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	m_vecComboBoxes = { comboAlgo,
 		comboFixedK, comboFocMono, comboFocAna,
 		comboFitter, comboAxis, comboAxis2,
+		comboRnd
 	};
 	m_vecComboNames = { "monteconvo/algo_idx",
 		"monteconvo/fixedk", "monteconvo/mono_foc", "monteconvo/ana_foc",
 		"convofit/minimiser", "convofit/scanaxis", "convofit/scanaxis2",
+		"convofit/recycle_neutrons"
 	};
 
-	m_vecCheckBoxes = { checkScan, check2dMap, checkRnd, checkNorm, checkFlip };
+	m_vecCheckBoxes = { checkScan, check2dMap, checkNorm, checkFlip };
 	m_vecCheckNames = { "monteconvo/has_scanfile", "monteconvo/scan_2d",
-		"convofit/recycle_neutrons", "convofit/normalise", "convofit/flip_coords"
+		"convofit/normalise", "convofit/flip_coords"
 	};
 	// -------------------------------------------------------------------------
 
@@ -310,13 +312,13 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	QMenu *pMenuPlots = new QMenu("Results", this);
 
 	m_pLiveResults = new QAction("Live Results", this);
-	m_pLiveResults->setCheckable(1);
-	m_pLiveResults->setChecked(0);
+	m_pLiveResults->setCheckable(true);
+	m_pLiveResults->setChecked(false);
 	pMenuPlots->addAction(m_pLiveResults);
 
 	m_pLivePlots = new QAction("Live Plots", this);
-	m_pLivePlots->setCheckable(1);
-	m_pLivePlots->setChecked(1);
+	m_pLivePlots->setCheckable(true);
+	m_pLivePlots->setChecked(true);
 	pMenuPlots->addAction(m_pLivePlots);
 
 	pMenuPlots->addSeparator();
