@@ -34,6 +34,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QToolButton>
+#include <QtWidgets/QStyle>
 
 #include <iostream>
 
@@ -580,8 +581,8 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		dlgInfo->setFont(this->font());
 
 		QPushButton *infoDlgOk = new QPushButton("OK", dlgInfo);
-		connect(infoDlgOk, &QAbstractButton::clicked,
-			dlgInfo, &QDialog::accept);
+		infoDlgOk->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+		connect(infoDlgOk, &QAbstractButton::clicked, dlgInfo, &QDialog::accept);
 
 		auto dlgGrid = new QGridLayout(dlgInfo);
 		dlgGrid->setSpacing(8);

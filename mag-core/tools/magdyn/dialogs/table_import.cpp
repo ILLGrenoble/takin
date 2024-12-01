@@ -35,6 +35,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QStyle>
 #include <QtGui/QDesktopServices>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

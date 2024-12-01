@@ -28,6 +28,9 @@
 #include "plot.h"
 
 #include <QtWidgets/QGridLayout>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QStyle>
+
 #include <sstream>
 
 #include "tlibs2/libs/phys.h"
@@ -70,46 +73,48 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 	m_status->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
+	// close button
+	QPushButton *okbtn = new QPushButton("OK", this);
+	okbtn->setIcon(style()->standardIcon(QStyle::SP_DialogOkButton));
+
 	m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 	//labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
 
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(2);
-	grid->setContentsMargins(4,4,4,4);
-	grid->addWidget(m_plot.get(), 0,0,1,3);
-	//grid->addWidget(labCoordSys, 1,0,1,1);
-	//grid->addWidget(comboCoordSys, 1,1,1,1);
-	grid->addWidget(m_show_coordcross, 1,0,1,1);
-	grid->addWidget(m_show_labels, 1,1,1,1);
-	grid->addWidget(m_show_plane, 1,2,1,1);
-	grid->addWidget(m_status, 2,0,1,3);
+	grid->setContentsMargins(4, 4, 4, 4);
+	grid->addWidget(m_plot.get(), 0, 0, 1, 3);
+	//grid->addWidget(labCoordSys, 1, 0, 1, 1);
+	//grid->addWidget(comboCoordSys, 1, 1, 1, 1);
+	grid->addWidget(m_show_coordcross, 1, 0, 1, 1);
+	grid->addWidget(m_show_labels, 1, 1, 1, 1);
+	grid->addWidget(m_show_plane, 1, 2, 1, 1);
+	grid->addWidget(m_status, 2, 0, 1, 2);
+	grid->addWidget(okbtn, 2, 2, 1, 1);
 
 	connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation,
 		this, &BZPlotDlg::AfterGLInitialisation);
 	connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
 		this, &BZPlotDlg::PickerIntersection);
-	connect(m_plot.get(), &tl2::GlPlot::MouseDown,
-		this, &BZPlotDlg::PlotMouseDown);
-	connect(m_plot.get(), &tl2::GlPlot::MouseUp,
-		this, &BZPlotDlg::PlotMouseUp);
-	connect(m_show_coordcross, &QCheckBox::toggled,
-		this, &BZPlotDlg::ShowCoordCross);
-	connect(m_show_labels, &QCheckBox::toggled,
-		this, &BZPlotDlg::ShowLabels);
-	connect(m_show_plane, &QCheckBox::toggled,
-		this, &BZPlotDlg::ShowPlane);
-	/*connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+	connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &BZPlotDlg::PlotMouseDown);
+	connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, &BZPlotDlg::PlotMouseUp);
+	connect(m_show_coordcross, &QCheckBox::toggled, this, &BZPlotDlg::ShowCoordCross);
+	connect(m_show_labels, &QCheckBox::toggled, this, &BZPlotDlg::ShowLabels);
+	connect(m_show_plane, &QCheckBox::toggled, this, &BZPlotDlg::ShowPlane);
+	/*connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(
+		&QComboBox::currentIndexChanged),
 		this, [this](int val)
 	{
 		if(this->m_plot)
 			this->m_plot->GetRenderer()->SetCoordSys(val);
 	});*/
+	connect(okbtn, &QAbstractButton::clicked, this, &QDialog::accept);
 
 
 	if(m_sett && m_sett->contains("3dview/geo"))
 		restoreGeometry(m_sett->value("3dview/geo").toByteArray());
 	else
-		resize(500,500);
+		resize(640, 640);
 }
 
 
@@ -118,8 +123,10 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
  */
 void BZPlotDlg::closeEvent(QCloseEvent *)
 {
-	if(m_sett)
-		m_sett->setValue("3dview/geo", saveGeometry());
+	if(!m_sett)
+		return;
+
+	m_sett->setValue("3dview/geo", saveGeometry());
 }
 
 
@@ -173,11 +180,11 @@ void BZPlotDlg::SetABTrafo(const t_mat& crystA, const t_mat& crystB)
 	m_crystA = crystA;
 	m_crystB = crystB;
 
-	if(m_plot)
-	{
-		t_mat_gl matA{crystA};
-		m_plot->GetRenderer()->SetBTrafo(crystB, &matA);
-	}
+	if(!m_plot)
+		return;
+
+	t_mat_gl matA{crystA};
+	m_plot->GetRenderer()->SetBTrafo(crystB, &matA);
 }
 
 
@@ -244,7 +251,7 @@ void BZPlotDlg::AddTriangles(const std::vector<t_vec>& _vecs)
 	vecs.reserve(_vecs.size());
 	norms.reserve(_vecs.size());
 
-	for(std::size_t idx=0; idx<_vecs.size()-2; idx+=3)
+	for(std::size_t idx = 0; idx < _vecs.size()-2; idx += 3)
 	{
 		t_vec3_gl vec1 = tl2::convert<t_vec3_gl>(_vecs[idx]);
 		t_vec3_gl vec2 = tl2::convert<t_vec3_gl>(_vecs[idx+1]);
