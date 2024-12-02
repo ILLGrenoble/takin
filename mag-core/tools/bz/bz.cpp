@@ -99,7 +99,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 			new QTableWidgetItem{"Properties"});
 		m_symops->setHorizontalHeaderItem(COL_DET,
 			new QTableWidgetItem{"Det."});
-		m_symops->setColumnWidth(COL_OP, 275);
+		m_symops->setColumnWidth(COL_OP, 150);
 		m_symops->setColumnWidth(COL_PROP, 100);
 		m_symops->setColumnWidth(COL_DET, 75);
 
@@ -344,7 +344,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 		m_formulas->setAlternatingRowColors(true);
 		m_formulas->setColumnCount(NUM_FORMULAS_COLS);
 		m_formulas->setHorizontalHeaderItem(COL_FORMULA, new QTableWidgetItem{"Formula to Plot (Variables are Qx and Qy)"});
-		m_formulas->setColumnWidth(COL_FORMULA, 500);
+		m_formulas->setColumnWidth(COL_FORMULA, 325);
 
 		QToolButton *btnAdd = new QToolButton(formulaspanel);
 		QToolButton *btnDel = new QToolButton(formulaspanel);
