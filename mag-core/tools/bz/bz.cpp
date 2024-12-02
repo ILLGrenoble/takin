@@ -261,7 +261,7 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 			*cut = new QDoubleSpinBox(bzpanel);
 			(*cut)->setMinimum(-99);
 			(*cut)->setMaximum(99);
-			(*cut)->setDecimals(2);
+			(*cut)->setDecimals(4);
 			(*cut)->setSingleStep(0.1);
 			(*cut)->setValue(0);
 
