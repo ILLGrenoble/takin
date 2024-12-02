@@ -245,30 +245,36 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 		tl::log_info("kf = ", scan.dKFix, ".");
 
 
-	const tl::FileInstrBase<t_real_sc>::t_vecVals& vecTemp = pInstr->GetCol(scan.strTempCol);
-	if(vecTemp.size() == 0)
+	if(scan.strTempCol != "")
 	{
-		tl::log_warn("Sample temperature column \"", scan.strTempCol, "\" not found.");
-		//return false;
-	}
-	else
-	{
-		scan.dTemp = tl::mean_value(vecTemp);
-		scan.dTempErr = tl::std_dev(vecTemp);
-		tl::log_info("Sample temperature: ", scan.dTemp, " +- ", scan.dTempErr, ".");
+		const tl::FileInstrBase<t_real_sc>::t_vecVals& vecTemp = pInstr->GetCol(scan.strTempCol);
+
+		if(vecTemp.size() == 0)
+		{
+			tl::log_warn("Sample temperature column \"", scan.strTempCol, "\" not found.");
+		}
+		else
+		{
+			scan.dTemp = tl::mean_value(vecTemp);
+			scan.dTempErr = tl::std_dev(vecTemp);
+			tl::log_info("Sample temperature: ", scan.dTemp, " +- ", scan.dTempErr, ".");
+		}
 	}
 
-	const tl::FileInstrBase<t_real_sc>::t_vecVals& vecField = pInstr->GetCol(scan.strFieldCol);
-	if(vecField.size() == 0)
+	if(scan.strFieldCol != "")
 	{
-		tl::log_warn("Sample field column \"", scan.strFieldCol, "\" not found.");
-		//return false;
-	}
-	else
-	{
-		scan.dField = tl::mean_value(vecField);
-		scan.dFieldErr = tl::std_dev(vecField);
-		tl::log_info("Sample field: ", scan.dField, " +- ", scan.dFieldErr, ".");
+		const tl::FileInstrBase<t_real_sc>::t_vecVals& vecField = pInstr->GetCol(scan.strFieldCol);
+
+		if(vecField.size() == 0)
+		{
+			tl::log_warn("Sample field column \"", scan.strFieldCol, "\" not found.");
+		}
+		else
+		{
+			scan.dField = tl::mean_value(vecField);
+			scan.dFieldErr = tl::std_dev(vecField);
+			tl::log_info("Sample field: ", scan.dField, " +- ", scan.dFieldErr, ".");
+		}
 	}
 
 
