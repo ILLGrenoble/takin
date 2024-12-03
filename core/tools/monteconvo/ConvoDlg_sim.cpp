@@ -200,7 +200,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		}
 
 		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()+1));
-		reso.SetKiFix(comboFixedK->currentIndex()==0);
+		reso.SetKiFix(comboFixedK->currentIndex() == 0);
 		reso.SetKFix(spinKfix->value());
 		reso.SetOptimalFocus(get_reso_focus(comboFocMono->currentIndex(), comboFocAna->currentIndex()));
 
@@ -722,7 +722,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 
 
 		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()+1));
-		reso.SetKiFix(comboFixedK->currentIndex()==0);
+		reso.SetKiFix(comboFixedK->currentIndex() == 0);
 		reso.SetKFix(spinKfix->value());
 		reso.SetOptimalFocus(get_reso_focus(comboFocMono->currentIndex(), comboFocAna->currentIndex()));
 

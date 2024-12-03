@@ -203,7 +203,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	if(bNormToMon)
 	{
 		// normalise couter to monitor
-		for(std::size_t iPos=0; iPos<scan.vecCts.size(); ++iPos)
+		for(std::size_t iPos = 0; iPos < scan.vecCts.size(); ++iPos)
 		{
 			t_real_sc y = scan.vecCts[iPos];
 			t_real_sc dy = scan.vecCtsErr[iPos];
@@ -240,9 +240,9 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	scan.bKiFixed = pInstr->IsKiFixed();
 	scan.dKFix = pInstr->GetKFix();
 	if(scan.bKiFixed)
-		tl::log_info("ki = ", scan.dKFix, ".");
+		tl::log_info("ki = ", scan.dKFix, " = const.");
 	else
-		tl::log_info("kf = ", scan.dKFix, ".");
+		tl::log_info("kf = ", scan.dKFix, " = const.");
 
 
 	if(scan.strTempCol != "")
@@ -286,7 +286,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	ptMax.E = -std::numeric_limits<t_real_sc>::max() * tl::get_one_meV<t_real_sc>();
 
 	const std::size_t iNumPts = pInstr->GetScanCount();
-	for(std::size_t iPt=0; iPt<iNumPts; ++iPt)
+	for(std::size_t iPt = 0; iPt < iNumPts; ++iPt)
 	{
 		const std::array<t_real_sc, 5> sc = pInstr->GetScanHKLKiKf(iPt);
 
@@ -380,7 +380,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 		return false;
 	}
 
-	for(std::size_t iPt=0; iPt<iNumPts; ++iPt)
+	for(std::size_t iPt = 0; iPt < iNumPts; ++iPt)
 	{
 		const ScanPoint& pt = scan.vecPoints[iPt];
 
@@ -398,7 +398,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	decltype(scan.vecCts) vecCtsNew, vecMonNew, vecCtsErrNew, vecMonErrNew;
 	decltype(scan.vechklE) vechklENew{};
 
-	for(std::size_t i=0; i<iNumPts; ++i)
+	for(std::size_t i = 0; i < iNumPts; ++i)
 	{
 		// below lower limit?
 		if(filter.dLower && scan.vecX[i] <= *filter.dLower)
@@ -410,7 +410,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 		// keep row if the value in the column equals the given one
 		if(filter.colEquals && filter.colEquals->first!="" && filter.colEquals->second!="")
 		{
-			bool skip_pt = 0;
+			bool skip_pt = false;
 
 			const std::string& colName = filter.colEquals->first;
 			rex::regex rxCol(colName, rex::regex::ECMAScript | rex::regex_constants::icase);
@@ -418,7 +418,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 			const tl::FileInstrBase<t_real_sc>::t_vecColNames& colNames
 				= pInstr->GetColNames();
-			for(std::size_t col=0; col<colNames.size(); ++col)
+			for(std::size_t col = 0; col < colNames.size(); ++col)
 			{
 				// get first matching column
 				if(rex::regex_match(colNames[col], matchCol, rxCol))
@@ -458,7 +458,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	scan.vecCtsErr = std::move(vecCtsErrNew);
 	scan.vecMonErr = std::move(vecMonErrNew);
 
-	for(int ihklE=0; ihklE<4; ++ihklE)
+	for(int ihklE = 0; ihklE < 4; ++ihklE)
 		scan.vechklE[ihklE] = std::move(vechklENew[ihklE]);
 
 	return true;

@@ -133,9 +133,9 @@ void fix(const std::vector<std::string>& vecArgs)
 	}
 
 	if(vecArgs[1] == "ki")
-		g_tas.SetKiFix(1);
+		g_tas.SetKiFix(true);
 	else if(vecArgs[1] == "kf")
-		g_tas.SetKiFix(0);
+		g_tas.SetKiFix(false);
 	else
 	{
 		ostr << "Error: Unknown variable " << vecArgs[1] << ".\n";
