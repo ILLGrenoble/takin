@@ -227,8 +227,9 @@ void StructPlotDlg::accept()
  * structure plot picker intersection
  */
 void StructPlotDlg::PickerIntersection(
-        const t_vec3_gl* pos, std::size_t objIdx,
-        [[maybe_unused]] const t_vec3_gl* posSphere)
+	const t_vec3_gl* pos, std::size_t objIdx,
+	[[maybe_unused]] std::size_t triagIdx,
+	[[maybe_unused]] const t_vec3_gl* posSphere)
 {
 	m_status->setText("");
 	m_cur_obj = std::nullopt;

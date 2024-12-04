@@ -386,7 +386,7 @@ std::size_t GlPlotRenderer::AddPlane(
 	QMutexLocker _locker{&m_mutexObj};
 
 	auto obj = CreateTriangleObject(std::get<0>(solid),
-		triagverts, norms, tl2::create<t_vec_gl>({ r,g,b,a }), false);
+		triagverts, norms, tl2::create<t_vec_gl>({ r, g, b, a }), false);
 	obj.m_mat = tl2::hom_translation<t_mat_gl>(x, y, z);
 	obj.m_boundingSpherePos = std::move(boundingSpherePos);
 	obj.m_boundingSphereRad = boundingSphereRad;
@@ -396,7 +396,8 @@ std::size_t GlPlotRenderer::AddPlane(
 }
 
 
-std::size_t GlPlotRenderer::AddTriangleObject(const std::vector<t_vec3_gl>& triag_verts,
+std::size_t GlPlotRenderer::AddTriangleObject(
+	const std::vector<t_vec3_gl>& triag_verts,
 	const std::vector<t_vec3_gl>& triag_norms,
 	t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a)
 {
@@ -406,7 +407,7 @@ std::size_t GlPlotRenderer::AddTriangleObject(const std::vector<t_vec3_gl>& tria
 	QMutexLocker _locker{&m_mutexObj};
 
 	auto obj = CreateTriangleObject(triag_verts, triag_verts,
-		triag_norms, tl2::create<t_vec_gl>({r,g,b,a}), false);
+		triag_norms, tl2::create<t_vec_gl>({ r, g, b, a }), false);
 	obj.m_mat = tl2::hom_translation<t_mat_gl, t_real_gl>(0., 0., 0.);
 	obj.m_boundingSpherePos = std::move(boundingSpherePos);
 	obj.m_boundingSphereRad = boundingSphereRad;
@@ -419,12 +420,12 @@ std::size_t GlPlotRenderer::AddTriangleObject(const std::vector<t_vec3_gl>& tria
 
 std::size_t GlPlotRenderer::AddCoordinateCross(t_real_gl min, t_real_gl max)
 {
-	auto col = tl2::create<t_vec_gl>({0,0,0,1});
+	auto col = tl2::create<t_vec_gl>({ 0, 0, 0, 1 });
 	auto verts = std::vector<t_vec3_gl>
 	{{
-		tl2::create<t_vec3_gl>({min,0,0}), tl2::create<t_vec3_gl>({max,0,0}),
-		tl2::create<t_vec3_gl>({0,min,0}), tl2::create<t_vec3_gl>({0,max,0}),
-		tl2::create<t_vec3_gl>({0,0,min}), tl2::create<t_vec3_gl>({0,0,max}),
+		tl2::create<t_vec3_gl>({ min, 0, 0 }), tl2::create<t_vec3_gl>({ max, 0, 0 }),
+		tl2::create<t_vec3_gl>({ 0, min, 0 }), tl2::create<t_vec3_gl>({ 0, max, 0 }),
+		tl2::create<t_vec3_gl>({ 0, 0,min }), tl2::create<t_vec3_gl>({ 0, 0,max }),
 	}};
 
 	QMutexLocker _locker{&m_mutexObj};
@@ -515,11 +516,12 @@ float lighting(vec4 objVert, vec4 objNorm)
 
 	vec3 dirToCam;
 	// only used for specular lighting
-	if(g_specular > 0.) dirToCam = normalize(get_campos() - objVert.xyz);
+	if(g_specular > 0.)
+		dirToCam = normalize(get_campos() - objVert.xyz);
 
 
 	// iterate (active) light sources
-	for(int lightidx=0; lightidx<min(lightpos.length(), activelights); ++lightidx)
+	for(int lightidx = 0; lightidx < min(lightpos.length(), activelights); ++lightidx)
 	{
 		// diffuse lighting
 		vec3 dirLight = normalize(lightpos[lightidx]-objVert.xyz);
@@ -527,7 +529,8 @@ float lighting(vec4 objVert, vec4 objNorm)
 		if(g_diffuse > 0.)
 		{
 			float I_diff_inc = g_diffuse * dot(objNorm.xyz, dirLight);
-			if(I_diff_inc < 0.) I_diff_inc = 0.;
+			if(I_diff_inc < 0.)
+				I_diff_inc = 0.;
 			I_diff += I_diff_inc;
 		}
 
@@ -543,7 +546,8 @@ float lighting(vec4 objVert, vec4 objNorm)
 				if(val > 0.)
 				{
 					float I_spec_inc = g_specular * pow(val, g_shininess);
-					if(I_spec_inc < 0.) I_spec_inc = 0.;
+					if(I_spec_inc < 0.)
+						I_spec_inc = 0.;
 					I_spec += I_spec_inc;
 				}
 			}
@@ -851,8 +855,7 @@ void GlPlotRenderer::RequestPlotUpdate()
 		static_cast<void (QOpenGLWidget::*)()>(&QOpenGLWidget::update),
 		Qt::ConnectionType::QueuedConnection);
 #else
-	QMetaObject::invokeMethod((QOpenGLWidget*)m_pPlot,
-		"update",
+	QMetaObject::invokeMethod((QOpenGLWidget*)m_pPlot, "update",
 		Qt::ConnectionType::QueuedConnection);
 #endif
 }
@@ -947,8 +950,9 @@ void GlPlotRenderer::UpdatePicker()
 
 	// intersection with geometry
 	bool hasInters = false;
-	t_vec_gl vecClosestInters = tl2::create<t_vec_gl>({0,0,0,0});
-	std::size_t objInters = 0xffffffff;
+	t_vec_gl vecClosestInters = tl2::create<t_vec_gl>({ 0, 0, 0, 0 });
+	std::size_t triagInters = 0xffffffff;  // intersecting triangle index
+	std::size_t objInters = 0xffffffff;  // intersecting object handle
 
 
 	QMutexLocker _locker{&m_mutexObj};
@@ -980,7 +984,7 @@ void GlPlotRenderer::UpdatePicker()
 
 
 		// test actual polygons for intersection
-		for(std::size_t startidx = 0; startidx+2 < linkedObj->m_triangles.size(); startidx += 3)
+		for(std::size_t startidx = 0; startidx + 2 < linkedObj->m_triangles.size(); startidx += 3)
 		{
 			std::vector<t_vec3_gl> poly{ {
 				linkedObj->m_triangles[startidx+0],
@@ -999,43 +1003,48 @@ void GlPlotRenderer::UpdatePicker()
 			auto [vecInters, bInters, lamInters] =
 				tl2::intersect_line_poly<t_vec3_gl, t_mat_gl>(
 					org3, dir3, poly, matTrafo);
+			if(!bInters)  // no intersection?
+				continue;
 
-			if(bInters)
-			{
-				t_vec_gl vecInters4 = tl2::create<t_vec_gl>(
-					{ vecInters[0], vecInters[1], vecInters[2], 1 });
+			t_vec_gl vecInters4 = tl2::create<t_vec_gl>(
+				{ vecInters[0], vecInters[1], vecInters[2], 1 });
 
-				if(!hasInters)
-				{	// first intersection
+			if(!hasInters)
+			{	// first intersection
+				vecClosestInters = vecInters4;
+				objInters = curObj;
+				triagInters = startidx / 3;
+				hasInters = true;
+			}
+			else
+			{	// test if next intersection is closer...
+				t_vec_gl oldPosTrafo = m_cam.GetTransformation() * vecClosestInters;
+				t_vec_gl newPosTrafo = m_cam.GetTransformation() * vecInters4;
+
+				if(tl2::norm(newPosTrafo) < tl2::norm(oldPosTrafo))
+				{	// ...it is closer
 					vecClosestInters = vecInters4;
 					objInters = curObj;
-					hasInters = true;
+					triagInters = startidx / 3;
 				}
-				else
-				{	// test if next intersection is closer...
-					t_vec_gl oldPosTrafo = m_cam.GetTransformation() * vecClosestInters;
-					t_vec_gl newPosTrafo = m_cam.GetTransformation() * vecInters4;
-
-					if(tl2::norm(newPosTrafo) < tl2::norm(oldPosTrafo))
-					{	// ...it is closer
-						vecClosestInters = vecInters4;
-						objInters = curObj;
-					}
-				}
-
-				// intersection point in uv coordinates:
-				//auto uv = tl2::poly_uv<t_mat_gl, t_vec3_gl>
-				//	(poly[0], poly[1], poly[2], polyuv[0], polyuv[1], polyuv[2], vecInters);
 			}
+
+			// intersection point in uv coordinates:
+			//auto uv = tl2::poly_uv<t_mat_gl, t_vec3_gl>
+			//	(poly[0], poly[1], poly[2], polyuv[0], polyuv[1], polyuv[2], vecInters);
 		}
 	}
 
+	// create intersection points
 	m_picker_needs_update = false;
 	t_vec3_gl vecClosestInters3 = tl2::create<t_vec3_gl>(
-		{vecClosestInters[0], vecClosestInters[1], vecClosestInters[2]});
+		{ vecClosestInters[0], vecClosestInters[1], vecClosestInters[2] });
 	t_vec3_gl vecClosestSphereInters3 = tl2::create<t_vec3_gl>(
-		{vecClosestSphereInters[0], vecClosestSphereInters[1], vecClosestSphereInters[2]});
-	emit PickerIntersection(hasInters ? &vecClosestInters3 : nullptr, objInters,
+		{ vecClosestSphereInters[0], vecClosestSphereInters[1], vecClosestSphereInters[2] });
+
+	// report intersection
+	emit PickerIntersection(hasInters ? &vecClosestInters3 : nullptr,
+		objInters, triagInters,
 		hasSphereInters ? &vecClosestSphereInters3 : nullptr);
 }
 
@@ -1260,7 +1269,7 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 	{
 		// coordinate labels
 		painter.drawText(GlToScreenCoords(tl2::create<t_vec_gl>({0.,0.,0.,1.})), "0");
-		for(t_real_gl f=-std::floor(m_CoordMax); f<=std::floor(m_CoordMax); f+=0.5)
+		for(t_real_gl f = -std::floor(m_CoordMax); f <= std::floor(m_CoordMax); f += 0.5)
 		{
 			if(tl2::equals<t_real_gl>(f, 0))
 				continue;
@@ -1295,7 +1304,8 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 				continue;
 
 			const t_mat_gl *coordTrafo = &matUnit;
-			if(m_coordsys == 1 && !obj.m_invariant) coordTrafo = &m_matA;
+			if(m_coordsys == 1 && !obj.m_invariant)
+				coordTrafo = &m_matA;
 
 			t_vec3_gl posLabel3d = (*coordTrafo) * obj.m_mat * obj.m_labelPos;
 			auto posLabel2d = GlToScreenCoords(tl2::create<t_vec_gl>(
@@ -1388,7 +1398,8 @@ void GlPlotRenderer::paintGL()
 
 			if constexpr(!m_usetimer)
 			{
-				// if the frame is not already updated by the timer, directly update it
+				// if the frame is not already updated by the timer,
+				// directly update it
 				m_pPlot->GetRenderer()->RequestPlotUpdate();
 			}
 		}

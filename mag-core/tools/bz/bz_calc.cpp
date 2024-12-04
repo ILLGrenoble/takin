@@ -181,7 +181,8 @@ void BZDlg::CalcBZ(bool full_recalc)
 			m_dlgPlot->AddVoronoiVertex(voro);
 
 		// add voronoi bisectors
-		m_dlgPlot->AddTriangles(bzcalc.GetAllTriangles());
+		m_dlgPlot->AddTriangles(bzcalc.GetAllTriangles(),
+			&bzcalc.GetAllTrianglesFaceIndices());
 	}
 
 	// set bz description string

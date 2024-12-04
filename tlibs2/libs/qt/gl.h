@@ -228,7 +228,7 @@ struct GlPlotObj : public GlRenderObj
 	bool m_intersect = true;        // object can be intersected by picker
 	int m_priority = 1;		// object rendering priority
 
-	t_vec3_gl m_labelPos = tl2::create<t_vec3_gl>({0., 0., 0.});
+	t_vec3_gl m_labelPos = tl2::create<t_vec3_gl>({ 0., 0., 0. });
 	std::string m_label{};
 	std::string m_datastr{};
 
@@ -258,7 +258,7 @@ extern bool create_triangle_object(QOpenGLWidget* pGLWidget, GlRenderObj& obj,
 	const std::vector<t_vec3_gl>& verts, const std::vector<t_vec3_gl>& triagverts,
 	const std::vector<t_vec3_gl>& norms, const std::vector<t_vec3_gl>& uvs,
 	const t_vec_gl& colour, bool bUseVertsAsNorm, GLint attrVertex,
-	GLint attrVertexNormal, GLint attrVertexcolour, GLint attrTextureCoords=-1);
+	GLint attrVertexNormal, GLint attrVertexcolour, GLint attrTextureCoords = -1);
 
 // create a line-based object
 extern bool create_line_object(QOpenGLWidget* pGLWidget, GlRenderObj& obj,

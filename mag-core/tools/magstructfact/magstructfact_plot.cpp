@@ -174,7 +174,8 @@ void MagStructFactDlg::Sync3DItem(int row)
  * mouse hovers over 3d object in unit cell view
  */
 void MagStructFactDlg::PickerIntersection(const t_vec3_gl* pos,
-	std::size_t objIdx, const t_vec3_gl* /*posSphere*/)
+	std::size_t objIdx, std::size_t /*triagIdx*/,
+	const t_vec3_gl* /*posSphere*/)
 {
 	if(pos && m_plot)
 		m_curPickedObj = long(objIdx);
@@ -226,7 +227,8 @@ void MagStructFactDlg::PickerIntersection(const t_vec3_gl* pos,
  * mouse hovers over 3d object in super cell view
  */
 void MagStructFactDlg::PickerIntersectionSC(const t_vec3_gl* pos,
-	std::size_t objIdx, const t_vec3_gl* /*posSphere*/)
+	std::size_t objIdx, std::size_t /*triagIdx*/,
+	const t_vec3_gl* /*posSphere*/)
 {
 	if(pos && m_plotSC)
 	{

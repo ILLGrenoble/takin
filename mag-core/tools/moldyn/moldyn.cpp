@@ -925,7 +925,9 @@ void MolDynDlg::SaveAs()
 /**
  * mouse hovers over 3d object
  */
-void MolDynDlg::PickerIntersection(const t_vec3_gl* pos, std::size_t objIdx, const t_vec3_gl* posSphere)
+void MolDynDlg::PickerIntersection(const t_vec3_gl* pos,
+	std::size_t objIdx, std::size_t /*triagIdx*/,
+	const t_vec3_gl* posSphere)
 {
 	if(!m_plot) return;
 

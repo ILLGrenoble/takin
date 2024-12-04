@@ -93,8 +93,8 @@ protected:
 
 	void AfterGLInitialisation();
 
-	void PickerIntersection(
-		const t_vec3_gl* pos, std::size_t objIdx,
+	void PickerIntersection(const t_vec3_gl* pos,
+		std::size_t objIdx, std::size_t triagIdx,
 		const t_vec3_gl* posSphere);
 
 	void DeleteItem();

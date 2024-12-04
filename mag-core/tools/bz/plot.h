@@ -35,6 +35,7 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
 #include <string>
 
 #include "globals.h"
@@ -54,7 +55,8 @@ public:
 	void SetABTrafo(const t_mat& crystA, const t_mat& crystB);
 	void AddVoronoiVertex(const t_vec& pos);
 	void AddBraggPeak(const t_vec& pos);
-	void AddTriangles(const std::vector<t_vec>& vecs);
+	void AddTriangles(const std::vector<t_vec>& vecs,
+		const std::vector<std::size_t> *faceindices = nullptr);
 	void SetPlane(const t_vec& norm, t_real d);
 
 
@@ -68,7 +70,8 @@ protected:
 	void PlotMouseDown(bool left, bool mid, bool right);
 	void PlotMouseUp(bool left, bool mid, bool right);
 	void PickerIntersection(const t_vec3_gl* pos,
-		std::size_t objIdx, const t_vec3_gl* posSphere);
+		std::size_t objIdx, std::size_t triagIdx,
+		const t_vec3_gl* posSphere);
 	void AfterGLInitialisation();
 
 	virtual void closeEvent(QCloseEvent *evt) override;
@@ -94,6 +97,9 @@ private:
 	std::vector<std::size_t> m_objsBragg{};   // Bragg peak plot objects
 	std::vector<std::size_t> m_objsVoronoi{}; // Voronoi vertex plot objects
 	std::vector<std::size_t> m_objsBZ{};      // BZ triangle plot objects
+
+	// maps an object to its triangles' BZ face indices
+	std::unordered_map<std::size_t, std::vector<std::size_t>> m_objFaceIndices{};
 
 
 signals:

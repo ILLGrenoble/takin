@@ -255,7 +255,8 @@ protected slots:
 
 signals:
 	void PickerIntersection(const t_vec3_gl *pos,
-		std::size_t objIdx, const t_vec3_gl *posSphere);
+		std::size_t objIdx, std::size_t triagIdx,
+		const t_vec3_gl *posSphere);
 	void CameraHasUpdated();
 };
 

@@ -63,10 +63,11 @@ public:
 		m_vertices.clear();
 
 		m_triags.clear();
-		m_triags_idx.clear();
+		m_triags_voroidx.clear();
 
 		m_all_triags.clear();
-		m_all_triags_idx.clear();
+		m_all_triags_voroidx.clear();
+		m_all_triags_faceidx.clear();
 
 		m_face_polygons.clear();
 		m_face_norms.clear();
@@ -163,9 +164,9 @@ public:
 	}
 
 
-	const std::vector<std::vector<std::size_t>>& GetTrianglesIndices() const
+	const std::vector<std::vector<std::size_t>>& GetTrianglesVoronoiIndices() const
 	{
-		return m_triags_idx;
+		return m_triags_voroidx;
 	}
 
 
@@ -193,9 +194,15 @@ public:
 	}
 
 
-	const std::vector<std::size_t>& GetAllTrianglesIndices() const
+	const std::vector<std::size_t>& GetAllTrianglesVoronoiIndices() const
 	{
-		return m_all_triags_idx;
+		return m_all_triags_voroidx;
+	}
+
+
+	const std::vector<std::size_t>& GetAllTrianglesFaceIndices() const
+	{
+		return m_all_triags_faceidx;
 	}
 
 
@@ -393,7 +400,7 @@ public:
 			// find out if we've already got this face
 			bool face_found = false;
 			std::size_t face_idx = 0;
-			for(face_idx=0; face_idx<m_face_polygons.size(); ++face_idx)
+			for(face_idx = 0; face_idx < m_face_polygons.size(); ++face_idx)
 			{
 				if(tl2::equals<t_vec>(m_face_norms[face_idx], norm, m_eps)
 					&& tl2::equals<t_real>(m_face_dists[face_idx], dist, m_eps))
@@ -419,12 +426,13 @@ public:
 				m_face_dists.push_back(dist);
 			}
 
+			// iterate triangle vertices
 			std::vector<std::size_t> triagindices;
 			for(t_vec& vert : bz_triag)
 			{
 				tl2::set_eps_0(vert, m_eps);
 
-				// find index of vert among voronoi vertices
+				// find index of vertex among voronoi vertices
 				std::ptrdiff_t voroidx = -1;
 				if(auto voro_iter = std::find_if(m_vertices.begin(), m_vertices.end(),
 					[&vert, this](const t_vec& vec) -> bool
@@ -439,10 +447,11 @@ public:
 				triagindices.push_back(idx);
 
 				m_all_triags.push_back(vert);
-				m_all_triags_idx.push_back(idx);
+				m_all_triags_voroidx.push_back(idx);
 			}  // vertices
 
-			m_triags_idx.emplace_back(std::move(triagindices));
+			m_all_triags_faceidx.push_back(face_idx);
+			m_triags_voroidx.emplace_back(std::move(triagindices));
 		}  // triangles
 
 		return true;
@@ -474,7 +483,7 @@ public:
 		// (rotated by orthonormal part of B^(-1))
 		const std::vector<t_vec>& voronoiverts = GetVertices();
 		ostr << "# Brillouin zone vertices (Å⁻¹, B⁻¹-rotated)\n";
-		for(std::size_t idx=0; idx<voronoiverts.size(); ++idx)
+		for(std::size_t idx = 0; idx < voronoiverts.size(); ++idx)
 		{
 			t_vec voro = BorthoT * voronoiverts[idx];
 			tl2::set_eps_0(voro, m_eps);
@@ -483,30 +492,57 @@ public:
 		}
 
 		ostr << "\n# Brillouin zone vertices (Å⁻¹, raw)\n";
-		for(std::size_t idx=0; idx<voronoiverts.size(); ++idx)
+		for(std::size_t idx = 0; idx < voronoiverts.size(); ++idx)
 		{
 			const t_vec& voro = voronoiverts[idx];
 			ostr << "raw vertex " << idx << ": (" << voro << ")\n";
 		}
 
-		// voronoi bisectors
+		// voronoi bisectors / polygons
 		const auto& bz_polys = GetTriangles();
-		const auto& bz_polys_idx = GetTrianglesIndices();
+		const auto& bz_polys_idx = GetTrianglesVoronoiIndices();
 
 		ostr << "\n# Brillouin zone polygons (Å⁻¹)\n";
-		for(std::size_t idx_triag=0; idx_triag<bz_polys.size(); ++idx_triag)
+		for(std::size_t idx_triag = 0; idx_triag < bz_polys.size(); ++idx_triag)
 		{
 			const auto& triag = bz_polys[idx_triag];
 			const auto& triag_idx = bz_polys_idx[idx_triag];
 
 			ostr << "polygon " << idx_triag << ": \n";
-			for(std::size_t idx_vert=0; idx_vert<triag.size(); ++idx_vert)
+			for(std::size_t idx_vert = 0; idx_vert < triag.size(); ++idx_vert)
 			{
 				const t_vec& vert = triag[idx_vert];
 				std::size_t voroidx = triag_idx[idx_vert];
 
 				ostr << "\tvertex " << voroidx << ": (" << vert << ")\n";
 			}
+		}
+
+		// faces and their planes
+		const auto& bz_faces_idx = GetFacesIndices();
+		const std::vector<t_vec>& norms = GetFaceNormals();
+		const std::vector<t_real>& dists = GetFaceDistances();
+
+		ostr << "\n# Brillouin zone faces (Å⁻¹):\n";
+		for(std::size_t idx_face = 0; idx_face < bz_faces_idx.size(); ++idx_face)
+		{
+			const auto& triag_idx = bz_faces_idx[idx_face];
+			const t_vec& norm = norms[idx_face];
+			t_real dist = dists[idx_face];
+
+			ostr << "face " << idx_face << ": \n";
+			ostr << "\tplane normal: " << "(" << norm[0] << ", " << norm[1] << ", " << norm[2] << ")\n";
+			ostr << "\tplane distance: " << dist << "\n";
+			ostr << "\tpolygons: ";
+			for(std::size_t idx_poly = 0; idx_poly < triag_idx.size(); ++idx_poly)
+			{
+				std::size_t poly_idx = triag_idx[idx_poly];
+
+				ostr << poly_idx;
+				if(idx_poly < triag_idx.size() - 1)
+					ostr << ", ";
+			}
+			ostr << "\n";
 		}
 
 		return ostr.str();
@@ -531,7 +567,7 @@ public:
 		// (rotated by orthonormal part of B^(-1))
 		const std::vector<t_vec>& voronoiverts = GetVertices();
 		ostr << "\"vertices\" : [\n";
-		for(std::size_t idx=0; idx<voronoiverts.size(); ++idx)
+		for(std::size_t idx = 0; idx < voronoiverts.size(); ++idx)
 		{
 			t_vec voro = BorthoT * voronoiverts[idx];
 			tl2::set_eps_0(voro, m_eps);
@@ -545,7 +581,7 @@ public:
 
 		// raw voronoi vertices
 		ostr << "\"vertices_nonrot\" : [\n";
-		for(std::size_t idx=0; idx<voronoiverts.size(); ++idx)
+		for(std::size_t idx = 0; idx < voronoiverts.size(); ++idx)
 		{
 			const t_vec& voro = voronoiverts[idx];
 			ostr << "\t[ " << voro[0] << ", " << voro[1] << ", " << voro[2] << " ]";
@@ -555,15 +591,15 @@ public:
 		}
 		ostr << "],\n\n";
 
-		// voronoi bisectors
-		const auto& bz_polys_idx = GetTrianglesIndices();
+		// voronoi bisectors / polygons
+		const auto& bz_polys_idx = GetTrianglesVoronoiIndices();
 		ostr << "\"polygons\" : [\n";
-		for(std::size_t idx_triag=0; idx_triag<bz_polys_idx.size(); ++idx_triag)
+		for(std::size_t idx_triag = 0; idx_triag < bz_polys_idx.size(); ++idx_triag)
 		{
 			const auto& triag_idx = bz_polys_idx[idx_triag];
 
 			ostr << "\t[ ";
-			for(std::size_t idx_vert=0; idx_vert<triag_idx.size(); ++idx_vert)
+			for(std::size_t idx_vert = 0; idx_vert < triag_idx.size(); ++idx_vert)
 			{
 				ostr << triag_idx[idx_vert];
 				if(idx_vert < triag_idx.size() - 1)
@@ -579,19 +615,19 @@ public:
 		// faces
 		const auto& bz_faces_idx = GetFacesIndices();
 		ostr << "\"faces\" : [\n";
-		for(std::size_t idx_triag=0; idx_triag<bz_faces_idx.size(); ++idx_triag)
+		for(std::size_t idx_face = 0; idx_face < bz_faces_idx.size(); ++idx_face)
 		{
-			const auto& triag_idx = bz_faces_idx[idx_triag];
+			const auto& triag_idx = bz_faces_idx[idx_face];
 
 			ostr << "\t[ ";
-			for(std::size_t idx_vert=0; idx_vert<triag_idx.size(); ++idx_vert)
+			for(std::size_t idx_poly = 0; idx_poly < triag_idx.size(); ++idx_poly)
 			{
-				ostr << triag_idx[idx_vert];
-				if(idx_vert < triag_idx.size() - 1)
+				ostr << triag_idx[idx_poly];
+				if(idx_poly < triag_idx.size() - 1)
 					ostr << ", ";
 			}
 			ostr << " ]";
-			if(idx_triag < bz_faces_idx.size() - 1)
+			if(idx_face < bz_faces_idx.size() - 1)
 				ostr << ",";
 			ostr << "\n";
 		}
@@ -601,7 +637,7 @@ public:
 		const std::vector<t_vec>& norms = GetFaceNormals();
 		const std::vector<t_real>& dists = GetFaceDistances();
 		ostr << "\"face_planes\" : [\n";
-		for(std::size_t idx=0; idx<norms.size(); ++idx)
+		for(std::size_t idx = 0; idx < norms.size(); ++idx)
 		{
 			const t_vec& norm = norms[idx];
 			t_real dist = dists[idx];
@@ -615,9 +651,9 @@ public:
 
 		// crystal B matrix
 		ostr << "\"crystal_B\" : [ ";
-		for(std::size_t i=0; i<B.size1(); ++i)
+		for(std::size_t i = 0; i < B.size1(); ++i)
 		{
-			for(std::size_t j=0; j<B.size2(); ++j)
+			for(std::size_t j = 0; j < B.size2(); ++j)
 			{
 				t_real elem = B(i, j);
 				tl2::set_eps_0(elem, m_eps);
@@ -631,9 +667,9 @@ public:
 
 		// orthonormal (rotation) part of crystal B matrix
 		ostr << "\"crystal_B_ortho\" : [ ";
-		for(std::size_t i=0; i<Bortho.size1(); ++i)
+		for(std::size_t i = 0; i < Bortho.size1(); ++i)
 		{
-			for(std::size_t j=0; j<Bortho.size2(); ++j)
+			for(std::size_t j = 0; j < Bortho.size2(); ++j)
 			{
 				t_real elem = Bortho(i, j);
 				tl2::set_eps_0(elem, m_eps);
@@ -665,10 +701,11 @@ private:
 	std::vector<t_vec> m_vertices{};               // voronoi vertices
 
 	std::vector<std::vector<t_vec>> m_triags{};    // bz triangles
-	std::vector<std::vector<std::size_t>> m_triags_idx{}; // ... and the version with voronoi vertex indices
+	std::vector<std::vector<std::size_t>> m_triags_voroidx{}; // voronoi vertex indices
 
 	std::vector<t_vec> m_all_triags {};            // all brillouin zone triangles
-	std::vector<std::size_t> m_all_triags_idx {};  // ... and the version with voronoi vertex indices
+	std::vector<std::size_t> m_all_triags_voroidx {};  // voronoi vertex indices
+	std::vector<std::size_t> m_all_triags_faceidx {};  // face indices
 
 	std::vector<std::vector<std::size_t>> m_face_polygons{};
 	std::vector<t_vec> m_face_norms{};

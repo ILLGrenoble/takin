@@ -151,8 +151,8 @@ void StructFactDlg::Add3DItem(int row)
  * mouse hovers over 3d object
  */
 void StructFactDlg::PickerIntersection(
-	const t_vec3_gl* pos,
-	std::size_t objIdx,
+	const t_vec3_gl* pos, std::size_t objIdx,
+	[[maybe_unused]] std::size_t triagIdx,
 	[[maybe_unused]] const t_vec3_gl* posSphere)
 {
 	if(pos)

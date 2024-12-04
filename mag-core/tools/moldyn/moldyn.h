@@ -86,7 +86,9 @@ protected:
 	void PlotMouseDown(bool left, bool mid, bool right);
 	void PlotMouseUp(bool left, bool mid, bool right);
 	void PlotMouseClick(bool left, bool mid, bool right);
-	void PickerIntersection(const t_vec3_gl* pos, std::size_t objIdx, const t_vec3_gl* posSphere);
+	void PickerIntersection(const t_vec3_gl* pos,
+		std::size_t objIdx, std::size_t triagIdx,
+		const t_vec3_gl* posSphere);
 	void AfterGLInitialisation();
 	void GLInitialisationFailed();
 

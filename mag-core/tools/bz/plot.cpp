@@ -268,7 +268,8 @@ void BZPlotDlg::AddBraggPeak(const t_vec& pos)
 /**
  * add polygons to the plot
  */
-void BZPlotDlg::AddTriangles(const std::vector<t_vec>& _vecs)
+void BZPlotDlg::AddTriangles(const std::vector<t_vec>& _vecs,
+	const std::vector<std::size_t> *faceindices)
 {
 	if(!m_plot || _vecs.size() < 3)
 		return;
@@ -278,13 +279,13 @@ void BZPlotDlg::AddTriangles(const std::vector<t_vec>& _vecs)
 	vecs.reserve(_vecs.size());
 	norms.reserve(_vecs.size());
 
-	for(std::size_t idx = 0; idx < _vecs.size()-2; idx += 3)
+	for(std::size_t idx = 0; idx < _vecs.size() - 2; idx += 3)
 	{
 		t_vec3_gl vec1 = tl2::convert<t_vec3_gl>(_vecs[idx]);
 		t_vec3_gl vec2 = tl2::convert<t_vec3_gl>(_vecs[idx+1]);
 		t_vec3_gl vec3 = tl2::convert<t_vec3_gl>(_vecs[idx+2]);
 
-		t_vec3_gl norm = tl2::cross<t_vec3_gl>(vec2-vec1, vec3-vec1);
+		t_vec3_gl norm = tl2::cross<t_vec3_gl>(vec2 - vec1, vec3 - vec1);
 		norm /= tl2::norm(norm);
 
 		t_vec3_gl mid = (vec1+vec2+vec3)/3.;
@@ -307,8 +308,19 @@ void BZPlotDlg::AddTriangles(const std::vector<t_vec>& _vecs)
 		}
 	}
 
-	auto obj = m_plot->GetRenderer()->AddTriangleObject(vecs, norms, r,g,b,1);
+	auto obj = m_plot->GetRenderer()->AddTriangleObject(vecs, norms, r, g, b, 1);
 	m_objsBZ.push_back(obj);
+
+	// set (or clear) the face indices of this object's triangles
+	if(faceindices)
+	{
+		m_objFaceIndices.insert(std::make_pair(obj, *faceindices));
+	}
+	else
+	{
+		if(auto iter = m_objFaceIndices.find(obj); iter != m_objFaceIndices.end())
+			m_objFaceIndices.erase(iter);
+	}
 
 	m_plot->update();
 }
@@ -349,6 +361,7 @@ void BZPlotDlg::Clear()
 
 	m_objsBragg.clear();
 	m_objsVoronoi.clear();
+	m_objFaceIndices.clear();
 
 	m_plot->update();
 }
@@ -358,7 +371,7 @@ void BZPlotDlg::Clear()
  * mouse hovers over 3d object
  */
 void BZPlotDlg::PickerIntersection(
-	const t_vec3_gl *pos, std::size_t objIdx,
+	const t_vec3_gl *pos, std::size_t objIdx, std::size_t triagIdx,
 	[[maybe_unused]] const t_vec3_gl *posSphere)
 {
 	if(pos)
@@ -372,15 +385,26 @@ void BZPlotDlg::PickerIntersection(
 		return;
 	}
 
-	std::ostringstream ostr;
-	ostr.precision(g_prec_gui);
-
 	t_vec QinvA = tl2::convert<t_vec>(*pos);
 	t_mat Binv = m_crystA / (t_real(2)*tl2::pi<t_real>);
 	t_vec Qrlu = Binv * QinvA;
 
 	tl2::set_eps_0<t_vec>(QinvA, g_eps);
 	tl2::set_eps_0<t_vec>(Qrlu, g_eps);
+
+	std::ostringstream ostr;
+	ostr.precision(g_prec_gui);
+
+	// see if this object has stored face indices
+	if(auto iter = m_objFaceIndices.find(objIdx); iter != m_objFaceIndices.end())
+	{
+		if(triagIdx < iter->second.size())
+			ostr << "Face " << iter->second[triagIdx] << ": ";
+	}
+	else if(objIdx == m_plane)
+	{
+		ostr << "Plane: ";
+	}
 
 	ostr << "Q = (" << QinvA[0] << ", " << QinvA[1] << ", " << QinvA[2] << ") Å⁻¹";
 	ostr << " = (" << Qrlu[0] << ", " << Qrlu[1] << ", " << Qrlu[2] << ") rlu.";
