@@ -52,10 +52,10 @@ void BZDlg::SetDrawOrder(int order, bool recalc)
 		m_drawingPeaks.clear();
 		m_drawingPeaks.reserve((2*order+1)*(2*order+1)*(2*order+1));
 
-		for(t_real h=-order; h<=order; ++h)
-			for(t_real k=-order; k<=order; ++k)
-				for(t_real l=-order; l<=order; ++l)
-					m_drawingPeaks.emplace_back(tl2::create<t_vec>({ h, k, l }));
+		for(t_real h = -order; h <= order; ++h)
+		for(t_real k = -order; k <= order; ++k)
+		for(t_real l = -order; l <= order; ++l)
+			m_drawingPeaks.emplace_back(tl2::create<t_vec>({ h, k, l }));
 
 		m_drawOrder = order;
 	}
@@ -76,10 +76,10 @@ void BZDlg::SetCalcOrder(int order, bool recalc)
 		m_peaks.clear();
 		m_peaks.reserve((2*order+1)*(2*order+1)*(2*order+1));
 
-		for(t_real h=-order; h<=order; ++h)
-			for(t_real k=-order; k<=order; ++k)
-				for(t_real l=-order; l<=order; ++l)
-					m_peaks.emplace_back(tl2::create<t_vec>({ h, k, l }));
+		for(t_real h = -order; h <= order; ++h)
+		for(t_real k = -order; k <= order; ++k)
+		for(t_real l = -order; l <= order; ++l)
+			m_peaks.emplace_back(tl2::create<t_vec>({ h, k, l }));
 
 		m_calcOrder = order;
 	}
@@ -324,7 +324,7 @@ void BZDlg::CalcBZCut()
 			auto [bz_verts, bz_triags, bz_neighbours] =
 				geo::calc_delaunay(2, cut_verts, true, false);
 
-			for(std::size_t bz_idx=0; bz_idx<bz_verts.size(); ++bz_idx)
+			for(std::size_t bz_idx = 0; bz_idx < bz_verts.size(); ++bz_idx)
 			{
 				std::size_t bz_idx2 = (bz_idx+1) % bz_verts.size();
 				t_vec pt1 = tl2::create<t_vec>({
@@ -403,7 +403,7 @@ void BZDlg::CalcBZCut()
 
 	// get description of bz cut
 	ostr << "# Brillouin zone cut (Å⁻¹)" << std::endl;
-	for(std::size_t i=0; i<cut_lines000.size(); ++i)
+	for(std::size_t i = 0; i < cut_lines000.size(); ++i)
 	{
 		const auto& line = cut_lines000[i];
 
@@ -451,7 +451,7 @@ void BZDlg::CalcFormulas()
 			std::vector<t_vec> curve;
 			curve.reserve(num_pts);
 
-			for(t_real x=m_min_x; x<=m_max_x; x+=x_delta)
+			for(t_real x = m_min_x; x <= m_max_x; x += x_delta)
 			{
 				t_vec QinvA = m_cut_plane * tl2::create<t_vec>({ x, 0., plane_d });
 

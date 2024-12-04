@@ -191,7 +191,7 @@ bool BZDlg::Save(const QString& filename)
 
 	// symop list
 	pt::ptree symops;
-	for(int row=0; row<m_symops->rowCount(); ++row)
+	for(int row = 0; row < m_symops->rowCount(); ++row)
 	{
 		std::string opstr = m_symops->item(row, COL_OP)->text().toStdString();
 		algo::replace_all(opstr, "\n", " ");
@@ -204,7 +204,7 @@ bool BZDlg::Save(const QString& filename)
 
 	// formula list
 	pt::ptree formulas;
-	for(int row=0; row<m_formulas->rowCount(); ++row)
+	for(int row = 0; row < m_formulas->rowCount(); ++row)
 	{
 		std::string opstr = m_formulas->item(row, COL_FORMULA)->text().toStdString();
 		algo::replace_all(opstr, "\n", " ");
@@ -303,10 +303,8 @@ void BZDlg::ImportCIF()
 
 
 		// symops
-		for(std::size_t opnum=0; opnum<symops.size(); ++opnum)
-		{
+		for(std::size_t opnum = 0; opnum < symops.size(); ++opnum)
 			AddSymOpTabItem(-1, symops[opnum]);
-		}
 	}
 	catch(const std::exception& ex)
 	{

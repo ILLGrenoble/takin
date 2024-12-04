@@ -135,7 +135,7 @@ void BZDlg::MoveFormulaTabItemUp()
 			continue;
 
 		m_formulas->insertRow(row-1);
-		for(int col=0; col<m_formulas->columnCount(); ++col)
+		for(int col = 0; col < m_formulas->columnCount(); ++col)
 			m_formulas->setItem(row-1, col, m_formulas->item(row+1, col)->clone());
 		m_formulas->removeRow(row+1);
 	}
@@ -146,7 +146,7 @@ void BZDlg::MoveFormulaTabItemUp()
 			item && std::find(selected.begin(), selected.end(), row+1)
 				!= selected.end())
 		{
-			for(int col=0; col<m_formulas->columnCount(); ++col)
+			for(int col = 0; col < m_formulas->columnCount(); ++col)
 				m_formulas->item(row, col)->setSelected(true);
 		}
 	}
@@ -174,7 +174,7 @@ void BZDlg::MoveFormulaTabItemDown()
 			continue;
 
 		m_formulas->insertRow(row+2);
-		for(int col=0; col<m_formulas->columnCount(); ++col)
+		for(int col = 0; col < m_formulas->columnCount(); ++col)
 			m_formulas->setItem(row+2, col, m_formulas->item(row, col)->clone());
 		m_formulas->removeRow(row);
 	}
@@ -185,7 +185,7 @@ void BZDlg::MoveFormulaTabItemDown()
 			item && std::find(selected.begin(), selected.end(), row-1)
 				!= selected.end())
 		{
-			for(int col=0; col<m_formulas->columnCount(); ++col)
+			for(int col = 0; col < m_formulas->columnCount(); ++col)
 				m_formulas->item(row, col)->setSelected(true);
 		}
 	}
@@ -197,7 +197,7 @@ std::vector<int> BZDlg::GetSelectedFormulaRows(bool sort_reversed) const
 	std::vector<int> vec;
 	vec.reserve(m_formulas->selectedItems().size());
 
-	for(int row=0; row<m_formulas->rowCount(); ++row)
+	for(int row = 0; row < m_formulas->rowCount(); ++row)
 	{
 		if(auto *item = m_formulas->item(row, 0); item && item->isSelected())
 			vec.push_back(row);
@@ -206,7 +206,9 @@ std::vector<int> BZDlg::GetSelectedFormulaRows(bool sort_reversed) const
 	if(sort_reversed)
 	{
 		std::stable_sort(vec.begin(), vec.end(), [](int row1, int row2)
-		{ return row1 > row2; });
+		{
+			return row1 > row2;
+		});
 	}
 
 	return vec;
@@ -252,7 +254,7 @@ std::vector<std::string> BZDlg::GetFormulas() const
 {
 	std::vector<std::string> formulas;
 
-	for(int row=0; row<m_formulas->rowCount(); ++row)
+	for(int row = 0; row < m_formulas->rowCount(); ++row)
 	{
 		auto *op_item = m_formulas->item(row, COL_FORMULA);
 		if(!op_item)

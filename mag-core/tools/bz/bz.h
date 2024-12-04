@@ -41,6 +41,7 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QSplitter>
+#include <QtWidgets/QGridLayout>
 #include <QtCore/QSettings>
 
 #include <vector>
@@ -87,8 +88,20 @@ public:
 	~BZDlg() = default;
 
 
+private:
+	// gui setup
+	void CreateSymopsPanel();
+	void CreateBZPanel();
+	void CreateFormulasPanel();
+	void CreateResultsPanel();
+	void CreateJsonResultsPanel();
+	void CreateMenuBar(QGridLayout *main_grid);
+	void CreateInfoDialog();
+
+
 protected:
 	QSettings *m_sett = nullptr;
+	QDialog *m_dlgInfo = nullptr;
 	QMenuBar *m_menu = nullptr;
 	QLabel *m_status = nullptr;
 	QSplitter *m_split_inout{};

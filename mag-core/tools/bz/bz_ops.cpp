@@ -149,18 +149,18 @@ void BZDlg::MoveSymOpTabItemUp()
 			continue;
 
 		m_symops->insertRow(row-1);
-		for(int col=0; col<m_symops->columnCount(); ++col)
+		for(int col = 0; col < m_symops->columnCount(); ++col)
 			m_symops->setItem(row-1, col, m_symops->item(row+1, col)->clone());
 		m_symops->removeRow(row+1);
 	}
 
-	for(int row=0; row<m_symops->rowCount(); ++row)
+	for(int row = 0; row < m_symops->rowCount(); ++row)
 	{
 		if(auto *item = m_symops->item(row, 0);
 			item && std::find(selected.begin(), selected.end(), row+1)
 				!= selected.end())
 		{
-			for(int col=0; col<m_symops->columnCount(); ++col)
+			for(int col = 0; col < m_symops->columnCount(); ++col)
 				m_symops->item(row, col)->setSelected(true);
 		}
 	}
@@ -188,12 +188,12 @@ void BZDlg::MoveSymOpTabItemDown()
 			continue;
 
 		m_symops->insertRow(row+2);
-		for(int col=0; col<m_symops->columnCount(); ++col)
+		for(int col = 0; col < m_symops->columnCount(); ++col)
 			m_symops->setItem(row+2, col, m_symops->item(row, col)->clone());
 		m_symops->removeRow(row);
 	}
 
-	for(int row=0; row<m_symops->rowCount(); ++row)
+	for(int row = 0; row < m_symops->rowCount(); ++row)
 	{
 		if(auto *item = m_symops->item(row, 0);
 			item && std::find(selected.begin(), selected.end(), row-1)
@@ -211,7 +211,7 @@ std::vector<int> BZDlg::GetSelectedSymOpRows(bool sort_reversed) const
 	std::vector<int> vec;
 	vec.reserve(m_symops->selectedItems().size());
 
-	for(int row=0; row<m_symops->rowCount(); ++row)
+	for(int row = 0; row < m_symops->rowCount(); ++row)
 	{
 		if(auto *item = m_symops->item(row, 0); item && item->isSelected())
 			vec.push_back(row);
@@ -220,7 +220,9 @@ std::vector<int> BZDlg::GetSelectedSymOpRows(bool sort_reversed) const
 	if(sort_reversed)
 	{
 		std::stable_sort(vec.begin(), vec.end(), [](int row1, int row2)
-		{ return row1 > row2; });
+		{
+			return row1 > row2;
+		});
 	}
 
 	return vec;
@@ -325,7 +327,7 @@ std::vector<t_mat> BZDlg::GetSymOps(bool only_centring) const
 {
 	std::vector<t_mat> ops;
 
-	for(int row=0; row<m_symops->rowCount(); ++row)
+	for(int row = 0; row < m_symops->rowCount(); ++row)
 	{
 		auto *op_item = m_symops->item(row, COL_OP);
 		if(!op_item)
