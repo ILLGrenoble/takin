@@ -198,6 +198,7 @@ public:
 	void SetObjectLabel(std::size_t idx, const std::string& label);
 	void SetObjectDataString(std::size_t idx, const std::string& data);
 	void SetObjectVisible(std::size_t idx, bool visible);
+	void SetObjectIntersectable(std::size_t idx, bool intersect);
 	void SetObjectHighlight(std::size_t idx, bool highlight);
 	void SetObjectPriority(std::size_t idx, int prio);
 	void SetObjectsHighlight(bool highlight);
@@ -253,8 +254,8 @@ protected slots:
 
 
 signals:
-	void PickerIntersection(const t_vec3_gl* pos,
-		std::size_t objIdx, const t_vec3_gl* posSphere);
+	void PickerIntersection(const t_vec3_gl *pos,
+		std::size_t objIdx, const t_vec3_gl *posSphere);
 	void CameraHasUpdated();
 };
 

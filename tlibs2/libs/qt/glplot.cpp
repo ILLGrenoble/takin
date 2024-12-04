@@ -190,6 +190,14 @@ void GlPlotRenderer::SetObjectVisible(std::size_t idx, bool visible)
 }
 
 
+void GlPlotRenderer::SetObjectIntersectable(std::size_t idx, bool intersect)
+{
+	if(idx >= m_objs.size())
+		return;
+	m_objs[idx].m_intersect = intersect;
+}
+
+
 bool GlPlotRenderer::GetObjectVisible(std::size_t idx) const
 {
 	if(idx >= m_objs.size())
@@ -895,13 +903,14 @@ void GlPlotRenderer::UpdatePicker()
 	// picker ray
 	auto [org3, dir3] = m_cam.GetPickerRay(m_posMouse.x(), m_posMouse.y());
 
+
 	// intersection with unit sphere around origin
 	bool hasSphereInters = false;
-	t_vec_gl vecClosestSphereInters = tl2::create<t_vec_gl>({0,0,0,0});
+	t_vec_gl vecClosestSphereInters = tl2::create<t_vec_gl>({ 0, 0, 0, 0 });
 
 	auto intersUnitSphere =
-	tl2::intersect_line_sphere<t_vec3_gl, std::vector>(org3, dir3,
-		tl2::create<t_vec3_gl>({0,0,0}), t_real_gl(m_pickerSphereRadius));
+		tl2::intersect_line_sphere<t_vec3_gl, std::vector>(org3, dir3,
+			tl2::create<t_vec3_gl>({0,0,0}), t_real_gl(m_pickerSphereRadius));
 	for(const auto& result : intersUnitSphere)
 	{
 		t_vec_gl vecInters4 = tl2::create<t_vec_gl>(
@@ -952,7 +961,7 @@ void GlPlotRenderer::UpdatePicker()
 			linkedObj = &m_objs[*obj.linkedObj];
 
 		if(linkedObj->m_type != GlPlotObjType::TRIANGLES ||
-			!obj.m_visible || !obj.m_valid)
+			!obj.m_visible || !obj.m_valid || !obj.m_intersect)
 			continue;
 
 
@@ -971,7 +980,7 @@ void GlPlotRenderer::UpdatePicker()
 
 
 		// test actual polygons for intersection
-		for(std::size_t startidx=0; startidx+2<linkedObj->m_triangles.size(); startidx+=3)
+		for(std::size_t startidx = 0; startidx+2 < linkedObj->m_triangles.size(); startidx += 3)
 		{
 			std::vector<t_vec3_gl> poly{ {
 				linkedObj->m_triangles[startidx+0],
@@ -979,9 +988,9 @@ void GlPlotRenderer::UpdatePicker()
 				linkedObj->m_triangles[startidx+2]
 			} };
 
-			/*std::vector<t_vec3_gl> polyuv{ { 
-				linkedObj->m_uvs[startidx+0], 
-				linkedObj->m_uvs[startidx+1], 
+			/*std::vector<t_vec3_gl> polyuv{ {
+				linkedObj->m_uvs[startidx+0],
+				linkedObj->m_uvs[startidx+1],
 				linkedObj->m_uvs[startidx+2]
 			} };*/
 
@@ -994,7 +1003,7 @@ void GlPlotRenderer::UpdatePicker()
 			if(bInters)
 			{
 				t_vec_gl vecInters4 = tl2::create<t_vec_gl>(
-					{vecInters[0], vecInters[1], vecInters[2], 1});
+					{ vecInters[0], vecInters[1], vecInters[2], 1 });
 
 				if(!hasInters)
 				{	// first intersection
@@ -1280,36 +1289,36 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 	{
 		for(const auto& obj : m_objs)
 		{
-			if(!obj.m_visible || !obj.m_valid) continue;
+			if(!obj.m_visible || !obj.m_valid)
+				continue;
+			if(obj.m_label == "")
+				continue;
 
-			if(obj.m_label != "")
-			{
-				const t_mat_gl *coordTrafo = &matUnit;
-				if(m_coordsys == 1 && !obj.m_invariant) coordTrafo = &m_matA;
+			const t_mat_gl *coordTrafo = &matUnit;
+			if(m_coordsys == 1 && !obj.m_invariant) coordTrafo = &m_matA;
 
-				t_vec3_gl posLabel3d = (*coordTrafo) * obj.m_mat * obj.m_labelPos;
-				auto posLabel2d = GlToScreenCoords(tl2::create<t_vec_gl>(
-					{posLabel3d[0], posLabel3d[1], posLabel3d[2], 1.}));
+			t_vec3_gl posLabel3d = (*coordTrafo) * obj.m_mat * obj.m_labelPos;
+			auto posLabel2d = GlToScreenCoords(tl2::create<t_vec_gl>(
+				{posLabel3d[0], posLabel3d[1], posLabel3d[2], 1.}));
 
-				QFont fontLabel = fontOrig;
-				QPen penLabel = penOrig;
+			QFont fontLabel = fontOrig;
+			QPen penLabel = penOrig;
 
-				fontLabel.setStyleStrategy(QFont::StyleStrategy(
-					QFont::PreferAntialias | QFont::PreferQuality));
-				fontLabel.setWeight(QFont::Medium);
-				penLabel.setColor(QColor(0,0,0,255));
-				painter.setFont(fontLabel);
-				painter.setPen(penLabel);
-				painter.drawText(posLabel2d, obj.m_label.c_str());
+			fontLabel.setStyleStrategy(QFont::StyleStrategy(
+				QFont::PreferAntialias | QFont::PreferQuality));
+			fontLabel.setWeight(QFont::Medium);
+			penLabel.setColor(QColor(0,0,0,255));
+			painter.setFont(fontLabel);
+			painter.setPen(penLabel);
+			painter.drawText(posLabel2d, obj.m_label.c_str());
 
-				fontLabel.setWeight(QFont::Normal);
-				penLabel.setColor(QColor(
-					int(obj.m_colour[0]*255.), int(obj.m_colour[1]*255.),
-					int(obj.m_colour[2]*255.), int(obj.m_colour[3]*255.)));
-				painter.setFont(fontLabel);
-				painter.setPen(penLabel);
-				painter.drawText(posLabel2d, obj.m_label.c_str());
-			}
+			fontLabel.setWeight(QFont::Normal);
+			penLabel.setColor(QColor(
+				int(obj.m_colour[0]*255.), int(obj.m_colour[1]*255.),
+				int(obj.m_colour[2]*255.), int(obj.m_colour[3]*255.)));
+			painter.setFont(fontLabel);
+			painter.setPen(penLabel);
+			painter.drawText(posLabel2d, obj.m_label.c_str());
 		}
 	}
 

@@ -63,6 +63,7 @@ protected:
 	void ShowCoordCross(bool show);
 	void ShowLabels(bool show);
 	void ShowPlane(bool show);
+	void ShowQVertices(bool show);
 
 	void PlotMouseDown(bool left, bool mid, bool right);
 	void PlotMouseUp(bool left, bool mid, bool right);
@@ -87,9 +88,12 @@ private:
 	QCheckBox *m_show_coordcross = nullptr;
 	QCheckBox *m_show_labels = nullptr;
 	QCheckBox *m_show_plane = nullptr;
+	QCheckBox *m_show_Qs = nullptr;
 
-	long m_curPickedObj = -1;               // current 3d bz object
-	std::vector<std::size_t> m_plotObjs{};  // 3d bz plot objects
+	long m_curPickedObj = -1;                 // current 3d bz object
+	std::vector<std::size_t> m_objsBragg{};   // Bragg peak plot objects
+	std::vector<std::size_t> m_objsVoronoi{}; // Voronoi vertex plot objects
+	std::vector<std::size_t> m_objsBZ{};      // BZ triangle plot objects
 
 
 signals:

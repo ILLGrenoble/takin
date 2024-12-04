@@ -96,9 +96,16 @@ public:
 	// --------------------------------------------------------------------------------
 	// getter and setter
 	// --------------------------------------------------------------------------------
-	static std::size_t GetErrIdx() { return s_erridx; }
+	static std::size_t GetErrIdx()
+	{
+		return s_erridx;
+	}
 
-	void SetEps(t_real eps) { m_eps = eps; }
+
+	void SetEps(t_real eps)
+	{
+		m_eps = eps;
+	}
 
 
 	void SetCrystalB(const t_mat& B)
@@ -119,25 +126,83 @@ public:
 		SetCrystalB(crystB);
 	}
 
-	void SetPeaks(const std::vector<t_vec>& peaks) { m_peaks = peaks; }
-	const std::vector<t_vec>& GetPeaks() const { return m_peaks; }
 
-	void SetPeaksInvA(const std::vector<t_vec>& peaks) { m_peaks_invA = peaks; }
-	const std::vector<t_vec>& GetPeaksInvA() const { return m_peaks_invA; }
+	void SetPeaks(const std::vector<t_vec>& peaks)
+	{
+		m_peaks = peaks;
+	}
 
-	const std::vector<t_vec>& GetVertices() const { return m_vertices; }
 
-	const std::vector<std::vector<t_vec>>& GetTriangles() const { return m_triags; }
-	const std::vector<std::vector<std::size_t>>& GetTrianglesIndices() const { return m_triags_idx; }
+	const std::vector<t_vec>& GetPeaks() const
+	{
+		return m_peaks;
+	}
 
-	const std::vector<std::vector<std::size_t>>& GetFacesIndices() const { return m_face_polygons; }
-	const std::vector<t_vec>& GetFaceNormals() const { return m_face_norms; }
-	const std::vector<t_real>& GetFaceDistances() const { return m_face_dists; }
 
-	const std::vector<t_vec>& GetAllTriangles() const { return m_all_triags; }
-	const std::vector<std::size_t>& GetAllTrianglesIndices() const { return m_all_triags_idx; }
+	void SetPeaksInvA(const std::vector<t_vec>& peaks)
+	{
+		m_peaks_invA = peaks;
+	}
 
-	const t_mat& GetCrystalB(bool ortho = false) const { return ortho ? m_crystB_ortho : m_crystB; }
+
+	const std::vector<t_vec>& GetPeaksInvA() const
+	{
+		return m_peaks_invA;
+	}
+
+
+	const std::vector<t_vec>& GetVertices() const
+	{
+		return m_vertices;
+	}
+
+
+	const std::vector<std::vector<t_vec>>& GetTriangles() const
+	{
+		return m_triags;
+	}
+
+
+	const std::vector<std::vector<std::size_t>>& GetTrianglesIndices() const
+	{
+		return m_triags_idx;
+	}
+
+
+	const std::vector<std::vector<std::size_t>>& GetFacesIndices() const
+	{
+		return m_face_polygons;
+	}
+
+
+	const std::vector<t_vec>& GetFaceNormals() const
+	{
+		return m_face_norms;
+	}
+
+
+	const std::vector<t_real>& GetFaceDistances() const
+	{
+		return m_face_dists;
+	}
+
+
+	const std::vector<t_vec>& GetAllTriangles() const
+	{
+		return m_all_triags;
+	}
+
+
+	const std::vector<std::size_t>& GetAllTrianglesIndices() const
+	{
+		return m_all_triags_idx;
+	}
+
+
+	const t_mat& GetCrystalB(bool ortho = false) const
+	{
+		return ortho ? m_crystB_ortho : m_crystB;
+	}
 
 
 	/**
@@ -245,17 +310,13 @@ public:
 		m_peaks.clear();
 		m_peaks.reserve((2*order+1)*(2*order+1)*(2*order+1));
 
-		for(int h=-order; h<=order; ++h)
+		for(int h = -order; h <= order; ++h)
+		for(int k = -order; k <= order; ++k)
+		for(int l = -order; l <= order; ++l)
 		{
-			for(int k=-order; k<=order; ++k)
-			{
-				for(int l=-order; l<=order; ++l)
-				{
-					m_peaks.emplace_back(
-						tl2::create<t_vec>(
-							{ t_real(h), t_real(k), t_real(l) }));
-				}
-			}
+			m_peaks.emplace_back(
+				tl2::create<t_vec>(
+					{ t_real(h), t_real(k), t_real(l) }));
 		}
 
 		if(cleate_invA)
@@ -314,7 +375,8 @@ public:
 				continue;
 
 			// calculate face plane
-			t_vec norm = tl2::cross<t_vec>({ bz_triag[1]-bz_triag[0], bz_triag[2]-bz_triag[0] });
+			t_vec norm = tl2::cross<t_vec>(
+				{ bz_triag[1] - bz_triag[0], bz_triag[2] - bz_triag[0] });
 			t_real norm_len = tl2::norm<t_vec>(norm);
 			if(!tl2::equals_0<t_real>(norm_len, m_eps))
 				norm /= tl2::norm<t_vec>(norm);

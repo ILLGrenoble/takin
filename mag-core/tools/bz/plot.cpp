@@ -61,12 +61,18 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	//comboCoordSys->addItem("Fractional Units (rlu)");
 	//comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
-	m_show_coordcross = new QCheckBox("Show Coordinates", this);
-	m_show_labels = new QCheckBox("Show Labels", this);
-	m_show_plane = new QCheckBox("Show Plane", this);
+	m_show_coordcross = new QCheckBox("Coordinates", this);
+	m_show_labels = new QCheckBox("Labels", this);
+	m_show_plane = new QCheckBox("Plane", this);
+	m_show_Qs = new QCheckBox("Q Vertices", this);
+	m_show_coordcross->setToolTip("Show or hide the coordinate cross.");
+	m_show_labels->setToolTip("Show or hide the object labels.");
+	m_show_plane->setToolTip("Show or hide the plane used for the Brillouin zone intersection.");
+	m_show_Qs->setToolTip("Show or hide the Brillouin zone vertices and Bragg peaks.");
 	m_show_coordcross->setChecked(true);
 	m_show_labels->setChecked(true);
 	m_show_plane->setChecked(true);
+	m_show_Qs->setChecked(true);
 
 	// status bar
 	m_status = new QLabel(this);
@@ -83,14 +89,15 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(2);
 	grid->setContentsMargins(4, 4, 4, 4);
-	grid->addWidget(m_plot.get(), 0, 0, 1, 3);
+	grid->addWidget(m_plot.get(), 0, 0, 1, 4);
 	//grid->addWidget(labCoordSys, 1, 0, 1, 1);
 	//grid->addWidget(comboCoordSys, 1, 1, 1, 1);
 	grid->addWidget(m_show_coordcross, 1, 0, 1, 1);
 	grid->addWidget(m_show_labels, 1, 1, 1, 1);
 	grid->addWidget(m_show_plane, 1, 2, 1, 1);
-	grid->addWidget(m_status, 2, 0, 1, 2);
-	grid->addWidget(okbtn, 2, 2, 1, 1);
+	grid->addWidget(m_show_Qs, 1, 3, 1, 1);
+	grid->addWidget(m_status, 2, 0, 1, 3);
+	grid->addWidget(okbtn, 2, 3, 1, 1);
 
 	connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation,
 		this, &BZPlotDlg::AfterGLInitialisation);
@@ -101,6 +108,7 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	connect(m_show_coordcross, &QCheckBox::toggled, this, &BZPlotDlg::ShowCoordCross);
 	connect(m_show_labels, &QCheckBox::toggled, this, &BZPlotDlg::ShowLabels);
 	connect(m_show_plane, &QCheckBox::toggled, this, &BZPlotDlg::ShowPlane);
+	connect(m_show_Qs, &QCheckBox::toggled, this, &BZPlotDlg::ShowQVertices);
 	/*connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(
 		&QComboBox::currentIndexChanged),
 		this, [this](int val)
@@ -173,6 +181,23 @@ void BZPlotDlg::ShowPlane(bool show)
 
 
 /**
+ * show or hide the Bragg peaks and Voronoi vertices
+ */
+void BZPlotDlg::ShowQVertices(bool show)
+{
+	if(!m_plot)
+		return;
+
+	for(std::size_t obj : m_objsVoronoi)
+		m_plot->GetRenderer()->SetObjectVisible(obj, show);
+	for(std::size_t obj : m_objsBragg)
+		m_plot->GetRenderer()->SetObjectVisible(obj, show);
+
+	m_plot->update();
+}
+
+
+/**
  * set the crystal matrices
  */
 void BZPlotDlg::SetABTrafo(const t_mat& crystA, const t_mat& crystB)
@@ -207,8 +232,9 @@ void BZPlotDlg::AddVoronoiVertex(const t_vec& pos)
 	m_plot->GetRenderer()->SetObjectMatrix(obj,
 		tl2::hom_translation<t_mat_gl>(posx, posy, posz) *
 		tl2::hom_scaling<t_mat_gl>(scale, scale, scale));
+	m_plot->GetRenderer()->SetObjectIntersectable(obj, false);
 
-	m_plotObjs.push_back(obj);
+	m_objsVoronoi.push_back(obj);
 	m_plot->update();
 }
 
@@ -232,8 +258,9 @@ void BZPlotDlg::AddBraggPeak(const t_vec& pos)
 	m_plot->GetRenderer()->SetObjectMatrix(obj,
 		tl2::hom_translation<t_mat_gl>(posx, posy, posz) *
 		tl2::hom_scaling<t_mat_gl>(scale, scale, scale));
+	m_plot->GetRenderer()->SetObjectIntersectable(obj, false);
 
-	m_plotObjs.push_back(obj);
+	m_objsBragg.push_back(obj);
 	m_plot->update();
 }
 
@@ -281,7 +308,7 @@ void BZPlotDlg::AddTriangles(const std::vector<t_vec>& _vecs)
 	}
 
 	auto obj = m_plot->GetRenderer()->AddTriangleObject(vecs, norms, r,g,b,1);
-	m_plotObjs.push_back(obj);
+	m_objsBZ.push_back(obj);
 
 	m_plot->update();
 }
@@ -313,10 +340,16 @@ void BZPlotDlg::Clear()
 	if(!m_plot)
 		return;
 
-	for(std::size_t obj : m_plotObjs)
+	for(std::size_t obj : m_objsBZ)
+		m_plot->GetRenderer()->RemoveObject(obj);
+	for(std::size_t obj : m_objsBragg)
+		m_plot->GetRenderer()->RemoveObject(obj);
+	for(std::size_t obj : m_objsVoronoi)
 		m_plot->GetRenderer()->RemoveObject(obj);
 
-	m_plotObjs.clear();
+	m_objsBragg.clear();
+	m_objsVoronoi.clear();
+
 	m_plot->update();
 }
 
@@ -325,37 +358,34 @@ void BZPlotDlg::Clear()
  * mouse hovers over 3d object
  */
 void BZPlotDlg::PickerIntersection(
-	const t_vec3_gl* pos,
-	std::size_t objIdx,
-	[[maybe_unused]] const t_vec3_gl* posSphere)
+	const t_vec3_gl *pos, std::size_t objIdx,
+	[[maybe_unused]] const t_vec3_gl *posSphere)
 {
 	if(pos)
 		m_curPickedObj = long(objIdx);
 	else
 		m_curPickedObj = -1;
 
-
-	if(m_curPickedObj > 0 && pos)
-	{
-		std::ostringstream ostr;
-		ostr.precision(g_prec_gui);
-
-		t_vec QinvA = tl2::convert<t_vec>(*pos);
-		t_mat Binv = m_crystA / (t_real(2)*tl2::pi<t_real>);
-		t_vec Qrlu = Binv * QinvA;
-
-		tl2::set_eps_0<t_vec>(QinvA, g_eps);
-		tl2::set_eps_0<t_vec>(Qrlu, g_eps);
-
-		ostr << "Q = (" << QinvA[0] << ", " << QinvA[1] << ", " << QinvA[2] << ") Å⁻¹";
-		ostr << " = (" << Qrlu[0] << ", " << Qrlu[1] << ", " << Qrlu[2] << ") rlu.";
-
-		SetStatusMsg(ostr.str());
-	}
-	else
+	if(m_curPickedObj <= 0 || !pos)
 	{
 		SetStatusMsg("");
+		return;
 	}
+
+	std::ostringstream ostr;
+	ostr.precision(g_prec_gui);
+
+	t_vec QinvA = tl2::convert<t_vec>(*pos);
+	t_mat Binv = m_crystA / (t_real(2)*tl2::pi<t_real>);
+	t_vec Qrlu = Binv * QinvA;
+
+	tl2::set_eps_0<t_vec>(QinvA, g_eps);
+	tl2::set_eps_0<t_vec>(Qrlu, g_eps);
+
+	ostr << "Q = (" << QinvA[0] << ", " << QinvA[1] << ", " << QinvA[2] << ") Å⁻¹";
+	ostr << " = (" << Qrlu[0] << ", " << Qrlu[1] << ", " << Qrlu[2] << ") rlu.";
+
+	SetStatusMsg(ostr.str());
 }
 
 
@@ -404,6 +434,7 @@ void BZPlotDlg::AfterGLInitialisation()
 	m_sphere = m_plot->GetRenderer()->AddSphere(0.05, 0.,0.,0., 1.,1.,1.,1.);
 	m_plane = m_plot->GetRenderer()->AddPlane(0.,0.,1., 0.,0.,0., 5., 0.75,0.75,0.75,0.5);
 	m_plot->GetRenderer()->SetObjectVisible(m_sphere, false);
+	m_plot->GetRenderer()->SetObjectIntersectable(m_sphere, false);
 	m_plot->GetRenderer()->SetObjectVisible(m_plane, true);
 	m_plot->GetRenderer()->SetObjectPriority(m_plane, 0);
 
