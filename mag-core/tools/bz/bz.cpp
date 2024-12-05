@@ -328,9 +328,10 @@ void BZDlg::CreateBZPanel()
 	m_bzscene = new BZCutScene(bzpanel);
 	m_bzview = new BZCutView(m_bzscene);
 
-	for(QDoubleSpinBox** const cut :
-		{ &m_cutX, &m_cutY, &m_cutZ,
-		&m_cutNX, &m_cutNY, &m_cutNZ, &m_cutD })
+	for(QDoubleSpinBox** const cut : {
+		&m_cutNX, &m_cutNY, &m_cutNZ,
+		&m_cutX, &m_cutY, &m_cutZ,
+		&m_cutD })
 	{
 		*cut = new QDoubleSpinBox(bzpanel);
 		(*cut)->setMinimum(-99);
@@ -344,8 +345,17 @@ void BZDlg::CreateBZPanel()
 			&QDoubleSpinBox::valueChanged),
 			[this]() { this->CalcBZCut(); });
 	}
+
 	m_cutX->setValue(1);
 	m_cutNZ->setValue(1);
+
+	m_cutNX->setToolTip("First component of the cutting plane's normal vector, which defines the plane's orientation.");
+	m_cutNY->setToolTip("Second component of the cutting plane's normal vector, which defines the plane's orientation..");
+	m_cutNZ->setToolTip("Third component of the cutting plane's normal vector, which defines the plane's orientation..");
+	m_cutX->setToolTip("First component of the cutting plane's first in-plane vector, which defines the cut's rotation.");
+	m_cutY->setToolTip("Second component of the cutting plane's first in-plane vector, which defines the cut's rotation.");
+	m_cutZ->setToolTip("Third component of the cutting plane's first in-plane vector, which defines the cut's rotation.");
+	m_cutD->setToolTip("Distance of the cutting plane along its normal vector from the origin.");
 
 	int draw_order = 4;
 	int calc_order = 4;
@@ -365,19 +375,19 @@ void BZDlg::CreateBZPanel()
 	QPushButton *btnShowBZ = new QPushButton("3D View...", bzpanel);
 
 	// cuts
-	grid->addWidget(m_bzview, 0,0, 1,4);
-	grid->addWidget(new QLabel("In-Plane Vector (rlu):"), 1,0, 1,1);
-	grid->addWidget(m_cutX, 1,1, 1,1);
-	grid->addWidget(m_cutY, 1,2, 1,1);
-	grid->addWidget(m_cutZ, 1,3, 1,1);
-	grid->addWidget(new QLabel("Plane Normal (rlu):"), 2,0, 1,1);
-	grid->addWidget(m_cutNX, 2,1, 1,1);
-	grid->addWidget(m_cutNY, 2,2, 1,1);
-	grid->addWidget(m_cutNZ, 2,3, 1,1);
-	grid->addWidget(new QLabel("Plane Offset (rlu):"), 3,0, 1,1);
-	grid->addWidget(m_cutD, 3,1, 1,1);
-	grid->addWidget(new QLabel("Draw Order:"), 3,2,1,1);
-	grid->addWidget(m_BZDrawOrder, 3,3, 1,1);
+	grid->addWidget(m_bzview, 0, 0, 1, 4);
+	grid->addWidget(new QLabel("Plane Normal (rlu):"), 1, 0, 1, 1);
+	grid->addWidget(m_cutNX, 1, 1, 1, 1);
+	grid->addWidget(m_cutNY, 1, 2, 1, 1);
+	grid->addWidget(m_cutNZ, 1, 3, 1, 1);
+	grid->addWidget(new QLabel("In-Plane Vector (rlu):"), 2, 0, 1, 1);
+	grid->addWidget(m_cutX, 2, 1, 1, 1);
+	grid->addWidget(m_cutY, 2, 2, 1, 1);
+	grid->addWidget(m_cutZ, 2, 3, 1, 1);
+	grid->addWidget(new QLabel("Plane Offset (rlu):"), 3, 0, 1, 1);
+	grid->addWidget(m_cutD, 3, 1, 1, 1);
+	grid->addWidget(new QLabel("Draw Order:"), 3, 2, 1, 1);
+	grid->addWidget(m_BZDrawOrder, 3, 3, 1, 1);
 
 	// bz
 	auto sep1 = new QFrame(bzpanel); sep1->setFrameStyle(QFrame::HLine);
