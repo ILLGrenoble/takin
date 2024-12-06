@@ -563,19 +563,6 @@ void TopologyDlg::PlotBerryCurvature(bool clear_settings)
 	t_real B_min_bc = std::numeric_limits<t_real>::max();
 	t_real B_max_bc = -B_min_bc;
 
-	// get berry curvature range
-	for(const QVector<t_real>& Bs_data : Bs_data_bc)
-	{
-		auto [min_B_iter, max_B_iter] = std::minmax_element(Bs_data.begin(), Bs_data.end());
-		if(min_B_iter != Bs_data.end() && max_B_iter != Bs_data.end())
-		{
-			t_real B_range = *max_B_iter - *min_B_iter;
-
-			B_max_bc = std::max(B_max_bc, *max_B_iter + B_range*0.05);
-			B_min_bc = std::min(B_min_bc, *min_B_iter - B_range*0.05);
-		}
-	}
-
 	// how many bands do actually have data?
 	t_size num_effective_bands = 0;
 	for(t_size band = 0; band < num_bands; ++band)
@@ -615,6 +602,19 @@ void TopologyDlg::PlotBerryCurvature(bool clear_settings)
 		curve->setAntialiased(true);
 		curve->setData(Qs_data_bc[band], Bs_data_bc[band]);
 		curve->setVisible(enabled);
+
+		if(enabled)
+		{
+			// berry curvature range for enabled curves
+			auto [min_B_iter, max_B_iter] = std::minmax_element(Bs_data_bc[band].begin(), Bs_data_bc[band].end());
+			if(min_B_iter != Bs_data_bc[band].end() && max_B_iter != Bs_data_bc[band].end())
+			{
+				t_real B_range = *max_B_iter - *min_B_iter;
+
+				B_max_bc = std::max(B_max_bc, *max_B_iter + B_range*0.05);
+				B_min_bc = std::min(B_min_bc, *min_B_iter - B_range*0.05);
+			}
+		}
 
 		m_curves_bc.push_back(curve);
 		AddBerryCurvatureBand("#" + tl2::var_to_str(effective_band + 1), colFull, enabled);
