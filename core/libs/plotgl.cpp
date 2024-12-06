@@ -1,5 +1,5 @@
 /**
- * gl plotter, non-threaded
+ * gl plotter
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 19-may-2013 -- jan-2019
  * @license GPLv2
@@ -157,13 +157,13 @@ void PlotGl::initializeGL()
 
 
 	// generate spheres in several detail levels
-	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
+	for(std::size_t iSphere = 0; iSphere < sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
 	{
 		m_iLstSphere[iSphere] = glGenLists(1);
 		tl::TesselSphere<t_vec3> prim(t_real(1), iSphere);
 
 		glNewList(m_iLstSphere[iSphere], GL_COMPILE);
-			for(std::size_t iPoly=0; iPoly<prim.GetPolyCount(); ++iPoly)
+			for(std::size_t iPoly = 0; iPoly < prim.GetPolyCount(); ++iPoly)
 			{
 				glBegin(GL_POLYGON);
 					//t_vec3 vecFaceNorm = prim.GetPolyNormal(iPoly);
@@ -199,10 +199,14 @@ void PlotGl::freeGL()
 	SetEnabled(false);
 	QWidget::setMouseTracking(false);
 
-	for(std::size_t iSphere=0; iSphere<sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
+	for(std::size_t iSphere = 0; iSphere < sizeof(m_iLstSphere)/sizeof(*m_iLstSphere); ++iSphere)
 		glDeleteLists(m_iLstSphere[iSphere], 1);
 
-	if(m_pFont) { delete m_pFont; m_pFont = nullptr; }
+	if(m_pFont)
+	{
+		delete m_pFont;
+		m_pFont = nullptr;
+	}
 }
 
 
@@ -212,7 +216,7 @@ void PlotGl::SetPerspective(int w, int h)
 	if(m_bPerspective)
 		m_matProj = tl::perspective_matrix<t_mat4, t_real>(m_dFOV, t_real(w)/t_real(h), 0.1, 100.);
 	else
-		m_matProj = tl::ortho_matrix<t_mat4, t_real>(-1.,1.,-1.,1.,0.1,100.);
+		m_matProj = tl::ortho_matrix<t_mat4, t_real>(-1., 1., -1., 1., 0.1, 100.);
 	t_real glmat[16]; tl::to_gl_array(m_matProj, glmat);
 	tl::gl_traits<t_real>::LoadMatrix(glmat);
 
@@ -919,14 +923,12 @@ void PlotGl::mouseSelectObj(t_real dX, t_real dY)
 			vecT = pQuad->intersect(ray);
 		}
 
-		if(vecT.size() > 0)
+		for(t_real t : vecT)
 		{
-			for(t_real t : vecT)
-			{
-				if(t < 0.) continue; // beyond "near" plane
-				if(t > 1.) continue; // beyond "far" plane
-				obj.bSelected = true;
-			}
+			// beyond "near" or "far" plane?
+			if(t < 0. || t > 1.)
+				continue;
+			obj.bSelected = true;
 		}
 	}
 }

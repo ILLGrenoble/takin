@@ -113,7 +113,7 @@ std::string find_sg_from_ops(const std::vector<t_mat>& ops)
 /**
  * load crystal definitions from an xml file
  */
-template<class t_real, class t_vec, class t_mat> 
+template<class t_real, class t_vec, class t_mat>
 std::tuple<
 	bool,				// ok?
 	t_real, t_real, t_real, 	// lattice constants
@@ -137,7 +137,7 @@ load_xml(std::istream& istr)
 	{
 		tl::log_err("Could not open crystal XML stream.\n");
 		return std::make_tuple(false,
-			t_real{0},t_real{0},t_real{0}, t_real{0},t_real{0},t_real{0}, 
+			t_real{0},t_real{0},t_real{0}, t_real{0},t_real{0},t_real{0},
 			vecNames, vecPos, vecAllPos, strsg);
 	}
 

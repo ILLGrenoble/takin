@@ -54,11 +54,13 @@ protected:
 public:
 	QTableWidgetItemWrapper() : QTableWidgetItem(), m_tVal()
 	{}
+
 	// same value and item text
 	QTableWidgetItemWrapper(T tVal)
 		: QTableWidgetItem(tl::var_to_str<T>(tVal, std::numeric_limits<T>::digits10).c_str()),
 		m_tVal(tVal)
 	{}
+
 	// one value, but different text
 	QTableWidgetItemWrapper(T tVal, const std::string& strText)
 		: QTableWidgetItem(strText.c_str()),
@@ -67,10 +69,20 @@ public:
 
 	virtual ~QTableWidgetItemWrapper() = default;
 
-	unsigned int GetPrec() const { return m_iPrec; }
-	void SetPrec(unsigned int iPrec) { m_iPrec = iPrec; }
+	unsigned int GetPrec() const
+	{
+		return m_iPrec;
+	}
 
-	T GetValue() const { return m_tVal; }
+	void SetPrec(unsigned int iPrec)
+	{
+		m_iPrec = iPrec;
+	}
+
+	T GetValue() const
+	{
+		return m_tVal;
+	}
 
 	// same value and item text
 	void SetValue(T val)
@@ -78,12 +90,14 @@ public:
 		m_tVal = val;
 		this->setText(tl::var_to_str<T>(m_tVal, m_iPrec).c_str());
 	}
+
 	// one value, but different text
 	void SetValue(T val, const std::string& str)
 	{
 		m_tVal = val;
 		this->setText(str.c_str());
 	}
+
 	void SetValueKeepText(T val)
 	{
 		m_tVal = val;
@@ -93,7 +107,8 @@ public:
 	{
 		const QTableWidgetItemWrapper<T>* pItem =
 			dynamic_cast<const QTableWidgetItemWrapper<T>*>(&item);
-		if(!pItem) return 0;
+		if(!pItem)
+			return false;
 
 		return this->GetValue() < pItem->GetValue();
 	}

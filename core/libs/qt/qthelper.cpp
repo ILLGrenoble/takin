@@ -52,18 +52,18 @@ bool save_table(const char* pcFile, const QTableWidget* pTable)
 
 	// item lengths
 	std::unique_ptr<int[]> ptrMaxTxtLen(new int[iNumCols]);
-	for(int iCol=0; iCol<iNumCols; ++iCol)
+	for(int iCol = 0; iCol < iNumCols; ++iCol)
 		ptrMaxTxtLen[iCol] = 0;
 
-	for(int iCol=0; iCol<iNumCols; ++iCol)
+	for(int iCol = 0; iCol < iNumCols; ++iCol)
 	{
 		const QTableWidgetItem *pItem = pTable->horizontalHeaderItem(iCol);
 		ptrMaxTxtLen[iCol] = std::max(pItem ? pItem->text().length() : 0, ptrMaxTxtLen[iCol]);
 	}
 
-	for(int iRow=0; iRow<iNumRows; ++iRow)
+	for(int iRow = 0; iRow < iNumRows; ++iRow)
 	{
-		for(int iCol=0; iCol<iNumCols; ++iCol)
+		for(int iCol = 0; iCol < iNumCols; ++iCol)
 		{
 			const QTableWidgetItem *pItem = pTable->item(iRow, iCol);
 			ptrMaxTxtLen[iCol] = std::max(pItem ? pItem->text().length() : 0, ptrMaxTxtLen[iCol]);
@@ -72,16 +72,16 @@ bool save_table(const char* pcFile, const QTableWidget* pTable)
 
 
 	// write items
-	for(int iCol=0; iCol<iNumCols; ++iCol)
+	for(int iCol = 0; iCol < iNumCols; ++iCol)
 	{
 		const QTableWidgetItem *pItem = pTable->horizontalHeaderItem(iCol);
 		ofstr << std::setw(ptrMaxTxtLen[iCol]+4) << (pItem ? pItem->text().toStdString() : "");
 	}
 	ofstr << "\n";
 
-	for(int iRow=0; iRow<iNumRows; ++iRow)
+	for(int iRow = 0; iRow < iNumRows; ++iRow)
 	{
-		for(int iCol=0; iCol<iNumCols; ++iCol)
+		for(int iCol = 0; iCol < iNumCols; ++iCol)
 		{
 			const QTableWidgetItem *pItem = pTable->item(iRow, iCol);
 			ofstr << std::setw(ptrMaxTxtLen[iCol]+4) << (pItem ? pItem->text().toStdString() : "");

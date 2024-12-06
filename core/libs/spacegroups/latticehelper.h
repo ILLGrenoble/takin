@@ -161,7 +161,7 @@ struct LatticeCommon
 				vecScatlens.push_back(pElem ? pElem->GetCoherent() : std::complex<t_real>(0.,0.));
 				if(!pElem)
 					tl::log_err("Element \"", strElem, "\" not found in scattering length table.",
-						" Using b=0.");
+						" Using b = 0.");
 			}
 		}
 	}
@@ -295,16 +295,18 @@ struct LatticeCommon
 			t_vec vecPlaneY = planeRLU.GetDir1()[0] * recip.GetVec(0) +
 				planeRLU.GetDir1()[1] * recip.GetVec(1) +
 				planeRLU.GetDir1()[2] * recip.GetVec(2);
-			plane = tl::Plane<t_real>(vecX0, vecPlaneX, vecPlaneY);
 
 			std::vector<t_vec> vecOrthRlu =
 				tl::gram_schmidt<t_vec>(
-					{planeRLU.GetDir0(), planeRLU.GetDir1(), planeRLU.GetNorm()}, 1);
+					{ planeRLU.GetDir0(), planeRLU.GetDir1(), planeRLU.GetNorm() },
+					true);
 			matPlaneRLU = tl::column_matrix(vecOrthRlu);
 
+			plane = tl::Plane<t_real>(vecX0, vecPlaneX, vecPlaneY);
 			std::vector<t_vec> vecOrth =
 				tl::gram_schmidt<t_vec>(
-					{plane.GetDir0(), plane.GetDir1(), plane.GetNorm()}, 1);
+					{ plane.GetDir0(), plane.GetDir1(), plane.GetNorm() },
+					true);
 			matPlane = tl::column_matrix(vecOrth);
 			t_real dDir0Len = ublas::norm_2(vecOrth[0]), dDir1Len = ublas::norm_2(vecOrth[1]);
 
@@ -335,7 +337,8 @@ struct LatticeCommon
 
 			std::vector<t_vec> vecOrth =
 				tl::gram_schmidt<t_vec>(
-					{planeReal.GetDir0(), planeReal.GetDir1(), planeReal.GetNorm()}, 1);
+					{planeReal.GetDir0(), planeReal.GetDir1(), planeReal.GetNorm()},
+					true);
 			matPlaneReal = tl::column_matrix(vecOrth);
 			t_real dDir0Len = ublas::norm_2(vecOrth[0]), dDir1Len = ublas::norm_2(vecOrth[1]);
 

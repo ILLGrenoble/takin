@@ -2382,7 +2382,7 @@ bool qr_decomp(const t_mat& M, t_mat& Q, t_mat& R)
 
 template<typename t_vec = ublas::vector<double>,
 	typename T = typename t_vec::value_type>
-std::vector<t_vec> gram_schmidt(const std::vector<t_vec>& vecs, bool bNorm=true);
+std::vector<t_vec> gram_schmidt(const std::vector<t_vec>& vecs, bool bNorm = true);
 
 
 /**
@@ -2803,7 +2803,7 @@ t_vec proj_vec(t_vec vec1, t_vec vec2)
  */
 template<typename t_vec /*= ublas::vector<double>*/,
 	typename T /*= typename t_vec::value_type*/ >
-std::vector<t_vec> gram_schmidt(const std::vector<t_vec>& vecs, bool bNorm/*=1*/)
+std::vector<t_vec> gram_schmidt(const std::vector<t_vec>& vecs, bool bNorm)
 {
 	std::vector<t_vec> vecsOut;
 	if(vecs.size() == 0)

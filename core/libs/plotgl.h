@@ -1,5 +1,5 @@
 /**
- * gl plotter without threading
+ * gl plotter
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 19-may-2013 -- jan-2019
  * @license GPLv2

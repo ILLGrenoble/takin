@@ -87,9 +87,13 @@ requires is_vec<t_vec>
 	while(itervert != vertices.end())
 	{
 		const t_vec& vec1 = *itervert;
-		std::advance(itervert, 1); if(itervert == vertices.end()) break;
+		std::advance(itervert, 1);
+		if(itervert == vertices.end())
+			break;
 		const t_vec& vec2 = *itervert;
-		std::advance(itervert, 1); if(itervert == vertices.end()) break;
+		std::advance(itervert, 1);
+		if(itervert == vertices.end())
+			break;
 		const t_vec& vec3 = *itervert;
 		std::advance(itervert, 1);
 
@@ -301,7 +305,7 @@ requires is_vec<t_vec>
 	vertices.reserve(num_points*2);
 	vertices_u.reserve(num_points*2);
 
-	for(std::size_t pt=0; pt<num_points; ++pt)
+	for(std::size_t pt = 0; pt < num_points; ++pt)
 	{
 		const t_real u = t_real(pt)/t_real(num_points);
 		const t_real phi = u * t_real(2)*pi<t_real>;
@@ -326,7 +330,7 @@ requires is_vec<t_vec>
 	normals.reserve(num_points);
 	uvs.reserve(num_points);
 
-	for(std::size_t face=0; face<num_points; ++face)
+	for(std::size_t face = 0; face < num_points; ++face)
 	{
 		std::size_t idx0 = face*2 + 0;	// top 1
 		std::size_t idx1 = face*2 + 1;	// bottom 1
@@ -833,7 +837,7 @@ requires is_vec<t_vec>
 		min = create<t_vec>(dim);
 		max = create<t_vec>(dim);
 
-		for(std::size_t i=0; i<dim; ++i)
+		for(std::size_t i = 0; i < dim; ++i)
 		{
 			min[i] = std::numeric_limits<t_real>::max();
 			max[i] = std::numeric_limits<t_real>::lowest();
@@ -842,7 +846,7 @@ requires is_vec<t_vec>
 
 	for(const t_vec& vert : verts)
 	{
-		for(std::size_t i=0; i<dim; ++i)
+		for(std::size_t i = 0; i < dim; ++i)
 		{
 			min[i] = std::min(min[i], vert[i]);
 			max[i] = std::max(max[i], vert[i]);
@@ -867,7 +871,7 @@ requires is_vec<t_vec>
 	t_vec min = create<t_vec>(dim);
 	t_vec max = create<t_vec>(dim);
 
-	for(std::size_t i=0; i<dim; ++i)
+	for(std::size_t i = 0; i < dim; ++i)
 	{
 		min[i] = std::numeric_limits<t_real>::max();
 		max[i] = std::numeric_limits<t_real>::lowest();
@@ -893,7 +897,7 @@ std::tuple<t_vec, t_vec> sphere_bounding_box(const t_vec& pos, t_real rad)
 	t_vec min = create<t_vec>(dim);
 	t_vec max = create<t_vec>(dim);
 
-	for(std::size_t i=0; i<dim; ++i)
+	for(std::size_t i = 0; i < dim; ++i)
 	{
 		min[i] = pos[i] - rad;
 		max[i] = pos[i] + rad;
@@ -913,7 +917,7 @@ std::tuple<t_vec, t_vec> sphere_bounding_box(
 requires is_vec<t_vec>
 {
 	t_vec min = create<t_vec>(dim);
-	for(std::size_t i=0; i<dim; ++i)
+	for(std::size_t i = 0; i < dim; ++i)
 		min[i] = std::numeric_limits<t_real>::max();
 	t_vec max = -min;
 
@@ -922,7 +926,7 @@ requires is_vec<t_vec>
 		auto [spheremin, spheremax] = sphere_bounding_box<t_vec, t_real>(
 			std::get<0>(sphere), std::get<1>(sphere));
 
-		for(std::size_t i=0; i<dim; ++i)
+		for(std::size_t i = 0; i < dim; ++i)
 		{
 			min[i] = std::min(min[i], spheremin[i]);
 			max[i] = std::max(max[i], spheremax[i]);
@@ -946,7 +950,7 @@ bool in_bounding_box(
 	const t_vec& min = std::get<0>(bb);
 	const t_vec& max = std::get<1>(bb);
 
-	for(std::size_t i=0; i<dim; ++i)
+	for(std::size_t i = 0; i < dim; ++i)
 	{
 		if(pt[i] < min[i] || pt[i] > max[i])
 			return false;
@@ -971,7 +975,7 @@ bool collide_bounding_boxes(
 		return false;
 
 	const std::size_t dim = std::min(std::get<0>(bb1).size(), std::get<0>(bb2).size());
-	for(std::size_t i=0; i<dim; ++i)
+	for(std::size_t i = 0; i < dim; ++i)
 	{
 		if(std::get<0>(bb1)[i] > std::get<1>(bb2)[i])
 			return false;

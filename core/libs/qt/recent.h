@@ -61,7 +61,7 @@ template<class t_cont, class t_str = typename t_cont::value_type>
 t_cont qstrlist_to_cont(const QStringList& lstStr)
 {
 	t_cont cont;
-	for(int i=0; i<lstStr.size(); ++i)
+	for(int i = 0; i < lstStr.size(); ++i)
 		cont.push_back(lstStr[i].toStdString());
 	return cont;
 }
@@ -74,7 +74,7 @@ template<class t_cont, class t_str = typename t_cont::value_type, class t_predic
 t_cont qstrlist_to_cont(const QStringList& lstStr, t_predicate func)
 {
 	t_cont cont;
-	for(int i=0; i<lstStr.size(); ++i)
+	for(int i = 0; i < lstStr.size(); ++i)
 	{
 		if(!func(lstStr[i]))
 			continue;
@@ -195,7 +195,10 @@ class RecentFiles
 					continue;
 
 				QAction *pAction = new QAction(pMenu);
-				QObject::connect(pAction, &QAction::triggered, [str, func]() -> void { func(str.c_str()); });
+				QObject::connect(pAction, &QAction::triggered, [str, func]() -> void
+				{
+					func(str.c_str());
+				});
 
 				pAction->setText(str.c_str());
 				pMenu->addAction(pAction);
