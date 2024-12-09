@@ -35,6 +35,7 @@ namespace asio = boost::asio;
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 #include <future>
 #include <vector>
 #include <deque>
@@ -66,7 +67,7 @@ void MagDynDlg::ExportSQE()
 	{
 		case EXPORT_HDF5: extension = "HDF5 Files (*.hdf)"; break;
 		case EXPORT_GRID: extension = "Takin Grid Files (*.bin)"; break;
-		case EXPORT_TEXT: extension = "Text Files (*.txt)"; break;
+		case EXPORT_TEXT: extension = "Text Data Files (*.dat)"; break;
 	}
 
 	QString dirLast = m_sett->value("dir", "").toString();
@@ -88,9 +89,10 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 {
 #ifdef USE_HDF5
 	std::unique_ptr<H5::H5File> h5file;
-#endif
+#endif  // USE_HDF5
 	std::unique_ptr<std::ofstream> ofstr;
 	bool file_opened = false;
+	const int print_width = g_prec * 2.5;
 
 	const int format = m_exportFormat->currentData().toInt();
 	if(format == EXPORT_GRID || format == EXPORT_TEXT)
@@ -98,6 +100,23 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		ofstr = std::make_unique<std::ofstream>(filename.toStdString());
 		ofstr->precision(g_prec);
 		file_opened = ofstr->operator bool();
+
+		if(file_opened && format == EXPORT_TEXT)
+		{
+			// write header
+			(*ofstr) << "#\n# Created with Takin/Magdyn.\n";
+			(*ofstr) << "# DOI: https://doi.org/10.5281/zenodo.4117437\n";
+			(*ofstr) << "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n";
+			(*ofstr) << "#\n\n";
+
+			(*ofstr) << "#"
+				<< std::setw(print_width - 1) << std::right << "h (rlu)" << " "
+				<< std::setw(print_width) << std::right << "k (rlu)" << " "
+				<< std::setw(print_width) << std::right << "l (rlu)" << " "
+				<< std::setw(print_width) << std::right << "E (meV)" << " "
+				<< std::setw(print_width) << std::right << "S (a.u.)" << " "
+				<< std::setw(print_width) << std::right << "branch" << "\n";
+		}
 	}
 
 #ifdef USE_HDF5
@@ -109,11 +128,11 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		h5file->createGroup("data");
 #ifdef WRITE_HDF5_CHUNKS
 		h5file->createGroup("chunks");
-#endif
+#endif  // WRITE_HDF5_CHUNKS
 
 		file_opened = true;
 	}
-#endif
+#endif  // USE_HDF5
 
 	if(!file_opened)
 	{
@@ -216,12 +235,12 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 
 	std::size_t task_idx = 0;
 	// iterate first two Q dimensions
-	for(std::size_t h_idx=0; h_idx<num_pts_h; ++h_idx)
+	for(std::size_t h_idx = 0; h_idx < num_pts_h; ++h_idx)
 	{
 		if(m_stopRequested)
 			break;
 
-		for(std::size_t k_idx=0; k_idx<num_pts_k; ++k_idx)
+		for(std::size_t k_idx = 0; k_idx < num_pts_k; ++k_idx)
 		{
 			if(m_stopRequested)
 				break;
@@ -258,7 +277,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		std::uint64_t dummy = 0;  // to be filled by index block index
 		ofstr->write(reinterpret_cast<const char*>(&dummy), sizeof(dummy));
 
-		for(int i = 0; i<3; ++i)
+		for(int i = 0; i < 3; ++i)
 		{
 			ofstr->write(reinterpret_cast<const char*>(&Qstart[i]), sizeof(Qstart[i]));
 			ofstr->write(reinterpret_cast<const char*>(&Qend[i]), sizeof(Qend[i]));
@@ -275,9 +294,9 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	data_weights.reserve(num_pts_h * num_pts_k * num_pts_l * 32);
 	data_indices.reserve(num_pts_h * num_pts_k * num_pts_l);
 	data_num_branches.reserve(num_pts_h * num_pts_k * num_pts_l);
-#endif
+#endif  // USE_HDF5
 
-	for(std::size_t future_idx=0; future_idx<futures.size(); ++future_idx)
+	for(std::size_t future_idx = 0; future_idx < futures.size(); ++future_idx)
 	{
 		qApp->processEvents();  // process events to see if the stop button was clicked
 		if(m_stopRequested)
@@ -288,7 +307,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 
 		auto results = futures[future_idx].get();
 
-		for(std::size_t result_idx=0; result_idx<results.size(); ++result_idx)
+		for(std::size_t result_idx = 0; result_idx < results.size(); ++result_idx)
 		{
 			const auto& result = results[result_idx];
 			std::size_t num_branches = std::get<3>(result).size();
@@ -306,10 +325,6 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 				// write number of branches
 				std::uint32_t _num_branches = std::uint32_t(num_branches);
 				ofstr->write(reinterpret_cast<const char*>(&_num_branches), sizeof(_num_branches));
-			}
-			else if(format == EXPORT_TEXT)      // text format
-			{
-				(*ofstr) << "Q = " << qh << " " << qk << " " << ql << ":\n";
 			}
 #ifdef USE_HDF5
 			else if(format == EXPORT_HDF5)  // hdf5 format
@@ -330,7 +345,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 
 				tl2::set_h5_vector(*h5file, "chunks/" + chunk_name.str() + "/E", energies);
 				tl2::set_h5_vector(*h5file, "chunks/" + chunk_name.str() + "/S", weights);
-#endif
+#endif  // WRITE_HDF5_CHUNKS
 
 				// TODO: write this incrementally to the hdf5 file, without these large temporary vectors
 				data_num_branches.push_back(energies.size());
@@ -338,10 +353,10 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 				data_energies.insert(data_energies.end(), energies.begin(), energies.end());
 				data_weights.insert(data_weights.end(), weights.begin(), weights.end());
 			}
-#endif
+#endif  // USE_HDF5
 
 			// iterate energies and weights
-			for(std::size_t j=0; j<num_branches; ++j)
+			for(std::size_t j = 0; j < num_branches; ++j)
 			{
 				t_real energy = energies[j];
 				t_real weight = weights[j];
@@ -355,9 +370,12 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 				else if(format == EXPORT_TEXT)  // text format
 				{
 					(*ofstr)
-						<< "\tE = " << energy
-						<< ", S = " << weight
-						<< std::endl;
+						<< std::setw(print_width) << std::right << qh << " "
+						<< std::setw(print_width) << std::right << qk << " "
+						<< std::setw(print_width) << std::right << ql << " "
+						<< std::setw(print_width) << std::right << energy << " "
+						<< std::setw(print_width) << std::right << weight << " "
+						<< std::setw(print_width) << std::right << j << "\n";
 				}
 			}
 		}
@@ -379,6 +397,10 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		// write index into index block
 		ofstr->seekp(0, std::ios_base::beg);
 		ofstr->write(reinterpret_cast<const char*>(&idxblock), sizeof(idxblock));
+		ofstr->flush();
+	}
+	else if(format == EXPORT_TEXT)
+	{
 		ofstr->flush();
 	}
 #ifdef USE_HDF5
@@ -418,7 +440,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 
 		h5file->close();
 	}
-#endif
+#endif  // USE_HDF5
 
 	stopwatch.stop();
 

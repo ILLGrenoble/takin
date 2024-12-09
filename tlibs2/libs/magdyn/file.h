@@ -48,6 +48,7 @@ namespace tl2_mag {
 template<class t_str = std::string>
 t_str g_pyscr = R"RAW(import sys
 import numpy
+from numpy import nan
 import matplotlib.pyplot as pyplot
 pyplot.rcParams.update({
 	"font.sans-serif" : "DejaVu Sans",
@@ -96,6 +97,7 @@ def plot_disp(data):
 		data_l = branch_data[2]
 		data_E = branch_data[3]
 		data_S = branch_data[4]
+		data_E_idx = branch_data[5]
 
 		if only_pos_E:
 			# ignore magnon annihilation
@@ -271,15 +273,16 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 
 	if(!as_py)  // save as text file
 	{
-		ostr	<< std::setw(field_len) << std::left << "# h" << " "
+		ostr
+			<< std::setw(field_len) << std::left << "# h" << " "
 			<< std::setw(field_len) << std::left << "k" << " "
 			<< std::setw(field_len) << std::left << "l" << " "
 			<< std::setw(field_len) << std::left << "E" << " "
 			<< std::setw(field_len) << std::left << "S(Q,E)" << " "
 			<< std::setw(field_len) << std::left << "S_xx" << " "
 			<< std::setw(field_len) << std::left << "S_yy" << " "
-			<< std::setw(field_len) << std::left << "S_zz"
-			<< "\n";
+			<< std::setw(field_len) << std::left << "S_zz" << " "
+			<< std::setw(field_len) << std::left << "branch" << "\n";
 	}
 
 	SofQEs results = CalcDispersion(h_start, k_start, l_start,
@@ -292,19 +295,22 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 			return false;
 
 		// get results
-		for(const EnergyAndWeight& E_and_S : result.E_and_S)
+		for(t_size branch_idx = 0; branch_idx < result.E_and_S.size(); ++branch_idx)
 		{
+			const EnergyAndWeight& E_and_S = result.E_and_S[branch_idx];
+
 			if(!as_py)  // save as text file
 			{
-				ostr	<< std::setw(field_len) << std::left << result.Q_rlu[0] << " "
+				ostr
+					<< std::setw(field_len) << std::left << result.Q_rlu[0] << " "
 					<< std::setw(field_len) << std::left << result.Q_rlu[1] << " "
 					<< std::setw(field_len) << std::left << result.Q_rlu[2] << " "
 					<< std::setw(field_len) << E_and_S.E << " "
 					<< std::setw(field_len) << E_and_S.weight << " "
 					<< std::setw(field_len) << E_and_S.S_perp(0, 0).real() << " "
 					<< std::setw(field_len) << E_and_S.S_perp(1, 1).real() << " "
-					<< std::setw(field_len) << E_and_S.S_perp(2, 2).real()
-					<< "\n";
+					<< std::setw(field_len) << E_and_S.S_perp(2, 2).real() << " "
+					<< std::setw(field_len) << branch_idx << "\n";
 			}
 			else        // save as py script
 			{
@@ -314,6 +320,7 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 					<< ", " << result.Q_rlu[2]
 					<< ", " << E_and_S.E
 					<< ", " << E_and_S.weight
+					<< ", " << branch_idx
 					<< " ],\n";
 			}
 		}
@@ -420,14 +427,17 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 			all_data << "[";
 			for(const auto& result : results)
 			{
-				for(const EnergyAndWeight& E_and_S : result.E_and_S)
+				for(t_size branch_idx = 0; branch_idx < result.E_and_S.size(); ++branch_idx)
 				{
+					const EnergyAndWeight& E_and_S = result.E_and_S[branch_idx];
+
 					all_data << "\t"
 						<< "[ " << result.Q_rlu[0]
 						<< ", " << result.Q_rlu[1]
 						<< ", " << result.Q_rlu[2]
 						<< ", " << E_and_S.E
 						<< ", " << E_and_S.weight
+						<< ", " << branch_idx
 						<< " ],\n";
 				}
 			}

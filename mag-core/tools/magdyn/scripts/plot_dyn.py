@@ -62,9 +62,9 @@ def load_data(filename):
 
 
 # -----------------------------------------------------------------------------
-# plot the dispersion branches
+# plot the 1d dispersion curves
 # -----------------------------------------------------------------------------
-def plot_disp(data):
+def plot_disp_1d(data):
 	num_branches = len(data)
 
 	(plt, axes) = pyplot.subplots(nrows = 1, ncols = num_branches,
@@ -162,13 +162,32 @@ def plot_disp(data):
 # -----------------------------------------------------------------------------
 
 
+# -----------------------------------------------------------------------------
+# plot the 2d dispersion surfaces
+# -----------------------------------------------------------------------------
+def plot_disp_2d(data):
+	pass
+# -----------------------------------------------------------------------------
+
+
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
 		print("Please specify data file names.")
+		print("Options:")
+		print("\t--2d    plot 2d dispersion surfaces")
 		sys.exit(-1)
 
 	data = []
-	for filename in sys.argv[1:]:
-		data.append(load_data(filename))
+	plot_2d = False
 
-	plot_disp(data)
+	# iterate arguments/filenames
+	for arg in sys.argv[1:]:
+		if arg == "--2d":
+			plot_2d = True
+			continue
+		data.append(load_data(arg))
+
+	if plot_2d:
+		plot_disp_2d(data)
+	else:
+		plot_disp_1d(data)

@@ -468,6 +468,7 @@ public:
 	std::string Print(int prec = 6) const
 	{
 		using namespace tl2_ops;
+		const t_mat& B = GetCrystalB(false);
 		t_mat BorthoT = tl2::trans(GetCrystalB(true));
 
 		std::ostringstream ostr;
@@ -541,6 +542,22 @@ public:
 				ostr << poly_idx;
 				if(idx_poly < triag_idx.size() - 1)
 					ostr << ", ";
+			}
+			ostr << "\n";
+		}
+
+		// crystal B matrix
+		ostr << "\n# B matrix (Q_Å⁻¹ = B · Q_rlu):\n";
+		for(std::size_t i = 0; i < B.size1(); ++i)
+		{
+			ostr << "\t";
+			for(std::size_t j = 0; j < B.size2(); ++j)
+			{
+				t_real elem = B(i, j);
+				tl2::set_eps_0(elem, m_eps);
+				ostr << elem;
+				if(i < B.size1() - 1 || j < B.size2() - 1)
+					ostr << " ";
 			}
 			ostr << "\n";
 		}
