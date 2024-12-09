@@ -80,6 +80,28 @@ void MagDynDlg::InitSettings()
 
 
 /**
+ * settings dialog
+ */
+void MagDynDlg::ShowSettingsDlg()
+{
+	if(!m_settings_dlg)
+	{
+		m_settings_dlg = new t_SettingsDlg(this, m_sett);
+
+		dynamic_cast<t_SettingsDlg*>(m_settings_dlg)->AddChangedSettingsSlot([this]()
+		{
+			MagDynDlg::InitSettings();
+		});
+	}
+
+	m_settings_dlg->show();
+	m_settings_dlg->raise();
+	m_settings_dlg->activateWindow();
+}
+
+
+
+/**
  * notes dialog
  */
 void MagDynDlg::ShowNotesDlg(bool only_create)

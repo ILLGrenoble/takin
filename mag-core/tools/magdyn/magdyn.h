@@ -249,6 +249,7 @@ protected:
 	void ShowStructPlotDlg(bool only_create = false);
 	void ShowGroundStateDlg(bool only_create = false);
 	void ShowTopologyDlg(bool only_create = false);
+	void ShowSettingsDlg();
 	void InitSettingsDlg();
 	void InitSettings();
 

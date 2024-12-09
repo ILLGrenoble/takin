@@ -611,23 +611,7 @@ void MagDynDlg::CreateMenuBar()
 	});
 
 	// show preferences dialog
-	connect(acPreferences, &QAction::triggered, [this]()
-	{
-		if(!m_settings_dlg)
-		{
-			using t_SettingsDlg = SettingsDlg<g_settingsvariables.size(), &g_settingsvariables>;
-			m_settings_dlg = new t_SettingsDlg(this, m_sett);
-
-			dynamic_cast<t_SettingsDlg*>(m_settings_dlg)->AddChangedSettingsSlot([this]()
-			{
-				MagDynDlg::InitSettings();
-			});
-		}
-
-		m_settings_dlg->show();
-		m_settings_dlg->raise();
-		m_settings_dlg->activateWindow();
-	});
+	connect(acPreferences, &QAction::triggered, this, &MagDynDlg::ShowSettingsDlg);
 
 	// show info dialog
 	connect(acHelp, &QAction::triggered, [this]()
