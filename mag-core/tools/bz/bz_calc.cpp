@@ -439,8 +439,11 @@ void BZDlg::CalcFormulas()
 		try
 		{
 			tl2::ExprParser<t_real> parser;
+			//parser.SetDebug(true);
 			parser.SetAutoregisterVariables(false);
 			parser.register_var("x", 0.);
+			parser.register_var("Qx", 0.);
+			parser.register_var("Qy", 0.);
 
 			if(bool ok = parser.parse(formula); !ok)
 				continue;
@@ -454,10 +457,12 @@ void BZDlg::CalcFormulas()
 			for(t_real x = m_min_x; x <= m_max_x; x += x_delta)
 			{
 				t_vec QinvA = m_cut_plane * tl2::create<t_vec>({ x, 0., plane_d });
+				//std::cout << x << ": " << QinvA << std::endl;
 
 				parser.register_var("x", x);
 				parser.register_var("Qx", QinvA[0]);
 				parser.register_var("Qy", QinvA[1]);
+
 				t_real y = parser.eval();
 				if(y < m_min_y || y > m_max_y)
 					continue;
