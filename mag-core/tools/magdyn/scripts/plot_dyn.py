@@ -53,15 +53,6 @@ width_ratios   = None   # lengths from one dispersion point to the next
 
 
 # -----------------------------------------------------------------------------
-# load a data file
-# -----------------------------------------------------------------------------
-def load_data(filename):
-	data = numpy.loadtxt(filename)
-	return [ data[:,0], data[:,1], data[:,2], data[:,3], data[:,4]]
-# -----------------------------------------------------------------------------
-
-
-# -----------------------------------------------------------------------------
 # plot the 1d dispersion curves
 # -----------------------------------------------------------------------------
 def plot_disp_1d(data):
@@ -74,8 +65,15 @@ def plot_disp_1d(data):
 	if type(axes) != numpy.ndarray:
 		axes = [ axes ]
 
+	# dispersion branch index (not energy branch)
 	branch_idx = 0
-	for (data_h, data_k, data_l, data_E, data_S) in data:
+	for data_row in data:
+		data_h = data_row[0]
+		data_k = data_row[1]
+		data_l = data_row[2]
+		data_E = data_row[3]
+		data_S = data_row[4]
+
 		if only_pos_E:
 			# ignore magnon annihilation
 			data_h = numpy.array([ h for (h, E) in zip(data_h, data_E) if E >= 0. ])
@@ -165,8 +163,61 @@ def plot_disp_1d(data):
 # -----------------------------------------------------------------------------
 # plot the 2d dispersion surfaces
 # -----------------------------------------------------------------------------
-def plot_disp_2d(data):
-	pass
+def plot_disp_2d(data, Q_idx1 = 0, Q_idx2 = 1):
+	data = data[0].T  # TODO: also use other files' data if given
+
+	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
+
+	(plt, axis) = pyplot.subplots(nrows = 1, ncols = 1,
+		width_ratios = width_ratios, sharey = True,
+		subplot_kw = { "projection" : "3d" })
+
+	E_branch_idx = 0
+	E_branch_max = int(numpy.max(data[:,5]))
+
+	# iterate energy branches
+	for E_branch_idx in range(0, E_branch_max + 1):
+		# filter data for given branch
+		data_Q = [
+			[ row[Q_idx1] for row in data if row[5] == E_branch_idx ],
+			[ row[Q_idx2] for row in data if row[5] == E_branch_idx ]
+		]
+		data_E = [ row[3] for row in data if row[5] == E_branch_idx ]
+		data_S = [ row[4] for row in data if row[5] == E_branch_idx ]
+
+		if only_pos_E:
+			# ignore magnon annihilation
+			data_Q[0] = [ Q for (Q, E) in zip(data_Q[0], data_E) if E >= 0. ]
+			data_Q[1] = [ Q for (Q, E) in zip(data_Q[1], data_E) if E >= 0. ]
+			data_S = [ S for (S, E) in zip(data_S, data_E) if E >= 0. ]
+			data_E = [ E for E in data_E if E >= 0. ]
+
+		if S_filter_min >= 0.:
+			# filter weights below cutoff
+			data_Q[0] = [ Q for (Q, S) in zip(data_Q[0], data_S) if S >= S_filter_min ]
+			data_Q[1] = [ Q for (Q, S) in zip(data_Q[1], data_S) if S >= S_filter_min ]
+			data_E = [ E for (E, S) in zip(data_E, data_S) if S >= S_filter_min ]
+			data_S = [ S for S in data_S if S >= S_filter_min ]
+
+		if(len(data_E) < 1):
+			continue
+
+		# choose branch colour
+		r = int(0xff - 0xff * (E_branch_idx / E_branch_max))
+		b = int(0x00 + 0xff * (E_branch_idx / E_branch_max))
+
+		axis.plot_trisurf(data_Q[0], data_Q[1], data_E, color = "#%02x00%02x" % (r, b))
+
+	axis.set_xlabel(labels[Q_idx1])
+	axis.set_ylabel(labels[Q_idx2])
+	axis.set_zlabel("E (meV)")
+
+	plt.tight_layout()
+	plt.subplots_adjust(wspace = 0)
+
+	if plot_file != "":
+		pyplot.savefig(plot_file)
+	pyplot.show()
 # -----------------------------------------------------------------------------
 
 
@@ -179,15 +230,17 @@ if __name__ == "__main__":
 
 	data = []
 	plot_2d = False
+	Q_idx1 = 0
+	Q_idx2 = 1
 
 	# iterate arguments/filenames
 	for arg in sys.argv[1:]:
 		if arg == "--2d":
 			plot_2d = True
 			continue
-		data.append(load_data(arg))
+		data.append(numpy.loadtxt(arg).T)
 
 	if plot_2d:
-		plot_disp_2d(data)
+		plot_disp_2d(data, Q_idx1, Q_idx2)
 	else:
 		plot_disp_1d(data)
