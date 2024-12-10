@@ -565,8 +565,7 @@ public:
 		}
 
 		// real crystal A matrix
-		auto [A, A_ok] = tl2::inv(B);
-		if(A_ok)
+		if(auto [A, A_ok] = tl2::inv(B); A_ok)
 		{
 			ostr << "\n# A matrix:\n";
 			ostr << "# The columns of the A matrix are the real basis vectors.\n";
