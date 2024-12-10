@@ -546,8 +546,10 @@ public:
 			ostr << "\n";
 		}
 
-		// crystal B matrix
-		ostr << "\n# B matrix (Q_Å⁻¹ = B · Q_rlu):\n";
+		// reciprocal crystal B matrix
+		ostr << "\n# B matrix:\n";
+		ostr << "# The B matrix transforms from Q in rlu to the orthogonal lab system in Å⁻¹: Q_Å⁻¹ = B · Q_rlu\n";
+		ostr << "# The columns of the B matrix are the reciprocal basis vectors.\n";
 		for(std::size_t i = 0; i < B.size1(); ++i)
 		{
 			ostr << "\t";
@@ -556,10 +558,34 @@ public:
 				t_real elem = B(i, j);
 				tl2::set_eps_0(elem, m_eps);
 				ostr << elem;
-				if(i < B.size1() - 1 || j < B.size2() - 1)
+				if(j < B.size2() - 1)
 					ostr << " ";
 			}
 			ostr << "\n";
+		}
+
+		// real crystal A matrix
+		auto [A, A_ok] = tl2::inv(B);
+		if(A_ok)
+		{
+			ostr << "\n# A matrix:\n";
+			ostr << "# The columns of the A matrix are the real basis vectors.\n";
+			A = tl2::trans(A);
+			A *= t_real(2) * tl2::pi<t_real>;
+
+			for(std::size_t i = 0; i < A.size1(); ++i)
+			{
+				ostr << "\t";
+				for(std::size_t j = 0; j < A.size2(); ++j)
+				{
+					t_real elem = A(i, j);
+					tl2::set_eps_0(elem, m_eps);
+					ostr << elem;
+					if(j < A.size2() - 1)
+						ostr << " ";
+				}
+				ostr << "\n";
+			}
 		}
 
 		return ostr.str();
