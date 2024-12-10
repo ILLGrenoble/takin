@@ -163,8 +163,38 @@ def plot_disp_1d(data):
 # -----------------------------------------------------------------------------
 # plot the 2d dispersion surfaces
 # -----------------------------------------------------------------------------
-def plot_disp_2d(data, Q_idx1 = 0, Q_idx2 = 1):
+def plot_disp_2d(data, Q_idx1 = -1, Q_idx2 = -1):
 	data = data[0].T  # TODO: also use other files' data if given
+
+	# find x and y axis to plot
+	if Q_idx1 < 0 or Q_idx2 < 0:
+		# Q start and end points
+		b1 = ( data[:, 0][0], data[:, 1][0], data[:, 2][0] )
+		b2 = ( data[:, 0][-1], data[:, 1][-1], data[:, 2][-1] )
+
+		# find scan axis
+		Q_diff = [
+			numpy.abs(b1[0] - b2[0]),
+			numpy.abs(b1[1] - b2[1]),
+			numpy.abs(b1[2] - b2[2]) ]
+
+		# first scan axis
+		if Q_idx1 < 0:
+			if Q_diff[1] > 0. and Q_idx2 != 0:
+				Q_idx1 = 0
+			if Q_diff[1] > Q_diff[Q_idx1] and Q_idx2 != 1:
+				Q_idx1 = 1
+			elif Q_diff[2] > Q_diff[Q_idx1] and Q_idx2 != 2:
+				Q_idx1 = 2
+
+		# second scan axis
+		if Q_idx2 < 0:
+			if Q_diff[1] > 0. and Q_idx1 != 0:
+				Q_idx2 = 0
+			if Q_diff[1] > Q_diff[Q_idx2] and Q_idx1 != 1:
+				Q_idx2 = 1
+			elif Q_diff[2] > Q_diff[Q_idx2] and Q_idx1 != 2:
+				Q_idx2 = 2
 
 	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
 
@@ -206,7 +236,9 @@ def plot_disp_2d(data, Q_idx1 = 0, Q_idx2 = 1):
 		r = int(0xff - 0xff * (E_branch_idx / E_branch_max))
 		b = int(0x00 + 0xff * (E_branch_idx / E_branch_max))
 
-		axis.plot_trisurf(data_Q[0], data_Q[1], data_E, color = "#%02x00%02x" % (r, b))
+		axis.plot_trisurf(data_Q[0], data_Q[1], data_E,
+			color = "#%02x00%02xaf" % (r, b),
+			antialiased = True)
 
 	axis.set_xlabel(labels[Q_idx1])
 	axis.set_ylabel(labels[Q_idx2])
@@ -230,8 +262,8 @@ if __name__ == "__main__":
 
 	data = []
 	plot_2d = False
-	Q_idx1 = 0
-	Q_idx2 = 1
+	Q_idx1 = -1  # first axis to plot, -1: automatically search
+	Q_idx2 = -1  # second axis to plot, -1: automatically search
 
 	# iterate arguments/filenames
 	for arg in sys.argv[1:]:
