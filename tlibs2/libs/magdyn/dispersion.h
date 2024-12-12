@@ -190,7 +190,7 @@ MAGDYN_INST::CalcEnergies(t_real h, t_real k, t_real l, bool only_energies) cons
 
 
 /**
- * generates the dispersion plot along the given q path
+ * generates the dispersion plot along the given Q path
  */
 MAGDYN_TEMPL
 MAGDYN_TYPE::SofQEs
@@ -254,6 +254,82 @@ MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
 	return results;
 }
 
+
+
+/**
+ * generates the dispersion plot along the given 2d Q surface
+ */
+MAGDYN_TEMPL
+MAGDYN_TYPE::SofQEs
+MAGDYN_INST::CalcDispersion(t_real h_start, t_real k_start, t_real l_start,
+	t_real h_end1, t_real k_end1, t_real l_end1,
+	t_real h_end2, t_real k_end2, t_real l_end2,
+	t_size num_Qs_sqrt, t_size num_threads,
+	std::function<bool(int, int)> *progress_fkt) const
+{
+	// determine number of threads
+	if(num_threads == 0)
+		num_threads = std::max<t_size>(1, std::thread::hardware_concurrency() / 2);
+
+	// thread pool and tasks
+	using t_pool = boost::asio::thread_pool;
+	using t_task = std::packaged_task<SofQE()>;
+	using t_taskptr = std::shared_ptr<t_task>;
+
+	t_pool pool{num_threads};
+	std::vector<t_taskptr> tasks;
+	tasks.reserve(num_Qs_sqrt * num_Qs_sqrt);
+
+	// calculate dispersion
+	for(t_size i = 0; i < num_Qs_sqrt; ++i)
+	for(t_size j = 0; j < num_Qs_sqrt; ++j)
+	{
+		if(progress_fkt && !(*progress_fkt)(0, num_Qs_sqrt * num_Qs_sqrt))
+			break;
+
+		auto task = [this, i, j, num_Qs_sqrt,
+			h_start, k_start, l_start,
+			h_end1, k_end1, l_end1,
+			h_end2, k_end2, l_end2]() -> SofQE
+		{
+			// get Q
+			const t_real h =
+				std::lerp(h_start, h_end1, t_real(i) / t_real(num_Qs_sqrt - 1)) +
+				std::lerp(h_start, h_end2, t_real(j) / t_real(num_Qs_sqrt - 1)) - h_start;
+			const t_real k =
+				std::lerp(k_start, k_end1, t_real(i) / t_real(num_Qs_sqrt - 1)) +
+				std::lerp(k_start, k_end2, t_real(j) / t_real(num_Qs_sqrt - 1)) - k_start;
+			const t_real l =
+				std::lerp(l_start, l_end1, t_real(i) / t_real(num_Qs_sqrt - 1)) +
+				std::lerp(l_start, l_end2, t_real(j) / t_real(num_Qs_sqrt - 1)) - l_start;
+			const t_vec_real Q = tl2::create<t_vec_real>({ h, k, l });
+
+			// get E and S(Q, E) for this Q
+			return CalcEnergies(Q, false);
+		};
+
+		t_taskptr taskptr = std::make_shared<t_task>(task);
+		tasks.push_back(taskptr);
+		boost::asio::post(pool, [taskptr]() { (*taskptr)(); });
+	}
+
+	// collect results
+	SofQEs results;
+	results.reserve(tasks.size());
+
+	t_size Qs_finished = 0;
+	for(auto& task : tasks)
+	{
+		if(progress_fkt && !(*progress_fkt)(Qs_finished + 1, num_Qs_sqrt * num_Qs_sqrt))
+			break;
+
+		const SofQE& result = task->get_future().get();
+		results.push_back(result);
+		++Qs_finished;
+	}
+
+	return results;
+}
 // --------------------------------------------------------------------
 
 #endif
