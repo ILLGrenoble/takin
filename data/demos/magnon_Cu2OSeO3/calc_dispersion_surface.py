@@ -52,9 +52,9 @@ modelfile              = "model.magdyn"
 max_threads            = 0      # number of worker threads, 0: automatic determination
 
 # dispersion plotting range
-hkl_start              = numpy.array([ 0., 0., 0.0 ])
-hkl_end1               = numpy.array([ 1., 1., 0.0 ])
-hkl_end2               = numpy.array([ 0., 0., 0.5 ])
+hkl_start              = numpy.array([ 0.0, 0.0, 0.0 ])
+hkl_end1               = numpy.array([ 1.0, 1.0, 0.0 ])
+hkl_end2               = numpy.array([ 0.0, 0.0, 1.0 ])
 Q_idx1                 = 0
 Q_idx2                 = 2
 
