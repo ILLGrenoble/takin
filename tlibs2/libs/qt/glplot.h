@@ -91,11 +91,12 @@ protected:
 	GLint m_uniMatrixObj = -1;
 	GLint m_uniMatrixA = -1;
 	GLint m_uniMatrixB = -1;
+	GLint m_uniIsRealSpace = -1;
 	GLint m_uniCoordSys = -1;
 
 	t_mat_gl m_matA = tl2::unit<t_mat_gl>();
 	t_mat_gl m_matB = tl2::unit<t_mat_gl>();
-	t_real_gl m_CoordMax = 2.5;		// extent of coordinate axes
+	t_real_gl m_CoordMax = 2.5;       // extent of coordinate axes
 
 	std::atomic<bool> m_platform_supported = true;
 	std::atomic<bool> m_initialised = false;
@@ -106,13 +107,14 @@ protected:
 	std::atomic<bool> m_Btrafo_needs_update = false;
 	std::atomic<bool> m_cull = true;
 	std::atomic<bool> m_blend = false;
-	std::atomic<int> m_coordsys = 0;
+	std::atomic<bool> m_is_real_space = true;
+	std::atomic<int> m_coordsys = 0;  // 0: orthogonal, 1: using crystal matrix
 	t_real_gl m_pickerSphereRadius = 1;
 	bool m_showLabels = true;
 
 	std::vector<t_vec3_gl> m_lights{};
 	std::vector<GlPlotObj> m_objs{};
-	std::optional<std::size_t> m_coordCross{};
+	std::optional<std::size_t> m_coordCrossLab{}, m_coordCrossXtal{};
 
 	QPointF m_posMouse{};
 	QPointF m_posMouseRotationStart{}, m_posMouseRotationEnd{};
@@ -124,7 +126,10 @@ protected:
 
 
 protected:
-	qgl_funcs* GetGlFunctions() { return get_gl_functions((QOpenGLWidget*)m_pPlot); }
+	qgl_funcs* GetGlFunctions()
+	{
+		return get_gl_functions((QOpenGLWidget*)m_pPlot);
+	}
 
 	void UpdateCam();
 	void UpdatePicker();
@@ -150,18 +155,28 @@ public:
 
 	QPointF GlToScreenCoords(const t_vec_gl& vec, bool *pVisible = nullptr) const;
 
-	const t_cam& GetCamera() const { return m_cam; }
-	t_cam& GetCamera() { return m_cam; }
+	const t_cam& GetCamera() const
+	{
+		return m_cam;
+	}
+
+	t_cam& GetCamera()
+	{
+		return m_cam;
+	}
 
 	std::tuple<std::string, std::string, std::string, std::string>
-		GetGlDescr() const
+	GetGlDescr() const
 	{
 		return std::make_tuple(
 			m_strGlVer, m_strGlShaderVer,
 			m_strGlVendor, m_strGlRenderer);
 	}
 
-	void SetPickerSphereRadius(t_real_gl rad) { m_pickerSphereRadius = rad; }
+	void SetPickerSphereRadius(t_real_gl rad)
+	{
+		m_pickerSphereRadius = rad;
+	}
 
 	GlPlotObj CreateTriangleObject(const std::vector<t_vec3_gl>& verts,
 		const std::vector<t_vec3_gl>& triag_verts, const std::vector<t_vec3_gl>& norms,
@@ -194,7 +209,7 @@ public:
 	std::size_t AddCoordinateCross(t_real_gl min, t_real_gl max);
 
 	void SetObjectMatrix(std::size_t idx, const t_mat_gl& mat);
-	void SetObjectCol(std::size_t idx, t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a=1);
+	void SetObjectCol(std::size_t idx, t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a = 1);
 	void SetObjectLabel(std::size_t idx, const std::string& label);
 	void SetObjectDataString(std::size_t idx, const std::string& data);
 	void SetObjectVisible(std::size_t idx, bool visible);
@@ -210,22 +225,54 @@ public:
 	bool GetObjectHighlight(std::size_t idx) const;
 
 	void SetScreenDims(int w, int h);
-	void SetCoordMax(t_real_gl d) { m_CoordMax = d; }
+
+	void SetCoordMax(t_real_gl d)
+	{
+		m_CoordMax = d;
+	}
 
 	void SetLight(std::size_t idx, const t_vec3_gl& pos);
 
-	void SetCull(bool b) { m_cull = b; }
-	void SetBlend(bool b) { m_blend = b; }
-	void SetRestrictCamTheta(bool b) { m_restrict_cam_theta = b; }
+	void SetCull(bool b)
+	{
+		m_cull = b;
+	}
 
-	void SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA = nullptr);
+	void SetBlend(bool b)
+	{
+		m_blend = b;
+	}
+
+	void SetRestrictCamTheta(bool b)
+	{
+		m_restrict_cam_theta = b;
+	}
+
+	void SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA = nullptr,
+		bool is_real_space = true);
 	void SetCoordSys(int iSys);
 
-	bool IsInitialised() const { return m_initialised; }
-	const QPointF& GetMousePosition() const { return m_posMouse; };
+	bool IsInitialised() const
+	{
+		return m_initialised;
+	}
 
-	void SetLabelsVisible(bool show) { m_showLabels = show; }
-	std::optional<std::size_t> GetCoordCross() const { return m_coordCross; }
+	const QPointF& GetMousePosition() const
+	{
+		return m_posMouse;
+	}
+
+	void SetLabelsVisible(bool show)
+	{
+		m_showLabels = show;
+	}
+
+	std::optional<std::size_t> GetCoordCross(bool xtal = false) const
+	{
+		if(xtal)
+			return m_coordCrossXtal;
+		return m_coordCrossLab;
+	}
 
 	void RequestViewportUpdate();
 	void UpdateViewport();
@@ -274,7 +321,11 @@ public:
 	GlPlot(const GlPlot&) = delete;
 	const GlPlot& operator=(const GlPlot&) = delete;
 
-	GlPlotRenderer* GetRenderer() { return m_renderer.get(); }
+	GlPlotRenderer* GetRenderer()
+	{
+		return m_renderer.get();
+	}
+
 	static constexpr bool m_isthreaded = GlPlotRenderer::m_isthreaded;
 
 

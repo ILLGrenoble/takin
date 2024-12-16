@@ -434,7 +434,7 @@ std::size_t GlPlotRenderer::AddCoordinateCross(t_real_gl min, t_real_gl max)
 	obj.m_invariant = true;
 	m_objs.emplace_back(std::move(obj));
 
-	return m_objs.size() - 1;		// object handle
+	return m_objs.size() - 1;  // object handle
 }
 
 
@@ -604,6 +604,7 @@ uniform mat4 obj = mat4(1.);
 uniform mat4 trafoA = mat4(1.);
 uniform mat4 trafoB = mat4(1.);  // B = 2 pi / A
 
+uniform int is_real_space = 1;   // real or reciprocal space
 uniform int coordsys = 0;        // 0: crystal system, 1: lab system
 // ----------------------------------------------------------------------------
 
@@ -613,10 +614,16 @@ void main()
 	mat4 coordTrafo = mat4(1.);
 	mat4 coordTrafo_inv = mat4(1.);
 
-	if(coordsys == 1)
+	if(coordsys == 1 && is_real_space == 1)
 	{
 		coordTrafo = trafoA;
 		coordTrafo_inv = trafoB / (2.*pi);
+		coordTrafo_inv[3][3] = 1.;
+	}
+	else if(coordsys == 1 && is_real_space == 0)
+	{
+		coordTrafo = trafoB;
+		coordTrafo_inv = trafoA / (2.*pi);
 		coordTrafo_inv[3][3] = 1.;
 	}
 
@@ -700,6 +707,7 @@ void main()
 		m_uniMatrixObj = m_pShaders->uniformLocation("obj");
 		m_uniMatrixA = m_pShaders->uniformLocation("trafoA");
 		m_uniMatrixB = m_pShaders->uniformLocation("trafoB");
+		m_uniIsRealSpace = m_pShaders->uniformLocation("is_real_space");
 		m_uniCoordSys = m_pShaders->uniformLocation("coordsys");
 		m_uniConstCol = m_pShaders->uniformLocation("constcol");
 		m_uniLightPos = m_pShaders->uniformLocation("lightpos");
@@ -712,10 +720,13 @@ void main()
 
 
 	// 3d objects
-	m_coordCross = AddCoordinateCross(-m_CoordMax, m_CoordMax);
-
+	m_coordCrossLab = AddCoordinateCross(-m_CoordMax, m_CoordMax);
+	m_coordCrossXtal = AddCoordinateCross(-m_CoordMax, m_CoordMax);
+	SetObjectVisible(*m_coordCrossLab, true);
+	SetObjectVisible(*m_coordCrossXtal, false);
 
 	m_initialised = true;
+
 
 	// check threading compatibility
 	if constexpr(m_isthreaded)
@@ -785,9 +796,10 @@ void GlPlotRenderer::RequestViewportUpdate()
 /**
  * set up a (crystal) B matrix
  */
-void GlPlotRenderer::SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA)
+void GlPlotRenderer::SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA, bool is_real_space)
 {
 	m_matB = matB;
+	m_is_real_space = is_real_space;
 
 	// if A matix is not given, calculate it
 	if(matA)
@@ -810,6 +822,9 @@ void GlPlotRenderer::SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA)
 		}
 	}
 
+	if(m_coordCrossXtal)
+		SetObjectMatrix(*m_coordCrossXtal, m_matB);
+
 	m_Btrafo_needs_update = true;
 	RequestPlotUpdate();
 }
@@ -829,6 +844,7 @@ void GlPlotRenderer::UpdateBTrafo()
 {
 	m_pShaders->setUniformValue(m_uniMatrixA, m_matA);
 	m_pShaders->setUniformValue(m_uniMatrixB, m_matB);
+	m_pShaders->setUniformValue(m_uniIsRealSpace, m_is_real_space ? 1 : 0);
 
 	m_Btrafo_needs_update = false;
 }
@@ -1164,8 +1180,10 @@ void GlPlotRenderer::DoPaintGL(qgl_funcs *pGl)
 	BOOST_SCOPE_EXIT(m_pShaders) { m_pShaders->release(); } BOOST_SCOPE_EXIT_END
 	LOGGLERR(pGl);
 
-	if(m_lights_need_update) UpdateLights();
-	if(m_Btrafo_needs_update) UpdateBTrafo();
+	if(m_lights_need_update)
+		UpdateLights();
+	if(m_Btrafo_needs_update)
+		UpdateBTrafo();
 
 	// set cam matrix
 	m_pShaders->setUniformValue(m_uniMatrixCam, m_cam.GetTransformation());
@@ -1263,8 +1281,8 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 	painter.setPen(penLabel);
 
 
-	// draw coordinate system
-	auto objCoordCross = GetCoordCross();
+	// draw coordinate system in orthogonal lab system in 1/A
+	auto objCoordCross = GetCoordCross(false);
 	if(objCoordCross && GetObjectVisible(*objCoordCross))
 	{
 		// coordinate labels
@@ -1290,6 +1308,50 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 			tl2::create<t_vec_gl>({0., m_CoordMax*t_real_gl(1.2), 0., 1.})), "y");
 		painter.drawText(GlToScreenCoords(
 			tl2::create<t_vec_gl>({0., 0., m_CoordMax*t_real_gl(1.2), 1.})), "z");
+	}
+
+
+	// draw coordinate system in generally non-orthogonal crystal system in rlu
+	objCoordCross = GetCoordCross(true);
+	if(objCoordCross && GetObjectVisible(*objCoordCross))
+	{
+		// coordinate labels
+		painter.drawText(GlToScreenCoords(tl2::create<t_vec_gl>({0.,0.,0.,1.})), "0");
+		for(t_real_gl f = -std::floor(m_CoordMax); f <= std::floor(m_CoordMax); f += 0.5)
+		{
+			if(tl2::equals<t_real_gl>(f, 0))
+				continue;
+
+			std::ostringstream ostrF;
+			ostrF << f;
+			painter.drawText(GlToScreenCoords(
+				tl2::create<t_vec_gl>({f,0.,0.,1.})), ostrF.str().c_str());
+			painter.drawText(GlToScreenCoords(
+				tl2::create<t_vec_gl>({0.,f,0.,1.})), ostrF.str().c_str());
+			painter.drawText(GlToScreenCoords(
+				tl2::create<t_vec_gl>({0.,0.,f,1.})), ostrF.str().c_str());
+		}
+
+		t_vec_gl h = tl2::create<t_vec_gl>({m_CoordMax*t_real_gl(1.2), 0., 0., 1.});
+		t_vec_gl k = tl2::create<t_vec_gl>({0., m_CoordMax*t_real_gl(1.2), 0., 1.});
+		t_vec_gl l = tl2::create<t_vec_gl>({0., 0., m_CoordMax*t_real_gl(1.2), 1.});
+
+		if(m_is_real_space)
+		{
+			h = m_matA * h;
+			k = m_matA * k;
+			l = m_matA * l;
+		}
+		else
+		{
+			h = m_matB * h;
+			k = m_matB * k;
+			l = m_matB * l;
+		}
+
+		painter.drawText(GlToScreenCoords(h), "h");
+		painter.drawText(GlToScreenCoords(k), "k");
+		painter.drawText(GlToScreenCoords(l), "l");
 	}
 
 
@@ -1356,7 +1418,8 @@ void GlPlotRenderer::paintGL()
 		{
 			BOOST_SCOPE_EXIT(&painter) { painter.endNativePainting(); } BOOST_SCOPE_EXIT_END
 
-			if(m_picker_needs_update) UpdatePicker();
+			if(m_picker_needs_update)
+				UpdatePicker();
 
 			auto *pGl = GetGlFunctions();
 			painter.beginNativePainting();

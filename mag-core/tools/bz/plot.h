@@ -62,7 +62,8 @@ public:
 
 protected:
 	void SetStatusMsg(const std::string& msg);
-	void ShowCoordCross(bool show);
+	void ShowCoordCrossLab(bool show);
+	void ShowCoordCrossXtal(bool show);
 	void ShowLabels(bool show);
 	void ShowPlane(bool show);
 	void ShowQVertices(bool show);
@@ -88,7 +89,8 @@ private:
 
 	QLabel **m_labelGlInfos = nullptr;
 	QLabel *m_status = nullptr;
-	QCheckBox *m_show_coordcross = nullptr;
+	QCheckBox *m_show_coordcross_lab = nullptr;
+	QCheckBox *m_show_coordcross_xtal = nullptr;
 	QCheckBox *m_show_labels = nullptr;
 	QCheckBox *m_show_plane = nullptr;
 	QCheckBox *m_show_Qs = nullptr;

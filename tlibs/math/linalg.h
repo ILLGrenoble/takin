@@ -1533,7 +1533,7 @@ bool inverse_diag(const mat_type& mat, mat_type& inv)
  * @see e.g.: (Merziger 1993), p. 202
  */
 template<class mat_type = ublas::matrix<double>>
-mat_type transform(const mat_type& mat, const mat_type& matTrafo, bool bCongr=0)
+mat_type transform(const mat_type& mat, const mat_type& matTrafo, bool bCongr = false)
 {
 	mat_type matTrafoInv;
 	if(bCongr)
@@ -1555,7 +1555,7 @@ mat_type transform(const mat_type& mat, const mat_type& matTrafo, bool bCongr=0)
  * @see e.g.: (Merziger 1993), p. 202
  */
 template<class mat_type = ublas::matrix<double>>
-mat_type transform_inv(const mat_type& mat, const mat_type& matTrafo, bool bCongr=0)
+mat_type transform_inv(const mat_type& mat, const mat_type& matTrafo, bool bCongr = false)
 {
 	mat_type matTrafoInv;
 	if(bCongr)

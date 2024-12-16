@@ -169,13 +169,13 @@ get_mono_vals(const length& src_w, const length& src_h,
 /*~3*/			+ units::pow<2>(dist_mono_sample / src_h)
 /*4*/			+ units::pow<2>(dist_mono_sample / mono_h)
 
-/*5*/			+ Av_t0*Av_t0 * rads*rads				// typo in paper?
-/*6*/			- t_real(2)*Av_t0*Av_t1 * rads*rads
-/*7*/			+ Av_t1*Av_t1 * rads*rads				// missing in paper?
+/*5*/			+ Av_t0*Av_t0 * rads*rads
+/*6*/			- t_real(2)*Av_t0*Av_t1 * rads*rads     // typo in paper?
+/*7*/			+ Av_t1*Av_t1 * rads*rads               // missing in paper?
 		);
 		Av(0, 1) = Av(1, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
 		(
-/*w*/	//		- units::pow<2>(1./coll_v_pre_mono) *rads*rads		// missing in paper?
+/*w*/	//		- units::pow<2>(1./coll_v_pre_mono) *rads*rads   // missing in paper?
 /*~x*/			+ dist_vsrc_mono*dist_mono_sample/(src_h*src_h)
 /*y*/			- Av_t0*Av_t0 * rads*rads
 /*z*/			+ Av_t0*Av_t1 * rads*rads
@@ -221,7 +221,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 		);
 		Bv(1) = sig2fwhm*sig2fwhm * pos_z / (ki*angs) * t_real(-1.) *
 		(
-/*i*/			+ dist_vsrc_mono / (src_h*src_h)         // typo in paper?
+/*i*/			+ dist_vsrc_mono / (src_h*src_h)        // typo in paper?
 /*j*/			+ t_real(0.5)*Bv_t0/s_th_m * rads*rads
 		);
 	}
@@ -249,7 +249,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 	B[2] = Bv[0] - Bv[1]*Av(0, 1)/Av(1,1);
 	t_real D = Cv - t_real(0.25)*Bv[1]*Bv[1]/Av(1, 1);  // typo in paper? (thanks to F. Bourdarot for pointing this out)
 
-	// [eck14], equ. 54
+	// [eck14], equ. 54, in th paper the sqrt factor is missing in some other equations
 	t_real refl = dRefl * std::sqrt(pi / (Av(1, 1)));
 
 
@@ -468,7 +468,7 @@ ResoResults calc_eck(const EckParams& eck)
 	tl::submatrix_copy(matAE, Erot, 3, 3);
 
 	// U1 matrix
-	t_mat U1 = tl::transform(matAE, Tinv, true);	// typo in paper in quadric trafo in equ 54 (top)?
+	t_mat U1 = tl::transform(matAE, Tinv, true);  // typo in paper in quadric trafo in equ 54 (top)?
 
 	// V1 vector
 	t_vec vecBrot = ublas::prod(ublas::trans(Dalph_i), B);
@@ -494,7 +494,7 @@ ResoResults calc_eck(const EckParams& eck)
 		+ 0.25*V2[ECK_K_Y]*V2[ECK_K_Y] / U2(ECK_K_Y, ECK_K_Y);
 
 	t_real Z0 = std::sqrt(pi/std::abs(U1(ECK_K_Z, ECK_K_Z)))
-		  * std::sqrt(pi/std::abs(U2(ECK_K_Y, ECK_K_Y)));
+		* std::sqrt(pi/std::abs(U2(ECK_K_Y, ECK_K_Y)));
 	t_real Z = dReflM * dReflA * Z0;
 	//--------------------------------------------------------------------------
 
@@ -504,14 +504,14 @@ ResoResults calc_eck(const EckParams& eck)
 
 	// add horizontal sample mosaic
 	const t_real mos_Q_sq = (eck.sample_mosaic/rads * eck.Q*angs)
-			      * (eck.sample_mosaic/rads * eck.Q*angs);
+		* (eck.sample_mosaic/rads * eck.Q*angs);
 	t_vec vec1 = tl::get_column<t_vec>(U/(sig2fwhm*sig2fwhm), 1);
 	U -= sig2fwhm*sig2fwhm * ublas::outer_prod(vec1, vec1)
 		/ (1./mos_Q_sq + U(1, 1)/(sig2fwhm*sig2fwhm));
 
 	// add vertical sample mosaic
 	const t_real mos_v_Q_sq = (sample_mosaic_v/rads * eck.Q*angs)
-				* (sample_mosaic_v/rads * eck.Q*angs);
+		* (sample_mosaic_v/rads * eck.Q*angs);
 	t_vec vec2 = tl::get_column<t_vec>(U/(sig2fwhm*sig2fwhm), 2);
 	U -= sig2fwhm*sig2fwhm * ublas::outer_prod(vec2, vec2)
 		/ (1./mos_v_Q_sq + U(2, 2)/(sig2fwhm*sig2fwhm));

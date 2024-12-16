@@ -61,16 +61,19 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	//comboCoordSys->addItem("Fractional Units (rlu)");
 	//comboCoordSys->addItem("Lab Units (\xe2\x84\xab)");
 
-	m_show_coordcross = new QCheckBox("Coordinates", this);
-	m_show_labels = new QCheckBox("Labels", this);
+	m_show_coordcross_lab = new QCheckBox("Lab Basis", this);
+	m_show_coordcross_xtal = new QCheckBox("Crystal Basis", this);
+	//m_show_labels = new QCheckBox("Labels", this);
 	m_show_plane = new QCheckBox("Plane", this);
 	m_show_Qs = new QCheckBox("Q Vertices", this);
-	m_show_coordcross->setToolTip("Show or hide the coordinate cross.");
-	m_show_labels->setToolTip("Show or hide the object labels.");
+	m_show_coordcross_lab->setToolTip("Show or hide the basis vectors of the orthogonal lab system (in units of Å⁻¹).");
+	m_show_coordcross_xtal->setToolTip("Show or hide the basis vectors of the generally non-orthogonal crystal system (in units of rlu, expressed in the lab basis).");
+	//m_show_labels->setToolTip("Show or hide the object labels.");
 	m_show_plane->setToolTip("Show or hide the plane used for the Brillouin zone intersection.");
 	m_show_Qs->setToolTip("Show or hide the Brillouin zone vertices and Bragg peaks.");
-	m_show_coordcross->setChecked(true);
-	m_show_labels->setChecked(true);
+	m_show_coordcross_lab->setChecked(true);
+	m_show_coordcross_xtal->setChecked(false);
+	//m_show_labels->setChecked(true);
 	m_show_plane->setChecked(true);
 	m_show_Qs->setChecked(true);
 
@@ -92,8 +95,9 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	grid->addWidget(m_plot.get(), 0, 0, 1, 4);
 	//grid->addWidget(labCoordSys, 1, 0, 1, 1);
 	//grid->addWidget(comboCoordSys, 1, 1, 1, 1);
-	grid->addWidget(m_show_coordcross, 1, 0, 1, 1);
-	grid->addWidget(m_show_labels, 1, 1, 1, 1);
+	grid->addWidget(m_show_coordcross_lab, 1, 0, 1, 1);
+	grid->addWidget(m_show_coordcross_xtal, 1, 1, 1, 1);
+	//grid->addWidget(m_show_labels, 1, 1, 1, 1);
 	grid->addWidget(m_show_plane, 1, 2, 1, 1);
 	grid->addWidget(m_show_Qs, 1, 3, 1, 1);
 	grid->addWidget(m_status, 2, 0, 1, 3);
@@ -105,8 +109,9 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 		this, &BZPlotDlg::PickerIntersection);
 	connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &BZPlotDlg::PlotMouseDown);
 	connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, &BZPlotDlg::PlotMouseUp);
-	connect(m_show_coordcross, &QCheckBox::toggled, this, &BZPlotDlg::ShowCoordCross);
-	connect(m_show_labels, &QCheckBox::toggled, this, &BZPlotDlg::ShowLabels);
+	connect(m_show_coordcross_lab, &QCheckBox::toggled, this, &BZPlotDlg::ShowCoordCrossLab);
+	connect(m_show_coordcross_xtal, &QCheckBox::toggled, this, &BZPlotDlg::ShowCoordCrossXtal);
+	//connect(m_show_labels, &QCheckBox::toggled, this, &BZPlotDlg::ShowLabels);
 	connect(m_show_plane, &QCheckBox::toggled, this, &BZPlotDlg::ShowPlane);
 	connect(m_show_Qs, &QCheckBox::toggled, this, &BZPlotDlg::ShowQVertices);
 	/*connect(comboCoordSys, static_cast<void (QComboBox::*)(int)>(
@@ -141,12 +146,28 @@ void BZPlotDlg::closeEvent(QCloseEvent *)
 /**
  * show or hide the coordinate cross
  */
-void BZPlotDlg::ShowCoordCross(bool show)
+void BZPlotDlg::ShowCoordCrossLab(bool show)
 {
 	if(!m_plot)
 		return;
 
-	if(auto obj = m_plot->GetRenderer()->GetCoordCross(); obj)
+	if(auto obj = m_plot->GetRenderer()->GetCoordCross(false); obj)
+	{
+		m_plot->GetRenderer()->SetObjectVisible(*obj, show);
+		m_plot->update();
+	}
+}
+
+
+/**
+ * show or hide the coordinate cross
+ */
+void BZPlotDlg::ShowCoordCrossXtal(bool show)
+{
+	if(!m_plot)
+		return;
+
+	if(auto obj = m_plot->GetRenderer()->GetCoordCross(true); obj)
 	{
 		m_plot->GetRenderer()->SetObjectVisible(*obj, show);
 		m_plot->update();
@@ -209,7 +230,7 @@ void BZPlotDlg::SetABTrafo(const t_mat& crystA, const t_mat& crystB)
 		return;
 
 	t_mat_gl matA{crystA};
-	m_plot->GetRenderer()->SetBTrafo(crystB, &matA);
+	m_plot->GetRenderer()->SetBTrafo(crystB, &matA, false);
 }
 
 
