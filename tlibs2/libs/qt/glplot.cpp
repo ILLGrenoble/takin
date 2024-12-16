@@ -1302,12 +1302,13 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 				tl2::create<t_vec_gl>({0.,0.,f,1.})), ostrF.str().c_str());
 		}
 
-		painter.drawText(GlToScreenCoords(
-			tl2::create<t_vec_gl>({m_CoordMax*t_real_gl(1.2), 0., 0., 1.})), "x");
-		painter.drawText(GlToScreenCoords(
-			tl2::create<t_vec_gl>({0., m_CoordMax*t_real_gl(1.2), 0., 1.})), "y");
-		painter.drawText(GlToScreenCoords(
-			tl2::create<t_vec_gl>({0., 0., m_CoordMax*t_real_gl(1.2), 1.})), "z");
+		t_vec_gl x = tl2::create<t_vec_gl>({m_CoordMax*t_real_gl(1.2), 0., 0., 1.});
+		t_vec_gl y = tl2::create<t_vec_gl>({0., m_CoordMax*t_real_gl(1.2), 0., 1.});
+		t_vec_gl z = tl2::create<t_vec_gl>({0., 0., m_CoordMax*t_real_gl(1.2), 1.});
+
+		painter.drawText(GlToScreenCoords(x), m_is_real_space ? "x" : "Qx");
+		painter.drawText(GlToScreenCoords(y), m_is_real_space ? "y" : "Qy");
+		painter.drawText(GlToScreenCoords(z), m_is_real_space ? "z" : "Qz");
 	}
 
 
@@ -1349,9 +1350,9 @@ void GlPlotRenderer::DoPaintNonGL(QPainter &painter)
 			l = m_matB * l;
 		}
 
-		painter.drawText(GlToScreenCoords(h), "h");
-		painter.drawText(GlToScreenCoords(k), "k");
-		painter.drawText(GlToScreenCoords(l), "l");
+		painter.drawText(GlToScreenCoords(h), m_is_real_space ? "x_xtl" : "h");
+		painter.drawText(GlToScreenCoords(k), m_is_real_space ? "y_xtl" : "k");
+		painter.drawText(GlToScreenCoords(l), m_is_real_space ? "z_xtl" : "l");
 	}
 
 
