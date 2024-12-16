@@ -55,7 +55,6 @@
 #if __has_include(<lapacke.h>) && USE_LAPACK
 	#define __TLIBS2_USE_LAPACK__
 
-namespace tl2_la {
 	// ----------------------------------------------------------------------------
 	// forward declarations
 	// ----------------------------------------------------------------------------
@@ -68,6 +67,8 @@ namespace tl2_la {
 	#define lapack_complex_float_imag(z) (z.imag())
 
 	#include <lapacke.h>
+
+namespace tl2_la {
 
 	template<class t_mat, template<class...> class t_vec = std::vector>
 	std::tuple<bool, t_vec<typename t_mat::value_type>, t_vec<lapack_int>> _lu_raw(const t_mat& mat)
