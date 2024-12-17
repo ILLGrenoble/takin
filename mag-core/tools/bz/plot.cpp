@@ -64,7 +64,7 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	m_show_coordcross_lab = new QCheckBox("Lab Basis", this);
 	m_show_coordcross_xtal = new QCheckBox("Crystal Basis", this);
 	//m_show_labels = new QCheckBox("Labels", this);
-	m_show_plane = new QCheckBox("Plane", this);
+	m_show_plane = new QCheckBox("Cutting Plane", this);
 	m_show_Qs = new QCheckBox("Q Vertices", this);
 	m_show_coordcross_lab->setToolTip("Show or hide the basis vectors of the orthogonal lab system (in units of Å⁻¹).");
 	m_show_coordcross_xtal->setToolTip("Show or hide the basis vectors of the generally non-orthogonal crystal system (in units of rlu, expressed in the lab basis).");

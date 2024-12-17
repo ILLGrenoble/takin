@@ -1,5 +1,5 @@
 /**
- * brillouin zone tool
+ * brillouin zone tool -- formulas table
  * @author Tobias Weber <tweber@ill.fr>
  * @date June-2022
  * @license GPLv3, see 'LICENSE' file
@@ -52,11 +52,17 @@ void BZDlg::AddFormulaTabItem(int row, const std::string& formula)
 	bool bclone = false;
 
 	if(row == -1)	// append to end of table
+	{
 		row = m_formulas->rowCount();
+	}
 	else if(row == -2 && m_formulaCursorRow >= 0)	// use row from member variable
+	{
 		row = m_formulaCursorRow;
+	}
 	else if(row == -3 && m_formulaCursorRow >= 0)	// use row from member variable +1
+	{
 		row = m_formulaCursorRow + 1;
+	}
 	else if(row == -4 && m_formulaCursorRow >= 0)	// use row from member variable +1
 	{
 		row = m_formulaCursorRow + 1;
@@ -69,9 +75,11 @@ void BZDlg::AddFormulaTabItem(int row, const std::string& formula)
 
 	if(bclone)
 	{
-		for(int thecol=0; thecol<NUM_FORMULAS_COLS; ++thecol)
+		for(int thecol = 0; thecol < NUM_FORMULAS_COLS; ++thecol)
+		{
 			m_formulas->setItem(row, thecol,
 				m_formulas->item(m_formulaCursorRow, thecol)->clone());
+		}
 	}
 	else
 	{
@@ -136,14 +144,17 @@ void BZDlg::MoveFormulaTabItemUp()
 
 		m_formulas->insertRow(row-1);
 		for(int col = 0; col < m_formulas->columnCount(); ++col)
-			m_formulas->setItem(row-1, col, m_formulas->item(row+1, col)->clone());
-		m_formulas->removeRow(row+1);
+		{
+			m_formulas->setItem(row - 1, col,
+				m_formulas->item(row + 1, col)->clone());
+		}
+		m_formulas->removeRow(row + 1);
 	}
 
-	for(int row=0; row<m_formulas->rowCount(); ++row)
+	for(int row = 0; row < m_formulas->rowCount(); ++row)
 	{
 		if(auto *item = m_formulas->item(row, 0);
-			item && std::find(selected.begin(), selected.end(), row+1)
+			item && std::find(selected.begin(), selected.end(), row + 1)
 				!= selected.end())
 		{
 			for(int col = 0; col < m_formulas->columnCount(); ++col)
@@ -166,7 +177,7 @@ void BZDlg::MoveFormulaTabItemDown()
 	auto selected = GetSelectedFormulaRows(true);
 	for(int row : selected)
 	{
-		if(row == m_formulas->rowCount()-1)
+		if(row == m_formulas->rowCount() - 1)
 			continue;
 
 		auto *item = m_formulas->item(row, 0);
@@ -182,7 +193,7 @@ void BZDlg::MoveFormulaTabItemDown()
 	for(int row=0; row<m_formulas->rowCount(); ++row)
 	{
 		if(auto *item = m_formulas->item(row, 0);
-			item && std::find(selected.begin(), selected.end(), row-1)
+			item && std::find(selected.begin(), selected.end(), row - 1)
 				!= selected.end())
 		{
 			for(int col = 0; col < m_formulas->columnCount(); ++col)
@@ -259,7 +270,8 @@ std::vector<std::string> BZDlg::GetFormulas() const
 		auto *op_item = m_formulas->item(row, COL_FORMULA);
 		if(!op_item)
 		{
-			std::cerr << "Invalid entry in formula table row " << row << "." << std::endl;
+			std::cerr << "Invalid entry in formula table row "
+				<< row << "." << std::endl;
 			continue;
 		}
 
