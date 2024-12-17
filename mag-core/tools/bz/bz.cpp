@@ -126,6 +126,8 @@ BZDlg::BZDlg(QWidget* pParent) : QDialog{pParent},
 	m_symOpIgnoreChanges = false;
 	m_formulaIgnoreChanges = false;
 	CalcB(true);
+
+	m_status->setText("Ready.");
 }
 
 

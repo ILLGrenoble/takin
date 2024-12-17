@@ -92,10 +92,10 @@ void BZDlg::SetCalcOrder(int order, bool recalc)
 /**
  * calculate crystal B matrix
  */
-void BZDlg::CalcB(bool full_recalc)
+bool BZDlg::CalcB(bool full_recalc)
 {
 	if(m_ignoreCalc)
-		return;
+		return false;
 
 	t_real a = tl2::stoval<t_real>(m_editA->text().toStdString());
 	t_real b = tl2::stoval<t_real>(m_editB->text().toStdString());
@@ -113,7 +113,7 @@ void BZDlg::CalcB(bool full_recalc)
 	{
 		//QMessageBox::critical(this, "Brillouin Zones", "Error: Invalid lattice.");
 		m_status->setText("<font color=\"red\">Error: Invalid lattice.</font>");
-		return;
+		return false;
 	}
 
 	t_mat crystB = tl2::B_matrix<t_mat>(a, b, c,
@@ -125,7 +125,7 @@ void BZDlg::CalcB(bool full_recalc)
 	if(!ok)
 	{
 		QMessageBox::critical(this, "Brillouin Zones", "Error: Cannot invert B matrix.");
-		return;
+		return false;
 	}
 
 	m_crystA = crystA * t_real(2)*tl2::pi<t_real>;
@@ -134,20 +134,24 @@ void BZDlg::CalcB(bool full_recalc)
 	if(m_dlgPlot)
 		m_dlgPlot->SetABTrafo(m_crystA, m_crystB);
 
-	m_status->setText("B calculated successfully.");
+	m_status->setText((std::string("<font color=\"green\">")
+		+ "Crystal B matrix calculated successfully."
+		+ std::string("</font>")).c_str());
 
 	if(full_recalc)
 		CalcBZ();
+
+	return true;
 }
 
 
 /**
  * calculate brillouin zone
  */
-void BZDlg::CalcBZ(bool full_recalc)
+bool BZDlg::CalcBZ(bool full_recalc)
 {
 	if(m_ignoreCalc || !m_peaks.size())
-		return;
+		return false;
 
 	const auto ops_centr = GetSymOps(true);
 
@@ -189,12 +193,18 @@ void BZDlg::CalcBZ(bool full_recalc)
 	m_descrBZ = bzcalc.Print(g_prec);
 	m_descrBZJSON = bzcalc.PrintJSON(g_prec);
 
-	m_status->setText("Brillouin zone calculated successfully.");
+	m_status->setText((std::string("<font color=\"green\">")
+		+ "Brillouin zone calculated successfully."
+		+ std::string("</font>")).c_str());
+
+	bool ok = true;
 
 	if(full_recalc)
-		CalcBZCut();
+		ok = CalcBZCut();
 	else
 		UpdateBZDescription();
+
+	return ok;
 }
 
 
@@ -202,10 +212,10 @@ void BZDlg::CalcBZ(bool full_recalc)
  * calculate brillouin zone cut
  * TODO: move calculation into bzlib.h
  */
-void BZDlg::CalcBZCut()
+bool BZDlg::CalcBZCut()
 {
 	if(m_ignoreCalc || !m_bz_polys.size() || !m_drawingPeaks.size())
-		return;
+		return false;
 
 	std::ostringstream ostr;
 	ostr.precision(g_prec);
@@ -418,24 +428,36 @@ void BZDlg::CalcBZCut()
 		m_dlgPlot->SetPlane(norm_invA, d_invA);
 
 	UpdateBZDescription();
-	CalcFormulas();
+	bool formulas_ok = CalcFormulas();
+
+	if(/*ok &&*/ formulas_ok)
+	{
+		m_status->setText((std::string("<font color=\"green\">")
+			+ "Brillouin zone cut calculated successfully."
+			+ std::string("</font>")).c_str());
+	}
+
+	return true;
 }
 
 
 /**
  * evaluate the formulas in the table and plot them
  */
-void BZDlg::CalcFormulas()
+bool BZDlg::CalcFormulas()
 {
 	m_bzscene->ClearCurves();
 	if(m_max_x < m_min_x)
-		return;
+		return false;
 
 	t_real plane_d = m_cutD->value() * m_cut_norm_scale;
 
+	bool all_ok = true;
 	std::vector<std::string> formulas = GetFormulas();
-	for(const std::string& formula : formulas)
+	for(std::size_t formula_idx = 0; formula_idx < formulas.size(); ++formula_idx)
 	{
+		const std::string& formula = formulas[formula_idx];
+
 		try
 		{
 			tl2::ExprParser<t_real> parser;
@@ -464,6 +486,8 @@ void BZDlg::CalcFormulas()
 				parser.register_var("Qy", QinvA[1]);
 
 				t_real y = parser.eval();
+				if(std::isnan(y) || std::isinf(y))
+					continue;
 				if(y < m_min_y || y > m_max_y)
 					continue;
 
@@ -475,9 +499,20 @@ void BZDlg::CalcFormulas()
 		catch(const std::exception& ex)
 		{
 			m_status->setText((std::string("<font color=\"red\">")
+				+ "Formula " + tl2::var_to_str(formula_idx + 1) + ": "
 				+ ex.what() + std::string("</font>")).c_str());
+			all_ok = false;
 		}
 	}
+
+	if(all_ok)
+	{
+		m_status->setText((std::string("<font color=\"green\">")
+			+ "Formulas parsed successfully."
+			+ std::string("</font>")).c_str());
+	}
+
+	return all_ok;
 }
 
 

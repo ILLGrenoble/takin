@@ -216,10 +216,10 @@ protected:
 	void SetCalcOrder(int order, bool recalc = true);
 
 	// calculation functions
-	void CalcB(bool full_recalc = true);
-	void CalcBZ(bool full_recalc = true);
-	void CalcBZCut();
-	void CalcFormulas();
+	bool CalcB(bool full_recalc = true);
+	bool CalcBZ(bool full_recalc = true);
+	bool CalcBZCut();
+	bool CalcFormulas();
 
 	// 3d bz cut plot
 	void BZCutMouseMoved(t_real x, t_real y);

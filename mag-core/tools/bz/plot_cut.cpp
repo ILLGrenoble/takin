@@ -102,14 +102,17 @@ void BZCutScene::AddCut(
  */
 void BZCutScene::AddCurve(const std::vector<t_vec>& points)
 {
+	if(points.size() < 2)
+		return;
+
 	QPen pen;
 	pen.setCosmetic(true);
 	pen.setColor(QColor(0x00, 0x00, 0xff));
 	pen.setWidthF(2.);
 
-	for(std::size_t i=0; i<points.size()-1; ++i)
+	for(std::size_t i = 0; i < points.size() - 1; ++i)
 	{
-		std::size_t j = i+1;
+		std::size_t j = i + 1;
 
 		QGraphicsLineItem *plot_line = addLine(QLineF(
 			points[i][0]*m_scale, points[i][1]*m_scale,
