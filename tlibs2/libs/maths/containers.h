@@ -227,6 +227,9 @@ public:
 
 	~vec() = default;
 
+	vec() : container_type{}
+	{}
+
 	vec(const vec<T, t_cont>& other)
 		: container_type{other}
 	{}

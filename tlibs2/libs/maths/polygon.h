@@ -300,7 +300,7 @@ requires is_vec<t_vec>
 
 	// check if matrix is invertible
 	if(equals<t_real>(d_det, 0, eps))
-		return std::make_tuple(t_vec(), t_vec(), false, 0, 0, 0);
+		return std::make_tuple(t_vec{}, t_vec{}, false, 0, 0, 0);
 
 	// inverse (symmetric)
 	const t_real d11_i = d22 / d_det;
