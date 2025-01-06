@@ -60,7 +60,8 @@ using t_strarr33 = std::array<std::array<std::string, 3>, 3>;
  * magnetic sites
  */
 template<class t_mat, class t_vec, class t_vec_real,
-	class t_size, class t_real = typename t_vec_real::value_type>
+	class t_size = std::size_t,
+	class t_real = typename t_vec_real::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec> && tl2::is_vec<t_vec_real>
 #endif
@@ -103,7 +104,8 @@ struct t_MagneticSite
  * couplings between magnetic sites
  */
 template<class t_mat, class t_vec, class t_vec_real,
-	class t_size, class t_cplx = typename t_mat::value_type,
+	class t_size = std::size_t,
+	class t_cplx = typename t_mat::value_type,
 	class t_real = typename t_vec_real::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat> && tl2::is_vec<t_vec>
@@ -160,6 +162,7 @@ struct t_ExternalField
  * eigenenergies and spin-spin correlation matrix
  */
 template<class t_mat, class t_vec, class t_real,
+	class t_size = std::size_t,
 	class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
@@ -176,6 +179,8 @@ struct t_EnergyAndWeight
 	t_mat S_perp{};              // projected dynamical structure factor for neutron scattering
 	t_cplx S_perp_sum{};
 	t_real weight{};
+
+	t_size degeneracy{1};        // degeneracy counter
 };
 
 
@@ -185,6 +190,7 @@ struct t_EnergyAndWeight
  */
 template<class t_mat, class t_vec, class t_vec_real,
 	class t_real = typename t_vec_real::value_type,
+	class t_size = std::size_t,
 	class t_cplx = typename t_mat::value_type>
 #ifndef SWIG  // TODO: remove this as soon as swig understands concepts
 requires tl2::is_mat<t_mat>
@@ -213,7 +219,7 @@ struct t_SofQE
 	// ------------------------------------------------------------------------
 
 	// energies and correlations
-	std::vector<t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>> E_and_S{};
+	std::vector<t_EnergyAndWeight<t_mat, t_vec, t_real, t_size, t_cplx>> E_and_S{};
 };
 
 

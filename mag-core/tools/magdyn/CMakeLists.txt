@@ -162,8 +162,9 @@ if(USE_QT)
 		config.cpp file.cpp
 		export.cpp export_sqe.cpp
 		kernel.cpp dispersion.cpp
+		graph.cpp graph.h
 		defs.cpp defs.h
-		gui_defs.h graph.h
+		gui_defs.h
 
 		# dialogs
 		dialogs/struct_plot.cpp dialogs/struct_plot.h

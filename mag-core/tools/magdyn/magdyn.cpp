@@ -260,6 +260,10 @@ void MagDynDlg::CreateMenuBar()
 	m_plot_channels->setToolTip("Plot individual polarisation channels.");
 	m_plot_channels->setCheckable(true);
 	m_plot_channels->setChecked(false);
+	m_plot_degeneracies = new QAction("Plot Degeneracies", m_menuDisp);
+	m_plot_degeneracies->setToolTip("Mark degenerate dispersion branches.");
+	m_plot_degeneracies->setCheckable(true);
+	m_plot_degeneracies->setChecked(false);
 	QAction *acRescalePlot = new QAction("Rescale Axes", m_menuDisp);
 	QAction *acSaveFigure = new QAction("Save Figure...", m_menuDisp);
 	QAction *acSaveDisp = new QAction("Save Data...", m_menuDisp);
@@ -456,6 +460,7 @@ void MagDynDlg::CreateMenuBar()
 
 	m_menuDisp->addAction(m_plot_channels);
 	m_menuDisp->addMenu(m_menuChannels);
+	m_menuDisp->addAction(m_plot_degeneracies);
 	m_menuDisp->addSeparator();
 	m_menuDisp->addAction(acRescalePlot);
 	m_menuDisp->addMenu(menuWeights);
@@ -584,6 +589,11 @@ void MagDynDlg::CreateMenuBar()
 			this->PlotDispersion();
 		});
 	}
+
+	connect(m_plot_degeneracies, &QAction::toggled, [this](bool)
+	{
+		this->PlotDispersion();
+	});
 
 	connect(m_plot_weights_pointsize, &QAction::toggled, [this](bool)
 	{

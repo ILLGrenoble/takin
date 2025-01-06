@@ -85,7 +85,8 @@ int g_use_native_menubar = 0;
 int g_use_native_dialogs = 0;
 
 // plot colour
-std::string g_colPlot = "#ff0000";
+std::string g_colPlot = "#0000ff";
+std::string g_colPlotDegen = "#ff0000";
 
 // structure plotter settings
 t_real g_structplot_site_rad = 0.05;

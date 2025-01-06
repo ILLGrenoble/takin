@@ -28,11 +28,8 @@
 #ifndef __MAG_DYN_GRAPH_H__
 #define __MAG_DYN_GRAPH_H__
 
-#include <algorithm>
 #include <qcustomplot.h>
 #include <QtCore/QVector>
-
-#include "tlibs2/libs/maths.h"
 
 
 
@@ -42,53 +39,21 @@
 class GraphWithWeights : public QCPGraph
 {
 public:
-	GraphWithWeights(QCPAxis *x, QCPAxis *y)
-		: QCPGraph(x, y)
-	{
-		// can't use adaptive sampling because we have to match weights to data points
-		setAdaptiveSampling(false);
-	}
-
-
-
-	virtual ~GraphWithWeights()
-	{}
-
-
+	GraphWithWeights(QCPAxis *x, QCPAxis *y);
+	virtual ~GraphWithWeights();
 
 	/**
 	 * sets the symbol sizes
 	 * setData() needs to be called with already_sorted=true,
 	 * otherwise points and weights don't match
 	 */
-	void SetWeights(const QVector<qreal>& weights)
-	{
-		m_weights = weights;
-	}
+	void SetWeights(const QVector<qreal>& weights);
+	void SetWeightScale(qreal sc, qreal min, qreal max);
+	void SetWeightAsPointSize(bool b);
+	void SetWeightAsAlpha(bool b);
 
-
-
-	void SetWeightScale(qreal sc, qreal min, qreal max)
-	{
-		m_weight_scale = sc;
-		m_weight_min = min;
-		m_weight_max = max;
-	}
-
-
-
-	void SetWeightAsPointSize(bool b)
-	{
-		m_weight_as_point_size = b;
-	}
-
-
-
-	void SetWeightAsAlpha(bool b)
-	{
-		m_weight_as_alpha = b;
-	}
-
+	void AddColour(const QColor& col);
+	void SetColourIndices(const QVector<int>& cols);
 
 
 	/**
@@ -97,100 +62,16 @@ public:
 	virtual void drawScatterPlot(
 		QCPPainter* paint,
 		const QVector<QPointF>& points,
-		const QCPScatterStyle& _style) const override
-	{
-		const int num_points = points.size();
-		if(!num_points)
-			return;
-
-		const qreal eps = 1e-3;
-
-		// find the absolute data start index for indexing the weight data
-		// (more elegant would be if we could get the indices for the data to be drawn directly from qcp)
-		int data_start_idx = -1;
-		for(auto iter = mDataContainer->constBegin(); iter != mDataContainer->constEnd(); ++iter)
-		{
-			qreal pt_x = keyAxis()->coordToPixel(iter->mainKey());
-			qreal pt_y = valueAxis()->coordToPixel(iter->mainValue());
-
-			if(tl2::equals(pt_x, points[0].x(), eps) &&
-				tl2::equals(pt_y, points[0].y(), eps))
-			{
-				data_start_idx = iter - mDataContainer->constBegin();
-				break;
-			}
-		}
-
-		// need to overwrite point size
-		QCPScatterStyle& style = const_cast<QCPScatterStyle&>(_style);
-
-		// see: QCPGraph::drawScatterPlot
-		QCPGraph::applyScattersAntialiasingHint(paint);
-
-		QPen pen = this->pen();
-		style.applyTo(paint, pen);
-
-		const bool has_weights = (data_start_idx >= 0 && m_weights.size()-data_start_idx >= num_points);
-		const qreal size_saved = style.size();
-
-		// iterate all data points
-		for(int idx=0; idx<num_points; ++idx)
-		{
-			// data point
-			const QPointF& pt = points[idx];
-			bool weight_range_valid = m_weight_max >= 0. && m_weight_min >= 0. && m_weight_min <= m_weight_max;
-
-			if(m_weight_as_point_size)
-			{
-				// size-based weight factor
-				qreal weight = has_weights ? m_weights[idx + data_start_idx] : size_saved;
-				weight *= m_weight_scale;
-				if(weight_range_valid)
-					weight = std::clamp(weight, m_weight_min, m_weight_max);
-
-				// set symbol sizes per point
-				style.setSize(weight);
-			}
-			else
-			{
-				style.setSize(2.);
-			}
-
-			if(m_weight_as_alpha)
-			{
-				// colour-based weight factor
-				qreal weight_c = has_weights
-					? m_weights[idx + data_start_idx] * m_weight_scale
-					: 1.;
-				if(has_weights && weight_range_valid)
-				{
-					weight_c = std::clamp(weight_c, m_weight_min, m_weight_max);
-					weight_c /= m_weight_max;
-
-					//weight_c = (weight_c - m_weight_min) / (m_weight_max - m_weight_min);
-					//weight_c = std::clamp(weight_c, 0., 1.);
-				}
-
-				QColor col = pen.color();
-				col.setAlphaF(weight_c);
-				pen.setColor(col);
-				style.setPen(pen);
-				style.applyTo(paint, pen);
-			}
-
-			// draw the symbol with the modified size
-			style.drawShape(paint, pt);
-		}
-
-		// restore original symbol size
-		style.setSize(size_saved);
-	}
-
+		const QCPScatterStyle& _style) const override;
 
 
 private:
 	// symbol sizes
 	QVector<qreal> m_weights{};
+
+	// colour palette
+	QVector<QColor> m_colours{};
+	QVector<int> m_colour_indices{};
 
 	qreal m_weight_scale = 1;
 	qreal m_weight_min = -1;

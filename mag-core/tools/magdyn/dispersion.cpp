@@ -62,6 +62,7 @@ void MagDynDlg::ClearDispersion(bool replot)
 	m_qs_data.clear();
 	m_Es_data.clear();
 	m_ws_data.clear();
+	m_degen_data.clear();
 
 	for(int i = 0; i < 3; ++i)
 	{
@@ -117,10 +118,13 @@ void MagDynDlg::PlotDispersion()
 	m_graphs.clear();
 
 	const bool plot_channels = m_plot_channels->isChecked();
+	const bool plot_degeneracies = m_plot_degeneracies->isChecked();
 
 	// create plot curves
 	if(plot_channels)
 	{
+		// TODO: handle case if channels AND degeneracies are plotted
+
 		const QColor colChannel[3]
 		{
 			QColor(0xff, 0x00, 0x00),
@@ -153,13 +157,28 @@ void MagDynDlg::PlotDispersion()
 	else
 	{
 		GraphWithWeights *graph = new GraphWithWeights(m_plot->xAxis, m_plot->yAxis);
-		QPen pen = graph->pen();
 
-		// colour
-		int col_comp[3] = { 0xff, 0, 0 };
-		get_colour<int>(g_colPlot, col_comp);
+		// dispersion colour
+		int col_comp[3] = { 0, 0, 0xff };      // default colour
+		get_colour<int>(g_colPlot, col_comp);  // get actual colour
 		const QColor colFull(col_comp[0], col_comp[1], col_comp[2]);
+
+		QPen pen = graph->pen();
 		pen.setColor(colFull);
+
+		// colour degeneracies
+		if(plot_degeneracies)
+		{
+			// colour for degenerate dispersion points
+			int col_comp_degen[3] = { 0xff, 0, 0 };      // default colour
+			get_colour<int>(g_colPlotDegen, col_comp_degen);  // get actual colour
+			const QColor colDegen(col_comp_degen[0], col_comp_degen[1], col_comp_degen[2]);
+
+			graph->AddColour(colFull);
+			graph->AddColour(colDegen);
+
+			graph->SetColourIndices(m_degen_data);
+		}
 
 		pen.setWidthF(1.);
 		graph->setPen(pen);
@@ -270,6 +289,7 @@ void MagDynDlg::CalcDispersion()
 	m_qs_data.reserve(num_pts*10);
 	m_Es_data.reserve(num_pts*10);
 	m_ws_data.reserve(num_pts*10);
+	m_degen_data.reserve(num_pts*10);
 
 	for(int i = 0; i < 3; ++i)
 	{
@@ -306,7 +326,7 @@ void MagDynDlg::CalcDispersion()
 		m_hamiltonian_comp[1]->isChecked(),
 		m_hamiltonian_comp[2]->isChecked());
 
-	// tread pool and mutex to protect m_qs_data, m_Es_data, and m_ws_data
+	// thread pool and mutex to protect m_qs_data, m_Es_data, and m_ws_data
 	asio::thread_pool pool{g_num_threads};
 	std::mutex mtx;
 
@@ -381,6 +401,7 @@ void MagDynDlg::CalcDispersion()
 
 				m_qs_data.push_back(Q[m_Q_idx]);
 				m_Es_data.push_back(E);
+				m_degen_data.push_back(static_cast<int>(E_and_S.degeneracy - 1));
 			}
 		};
 
@@ -421,7 +442,10 @@ void MagDynDlg::CalcDispersion()
 	ostrMsg << "after " << stopwatch.GetDur() << " s.";
 	m_status->setText(ostrMsg.str().c_str());
 
-	auto sort_data = [](QVector<qreal>& qvec, QVector<qreal>& Evec, QVector<qreal>& wvec)
+	auto sort_data = [](QVector<qreal>& qvec,
+		QVector<qreal>& Evec,
+		QVector<qreal>& wvec,
+		QVector<int>* dvec = nullptr)
 	{
 		// sort vectors by q component
 		std::vector<std::size_t> perm = tl2::get_perm(qvec.size(),
@@ -436,9 +460,12 @@ void MagDynDlg::CalcDispersion()
 		qvec = tl2::reorder(qvec, perm);
 		Evec = tl2::reorder(Evec, perm);
 		wvec = tl2::reorder(wvec, perm);
+
+		if(dvec)
+			*dvec = tl2::reorder(*dvec, perm);
 	};
 
-	sort_data(m_qs_data, m_Es_data, m_ws_data);
+	sort_data(m_qs_data, m_Es_data, m_ws_data, &m_degen_data);
 	for(int i = 0; i < 3; ++i)
 		sort_data(m_qs_data_channel[i], m_Es_data_channel[i], m_ws_data_channel[i]);
 
@@ -761,11 +788,13 @@ void MagDynDlg::CalcHamiltonian()
 		ostr << "<table style=\"border:0px\">";
 		ostr << "<tr>";
 		ostr << "<th style=\"padding-right:16px\">Energy E</td>";
+		ostr << "<th style=\"padding-right:16px\">Degeneracy</td>";
 		ostr << "<th style=\"padding-right:16px\">State |s></td>";
 		ostr << "</tr>";
 
 		for(const t_E_and_S& E_and_S : S.E_and_S)
 		{
+			t_size degen = E_and_S.degeneracy;
 			t_real E = E_and_S.E;
 			if(ignore_annihilation && E < t_real(0))
 				continue;
@@ -779,6 +808,10 @@ void MagDynDlg::CalcHamiltonian()
 			ostr << "<tr>";
 			ostr << "<td style=\"padding-right:16px\">"
 				<< E << " meV" << "</td>";
+
+			// degeneracy
+			ostr << "<td style=\"padding-right:16px\">"
+				<< degen << "</td>";
 
 			// state
 			ostr << "<td style=\"padding-right:16px\">";

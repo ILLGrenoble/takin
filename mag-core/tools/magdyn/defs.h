@@ -105,7 +105,7 @@ extern int g_silent, g_checks;
 extern int g_use_native_menubar, g_use_native_dialogs;
 
 // plot colour
-extern std::string g_colPlot;
+extern std::string g_colPlot, g_colPlotDegen;
 
 // structure plotter settings
 extern t_real g_structplot_site_rad;
@@ -131,7 +131,7 @@ extern t_real g_structplot_fov;
 // ----------------------------------------------------------------------------
 #include "dialogs/settings.h"
 
-constexpr std::array<SettingsVariable, 20> g_settingsvariables
+constexpr std::array<SettingsVariable, 21> g_settingsvariables
 {{
 	// threads
 	{
@@ -192,6 +192,11 @@ constexpr std::array<SettingsVariable, 20> g_settingsvariables
 		.description = "Plot colour.",
 		.key = "plot_colour",
 		.value = &g_colPlot,
+	},
+	{
+		.description = "Plot colour for degeneracies.",
+		.key = "plot_colour_degen",
+		.value = &g_colPlotDegen,
 	},
 
 	// structure plotter settings

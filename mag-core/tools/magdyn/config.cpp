@@ -222,6 +222,8 @@ bool MagDynDlg::Load(const QString& filename, bool calc_dynamics)
 			m_weight_max->setValue(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.plot_channels"))
 			m_plot_channels->setChecked(*optVal);
+		if(auto optVal = magdyn.get_optional<bool>("config.plot_degeneracies"))
+			m_plot_degeneracies->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.plot_weight_as_pointsize"))
 			m_plot_weights_pointsize->setChecked(*optVal);
 		if(auto optVal = magdyn.get_optional<bool>("config.plot_weight_as_alpha"))
@@ -642,6 +644,7 @@ bool MagDynDlg::Save(const QString& filename)
 		magdyn.put<t_real>("config.weight_min", m_weight_min->value());
 		magdyn.put<t_real>("config.weight_max", m_weight_max->value());
 		magdyn.put<bool>("config.plot_channels", m_plot_channels->isChecked());
+		magdyn.put<bool>("config.plot_degeneracies", m_plot_degeneracies->isChecked());
 		magdyn.put<bool>("config.plot_weight_as_pointsize", m_plot_weights_pointsize->isChecked());
 		magdyn.put<bool>("config.plot_weight_as_alpha", m_plot_weights_alpha->isChecked());
 		magdyn.put<bool>("config.auto_calc", m_autocalc->isChecked());

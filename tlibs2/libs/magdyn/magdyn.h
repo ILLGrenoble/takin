@@ -120,10 +120,10 @@ public:
 
 	using ExternalField = t_ExternalField<t_vec_real, t_real>;
 
-	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_vec, t_real, t_cplx>;
+	using EnergyAndWeight = t_EnergyAndWeight<t_mat, t_vec, t_real, t_size, t_cplx>;
 	using EnergiesAndWeights = std::vector<EnergyAndWeight>;
 
-	using SofQE = t_SofQE<t_mat, t_vec, t_vec_real, t_real, t_cplx>;
+	using SofQE = t_SofQE<t_mat, t_vec, t_vec_real, t_real, t_size, t_cplx>;
 	using SofQEs = std::vector<SofQE>;
 
 	using t_indices = std::pair<t_size, t_size>;

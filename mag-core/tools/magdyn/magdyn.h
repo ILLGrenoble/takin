@@ -127,6 +127,7 @@ protected:
 	QAction *m_ignore_annihilation{};
 	QAction *m_force_incommensurate{};
 	QAction *m_plot_channels{};
+	QAction *m_plot_degeneracies{};
 	QMenu *m_menuChannels{};
 	QAction *m_plot_channel[3]{};
 	QAction *m_plot_weights_pointsize{};
@@ -436,6 +437,7 @@ private:
 	// data for dispersion plot
 	QVector<qreal> m_qs_data{}, m_Es_data{}, m_ws_data{};
 	QVector<qreal> m_qs_data_channel[3]{}, m_Es_data_channel[3]{}, m_ws_data_channel[3]{};
+	QVector<int> m_degen_data{};
 	t_size m_Q_idx{};                 // plot x axis
 	t_real m_Q_min{}, m_Q_max{};      // plot x axis range
 
