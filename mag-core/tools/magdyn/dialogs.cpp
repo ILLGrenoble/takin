@@ -150,7 +150,7 @@ void MagDynDlg::ShowStructPlotDlg(bool only_create)
 {
 	if(!m_structplot_dlg)
 	{
-		m_structplot_dlg = new StructPlotDlg(this, m_sett, m_info_dlg);
+		m_structplot_dlg = new StructPlotDlg(this, m_sett);
 		m_structplot_dlg->setFont(this->font());
 
 		m_structplot_dlg->SetKernel(&m_dyn);
@@ -167,6 +167,9 @@ void MagDynDlg::ShowStructPlotDlg(bool only_create)
 			this, &MagDynDlg::SelectTerm);
 		connect(m_structplot_dlg, &StructPlotDlg::DeleteTerm,
 			this, &MagDynDlg::DeleteTerm);
+
+		connect(m_structplot_dlg, &StructPlotDlg::GlDeviceInfos,
+			m_info_dlg, &InfoDlg::SetGlDeviceInfos);
 	}
 
 	if(!only_create)
@@ -243,5 +246,31 @@ void MagDynDlg::ShowTopologyDlg(bool only_create)
 		m_topo_dlg->show();
 		m_topo_dlg->raise();
 		m_topo_dlg->activateWindow();
+	}
+}
+
+
+
+/**
+ * 3d dispersion dialog
+ */
+void MagDynDlg::ShowDispersion3DDlg(bool only_create)
+{
+	if(!m_disp3d_dlg)
+	{
+		m_disp3d_dlg = new Dispersion3DDlg(this, m_sett);
+		m_disp3d_dlg->setFont(this->font());
+
+		m_disp3d_dlg->SetKernel(&m_dyn);
+
+		connect(m_disp3d_dlg, &Dispersion3DDlg::GlDeviceInfos,
+			m_info_dlg, &InfoDlg::SetGlDeviceInfos);
+	}
+
+	if(!only_create)
+	{
+		m_disp3d_dlg->show();
+		m_disp3d_dlg->raise();
+		m_disp3d_dlg->activateWindow();
 	}
 }

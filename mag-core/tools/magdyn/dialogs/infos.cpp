@@ -193,12 +193,13 @@ InfoDlg::InfoDlg(QWidget* parent, QSettings *sett)
 
 
 
-void InfoDlg::SetGlInfo(unsigned int idx, const QString& info)
+void InfoDlg::SetGlDeviceInfos(const std::string& ver, const std::string& shader_ver,
+	const std::string& vendor, const std::string& renderer)
 {
-	if(idx >= 4 || !m_labelGlInfos[idx])
-		return;
-
-	m_labelGlInfos[idx]->setText(info);
+	m_labelGlInfos[0]->setText(QString("GL Version: %1.").arg(ver.c_str()));
+	m_labelGlInfos[1]->setText(QString("GL Shader Version: %1.").arg(shader_ver.c_str()));
+	m_labelGlInfos[2]->setText(QString("GL Vendor: %1.").arg(vendor.c_str()));
+	m_labelGlInfos[3]->setText(QString("GL Device: %1.").arg(renderer.c_str()));
 }
 
 

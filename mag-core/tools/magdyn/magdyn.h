@@ -70,6 +70,7 @@
 #include "dialogs/struct_plot.h"
 #include "dialogs/ground_state.h"
 #include "dialogs/topology.h"
+#include "dialogs/dispersion3d.h"
 #include "dialogs/trafos.h"
 #include "dialogs/notes.h"
 #include "dialogs/infos.h"
@@ -185,10 +186,9 @@ protected:
 	QDoubleSpinBox *m_scatteringplane[2*3]{nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 	std::vector<std::vector<t_mat_real>> m_SGops{};
 	QComboBox *m_comboSG{};
-	QPlainTextEdit *m_ffact{};    // magnetic form factor formula
+	QPlainTextEdit *m_ffact{};             // magnetic form factor formula
 
-	// variables
-	QTableWidget *m_varstab{};
+	QTableWidget *m_varstab{};             // variables
 
 	// dispersion
 	QCustomPlot *m_plot{};
@@ -211,11 +211,8 @@ protected:
 	QDoubleSpinBox *m_rot_angle{};
 	QTableWidget *m_fieldstab{};
 
-	// temperature
-	QDoubleSpinBox *m_temperature{};
-
-	// coordinates
-	QTableWidget *m_coordinatestab{};
+	QDoubleSpinBox *m_temperature{};       // temperature
+	QTableWidget *m_coordinatestab{};      // coordinates
 
 	// export
 	QDoubleSpinBox *m_exportStartQ[3]{nullptr, nullptr, nullptr};
@@ -223,13 +220,10 @@ protected:
 	QSpinBox *m_exportNumPoints[3]{nullptr, nullptr, nullptr};
 	QComboBox *m_exportFormat{nullptr};
 
-	// magnon dynamics calculator
-	t_magdyn m_dyn{};
-
-	// settings dialog
-	QDialog *m_settings_dlg{};
+	t_magdyn m_dyn{};                      // magnon dynamics calculator
 
 	// dialogs
+	QDialog *m_settings_dlg{};             // settings dialog
 	TableImportDlg *m_table_import_dlg{};  // table import dialog
 	NotesDlg *m_notes_dlg{};               // notes dialog
 	TrafoCalculator *m_trafos{};           // trafo calculator
@@ -237,6 +231,7 @@ protected:
 	StructPlotDlg *m_structplot_dlg{};     // magnetic structure plotter
 	GroundStateDlg *m_groundstate_dlg{};   // ground state minimiser
 	TopologyDlg *m_topo_dlg{};             // topological calculations
+	Dispersion3DDlg *m_disp3d_dlg{};       // 3d dispersion calculations
 
 
 protected:
@@ -250,6 +245,7 @@ protected:
 	void ShowStructPlotDlg(bool only_create = false);
 	void ShowGroundStateDlg(bool only_create = false);
 	void ShowTopologyDlg(bool only_create = false);
+	void ShowDispersion3DDlg(bool only_create = false);
 	void ShowSettingsDlg();
 	void InitSettingsDlg();
 	void InitSettings();

@@ -106,11 +106,11 @@ protected:
 
 
 private:
+	// ------------------------------------------------------------------------
+	// from main dialog
 	const t_magdyn *m_dyn{};            // main calculation kernel
 	t_vec_real m_Qstart{}, m_Qend{};    // Qs from main window
 
-	// ------------------------------------------------------------------------
-	// main dialog
 	QTabWidget *m_tabs{};               // tabs
 	QSettings *m_sett{};                // program settings
 	QLabel *m_status{};                 // status bar

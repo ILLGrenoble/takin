@@ -37,9 +37,7 @@
 #include <QtWidgets/QMenu>
 
 #include "tlibs2/libs/qt/glplot.h"
-
 #include "gui_defs.h"
-#include "infos.h"
 
 
 
@@ -72,7 +70,7 @@ struct ExchangeTermInfo
 class StructPlotDlg : public QDialog
 { Q_OBJECT
 public:
-	StructPlotDlg(QWidget *parent, QSettings *sett = nullptr, InfoDlg *info = nullptr);
+	StructPlotDlg(QWidget *parent, QSettings *sett = nullptr);
 	~StructPlotDlg() = default;
 	StructPlotDlg(const StructPlotDlg&) = delete;
 	StructPlotDlg& operator=(const StructPlotDlg&) = delete;
@@ -92,7 +90,6 @@ protected:
 	void MouseUp(bool left, bool mid, bool right);
 
 	void AfterGLInitialisation();
-
 	void PickerIntersection(const t_vec3_gl* pos,
 		std::size_t objIdx, std::size_t triagIdx,
 		const t_vec3_gl* posSphere);
@@ -121,7 +118,6 @@ private:
 
 	// connections to main dialog
 	QSettings *m_sett{};
-	InfoDlg *m_info_dlg{};
 	QTableWidget *m_sitestab{}, *m_termstab{};
 
 	QLabel *m_status{};
@@ -151,6 +147,9 @@ signals:
 
 	void SelectTerm(const std::string& term);
 	void DeleteTerm(const std::string& term);
+
+	void GlDeviceInfos(const std::string& ver, const std::string& shader_ver,
+		const std::string& vendor, const std::string& renderer);
 };
 
 

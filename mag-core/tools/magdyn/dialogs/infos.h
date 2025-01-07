@@ -41,7 +41,8 @@ public:
 	InfoDlg(const InfoDlg&) = delete;
 	const InfoDlg& operator=(const InfoDlg&) = delete;
 
-	void SetGlInfo(unsigned int idx, const QString& info);
+	void SetGlDeviceInfos(const std::string& ver, const std::string& shader_ver,
+		const std::string& vendor, const std::string& renderer);
 
 
 private:

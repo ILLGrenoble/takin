@@ -45,8 +45,8 @@ using namespace tl2_ops;
 /**
  * shows the 3d view of the magnetic structure
  */
-StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
-	: QDialog{parent}, m_sett{sett}, m_info_dlg{info}
+StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett)
+	: QDialog{parent}, m_sett{sett}
 {
 	setWindowTitle("Magnetic Structure");
 	setSizeGripEnabled(true);
@@ -57,7 +57,7 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett, InfoDlg *info)
 	m_structplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
 	m_structplot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
 	m_structplot->GetRenderer()->SetCoordMax(1.);
-	 m_structplot->GetRenderer()->GetCamera().SetParalellRange(4.);
+	m_structplot->GetRenderer()->GetCamera().SetParalellRange(4.);
 	m_structplot->GetRenderer()->GetCamera().SetFOV(tl2::d2r<t_real>(g_structplot_fov));
 	m_structplot->GetRenderer()->GetCamera().SetDist(1.5);
 	m_structplot->GetRenderer()->GetCamera().UpdateTransformation();
@@ -544,21 +544,9 @@ void StructPlotDlg::AfterGLInitialisation()
 		g_structplot_term_rad, 1., 0.,0.,0.5,  1.,1.,1.,1.);
 	m_structplot->GetRenderer()->SetObjectVisible(m_cyl, false);
 
-	// GL device info
-	if(m_info_dlg)
-	{
-		auto [strGlVer, strGlShaderVer, strGlVendor, strGlRenderer]
-			= m_structplot->GetRenderer()->GetGlDescr();
-
-		m_info_dlg->SetGlInfo(0,
-			QString("GL Version: %1.").arg(strGlVer.c_str()));
-		m_info_dlg->SetGlInfo(1,
-			QString("GL Shader Version: %1.").arg(strGlShaderVer.c_str()));
-		m_info_dlg->SetGlInfo(2,
-			QString("GL Vendor: %1.").arg(strGlVendor.c_str()));
-		m_info_dlg->SetGlInfo(3,
-			QString("GL Device: %1.").arg(strGlRenderer.c_str()));
-	}
+	auto [ver, shader_ver, vendor, renderer]
+		= m_structplot->GetRenderer()->GetGlDescr();
+	emit GlDeviceInfos(ver, shader_ver, vendor, renderer);
 
 	ShowCoordCross(m_coordcross->isChecked());
 	ShowLabels(m_labels->isChecked());
