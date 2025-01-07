@@ -63,8 +63,9 @@ pyplot.rcParams.update({
 show_dividers  = False  # show vertical bars between dispersion branches
 plot_file      = ""     # file to save plot to
 only_pos_E     = True   # ignore magnon annihilation?
+only_degen_E   = False  # only plot degenerate energies
 
-S_filter_min   = 1e-5   # cutoff minimum spectral weight
+S_filter_min   = 1e-5   # cutoff minimum spectral weight, -1: don't filter
 S_scale        = 10.    # spectral weight scaling factor
 S_clamp_min    = 0.1    # spectral weight minimum clamping factor
 S_clamp_max    = 100.   # spectral weight maximum clamping factor
@@ -98,6 +99,7 @@ def plot_disp(data):
 		data_E = branch_data[3]
 		data_S = branch_data[4]
 		data_E_idx = branch_data[5]
+		data_degen = branch_data[6]
 
 		if only_pos_E:
 			# ignore magnon annihilation
@@ -165,6 +167,12 @@ def plot_disp(data):
 
 		if branch_idx == num_branches / 2 - 1:
 			axes[branch_idx].set_xlabel("Q (rlu)")
+
+		# plot only degenerate energies
+		if only_degen_E:
+			data_x = numpy.array([x for (x, d) in zip(data_x, data_degen) if d > 1])
+			data_E = numpy.array([E for (E, d) in zip(data_E, data_degen) if d > 1])
+			data_S = numpy.array([S for (S, d) in zip(data_S, data_degen) if d > 1])
 
 		# scale and clamp S
 		data_S *= S_scale
@@ -282,7 +290,8 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 			<< std::setw(field_len) << std::left << "S_xx" << " "
 			<< std::setw(field_len) << std::left << "S_yy" << " "
 			<< std::setw(field_len) << std::left << "S_zz" << " "
-			<< std::setw(field_len) << std::left << "branch" << "\n";
+			<< std::setw(field_len) << std::left << "branch" << " "
+			<< std::setw(field_len) << std::left << "degen" << "\n";
 	}
 
 	SofQEs results = CalcDispersion(h_start, k_start, l_start,
@@ -310,7 +319,8 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 					<< std::setw(field_len) << E_and_S.S_perp(0, 0).real() << " "
 					<< std::setw(field_len) << E_and_S.S_perp(1, 1).real() << " "
 					<< std::setw(field_len) << E_and_S.S_perp(2, 2).real() << " "
-					<< std::setw(field_len) << branch_idx << "\n";
+					<< std::setw(field_len) << branch_idx << " "
+					<< std::setw(field_len) << E_and_S.degeneracy << "\n";
 			}
 			else        // save as py script
 			{
@@ -321,6 +331,7 @@ bool MAGDYN_INST::SaveDispersion(std::ostream& ostr,
 					<< ", " << E_and_S.E
 					<< ", " << E_and_S.weight
 					<< ", " << branch_idx
+					<< ", " << E_and_S.degeneracy
 					<< " ],\n";
 			}
 		}
@@ -438,6 +449,7 @@ bool MAGDYN_INST::SaveMultiDispersion(std::ostream& ostr,
 						<< ", " << E_and_S.E
 						<< ", " << E_and_S.weight
 						<< ", " << branch_idx
+						<< ", " << E_and_S.degeneracy
 						<< " ],\n";
 				}
 			}
