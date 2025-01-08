@@ -164,9 +164,6 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	const t_real inc_l = dir[2] / t_real(num_pts_l);
 	const t_vec_real Qstep = tl2::create<t_vec_real>({inc_h, inc_k, inc_l});
 
-	// tread pool
-	asio::thread_pool pool{g_num_threads};
-
 
 	using t_taskret = std::deque<
 		std::tuple<t_real, t_real, t_real,          // h, k, l
@@ -180,7 +177,7 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 		t_taskret ret;
 
 		// iterate last Q dimension
-		for(std::size_t l_idx=0; l_idx<num_pts_l; ++l_idx)
+		for(std::size_t l_idx = 0; l_idx < num_pts_l; ++l_idx)
 		{
 			t_real l = l_pos + inc_l*t_real(l_idx);
 			auto E_and_S = dyn.CalcEnergies(h_pos, k_pos, l, !use_weights);
@@ -232,6 +229,9 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 	EnableInput(false);
 	tl2::Stopwatch<t_real> stopwatch;
 	stopwatch.start();
+
+	// tread pool
+	asio::thread_pool pool{g_num_threads};
 
 	std::size_t task_idx = 0;
 	// iterate first two Q dimensions

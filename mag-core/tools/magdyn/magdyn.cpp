@@ -413,9 +413,10 @@ void MagDynDlg::CreateMenuBar()
 	QAction *acPreferences = new QAction("Preferences...", menuTools);
 	acTrafoCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
 	acPreferences->setIcon(QIcon::fromTheme("preferences-system"));
-
 	acPreferences->setShortcut(QKeySequence::Preferences);
 	acPreferences->setMenuRole(QAction::PreferencesRole);
+
+	acDisp3D->setEnabled(false); // TODO
 
 	// help menu
 	QMenu *menuHelp = new QMenu("Help", m_menu);
@@ -493,7 +494,8 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addMenu(menuHamiltonians);
 
 	menuTools->addAction(acTopo);
-	//menuTools->addAction(acDisp3D);  // TODO
+	menuTools->addAction(acDisp3D);
+	menuTools->addSeparator();
 	menuTools->addAction(acTrafoCalc);
 	menuTools->addSeparator();
 	menuTools->addAction(acPreferences);
