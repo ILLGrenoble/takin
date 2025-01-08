@@ -35,6 +35,7 @@
 
 #include <qcustomplot.h>
 #include <vector>
+#include <tuple>
 
 #include "tlibs2/libs/qt/glplot.h"
 #include "gui_defs.h"
@@ -81,6 +82,14 @@ protected:
 
 
 private:
+	using t_data_Q = std::tuple<t_vec_real /*Q*/, t_real /*E*/, t_real /*S*/,
+		t_size /*Q_idx_1*/, t_size /*Q_idx_2*/,
+		t_size /*degen*/, bool /*valid*/>;
+	using t_data_Qs = std::vector<t_data_Q>;
+	using t_data_bands = std::vector<t_data_Qs>;
+
+	t_data_bands m_data{};              // data for all energy bands
+
 	// ------------------------------------------------------------------------
 	// from main dialog
 	const t_magdyn *m_dyn{};            // main calculation kernel

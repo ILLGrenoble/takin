@@ -114,6 +114,9 @@ extern t_real g_structplot_dmi_rad;
 extern t_real g_structplot_dmi_len;
 extern t_real g_structplot_fov;
 
+// fraction of points to check if the stop button was pressed
+extern unsigned int g_stop_check_fraction;
+
 
 #ifndef DONT_USE_QT
 	// gui theme and font
@@ -131,7 +134,7 @@ extern t_real g_structplot_fov;
 // ----------------------------------------------------------------------------
 #include "dialogs/settings.h"
 
-constexpr std::array<SettingsVariable, 21> g_settingsvariables
+constexpr std::array<SettingsVariable, 22> g_settingsvariables
 {{
 	// threads
 	{
@@ -244,6 +247,11 @@ constexpr std::array<SettingsVariable, 21> g_settingsvariables
 		.key = "evecs_ortho",
 		.value = &g_evecs_ortho,
 		.editor = SettingsVariableEditor::YESNO,
+	},
+	{
+		.description = "Number of times to check for stop button press.",
+		.key = "stop_check_fraction",
+		.value = &g_stop_check_fraction,
 	},
 
 	// console messages

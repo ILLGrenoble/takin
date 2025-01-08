@@ -94,6 +94,9 @@ t_real g_structplot_term_rad = 0.01;
 t_real g_structplot_dmi_rad = 0.015;
 t_real g_structplot_dmi_len = 0.25;
 t_real g_structplot_fov = 90.;
+
+// fraction of points to check if the stop button was pressed
+unsigned int g_stop_check_fraction = 100;
 // ----------------------------------------------------------------------------
 
 

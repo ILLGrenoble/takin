@@ -241,6 +241,8 @@ void Dispersion3DDlg::Calculate()
 	if(!m_dyn)
 		return;
 
+	m_data.clear();
+
 	BOOST_SCOPE_EXIT(this_)
 	{
 		this_->EnableCalculation(true);
@@ -280,7 +282,7 @@ void Dispersion3DDlg::Calculate()
 
 	// calculate the dispersion
 	t_magdyn dyn = *m_dyn;
-	//dyn.SetUniteDegenerateEnergies(false);
+	dyn.SetUniteDegenerateEnergies(false);
 
 	// tread pool and mutex to protect the data vectors
 	asio::thread_pool pool{g_num_threads};
@@ -311,18 +313,17 @@ void Dispersion3DDlg::Calculate()
 		{
 			// calculate the dispersion at the given Q point
 			t_vec_real Q = Q_origin + Q_step_1*t_real(Q_idx_1) + Q_step_2*t_real(Q_idx_2);
-			auto E_and_S = dyn.CalcEnergies(Q[0], Q[1], Q[2], !use_weights);
-
-			std::vector<t_real> Es, weights;
-			Es.reserve(E_and_S.size());
-			weights.reserve(E_and_S.size());
+			auto Es_and_S = dyn.CalcEnergies(Q, !use_weights).E_and_S;
 
 			// iterate the energies for this Q point
-			for(const auto& E_and_S : E_and_S)
+			for(t_size band_idx = 0; band_idx < Es_and_S.size(); ++band_idx)
 			{
+				const auto& E_and_S = Es_and_S[band_idx];
+
+				bool valid = true;
 				t_real E = E_and_S.E;
 				if(std::isnan(E) || std::isinf(E))
-					continue;
+					valid = false;
 
 				t_real weight = -1;
 				if(use_weights)
@@ -339,11 +340,37 @@ void Dispersion3DDlg::Calculate()
 						weight = 0.;
 				}
 
-				// TODO
+				// count energy degeneracy
+				t_size degeneracy = 1;
+				for(t_size band_idx2 = 0; band_idx2 < Es_and_S.size(); ++band_idx2)
+				{
+					if(band_idx2 == band_idx)
+						continue;
+
+					if(tl2::equals(E, Es_and_S[band_idx2].E, g_eps))
+						++degeneracy;
+				}
+
+				// generate and add data point
+				t_data_Q dat{std::make_tuple(Q, E, weight, Q_idx_1, Q_idx_2, degeneracy, valid)};
+
+				std::lock_guard<std::mutex> _lck{mtx};
+				if(m_data.size() < Es_and_S.size())
+					m_data.resize(Es_and_S.size());
+				m_data[band_idx].emplace_back(std::move(dat));
 			}
 
-			std::lock_guard<std::mutex> _lck{mtx};
-			//m_data.emplace_back(std::move(data));
+			// fill up band data in case some indices were skipped due to invalid hamiltonians
+			t_size expected_bands = dyn.GetMagneticSitesCount() * 2;
+			for(t_size band_idx = Es_and_S.size(); band_idx < expected_bands; ++band_idx)
+			{
+				t_data_Q dat{std::make_tuple(Q, 0., 0., Q_idx_1, Q_idx_2, 1, false)};
+
+				std::lock_guard<std::mutex> _lck{mtx};
+				if(m_data.size() < expected_bands)
+					m_data.resize(expected_bands);
+				m_data[band_idx].emplace_back(std::move(dat));
+			}
 		};
 
 		t_taskptr taskptr = std::make_shared<t_task>(task);
@@ -358,7 +385,11 @@ void Dispersion3DDlg::Calculate()
 	{
 		t_taskptr task = tasks[task_idx];
 
-		qApp->processEvents();  // process events to see if the stop button was clicked
+		// process events to see if the stop button was clicked
+		// only do this for a fraction of the points to avoid gui overhead
+		if(task_idx % std::max<t_size>(tasks.size() / std::sqrt(g_stop_check_fraction), 1) == 0)
+			qApp->processEvents();
+
 		if(m_stop_requested)
 		{
 			pool.stop();
@@ -383,6 +414,42 @@ void Dispersion3DDlg::Calculate()
 	ostrMsg << "after " << stopwatch.GetDur() << " s.";
 	m_status->setText(ostrMsg.str().c_str());
 
+	// get sorting of data by Q
+	for(t_size band_idx = 0; band_idx < m_data.size(); ++band_idx)
+	{
+		std::vector<std::size_t> perm = tl2::get_perm(m_data[band_idx].size(),
+			[this, band_idx](std::size_t idx1, std::size_t idx2) -> bool
+		{
+			/*
+			// sorting by Q components
+			t_real h1 = std::get<0>(m_data[0][idx1])[0];
+			t_real k1 = std::get<0>(m_data[0][idx1])[1];
+			t_real l1 = std::get<0>(m_data[0][idx1])[2];
+
+			t_real h2 = std::get<0>(m_data[0][idx2])[0];
+			t_real k2 = std::get<0>(m_data[0][idx2])[1];
+			t_real l2 = std::get<0>(m_data[0][idx2])[2];
+
+			if(!tl2::equals(h1, h2, g_eps))
+				return h1 < h2;
+			if(!tl2::equals(k1, k2, g_eps))
+				return k1 < k2;
+
+			return l1 < l2;*/
+
+			// sorting by Q indices
+			t_size Q1_idx_1 = std::get<3>(m_data[band_idx][idx1]);
+			t_size Q1_idx_2 = std::get<4>(m_data[band_idx][idx1]);
+			t_size Q2_idx_1 = std::get<3>(m_data[band_idx][idx2]);
+			t_size Q2_idx_2 = std::get<4>(m_data[band_idx][idx2]);
+
+			if(Q1_idx_1 != Q2_idx_1)
+				return Q1_idx_1 < Q2_idx_1;
+			return Q1_idx_2 < Q2_idx_2;
+		});
+
+		m_data[band_idx] = tl2::reorder(m_data[band_idx], perm);
+	}
 
 	Plot();
 }
@@ -394,6 +461,22 @@ void Dispersion3DDlg::Calculate()
  */
 void Dispersion3DDlg::Plot()
 {
+	for(t_size band_idx = 0; band_idx < m_data.size(); ++band_idx)
+	{
+		t_data_Qs& data = m_data[band_idx];
+
+		for(const t_data_Q& dat : data)
+		{
+			using namespace tl2_ops;
+
+			std::cout << "band index: " << band_idx
+				<< ", Q indices: " << std::get<3>(dat) << ", " << std::get<4>(dat)
+				<< ", Q = " << std::get<0>(dat)
+				<< ", E = " << std::get<1>(dat)
+				<< std::endl;
+		}
+	}
+
 	// TODO
 }
 

@@ -417,7 +417,11 @@ void MagDynDlg::CalcDispersion()
 	{
 		t_taskptr task = tasks[task_idx];
 
-		qApp->processEvents();  // process events to see if the stop button was clicked
+		// process events to see if the stop button was clicked
+		// only do this for a fraction of the points to avoid gui overhead
+		if(task_idx % std::max<t_size>(tasks.size() / g_stop_check_fraction, 1) == 0)
+			qApp->processEvents();
+
 		if(m_stopRequested)
 		{
 			pool.stop();

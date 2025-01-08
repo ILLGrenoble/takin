@@ -113,7 +113,11 @@ void MagDynDlg::SaveDispersion(bool as_scr)
 		if(progress >= 0)
 			m_progress->setValue(progress);
 
-		qApp->processEvents();
+		// process events to see if the stop button was clicked
+		// only do this for a fraction of the points to avoid gui overhead
+		if(progress % std::max<t_size>(total / g_stop_check_fraction, 1) == 0)
+			qApp->processEvents();
+
 		return !m_stopRequested;
 	};
 
@@ -236,7 +240,11 @@ void MagDynDlg::SaveMultiDispersion(bool as_scr)
 			prev_progress = progress;
 		}
 
-		qApp->processEvents();
+		// process events to see if the stop button was clicked
+		// only do this for a fraction of the points to avoid gui overhead
+		if(progress % std::max<t_size>(total / g_stop_check_fraction, 1) == 0)
+			qApp->processEvents();
+
 		return !m_stopRequested;
 	};
 

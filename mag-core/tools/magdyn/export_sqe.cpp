@@ -245,7 +245,11 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 			if(m_stopRequested)
 				break;
 
-			qApp->processEvents();  // process events to see if the stop button was clicked
+			// process events to see if the stop button was clicked
+			// only do this for a fraction of the points to avoid gui overhead
+			if(h_idx*k_idx % std::max<t_size>(num_pts_h*num_pts_k / g_stop_check_fraction, 1) == 0)
+				qApp->processEvents();
+
 			if(m_stopRequested)
 				break;
 
@@ -298,7 +302,11 @@ bool MagDynDlg::ExportSQE(const QString& filename)
 
 	for(std::size_t future_idx = 0; future_idx < futures.size(); ++future_idx)
 	{
-		qApp->processEvents();  // process events to see if the stop button was clicked
+		// process events to see if the stop button was clicked
+		// only do this for a fraction of the points to avoid gui overhead
+		if(future_idx % std::max<t_size>(futures.size() / g_stop_check_fraction, 1) == 0)
+			qApp->processEvents();
+
 		if(m_stopRequested)
 		{
 			pool.stop();
