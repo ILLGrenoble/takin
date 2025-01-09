@@ -2,8 +2,12 @@
  * tlibs2 -- common gl functions
  * @author Tobias Weber <tweber@ill.fr>
  * @date 2017-2021
- * @note The present version was forked on 8-Nov-2018 from my privately developed "magtools" project (https://github.com/t-weber/magtools).
  * @license GPLv3, see 'LICENSE' file
+ *
+ * @note this file is based on code from my following projects:
+ *         - "geo" (https://github.com/t-weber/geo),
+ *         - "mathlibs" (https://github.com/t-weber/mathlibs),
+ *         - "magtools" (https://github.com/t-weber/magtools).
  *
  * References:
  *   - http://doc.qt.io/qt-5/qopenglwidget.html#details
@@ -11,7 +15,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).

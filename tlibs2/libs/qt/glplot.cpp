@@ -2,8 +2,12 @@
  * tlibs2 -- GL plotter
  * @author Tobias Weber <tweber@ill.fr>
  * @date 2017-2021
- * @note The present version was forked on 8-Nov-2018 from my privately developed "magtools" project (https://github.com/t-weber/magtools).
  * @license GPLv3, see 'LICENSE' file
+ *
+ * @note this file is based on code from my following projects:
+ *         - "geo" (https://github.com/t-weber/geo),
+ *         - "mathlibs" (https://github.com/t-weber/mathlibs),
+ *         - "magtools" (https://github.com/t-weber/magtools).
  *
  * References:
  *   - http://doc.qt.io/qt-5/qopenglwidget.html#details
@@ -11,7 +15,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -387,6 +391,33 @@ std::size_t GlPlotRenderer::AddPlane(
 
 	auto obj = CreateTriangleObject(std::get<0>(solid),
 		triagverts, norms, tl2::create<t_vec_gl>({ r, g, b, a }), false);
+	obj.m_mat = tl2::hom_translation<t_mat_gl>(x, y, z);
+	obj.m_boundingSpherePos = std::move(boundingSpherePos);
+	obj.m_boundingSphereRad = boundingSphereRad;
+	m_objs.emplace_back(std::move(obj));
+
+	return m_objs.size() - 1;		// object handle
+}
+
+
+std::size_t GlPlotRenderer::AddPatch(
+	std::function<t_real_gl(t_real_gl, t_real_gl)> fkt,
+	t_real_gl x, t_real_gl y, t_real_gl z,
+	t_real_gl w, t_real_gl h, std::size_t pts_x, std::size_t pts_y,
+	t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a)
+{
+	using t_fkt = std::function<t_real_gl(t_real_gl, t_real_gl)>;
+
+	auto solid = tl2::create_patch<t_fkt, t_mat_gl, t_vec3_gl>(
+		fkt, w, h, pts_x, pts_y);
+	auto [verts, norms, uvs] = tl2::create_triangles<t_vec3_gl>(solid);
+	auto [boundingSpherePos, boundingSphereRad] =
+		tl2::bounding_sphere<t_vec3_gl>(verts);
+
+	QMutexLocker _locker{&m_mutexObj};
+
+	auto obj = CreateTriangleObject(std::get<0>(solid),
+		verts, norms, tl2::create<t_vec_gl>({ r, g, b, a }), false);
 	obj.m_mat = tl2::hom_translation<t_mat_gl>(x, y, z);
 	obj.m_boundingSpherePos = std::move(boundingSpherePos);
 	obj.m_boundingSphereRad = boundingSphereRad;

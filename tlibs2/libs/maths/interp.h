@@ -2,12 +2,20 @@
  * tlibs2 maths library -- interpolation
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
  * @date 2012-2024
- * @note Forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
  * @license GPLv3, see 'LICENSE' file
+ *
+ * @note this file is based on code from my following projects:
+ *         - "mathlibs" (https://github.com/t-weber/mathlibs),
+ *         - "geo" (https://github.com/t-weber/geo),
+ *         - "misc" (https://github.com/t-weber/misc).
+ *         - "magtools" (https://github.com/t-weber/magtools).
+ *         - "tlibs" (https://github.com/t-weber/tlibs).
+ *
+ * @desc for the references, see the 'LITERATURE' file
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).

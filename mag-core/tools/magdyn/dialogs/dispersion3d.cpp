@@ -177,6 +177,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	// Q coordinates grid
 	int y = 0;
 	QGridLayout *Qgrid = new QGridLayout(groupQ);
+	Qgrid->setSpacing(4);
+	Qgrid->setContentsMargins(6, 6, 6, 6);
 	Qgrid->addWidget(new QLabel("Origin:", this), y, 0, 1, 1);
 	Qgrid->addWidget(m_Q_origin[0], y, 1, 1, 1);
 	Qgrid->addWidget(m_Q_origin[1], y, 2, 1, 1);

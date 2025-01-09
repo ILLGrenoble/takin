@@ -4,10 +4,12 @@
  * @date 2015 - 2024
  * @license GPLv3, see 'LICENSE' file
  *
- * @note The present version was forked on 8-Nov-2018 from my privately developed "magtools" project (https://github.com/t-weber/magtools).
- * @note Additional functions forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
- * @note Further functions and updates forked on 1-Feb-2021 and 19-Apr-2021 from my privately developed "geo" and "misc" projects (https://github.com/t-weber/geo and https://github.com/t-weber/misc).
- * @note Additional functions forked on 6-Feb-2022 from my privately developed "mathlibs" project (https://github.com/t-weber/mathlibs).
+ * @note the tlibs2 math library is based on code from my following projects:
+ *         - "mathlibs" (https://github.com/t-weber/mathlibs),
+ *         - "geo" (https://github.com/t-weber/geo),
+ *         - "misc" (https://github.com/t-weber/misc).
+ *         - "magtools" (https://github.com/t-weber/magtools).
+ *         - "tlibs" (https://github.com/t-weber/tlibs).
  *
  * @desc for the references, see the 'LITERATURE' file
  *

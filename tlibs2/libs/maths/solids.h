@@ -1,19 +1,21 @@
 /**
  * tlibs2 maths library -- 3-dim solids
  * @author Tobias Weber <tobias.weber@tum.de>, <tweber@ill.fr>
- * @date 2015 - 2024
+ * @date 2015 - 2025
  * @license GPLv3, see 'LICENSE' file
  *
- * @note The present version was forked on 8-Nov-2018 from my privately developed "magtools" project (https://github.com/t-weber/magtools).
- * @note Additional functions forked on 7-Nov-2018 from my privately and TUM-PhD-developed "tlibs" project (https://github.com/t-weber/tlibs).
- * @note Further functions and updates forked on 1-Feb-2021 and 19-Apr-2021 from my privately developed "geo" and "misc" projects (https://github.com/t-weber/geo and https://github.com/t-weber/misc).
- * @note Additional functions forked on 6-Feb-2022 from my privately developed "mathlibs" project (https://github.com/t-weber/mathlibs).
+ * @note this file is based on code from my following projects:
+ *         - "mathlibs" (https://github.com/t-weber/mathlibs),
+ *         - "geo" (https://github.com/t-weber/geo),
+ *         - "misc" (https://github.com/t-weber/misc).
+ *         - "magtools" (https://github.com/t-weber/magtools).
+ *         - "tlibs" (https://github.com/t-weber/tlibs).
  *
  * @desc for the references, see the 'LITERATURE' file
  *
  * ----------------------------------------------------------------------------
  * tlibs
- * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -112,7 +114,7 @@ requires is_vec<t_vec>
  */
 template<class t_mat, class t_vec, template<class...> class t_cont = std::vector>
 std::tuple<t_cont<t_vec>, t_cont<t_cont<std::size_t>>, t_cont<t_vec>, t_cont<t_cont<t_vec>>>
-create_plane(const t_vec& norm, typename t_vec::value_type lx=1, typename t_vec::value_type ly=1)
+create_plane(const t_vec& norm, typename t_vec::value_type lx = 1, typename t_vec::value_type ly = 1)
 requires is_vec<t_vec>
 {
 	t_vec norm_old = create<t_vec>({ 0, 0, -1 });
@@ -147,12 +149,91 @@ requires is_vec<t_vec>
 
 
 /**
+ * create a patch, z = f(x, y)
+ * @returns [vertices, face vertex indices, face normals, face uvs]
+ */
+template<class t_func, class t_mat, class t_vec,
+	template<class...> class t_cont = std::vector,
+	class t_real = typename t_vec::value_type>
+std::tuple<t_cont<t_vec>, t_cont<t_cont<std::size_t>>, t_cont<t_vec>, t_cont<t_cont<t_vec>>>
+create_patch(const t_func& func,
+	t_real width = 1., t_real height = 1.,
+	std::size_t num_points_x = 16, std::size_t num_points_y = 16)
+requires is_vec<t_vec>
+{
+	// create 2d grid in (x, y) for patch
+	t_cont<t_vec> vertices;
+	t_cont<t_cont<std::size_t>> faces;
+	t_cont<t_vec> normals;
+	t_cont<t_cont<t_vec>> uvs;
+
+	vertices.reserve(num_points_x * num_points_y);
+	faces.reserve((num_points_x - 1) * (num_points_y - 1));
+	normals.reserve((num_points_x - 1) * (num_points_y - 1));
+	uvs.reserve((num_points_x - 1) * (num_points_y - 1));
+
+	for(std::size_t j = 0; j < num_points_y; ++j)
+	{
+		t_real y = -height*0.5 + height *
+			static_cast<t_real>(j)/static_cast<t_real>(num_points_y - 1);
+
+		t_real v0 = static_cast<t_real>(j - 1) / static_cast<t_real>(num_points_x - 1);
+		t_real v1 = static_cast<t_real>(j) / static_cast<t_real>(num_points_y - 1);
+
+		for(std::size_t i = 0; i < num_points_x; ++i)
+		{
+			// create vertices
+			t_real x = -width*0.5 + width *
+				static_cast<t_real>(i)/static_cast<t_real>(num_points_x - 1);
+
+			vertices.emplace_back(tl2::create<t_vec>({ x, y, func(x, y) }));
+
+			// create faces, normals and uv coords
+			if(i > 0 && j > 0)
+			{
+				// face
+				std::size_t idx_ij = j*num_points_x + i;
+				std::size_t idx_im1j = j*num_points_x + i - 1;
+				std::size_t idx_i1jm1 = (j - 1)*num_points_x + i;
+				std::size_t idx_im1jm1 = (j - 1)*num_points_x + i - 1;
+
+				faces.emplace_back(t_cont<std::size_t>{{
+					idx_im1jm1, idx_i1jm1, idx_ij, idx_im1j
+				}});
+
+				// normal
+				t_vec n = cross<t_vec>({
+					vertices[idx_i1jm1] - vertices[idx_im1jm1],
+					vertices[idx_ij] - vertices[idx_im1jm1]
+				});
+				n /= norm<t_vec>(n);
+				normals.emplace_back(n);
+
+				// uv
+				t_real u0 = static_cast<t_real>(i - 1) / static_cast<t_real>(num_points_x - 1);
+				t_real u1 = static_cast<t_real>(i) / static_cast<t_real>(num_points_x - 1);
+
+				uvs.emplace_back(t_cont<t_vec>{{
+					create<t_vec>({ u0, v0 }),  // face vertex 0
+					create<t_vec>({ u1, v0 }),  // face vertex 1
+					create<t_vec>({ u1, v1 }),  // face vertex 2
+					create<t_vec>({ u0, v1 }),  // face vertex 3
+				}});
+			}
+		}
+	}
+
+	return std::make_tuple(vertices, faces, normals, uvs);
+}
+
+
+/**
  * create a disk
  * @returns [vertices, face vertex indices, face normals, face uvs]
  */
 template<class t_vec, template<class...> class t_cont = std::vector>
 std::tuple<t_cont<t_vec>, t_cont<t_cont<std::size_t>>, t_cont<t_vec>, t_cont<t_cont<t_vec>>>
-create_disk(typename t_vec::value_type r=1, std::size_t num_points=32)
+create_disk(typename t_vec::value_type r = 1, std::size_t num_points = 32)
 requires is_vec<t_vec>
 {
 	using t_real = typename t_vec::value_type;
@@ -164,7 +245,7 @@ requires is_vec<t_vec>
 	all_uvs.reserve(num_points);
 
 	// vertices
-	for(std::size_t pt=0; pt<num_points; ++pt)
+	for(std::size_t pt = 0; pt < num_points; ++pt)
 	{
 		const t_real phi = t_real(pt)/t_real(num_points) * t_real(2)*pi<t_real>;
 		const t_real c = std::cos(phi);
@@ -220,7 +301,7 @@ requires is_vec<t_vec>
 	// inner vertex
 	vertices.emplace_back(create<t_vec>({ 0, 0, h }));
 
-	for(std::size_t pt=0; pt<num_points; ++pt)
+	for(std::size_t pt = 0; pt < num_points; ++pt)
 	{
 		const t_real phi = t_real(pt)/t_real(num_points) * t_real(2)*pi<t_real>;
 		const t_real c = std::cos(phi);
@@ -240,7 +321,7 @@ requires is_vec<t_vec>
 	normals.reserve(num_points);
 	uvs.reserve(num_points);
 
-	for(std::size_t face=0; face<num_points; ++face)
+	for(std::size_t face = 0; face < num_points; ++face)
 	{
 		std::size_t idx0 = face + 1;	// outer 1
 		std::size_t idx1 = (face == num_points-1 ? 1 : face + 2);	// outer 2
@@ -434,7 +515,8 @@ requires is_vec<t_vec>
  */
 template<class t_vec, template<class...> class t_cont = std::vector>
 std::tuple<t_cont<t_vec>, t_cont<t_cont<std::size_t>>, t_cont<t_vec>, t_cont<t_cont<t_vec>>>
-create_cuboid(typename t_vec::value_type lx=1, typename t_vec::value_type ly=1, typename t_vec::value_type lz=1)
+create_cuboid(typename t_vec::value_type lx = 1, typename t_vec::value_type ly = 1,
+	typename t_vec::value_type lz = 1)
 requires is_vec<t_vec>
 {
 	t_cont<t_vec> vertices =
@@ -970,8 +1052,8 @@ bool collide_bounding_boxes(
 	const std::tuple<t_vec, t_vec>& bb2)
 {
 	// invalid bounding boxes?
-	if(std::get<0>(bb1).size()==0 || std::get<1>(bb1).size()==0 ||
-		std::get<0>(bb2).size()==0 || std::get<1>(bb2).size()==0)
+	if(std::get<0>(bb1).size() == 0 || std::get<1>(bb1).size() == 0 ||
+		std::get<0>(bb2).size() == 0 || std::get<1>(bb2).size() == 0)
 		return false;
 
 	const std::size_t dim = std::min(std::get<0>(bb1).size(), std::get<0>(bb2).size());

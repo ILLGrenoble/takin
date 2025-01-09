@@ -416,8 +416,6 @@ void MagDynDlg::CreateMenuBar()
 	acPreferences->setShortcut(QKeySequence::Preferences);
 	acPreferences->setMenuRole(QAction::PreferencesRole);
 
-	acDisp3D->setEnabled(false); // TODO
-
 	// help menu
 	QMenu *menuHelp = new QMenu("Help", m_menu);
 	QAction *acHelp = new QAction(
