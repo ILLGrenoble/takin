@@ -29,6 +29,8 @@
 #include <QtCore/QSettings>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QProgressBar>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QTableWidget>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QLabel>
@@ -64,7 +66,12 @@ protected:
 	void ShowError(const char* msg);
 	void EnableCalculation(bool enable = true);
 	void Calculate();
-	void Plot();
+	void Plot(bool clear_settings = true);
+
+	// band table functions
+	void ClearBands();
+	void AddBand(const std::string& name, const QColor& colour, bool enabled = true);
+	bool IsBandEnabled(t_size idx) const;
 
 	// ------------------------------------------------------------------------
 	// plotter interface
@@ -97,6 +104,9 @@ private:
 	// ------------------------------------------------------------------------
 
 	tl2::GlPlot *m_dispplot{};          // 3d plotter
+
+	QSplitter *m_split_plot{};
+	QTableWidget *m_table_bands{};      // table listing the magnon bands
 
 	QDoubleSpinBox *m_Q_origin[3]{}, *m_Q_dir1[3]{}, *m_Q_dir2[3]{};
 	QSpinBox *m_num_Q_points[2]{};

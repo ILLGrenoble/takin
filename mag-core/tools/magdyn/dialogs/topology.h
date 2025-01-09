@@ -126,7 +126,7 @@ private:
 	t_real m_Q_min_bc{}, m_Q_max_bc{};  // range of dominant Q component
 
 	QSplitter *m_split_plot{};
-	QTableWidget *m_tableBands{};       // table listing the magnon bands
+	QTableWidget *m_table_bands{};      // table listing the magnon bands
 
 	QDoubleSpinBox *m_Q_start_bc[3]{};  // Q start coordinate
 	QDoubleSpinBox *m_Q_end_bc[3]{};    // Q end coordinate

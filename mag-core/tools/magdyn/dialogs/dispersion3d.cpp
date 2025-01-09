@@ -43,6 +43,18 @@ namespace asio = boost::asio;
 
 
 /**
+ * column indices in magnon band table
+ */
+enum : int
+{
+	COL_BC_BAND = 0,
+	COL_BC_ACTIVE,
+	NUM_COLS_BC,
+};
+
+
+
+/**
  * sets up the topology dialog
  */
 Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
@@ -62,6 +74,33 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_dispplot->GetRenderer()->GetCamera().SetDist(1.5);
 	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
 	m_dispplot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+
+	// magnon band table
+	m_table_bands = new QTableWidget(this);
+	m_table_bands->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+	m_table_bands->setShowGrid(true);
+	m_table_bands->setSortingEnabled(false);
+	m_table_bands->setSelectionBehavior(QTableWidget::SelectRows);
+	m_table_bands->setSelectionMode(QTableWidget::SingleSelection);
+	m_table_bands->verticalHeader()->setDefaultSectionSize(fontMetrics().lineSpacing() + 4);
+	m_table_bands->verticalHeader()->setVisible(false);
+	m_table_bands->setColumnCount(NUM_COLS_BC);
+	m_table_bands->setHorizontalHeaderItem(COL_BC_BAND, new QTableWidgetItem{"Band"});
+	m_table_bands->setHorizontalHeaderItem(COL_BC_ACTIVE, new QTableWidgetItem{"Act."});
+	m_table_bands->setColumnWidth(COL_BC_BAND, 40);
+	m_table_bands->setColumnWidth(COL_BC_ACTIVE, 25);
+	m_table_bands->resizeColumnsToContents();
+
+	// splitter for plot and magnon band list
+	m_split_plot = new QSplitter(this);
+	m_split_plot->setOrientation(Qt::Horizontal);
+	m_split_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
+	m_split_plot->addWidget(m_dispplot);
+	m_split_plot->addWidget(m_table_bands);
+	m_split_plot->setCollapsible(0, false);
+	m_split_plot->setCollapsible(1, true);
+	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_dispplot), 24);
+	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_table_bands), 1);
 
 	// Q coordinates
 	QGroupBox *groupQ = new QGroupBox("Q Coordinates", this);
@@ -167,7 +206,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	QGridLayout *maingrid = new QGridLayout(this);
 	maingrid->setSpacing(4);
 	maingrid->setContentsMargins(8, 8, 8, 8);
-	maingrid->addWidget(m_dispplot, y++, 0, 1, 4);
+	maingrid->addWidget(m_split_plot, y++, 0, 1, 4);
 	maingrid->addWidget(groupQ, y++, 0, 1, 4);
 	maingrid->addWidget(m_progress, y, 0, 1, 3);
 	maingrid->addWidget(m_btn_start_stop, y++, 3, 1, 1);
@@ -180,6 +219,9 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 			restoreGeometry(m_sett->value("dispersion3d/geo").toByteArray());
 		else
 			resize(640, 640);
+
+		if(m_sett->contains("dispersion3d/splitter"))
+			m_split_plot->restoreState(m_sett->value("dispersion3d/splitter").toByteArray());
 	}
 
 	// connections
@@ -451,7 +493,7 @@ void Dispersion3DDlg::Calculate()
 		m_data[band_idx] = tl2::reorder(m_data[band_idx], perm);
 	}
 
-	Plot();
+	Plot(true);
 }
 
 
@@ -459,25 +501,115 @@ void Dispersion3DDlg::Calculate()
 /**
  * plot the calculated dispersion
  */
-void Dispersion3DDlg::Plot()
+void Dispersion3DDlg::Plot(bool clear_settings)
 {
-	for(t_size band_idx = 0; band_idx < m_data.size(); ++band_idx)
+	// keep some settings from previous plot, e.g. the band visibility flags
+	std::vector<bool> enabled_bands;
+	if(!clear_settings)
 	{
-		t_data_Qs& data = m_data[band_idx];
+		enabled_bands.reserve(m_table_bands->rowCount());
+		for(int row = 0; row < m_table_bands->rowCount(); ++row)
+			enabled_bands.push_back(IsBandEnabled(t_size(row)));
+	}
 
-		for(const t_data_Q& dat : data)
+	ClearBands();
+
+	const t_size num_bands = m_data.size();
+	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
+	{
+		bool enabled = band_idx < enabled_bands.size() ? enabled_bands[band_idx] : true;
+
+		// colour for this magnon band
+		int col[3] = {
+			int(std::lerp(1., 0., t_real(band_idx) / t_real(num_bands - 1)) * 255.),
+			0x00,
+			int(std::lerp(0., 1., t_real(band_idx) / t_real(num_bands - 1)) * 255.),
+		};
+
+		const QColor colFull(col[0], col[1], col[2]);
+
+		if(enabled)
 		{
-			using namespace tl2_ops;
+			t_data_Qs& data = m_data[band_idx];
 
-			std::cout << "band index: " << band_idx
-				<< ", Q indices: " << std::get<3>(dat) << ", " << std::get<4>(dat)
-				<< ", Q = " << std::get<0>(dat)
-				<< ", E = " << std::get<1>(dat)
-				<< std::endl;
+			for(const t_data_Q& dat : data)
+			{
+				using namespace tl2_ops;
+
+				std::cout << "band index: " << band_idx
+					<< ", Q indices: " << std::get<3>(dat) << ", " << std::get<4>(dat)
+					<< ", Q = " << std::get<0>(dat)
+					<< ", E = " << std::get<1>(dat)
+					<< std::endl;
+			}
 		}
+
+		AddBand("#" + tl2::var_to_str(band_idx + 1), colFull, enabled);
 	}
 
 	// TODO
+}
+
+
+
+/**
+ * clears the table of magnon bands
+ */
+void Dispersion3DDlg::ClearBands()
+{
+	m_table_bands->clearContents();
+	m_table_bands->setRowCount(0);
+}
+
+
+
+/**
+ * adds a magnon band to the table
+ */
+void Dispersion3DDlg::AddBand(const std::string& name, const QColor& colour, bool enabled)
+{
+	if(!m_table_bands)
+		return;
+
+	int row = m_table_bands->rowCount();
+	m_table_bands->insertRow(row);
+
+	QTableWidgetItem *item = new QTableWidgetItem{name.c_str()};
+	item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+
+	QBrush bg = item->background();
+	bg.setColor(colour);
+	bg.setStyle(Qt::SolidPattern);
+	item->setBackground(bg);
+
+	QBrush fg = item->foreground();
+	fg.setColor(QColor{0xff, 0xff, 0xff});
+	fg.setStyle(Qt::SolidPattern);
+	item->setForeground(fg);
+
+	QCheckBox *checkBand = new QCheckBox(m_table_bands);
+	checkBand->setChecked(enabled);
+	connect(checkBand, &QCheckBox::toggled, [this]() { Plot(false); });
+
+	m_table_bands->setItem(row, COL_BC_BAND, item);
+	m_table_bands->setCellWidget(row, COL_BC_ACTIVE, checkBand);
+}
+
+
+
+/**
+ * verifies if the band's checkbox is checked
+ */
+bool Dispersion3DDlg::IsBandEnabled(t_size idx) const
+{
+	if(!m_table_bands || int(idx) >= m_table_bands->rowCount())
+		return true;
+
+	QCheckBox* box = reinterpret_cast<QCheckBox*>(m_table_bands->cellWidget(int(idx), COL_BC_ACTIVE));
+	if(!box)
+		return true;
+
+	return box->isChecked();
 }
 
 
@@ -603,6 +735,7 @@ void Dispersion3DDlg::accept()
 	if(m_sett)
 	{
 		m_sett->setValue("dispersion3d/geo", saveGeometry());
+		m_sett->setValue("dispersion3d/splitter", m_split_plot->saveState());
 	}
 
 	QDialog::accept();
