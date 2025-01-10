@@ -186,7 +186,7 @@ requires is_vec<t_vec>
 			t_real x = -width*0.5 + width *
 				static_cast<t_real>(i)/static_cast<t_real>(num_points_x - 1);
 
-			vertices.emplace_back(tl2::create<t_vec>({ x, y, func(x, y) }));
+			vertices.emplace_back(tl2::create<t_vec>({ x, y, func(x, y, i, j) }));
 
 			// create faces, normals and uv coords
 			if(i > 0 && j > 0)

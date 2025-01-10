@@ -315,11 +315,11 @@ void Dispersion3DDlg::Calculate()
 		m_Q_dir2[2]->value(),
 	});
 
-	t_size Q_count_1 = m_num_Q_points[0]->value();
-	t_size Q_count_2 = m_num_Q_points[1]->value();
+	m_Q_count_1 = m_num_Q_points[0]->value();
+	m_Q_count_2 = m_num_Q_points[1]->value();
 
-	t_vec_real Q_step_1 = Q_dir_1 / t_real(Q_count_1);
-	t_vec_real Q_step_2 = Q_dir_2 / t_real(Q_count_2);
+	t_vec_real Q_step_1 = Q_dir_1 / t_real(m_Q_count_1);
+	t_vec_real Q_step_2 = Q_dir_2 / t_real(m_Q_count_2);
 
 	bool use_weights = false;
 	bool use_projector = true;
@@ -334,7 +334,7 @@ void Dispersion3DDlg::Calculate()
 
 	m_stop_requested = false;
 	m_progress->setMinimum(0);
-	m_progress->setMaximum(Q_count_1 * Q_count_2);
+	m_progress->setMaximum(m_Q_count_1 * m_Q_count_2);
 	m_progress->setValue(0);
 	m_status->setText(QString("Starting calculation using %1 threads.").arg(g_num_threads));
 
@@ -345,13 +345,12 @@ void Dispersion3DDlg::Calculate()
 	using t_task = std::packaged_task<void()>;
 	using t_taskptr = std::shared_ptr<t_task>;
 	std::vector<t_taskptr> tasks;
-	tasks.reserve(Q_count_1 * Q_count_2);
+	tasks.reserve(m_Q_count_1 * m_Q_count_2);
 
-	for(t_size Q_idx_1 = 0; Q_idx_1 < Q_count_1; ++Q_idx_1)
-	for(t_size Q_idx_2 = 0; Q_idx_2 < Q_count_2; ++Q_idx_2)
+	for(t_size Q_idx_1 = 0; Q_idx_1 < m_Q_count_1; ++Q_idx_1)
+	for(t_size Q_idx_2 = 0; Q_idx_2 < m_Q_count_2; ++Q_idx_2)
 	{
-		auto task = [this, &mtx, &dyn,
-			Q_idx_1, Q_idx_2, Q_count_1, Q_count_2,
+		auto task = [this, &mtx, &dyn, Q_idx_1, Q_idx_2,
 			&Q_origin, &Q_step_1, &Q_step_2,
 			use_weights, use_projector]()
 		{
@@ -505,6 +504,9 @@ void Dispersion3DDlg::Calculate()
  */
 void Dispersion3DDlg::Plot(bool clear_settings)
 {
+	if(!m_dispplot)
+		return;
+
 	// keep some settings from previous plot, e.g. the band visibility flags
 	std::vector<bool> enabled_bands;
 	if(!clear_settings)
@@ -515,6 +517,7 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 	}
 
 	ClearBands();
+	m_dispplot->GetRenderer()->RemoveObjects();
 
 	const t_size num_bands = m_data.size();
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
@@ -534,22 +537,35 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 		{
 			t_data_Qs& data = m_data[band_idx];
 
-			for(const t_data_Q& dat : data)
+			auto patch_fkt = [this, &data](
+				t_real_gl /*x2*/, t_real_gl /*x1*/, t_size idx_2, t_size idx_1) -> t_real_gl
 			{
-				using namespace tl2_ops;
+				t_size idx = idx_1 * m_Q_count_2 + idx_2;
+				if(idx >= data.size())
+					return 0.;
+				if(std::get<3>(data[idx]) != idx_1 || std::get<4>(data[idx]) != idx_2)
+				{
+					std::cerr << "Error: Patch index mismatch: "
+						<< "Expected " << std::get<3>(data[idx]) << " for x, but got " << idx_1
+						<< "; expected " << std::get<4>(data[idx]) << " for y, but got " << idx_2
+						<< "." << std::endl;
+				}
 
-				std::cout << "band index: " << band_idx
-					<< ", Q indices: " << std::get<3>(dat) << ", " << std::get<4>(dat)
-					<< ", Q = " << std::get<0>(dat)
-					<< ", E = " << std::get<1>(dat)
-					<< std::endl;
-			}
+				t_real_gl E = std::get<1>(data[idx]);
+				return E;
+			};
+
+			t_real_gl r = t_real_gl(col[0]) / t_real_gl(255.);
+			t_real_gl g = t_real_gl(col[1]) / t_real_gl(255.);
+			t_real_gl b = t_real_gl(col[2]) / t_real_gl(255.);
+			m_dispplot->GetRenderer()->AddPatch(patch_fkt, 0., 0., 0., 32., 32.,
+				m_Q_count_2, m_Q_count_1, r, g, b);
 		}
 
 		AddBand("#" + tl2::var_to_str(band_idx + 1), colFull, enabled);
 	}
 
-	// TODO
+	m_dispplot->update();
 }
 
 
@@ -720,6 +736,7 @@ void Dispersion3DDlg::AfterPlotGLInitialisation()
 
 	emit GlDeviceInfos(ver, shader_ver, vendor, renderer);
 
+	m_dispplot->GetRenderer()->SetCull(false);
 	//ShowCoordCross(m_coordcross->isChecked());
 	//ShowLabels(m_labels->isChecked());
 	//SetPerspectiveProjection(m_perspective->isChecked());

@@ -95,27 +95,28 @@ private:
 	using t_data_Qs = std::vector<t_data_Q>;
 	using t_data_bands = std::vector<t_data_Qs>;
 
-	t_data_bands m_data{};              // data for all energy bands
+	t_size m_Q_count_1{}, m_Q_count_2{}; // number of Q points along the two directions
+	t_data_bands m_data{};               // data for all energy bands
 
 	// ------------------------------------------------------------------------
 	// from main dialog
-	const t_magdyn *m_dyn{};            // main calculation kernel
-	QSettings *m_sett{};                // program settings
+	const t_magdyn *m_dyn{};             // main calculation kernel
+	QSettings *m_sett{};                 // program settings
 	// ------------------------------------------------------------------------
 
-	tl2::GlPlot *m_dispplot{};          // 3d plotter
+	tl2::GlPlot *m_dispplot{};           // 3d plotter
 
 	QSplitter *m_split_plot{};
-	QTableWidget *m_table_bands{};      // table listing the magnon bands
+	QTableWidget *m_table_bands{};       // table listing the magnon bands
 
 	QDoubleSpinBox *m_Q_origin[3]{}, *m_Q_dir1[3]{}, *m_Q_dir2[3]{};
 	QSpinBox *m_num_Q_points[2]{};
-	QPushButton *m_btn_start_stop{};    // start/stop calculation
-	QProgressBar *m_progress{};         // progress bar
-	QLabel *m_status{};                 // status bar
+	QPushButton *m_btn_start_stop{};     // start/stop calculation
+	QProgressBar *m_progress{};          // progress bar
+	QLabel *m_status{};                  // status bar
 
-	bool m_calc_enabled{};              // enable calculations
-	bool m_stop_requested{};            // stop running calculations
+	bool m_calc_enabled{};               // enable calculations
+	bool m_stop_requested{};             // stop running calculations
 
 
 signals:

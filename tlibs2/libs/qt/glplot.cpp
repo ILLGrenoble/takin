@@ -255,7 +255,40 @@ void GlPlotRenderer::RemoveObject(std::size_t idx)
 	m_objs[idx].m_vertices.clear();
 	m_objs[idx].m_triangles.clear();
 
-	// TODO: remove if object has no follow-up indices
+	CollectGarbage();
+}
+
+
+void GlPlotRenderer::RemoveObjects()
+{
+	for(std::size_t obj = 0; obj < m_objs.size(); ++obj)
+	{
+		// keep coordinate crosses
+		if(m_coordCrossLab && obj == *m_coordCrossLab)
+			continue;
+		if(m_coordCrossXtal && obj == *m_coordCrossXtal)
+			continue;
+
+		RemoveObject(obj);
+	}
+
+	CollectGarbage();
+}
+
+
+/**
+ * remove invalid objects
+ */
+void GlPlotRenderer::CollectGarbage()
+{
+	// remove all invalid objects at the end of the list
+	for(std::ptrdiff_t idx = m_objs.size() - 1; idx >= 0; --idx)
+	{
+		if(m_objs[idx].m_valid)
+			break;
+
+		m_objs.erase(m_objs.begin() + idx);
+	}
 }
 
 
@@ -401,12 +434,12 @@ std::size_t GlPlotRenderer::AddPlane(
 
 
 std::size_t GlPlotRenderer::AddPatch(
-	std::function<t_real_gl(t_real_gl, t_real_gl)> fkt,
+	std::function<t_real_gl(t_real_gl, t_real_gl, std::size_t, std::size_t)> fkt,
 	t_real_gl x, t_real_gl y, t_real_gl z,
 	t_real_gl w, t_real_gl h, std::size_t pts_x, std::size_t pts_y,
 	t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a)
 {
-	using t_fkt = std::function<t_real_gl(t_real_gl, t_real_gl)>;
+	using t_fkt = std::function<t_real_gl(t_real_gl, t_real_gl, std::size_t, std::size_t)>;
 
 	auto solid = tl2::create_patch<t_fkt, t_mat_gl, t_vec3_gl>(
 		fkt, w, h, pts_x, pts_y);

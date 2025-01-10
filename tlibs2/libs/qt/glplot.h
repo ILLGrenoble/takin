@@ -147,6 +147,8 @@ protected:
 
 	void tick(const std::chrono::milliseconds& ms);
 
+	void CollectGarbage();
+
 
 public:
 	GlPlotRenderer(GlPlot *pPlot = nullptr);
@@ -190,9 +192,12 @@ public:
 
 	std::size_t GetNumObjects() const { return m_objs.size(); }
 	void RemoveObject(std::size_t obj);
+	void RemoveObjects();
+
 	std::size_t AddLinkedObject(std::size_t linkTo,
 		t_real_gl x = 0, t_real_gl y = 0, t_real_gl z = 0,
 		t_real_gl r = 1, t_real_gl g = 1, t_real_gl b = 1, t_real_gl a = 1);
+
 	std::size_t AddSphere(t_real_gl rad = 1,
 		t_real_gl x = 0, t_real_gl y = 0, t_real_gl z = 0,
 		t_real_gl r = 0, t_real_gl g = 0, t_real_gl b = 0, t_real_gl a = 1);
@@ -209,10 +214,11 @@ public:
 		t_real_gl x = 0, t_real_gl y = 0, t_real_gl z = 1, t_real_gl size = 10,
 		t_real_gl r = 0, t_real_gl g = 0, t_real_gl b = 0, t_real_gl a = 1);
 	std::size_t AddPatch(
-		std::function<t_real_gl(t_real_gl, t_real_gl)> fkt,
+		std::function<t_real_gl(t_real_gl, t_real_gl, std::size_t, std::size_t)> fkt,
 		t_real_gl x = 0, t_real_gl y = 0, t_real_gl z = 0,
 		t_real_gl w = 10, t_real_gl h = 10, std::size_t pts_x = 16, std::size_t pts_y = 16,
 		t_real_gl r = 0, t_real_gl g = 0, t_real_gl b = 0, t_real_gl a = 1);
+
 	std::size_t AddTriangleObject(const std::vector<t_vec3_gl>& triag_verts,
 		const std::vector<t_vec3_gl>& triag_norms,
 		t_real_gl r = 0, t_real_gl g = 0, t_real_gl b = 0, t_real_gl a = 1);
