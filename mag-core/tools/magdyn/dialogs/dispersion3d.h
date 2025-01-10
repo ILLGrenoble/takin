@@ -85,6 +85,12 @@ protected:
 	void PlotMouseClick(bool left, bool mid, bool right);
 	void PlotMouseDown(bool left, bool mid, bool right);
 	void PlotMouseUp(bool left, bool mid, bool right);
+
+	void SetPlotCoordinateSystem(int which);
+	void ShowPlotCoordCross(bool show);
+	void ShowPlotLabels(bool show);
+	void SetPlotPerspectiveProjection(bool proj);
+	void SetPlotCameraRotation(t_real_gl phi, t_real_gl theta);
 	// ------------------------------------------------------------------------
 
 

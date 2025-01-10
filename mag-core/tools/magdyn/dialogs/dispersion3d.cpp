@@ -66,12 +66,12 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	// create gl plotter
 	m_dispplot = new tl2::GlPlot(this);
 	m_dispplot->GetRenderer()->SetRestrictCamTheta(false);
-	m_dispplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
-	m_dispplot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
-	m_dispplot->GetRenderer()->SetCoordMax(1.);
+	m_dispplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 50, 50, 50 }));
+	m_dispplot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -50, -50, -50 }));
+	m_dispplot->GetRenderer()->SetCoordMax(50.);
 	m_dispplot->GetRenderer()->GetCamera().SetParalellRange(4.);
 	m_dispplot->GetRenderer()->GetCamera().SetFOV(tl2::d2r<t_real>(g_structplot_fov));
-	m_dispplot->GetRenderer()->GetCamera().SetDist(1.5);
+	m_dispplot->GetRenderer()->GetCamera().SetDist(50.);
 	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
 	m_dispplot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 
@@ -737,11 +737,77 @@ void Dispersion3DDlg::AfterPlotGLInitialisation()
 	emit GlDeviceInfos(ver, shader_ver, vendor, renderer);
 
 	m_dispplot->GetRenderer()->SetCull(false);
-	//ShowCoordCross(m_coordcross->isChecked());
-	//ShowLabels(m_labels->isChecked());
-	//SetPerspectiveProjection(m_perspective->isChecked());
-	//SetCoordinateSystem(m_coordsys->currentIndex());
+
+	ShowPlotCoordCross(false);
+	ShowPlotLabels(false);
+	//SetPlotPerspectiveProjection(m_perspective->isChecked());
+	//SetPlotCoordinateSystem(m_coordsys->currentIndex());
+
 	PlotCameraHasUpdated();
+}
+
+
+
+/**
+ * show or hide the coordinate system
+ */
+void Dispersion3DDlg::ShowPlotCoordCross(bool show)
+{
+	if(auto obj = m_dispplot->GetRenderer()->GetCoordCross(); obj)
+	{
+		m_dispplot->GetRenderer()->SetObjectVisible(*obj, show);
+		m_dispplot->update();
+	}
+}
+
+
+
+/**
+ * show or hide the object labels
+ */
+void Dispersion3DDlg::ShowPlotLabels(bool show)
+{
+	m_dispplot->GetRenderer()->SetLabelsVisible(show);
+	m_dispplot->update();
+}
+
+
+
+/**
+ * choose between perspective or parallel projection
+ */
+void Dispersion3DDlg::SetPlotPerspectiveProjection(bool proj)
+{
+	m_dispplot->GetRenderer()->GetCamera().SetPerspectiveProjection(proj);
+	m_dispplot->GetRenderer()->RequestViewportUpdate();
+	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
+	m_dispplot->update();
+}
+
+
+
+/**
+ * sets the camera's rotation angles
+ */
+void Dispersion3DDlg::SetPlotCameraRotation(t_real_gl phi, t_real_gl theta)
+{
+	phi = tl2::d2r<t_real>(phi);
+	theta = tl2::d2r<t_real>(theta);
+
+	m_dispplot->GetRenderer()->GetCamera().SetRotation(phi, theta);
+	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
+	PlotCameraHasUpdated();
+	m_dispplot->update();
+}
+
+
+
+/**
+ * switch between crystal and lab coordinates
+ */
+void Dispersion3DDlg::SetPlotCoordinateSystem(int which)
+{
+	m_dispplot->GetRenderer()->SetCoordSys(which);
 }
 
 
