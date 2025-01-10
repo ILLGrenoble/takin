@@ -34,10 +34,12 @@
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QMenu>
 
 #include <qcustomplot.h>
 #include <vector>
 #include <tuple>
+#include <unordered_map>
 
 #include "tlibs2/libs/qt/glplot.h"
 #include "gui_defs.h"
@@ -67,6 +69,8 @@ protected:
 	void EnableCalculation(bool enable = true);
 	void Calculate();
 	void Plot(bool clear_settings = true);
+	t_real GetMeanEnergy(t_size band_idx) const;
+	std::tuple<t_vec_real, t_vec_real, t_vec_real> GetQVectors() const;
 
 	// band table functions
 	void ClearBands();
@@ -81,6 +85,8 @@ protected:
 		const t_vec3_gl* posSphere);
 
 	void PlotCameraHasUpdated();
+	void CentrePlotCamera();
+	void CentrePlotCameraOnObject();
 
 	void PlotMouseClick(bool left, bool mid, bool right);
 	void PlotMouseDown(bool left, bool mid, bool right);
@@ -110,13 +116,22 @@ private:
 	QSettings *m_sett{};                 // program settings
 	// ------------------------------------------------------------------------
 
+	// dispersion
 	tl2::GlPlot *m_dispplot{};           // 3d plotter
+	std::optional<std::size_t> m_cur_obj{};
+	std::unordered_map<std::size_t /*plot object*/, t_size /*band index*/> m_band_objs{};
+	t_vec_gl m_cam_centre{tl2::zero<t_vec_gl>(3)};
 
 	QSplitter *m_split_plot{};
 	QTableWidget *m_table_bands{};       // table listing the magnon bands
-
 	QDoubleSpinBox *m_Q_origin[3]{}, *m_Q_dir1[3]{}, *m_Q_dir2[3]{};
 	QSpinBox *m_num_Q_points[2]{};
+	QMenu *m_context{};                  // general plot context menu
+	QMenu *m_context_band{};             // context menu for magnon bands
+
+	// plot options
+	QDoubleSpinBox *m_Q_scale1{}, *m_Q_scale2{}, *m_E_scale{};
+
 	QPushButton *m_btn_start_stop{};     // start/stop calculation
 	QProgressBar *m_progress{};          // progress bar
 	QLabel *m_status{};                  // status bar

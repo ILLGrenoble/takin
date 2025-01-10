@@ -102,6 +102,17 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_dispplot), 24);
 	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_table_bands), 1);
 
+	// general plot context menu
+	m_context = new QMenu(this);
+	QAction *acCentre = new QAction("Centre Camera", m_context);
+	m_context->addAction(acCentre);
+
+	// context menu for sites
+	m_context_band = new QMenu(this);
+	QAction *acCentreOnObject = new QAction("Centre Camera on Band", m_context_band);
+	m_context_band->addAction(acCentre);
+	m_context_band->addAction(acCentreOnObject);
+
 	// Q coordinates
 	QGroupBox *groupQ = new QGroupBox("Q Coordinates", this);
 	m_Q_origin[0] = new QDoubleSpinBox(groupQ);
@@ -155,6 +166,22 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		m_num_Q_points[i]->setValue(32);
 	}
 
+	// Q and E scale for plot
+	QGroupBox *groupPlotOptions = new QGroupBox("Plot Options", this);
+	m_Q_scale1 = new QDoubleSpinBox(groupPlotOptions);
+	m_Q_scale2 = new QDoubleSpinBox(groupPlotOptions);
+	m_E_scale = new QDoubleSpinBox(groupPlotOptions);
+
+	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
+	{
+		box->setDecimals(3);
+		box->setMinimum(0.001);
+		box->setMaximum(999.99);
+		box->setSingleStep(box == m_E_scale ? 0.1 : 0.5);
+		box->setValue(box == m_E_scale ? 1. : 32.);
+		box->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Preferred});
+	}
+
 	// progress bar
 	m_progress = new QProgressBar(this);
 	m_progress->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -195,6 +222,17 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	Qgrid->addWidget(m_num_Q_points[0], y, 1, 1, 1);
 	Qgrid->addWidget(m_num_Q_points[1], y++, 2, 1, 1);
 
+	// plot options grid
+	y = 0;
+	QGridLayout *plot_options_grid = new QGridLayout(groupPlotOptions);
+	plot_options_grid->setSpacing(4);
+	plot_options_grid->setContentsMargins(6, 6, 6, 6);
+	plot_options_grid->addWidget(new QLabel("Q Scale:", this), y, 0, 1, 1);
+	plot_options_grid->addWidget(m_Q_scale1, y, 1, 1, 1);
+	plot_options_grid->addWidget(m_Q_scale2, y, 2, 1, 1);
+	plot_options_grid->addWidget(new QLabel("E Scale:", this), y, 3, 1, 1);
+	plot_options_grid->addWidget(m_E_scale, y++, 4, 1, 1);
+
 	// status grid
 	QWidget *status_panel = new QWidget(this);
 	QGridLayout *status_grid = new QGridLayout(status_panel);
@@ -210,6 +248,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	maingrid->setContentsMargins(8, 8, 8, 8);
 	maingrid->addWidget(m_split_plot, y++, 0, 1, 4);
 	maingrid->addWidget(groupQ, y++, 0, 1, 4);
+	maingrid->addWidget(groupPlotOptions, y++, 0, 1, 4);
 	maingrid->addWidget(m_progress, y, 0, 1, 3);
 	maingrid->addWidget(m_btn_start_stop, y++, 3, 1, 1);
 	maingrid->addWidget(status_panel, y++, 0, 1, 4);
@@ -228,6 +267,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 
 	// connections
 	connect(btnbox, &QDialogButtonBox::accepted, this, &Dispersion3DDlg::accept);
+	connect(acCentreOnObject, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCameraOnObject);
+	connect(acCentre, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCamera);
 
 	connect(m_dispplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &Dispersion3DDlg::AfterPlotGLInitialisation);
@@ -248,6 +289,12 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		else
 			m_stop_requested = true;
 	});
+
+	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
+	{
+		connect(box, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			[this]() { Plot(false); });
+	}
 
 	EnableCalculation(true);
 }
@@ -278,22 +325,10 @@ void Dispersion3DDlg::ShowError(const char* msg)
 
 
 /**
- * calculate the dispersion
+ * get the Q origin and direction vectors
  */
-void Dispersion3DDlg::Calculate()
+std::tuple<t_vec_real, t_vec_real, t_vec_real> Dispersion3DDlg::GetQVectors() const
 {
-	if(!m_dyn)
-		return;
-
-	m_data.clear();
-
-	BOOST_SCOPE_EXIT(this_)
-	{
-		this_->EnableCalculation(true);
-	} BOOST_SCOPE_EXIT_END
-	EnableCalculation(false);
-
-	// get coordinates
 	t_vec_real Q_origin = tl2::create<t_vec_real>(
 	{
 		m_Q_origin[0]->value(),
@@ -314,6 +349,30 @@ void Dispersion3DDlg::Calculate()
 		m_Q_dir2[1]->value(),
 		m_Q_dir2[2]->value(),
 	});
+
+	return std::make_tuple(std::move(Q_origin), std::move(Q_dir_1), std::move(Q_dir_2));
+}
+
+
+
+/**
+ * calculate the dispersion
+ */
+void Dispersion3DDlg::Calculate()
+{
+	if(!m_dyn)
+		return;
+
+	m_data.clear();
+
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->EnableCalculation(true);
+	} BOOST_SCOPE_EXIT_END
+	EnableCalculation(false);
+
+	// get coordinates
+	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	m_Q_count_1 = m_num_Q_points[0]->value();
 	m_Q_count_2 = m_num_Q_points[1]->value();
@@ -494,7 +553,33 @@ void Dispersion3DDlg::Calculate()
 		m_data[band_idx] = tl2::reorder(m_data[band_idx], perm);
 	}
 
+	// sort band energies in descending order
+	std::reverse(m_data.begin(), m_data.end());
+
 	Plot(true);
+}
+
+
+
+/**
+ * calculate the mean band energy
+ */
+t_real Dispersion3DDlg::GetMeanEnergy(t_size band_idx) const
+{
+	if(band_idx >= m_data.size())
+		return 0.;
+
+	t_real E_mean = 0.;
+	t_size num_pts = 0;
+
+	for(const t_data_Q& data : m_data[band_idx])
+	{
+		E_mean += std::get<1>(data);
+		++num_pts;
+	}
+
+	E_mean /= static_cast<t_real>(num_pts);
+	return E_mean;
 }
 
 
@@ -508,21 +593,23 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 		return;
 
 	// keep some settings from previous plot, e.g. the band visibility flags
-	std::vector<bool> enabled_bands;
+	std::vector<bool> active_bands;
 	if(!clear_settings)
 	{
-		enabled_bands.reserve(m_table_bands->rowCount());
+		active_bands.reserve(m_table_bands->rowCount());
 		for(int row = 0; row < m_table_bands->rowCount(); ++row)
-			enabled_bands.push_back(IsBandEnabled(t_size(row)));
+			active_bands.push_back(IsBandEnabled(t_size(row)));
 	}
 
 	ClearBands();
+	m_cam_centre = tl2::zero<t_vec_gl>(3);
 	m_dispplot->GetRenderer()->RemoveObjects();
 
 	const t_size num_bands = m_data.size();
+	t_size num_active_bands = 0;
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
 	{
-		bool enabled = band_idx < enabled_bands.size() ? enabled_bands[band_idx] : true;
+		bool band_active = band_idx < active_bands.size() ? active_bands[band_idx] : true;
 
 		// colour for this magnon band
 		int col[3] = {
@@ -533,11 +620,12 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 
 		const QColor colFull(col[0], col[1], col[2]);
 
-		if(enabled)
+		if(band_active)
 		{
 			t_data_Qs& data = m_data[band_idx];
+			t_real E_scale = m_E_scale->value();
 
-			auto patch_fkt = [this, &data](
+			auto patch_fkt = [this, &data, E_scale](
 				t_real_gl /*x2*/, t_real_gl /*x1*/, t_size idx_2, t_size idx_1) -> t_real_gl
 			{
 				t_size idx = idx_1 * m_Q_count_2 + idx_2;
@@ -552,18 +640,31 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 				}
 
 				t_real_gl E = std::get<1>(data[idx]);
-				return E;
+				return E * E_scale;
 			};
+
+			std::ostringstream objLabel;
+			objLabel << "Band #" << (band_idx + 1);
 
 			t_real_gl r = t_real_gl(col[0]) / t_real_gl(255.);
 			t_real_gl g = t_real_gl(col[1]) / t_real_gl(255.);
 			t_real_gl b = t_real_gl(col[2]) / t_real_gl(255.);
-			m_dispplot->GetRenderer()->AddPatch(patch_fkt, 0., 0., 0., 32., 32.,
+
+			std::size_t obj = m_dispplot->GetRenderer()->AddPatch(patch_fkt, 0., 0., 0.,
+				m_Q_scale2->value(), m_Q_scale1->value(),
 				m_Q_count_2, m_Q_count_1, r, g, b);
+			m_dispplot->GetRenderer()->SetObjectLabel(obj, objLabel.str());
+			m_band_objs.insert(std::make_pair(obj, band_idx));
+
+			m_cam_centre[2] += GetMeanEnergy(band_idx);
+			++num_active_bands;
 		}
 
-		AddBand("#" + tl2::var_to_str(band_idx + 1), colFull, enabled);
+		AddBand("#" + tl2::var_to_str(band_idx + 1), colFull, band_active);
 	}
+
+	if(num_active_bands)
+		m_cam_centre[2] /= static_cast<t_real>(num_active_bands);
 
 	m_dispplot->update();
 }
@@ -575,6 +676,9 @@ void Dispersion3DDlg::Plot(bool clear_settings)
  */
 void Dispersion3DDlg::ClearBands()
 {
+	m_band_objs.clear();
+	m_cur_obj = std::nullopt;
+
 	m_table_bands->clearContents();
 	m_table_bands->setRowCount(0);
 }
@@ -656,7 +760,7 @@ void Dispersion3DDlg::EnableCalculation(bool enable)
 
 
 /**
- * dispersion plot picker intersection
+ * mouse intersection with dispersion band
  */
 void Dispersion3DDlg::PlotPickerIntersection(
 	[[maybe_unused]] const t_vec3_gl* pos,
@@ -664,7 +768,38 @@ void Dispersion3DDlg::PlotPickerIntersection(
 	[[maybe_unused]] std::size_t triagIdx,
 	[[maybe_unused]] const t_vec3_gl* posSphere)
 {
+	m_status->setText("");
+	m_cur_obj = std::nullopt;
+
 	m_dispplot->GetRenderer()->SetObjectsHighlight(false);
+
+	if(!pos)
+		return;
+
+	m_cur_obj = objIdx;
+
+	// get Q and E position at cursor intersection
+	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
+
+	// TODO: check if Q position is correctly reconstructed
+	t_real_gl Q1param = (0.5*m_Q_scale1->value() + (*pos)[1]) / m_Q_scale1->value();
+	t_real_gl Q2param = (0.5*m_Q_scale2->value() + (*pos)[0]) / m_Q_scale2->value();
+	t_vec_real Q = Q_origin + Q_dir_1*Q1param + Q_dir_2*Q2param;
+
+	t_real_gl E = (*pos)[2] / m_E_scale->value();
+
+	std::ostringstream ostr;
+	ostr.precision(g_prec_gui);
+	ostr
+		<< "Q = (" << Q[0] << ", " << Q[1] << ", " << Q[2] << ") rlu, "
+		<< "E = " << E << " meV";
+
+	const std::string& label = m_dispplot->GetRenderer()->GetObjectLabel(objIdx);
+	if(label != "")
+		ostr << ", " << label;
+	ostr << ".";
+
+	m_status->setText(ostr.str().c_str());
 }
 
 
@@ -687,13 +822,22 @@ void Dispersion3DDlg::PlotMouseClick(
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
 {
-	/*if(right)
+	if(right)
 	{
 		const QPointF& _pt = m_dispplot->GetRenderer()->GetMousePosition();
 		QPoint pt = m_dispplot->mapToGlobal(_pt.toPoint());
 
-		m_context->popup(pt);
-	}*/
+		if(m_cur_obj && m_band_objs.find(*m_cur_obj) != m_band_objs.end())
+		{
+			// band selected
+			m_context_band->popup(pt);
+		}
+		else
+		{
+			// no band selected
+			m_context->popup(pt);
+		}
+	}
 }
 
 
@@ -797,6 +941,49 @@ void Dispersion3DDlg::SetPlotCameraRotation(t_real_gl phi, t_real_gl theta)
 	m_dispplot->GetRenderer()->GetCamera().SetRotation(phi, theta);
 	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
 	PlotCameraHasUpdated();
+	m_dispplot->update();
+}
+
+
+
+/**
+ * centre camera on currently selected object
+ */
+void Dispersion3DDlg::CentrePlotCameraOnObject()
+{
+	if(!m_cur_obj)
+		return;
+
+	t_mat_gl mat = m_dispplot->GetRenderer()->GetObjectMatrix(*m_cur_obj);
+
+	// selected a band?
+	auto band_iter = m_band_objs.find(*m_cur_obj);
+	if(band_iter != m_band_objs.end())
+	{
+		// translate camera to the band's mean energy position
+		t_real E_mean = GetMeanEnergy(band_iter->second) * m_E_scale->value();
+		mat(2, 3) = E_mean;
+	}
+
+	m_dispplot->GetRenderer()->GetCamera().Centre(mat);
+	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
+	m_dispplot->update();
+}
+
+
+
+/**
+ * centre camera on central position
+ */
+void Dispersion3DDlg::CentrePlotCamera()
+{
+	t_mat_gl matCentre = tl2::hom_translation<t_mat_gl>(
+		m_cam_centre[0] * m_Q_scale2->value(),
+		m_cam_centre[1] * m_Q_scale1->value(),
+		m_cam_centre[2] * m_E_scale->value());
+
+	m_dispplot->GetRenderer()->GetCamera().Centre(matCentre);
+	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
 	m_dispplot->update();
 }
 
