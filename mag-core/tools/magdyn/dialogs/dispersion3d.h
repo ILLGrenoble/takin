@@ -78,6 +78,10 @@ protected:
 	void AddBand(const std::string& name, const QColor& colour, bool enabled = true);
 	bool IsBandEnabled(t_size idx) const;
 
+	// export data
+	void SaveData();
+	void SaveScript();
+
 	// ------------------------------------------------------------------------
 	// plotter interface
 	void AfterPlotGLInitialisation();

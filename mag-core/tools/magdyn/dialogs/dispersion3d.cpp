@@ -30,15 +30,21 @@ namespace asio = boost::asio;
 #include <cstdlib>
 #include <mutex>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
+#include <cstdlib>
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QFileDialog>
 
 #include "dispersion3d.h"
 #include "helper.h"
+
+#include "tlibs2/libs/algos.h"
+#include "tlibs2/libs/str.h"
 
 
 
@@ -105,13 +111,23 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	// general plot context menu
 	m_context = new QMenu(this);
 	QAction *acCentre = new QAction("Centre Camera", m_context);
+	QAction *acSaveData = new QAction("Save Data...", m_context);
+	QAction *acSaveScript = new QAction("Save Data As Script...", m_context);
+	acSaveData->setIcon(QIcon::fromTheme("text-x-generic"));
+	acSaveScript->setIcon(QIcon::fromTheme("text-x-script"));
 	m_context->addAction(acCentre);
+	m_context->addSeparator();
+	m_context->addAction(acSaveData);
+	m_context->addAction(acSaveScript);
 
 	// context menu for sites
 	m_context_band = new QMenu(this);
 	QAction *acCentreOnObject = new QAction("Centre Camera on Band", m_context_band);
 	m_context_band->addAction(acCentre);
 	m_context_band->addAction(acCentreOnObject);
+	m_context_band->addSeparator();
+	m_context_band->addAction(acSaveData);
+	m_context_band->addAction(acSaveScript);
 
 	// Q coordinates
 	QGroupBox *groupQ = new QGroupBox("Q Coordinates", this);
@@ -305,6 +321,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(btnbox, &QDialogButtonBox::accepted, this, &Dispersion3DDlg::accept);
 	connect(acCentreOnObject, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCameraOnObject);
 	connect(acCentre, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCamera);
+	connect(acSaveData, &QAction::triggered, this, &Dispersion3DDlg::SaveData);
+	connect(acSaveScript, &QAction::triggered, this, &Dispersion3DDlg::SaveScript);
 
 	connect(m_dispplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &Dispersion3DDlg::AfterPlotGLInitialisation);
@@ -1076,4 +1094,133 @@ void Dispersion3DDlg::accept()
 	}
 
 	QDialog::accept();
+}
+
+
+
+/**
+ * save the dispersion as a text data file
+ */
+void Dispersion3DDlg::SaveData()
+{
+	if(m_data.size() == 0)
+		return;
+
+	QString dirLast;
+	if(m_sett)
+		dirLast = m_sett->value("dispersion3d/dir", "").toString();
+	QString filename = QFileDialog::getSaveFileName(
+		this, "Save Dispersion Data",
+		dirLast, "Data Files (*.dat)");
+	if(filename == "")
+		return;
+	if(m_sett)
+		m_sett->setValue("dispersion3d/dir", QFileInfo(filename).path());
+
+	std::ofstream ofstr(filename.toStdString());
+	if(!ofstr)
+	{
+		ShowError(QString("Could not save data to file \"%1\".")
+			.arg(filename).toStdString().c_str());
+		return;
+	}
+
+	ofstr.precision(g_prec);
+	int field_len = g_prec * 2.5;
+
+	// write meta header
+	const char* user = std::getenv("USER");
+	if(!user)
+		user = "";
+
+	const t_size num_bands = m_data.size();
+
+	ofstr << "#\n"
+		<< "# Created by Takin/Magdyn\n"
+		<< "# URL: https://github.com/ILLGrenoble/takin\n"
+		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
+		<< "# User: " << user << "\n"
+		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
+		<< "#\n# Number of energy bands: " << num_bands << "\n"
+		<< "#\n\n";
+
+	// write column header
+	ofstr << std::setw(field_len) << std::left << "# h" << " ";
+	ofstr << std::setw(field_len) << std::left << "k" << " ";
+	ofstr << std::setw(field_len) << std::left << "l" << " ";
+	ofstr << std::setw(field_len) << std::left << "E" << " ";
+	ofstr << std::setw(field_len) << std::left << "band" << " ";
+	ofstr << std::setw(field_len) << std::left << "Qidx1" << " ";
+	ofstr << std::setw(field_len) << std::left << "Qidx2" << "\n";
+
+	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
+	{
+		for(t_data_Q& data : m_data[band_idx])
+		{
+			const t_vec_real& Q = std::get<0>(data);
+			t_real E = std::get<1>(data);
+			t_size Qidx1 = std::get<3>(data);
+			t_size Qidx2 = std::get<4>(data);
+
+			ofstr << std::setw(field_len) << std::left << Q[0] << " ";
+			ofstr << std::setw(field_len) << std::left << Q[1] << " ";
+			ofstr << std::setw(field_len) << std::left << Q[2] << " ";
+			ofstr << std::setw(field_len) << std::left << E << " ";
+			ofstr << std::setw(field_len) << std::left << band_idx << " ";
+			ofstr << std::setw(field_len) << std::left << Qidx1 << " ";
+			ofstr << std::setw(field_len) << std::left << Qidx2 << "\n";
+		}
+	}
+
+	ofstr.flush();
+}
+
+
+
+/**
+ * save the dispersion as a script file
+ */
+void Dispersion3DDlg::SaveScript()
+{
+	if(m_data.size() == 0)
+		return;
+
+	QString dirLast;
+	if(m_sett)
+		dirLast = m_sett->value("dispersion3d/dir", "").toString();
+	QString filename = QFileDialog::getSaveFileName(
+		this, "Save Dispersion Data As Script",
+		dirLast, "Py Files (*.py)");
+	if(filename == "")
+		return;
+	if(m_sett)
+		m_sett->setValue("dispersion3d/dir", QFileInfo(filename).path());
+
+	std::ofstream ofstr(filename.toStdString());
+	if(!ofstr)
+	{
+		ShowError(QString("Could not save data to file \"%1\".")
+			.arg(filename).toStdString().c_str());
+		return;
+	}
+
+	ofstr.precision(g_prec);
+
+	// write meta header
+	const char* user = std::getenv("USER");
+	if(!user)
+		user = "";
+
+	const t_size num_bands = m_data.size();
+
+	ofstr << "#\n"
+		<< "# Created by Takin/Magdyn\n"
+		<< "# URL: https://github.com/ILLGrenoble/takin\n"
+		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
+		<< "# User: " << user << "\n"
+		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
+		<< "#\n# Number of energy bands: " << num_bands << "\n"
+		<< "#\n\n";
+
+	// TODO
 }

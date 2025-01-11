@@ -38,6 +38,7 @@ namespace asio = boost::asio;
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QFileDialog>
 
 #include "topology.h"
 #include "helper.h"
