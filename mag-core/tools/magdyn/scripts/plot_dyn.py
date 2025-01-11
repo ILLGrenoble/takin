@@ -40,6 +40,7 @@ show_dividers  = False  # show vertical bars between dispersion branches
 plot_file      = ""     # file to save plot to
 only_pos_E     = True   # ignore magnon annihilation?
 
+S_available    = True   # data has a structure factor column
 S_filter_min   = 1e-5   # cutoff minimum spectral weight
 S_scale        = 10     # weight scaling factor
 S_clamp_min    = 0.1    # min. clamp factor
@@ -49,6 +50,13 @@ branch_labels  = None   # Q end point names
 branch_colours = None   # branch colours
 
 width_ratios   = None   # lengths from one dispersion point to the next
+
+h_column       = 0      # h column index in data files
+k_column       = 1      # k column index
+l_column       = 2      # l column index
+E_column       = 3      # E column index
+S_column       = 4      # S column index
+branch_column  = 5      # branch column index
 # -----------------------------------------------------------------------------
 
 
@@ -68,11 +76,14 @@ def plot_disp_1d(data):
 	# dispersion branch index (not energy branch)
 	branch_idx = 0
 	for data_row in data:
-		data_h = data_row[0]
-		data_k = data_row[1]
-		data_l = data_row[2]
-		data_E = data_row[3]
-		data_S = data_row[4]
+		data_h = data_row[h_column]
+		data_k = data_row[k_column]
+		data_l = data_row[l_column]
+		data_E = data_row[E_column]
+		if S_available:
+			data_S = data_row[S_column]
+		else:
+			data_S = numpy.zeros(len(data_E))
 
 		if only_pos_E:
 			# ignore magnon annihilation
@@ -82,7 +93,7 @@ def plot_disp_1d(data):
 			data_S = numpy.array([ S for (S, E) in zip(data_S, data_E) if E >= 0. ])
 			data_E = numpy.array([ E for E in data_E if E >= 0. ])
 
-		if S_filter_min >= 0.:
+		if S_available and S_filter_min >= 0.:
 			# filter weights below cutoff
 			data_h = numpy.array([ h for (h, S) in zip(data_h, data_S) if S >= S_filter_min ])
 			data_k = numpy.array([ k for (k, S) in zip(data_k, data_S) if S >= S_filter_min ])
@@ -169,8 +180,8 @@ def plot_disp_2d(data, Q_idx1 = -1, Q_idx2 = -1):
 	# find x and y axis to plot
 	if Q_idx1 < 0 or Q_idx2 < 0:
 		# Q start and end points
-		b1 = ( data[:, 0][0], data[:, 1][0], data[:, 2][0] )
-		b2 = ( data[:, 0][-1], data[:, 1][-1], data[:, 2][-1] )
+		b1 = ( data[:, h_column][0],  data[:, k_column][0],  data[:, l_column][0] )
+		b2 = ( data[:, h_column][-1], data[:, k_column][-1], data[:, l_column][-1] )
 
 		# find scan axis
 		Q_diff = [
@@ -203,26 +214,28 @@ def plot_disp_2d(data, Q_idx1 = -1, Q_idx2 = -1):
 		subplot_kw = { "projection" : "3d" })
 
 	E_branch_idx = 0
-	E_branch_max = int(numpy.max(data[:,5]))
+	E_branch_max = int(numpy.max(data[:, branch_column]))
 
 	# iterate energy branches
 	for E_branch_idx in range(0, E_branch_max + 1):
 		# filter data for given branch
 		data_Q = [
-			[ row[Q_idx1] for row in data if row[5] == E_branch_idx ],
-			[ row[Q_idx2] for row in data if row[5] == E_branch_idx ]
+			[ row[h_column + Q_idx1] for row in data if row[branch_column] == E_branch_idx ],
+			[ row[h_column + Q_idx2] for row in data if row[branch_column] == E_branch_idx ]
 		]
-		data_E = [ row[3] for row in data if row[5] == E_branch_idx ]
-		data_S = [ row[4] for row in data if row[5] == E_branch_idx ]
+		data_E = [ row[E_column] for row in data if row[branch_column] == E_branch_idx ]
+		if S_available:
+			data_S = [ row[S_column] for row in data if row[branch_column] == E_branch_idx ]
 
 		if only_pos_E:
 			# ignore magnon annihilation
 			data_Q[0] = [ Q for (Q, E) in zip(data_Q[0], data_E) if E >= 0. ]
 			data_Q[1] = [ Q for (Q, E) in zip(data_Q[1], data_E) if E >= 0. ]
-			data_S = [ S for (S, E) in zip(data_S, data_E) if E >= 0. ]
+			if S_available:
+				data_S = [ S for (S, E) in zip(data_S, data_E) if E >= 0. ]
 			data_E = [ E for E in data_E if E >= 0. ]
 
-		if S_filter_min >= 0.:
+		if S_available and S_filter_min >= 0.:
 			# filter weights below cutoff
 			data_Q[0] = [ Q for (Q, S) in zip(data_Q[0], data_S) if S >= S_filter_min ]
 			data_Q[1] = [ Q for (Q, S) in zip(data_Q[1], data_S) if S >= S_filter_min ]
@@ -269,6 +282,13 @@ if __name__ == "__main__":
 	for arg in sys.argv[1:]:
 		if arg == "--2d":
 			plot_2d = True
+			continue
+		elif arg == "--noS":
+			S_available = False
+			branch_column -= 1
+			continue
+		elif arg == "--allE":
+			only_pos_E = False
 			continue
 		data.append(numpy.loadtxt(arg).T)
 

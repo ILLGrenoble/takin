@@ -24,7 +24,9 @@
  */
 
 #include <boost/scope_exit.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/asio.hpp>
+namespace algo = boost::algorithm;
 namespace asio = boost::asio;
 
 #include <cstdlib>
@@ -1103,6 +1105,8 @@ void Dispersion3DDlg::accept()
  */
 void Dispersion3DDlg::SaveData()
 {
+	bool skip_invalid_points = true;
+
 	if(m_data.size() == 0)
 		return;
 
@@ -1161,6 +1165,10 @@ void Dispersion3DDlg::SaveData()
 			t_real E = std::get<1>(data);
 			t_size Qidx1 = std::get<3>(data);
 			t_size Qidx2 = std::get<4>(data);
+			bool valid = std::get<6>(data);
+
+			if(skip_invalid_points && !valid)
+				continue;
 
 			ofstr << std::setw(field_len) << std::left << Q[0] << " ";
 			ofstr << std::setw(field_len) << std::left << Q[1] << " ";
@@ -1182,6 +1190,8 @@ void Dispersion3DDlg::SaveData()
  */
 void Dispersion3DDlg::SaveScript()
 {
+	bool skip_invalid_points = true;
+
 	if(m_data.size() == 0)
 		return;
 
@@ -1222,5 +1232,41 @@ void Dispersion3DDlg::SaveScript()
 		<< "#\n# Number of energy bands: " << num_bands << "\n"
 		<< "#\n\n";
 
-	// TODO
+	// TODO: script
+	std::string pyscr = R"RAW("
+)RAW";
+
+	// create data arrays
+	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data;
+	for(std::ostringstream* ostr : { &h_data, &k_data, &l_data, &E_data, &bandidx_data })
+		ostr->precision(g_prec);
+
+	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
+	{
+		for(t_data_Q& data : m_data[band_idx])
+		{
+			const t_vec_real& Q = std::get<0>(data);
+			t_real E = std::get<1>(data);
+			//t_size Qidx1 = std::get<3>(data);
+			//t_size Qidx2 = std::get<4>(data);
+			bool valid = std::get<6>(data);
+
+			if(skip_invalid_points && !valid)
+				continue;
+
+			h_data << Q[0] << ", ";
+			k_data << Q[1] << ", ";
+			l_data << Q[2] << ", ";
+			E_data << E << ", ";
+			bandidx_data << band_idx << ", ";
+		}
+	}
+
+	algo::replace_all(pyscr, "%%H_DATA%%", "[ " + h_data.str() + "]");
+	algo::replace_all(pyscr, "%%K_DATA%%", "[ " + k_data.str() + "]");
+	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
+	algo::replace_all(pyscr, "%%E_DATA%%", "[ " + E_data.str() + "]");
+	algo::replace_all(pyscr, "%%B_DATA%%", "[ " + bandidx_data.str() + "]");
+
+	ofstr << pyscr << std::endl;
 }
