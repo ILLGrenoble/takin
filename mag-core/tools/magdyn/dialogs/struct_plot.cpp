@@ -417,8 +417,8 @@ void StructPlotDlg::CameraHasUpdated()
 
 	BOOST_SCOPE_EXIT(this_)
 	{
-			this_->m_cam_phi->blockSignals(false);
-			this_->m_cam_theta->blockSignals(false);
+		this_->m_cam_phi->blockSignals(false);
+		this_->m_cam_theta->blockSignals(false);
 	} BOOST_SCOPE_EXIT_END
 	m_cam_phi->blockSignals(true);
 	m_cam_theta->blockSignals(true);

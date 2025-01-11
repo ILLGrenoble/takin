@@ -33,6 +33,7 @@
 #include <QtWidgets/QTableWidget>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QSpinBox>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMenu>
 
@@ -131,6 +132,8 @@ private:
 
 	// plot options
 	QDoubleSpinBox *m_Q_scale1{}, *m_Q_scale2{}, *m_E_scale{};
+	QDoubleSpinBox *m_cam_phi{}, *m_cam_theta{};
+	QCheckBox *m_perspective{};
 
 	QPushButton *m_btn_start_stop{};     // start/stop calculation
 	QProgressBar *m_progress{};          // progress bar

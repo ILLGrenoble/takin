@@ -224,7 +224,7 @@ constexpr std::array<SettingsVariable, 22> g_settingsvariables
 		.value = &g_structplot_dmi_len,
 	},
 	{
-		.description = "Camera field-of-view in 3d structure plotter.",
+		.description = "Camera field-of-view in 3d plotters.",
 		.key = "structplot_fov",
 		.value = &g_structplot_fov,
 	},

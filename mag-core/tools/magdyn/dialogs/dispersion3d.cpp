@@ -69,9 +69,9 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_dispplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 50, 50, 50 }));
 	m_dispplot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -50, -50, -50 }));
 	m_dispplot->GetRenderer()->SetCoordMax(50.);
-	m_dispplot->GetRenderer()->GetCamera().SetParalellRange(4.);
+	m_dispplot->GetRenderer()->GetCamera().SetParalellRange(100.);
 	m_dispplot->GetRenderer()->GetCamera().SetFOV(tl2::d2r<t_real>(g_structplot_fov));
-	m_dispplot->GetRenderer()->GetCamera().SetDist(50.);
+	m_dispplot->GetRenderer()->GetCamera().SetDist(40.);
 	m_dispplot->GetRenderer()->GetCamera().UpdateTransformation();
 	m_dispplot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 
@@ -127,6 +127,9 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_num_Q_points[0] = new QSpinBox(groupQ);
 	m_num_Q_points[1] = new QSpinBox(groupQ);
 
+	m_num_Q_points[0]->setToolTip("Number of grid points along the first momentum axis.");
+	m_num_Q_points[1]->setToolTip("Number of grid points along the first momentum axis.");
+
 	static const char* hklPrefix[] = { "h = ", "k = ","l = ", };
 	for(int i = 0; i < 3; ++i)
 	{
@@ -138,6 +141,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		//m_Q_origin[i]->setSuffix(" rlu");
 		m_Q_origin[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Preferred});
 		m_Q_origin[i]->setPrefix(hklPrefix[i]);
+		m_Q_origin[i]->setToolTip("Starting momentum transfer.");
 
 		m_Q_dir1[i]->setDecimals(4);
 		m_Q_dir1[i]->setMinimum(-99.9999);
@@ -147,6 +151,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		//m_Q_dir1[i]->setSuffix(" rlu");
 		m_Q_dir1[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Preferred});
 		m_Q_dir1[i]->setPrefix(hklPrefix[i]);
+		m_Q_dir1[i]->setToolTip("Direction of momentum transfer along the first axis.");
 
 		m_Q_dir2[i]->setDecimals(4);
 		m_Q_dir2[i]->setMinimum(-99.9999);
@@ -156,6 +161,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		//m_Q_dir2[i]->setSuffix(" rlu");
 		m_Q_dir2[i]->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Preferred});
 		m_Q_dir2[i]->setPrefix(hklPrefix[i]);
+		m_Q_dir2[i]->setToolTip("Direction of momentum transfer along the second axis.");
 	}
 
 	for(int i = 0; i < 2; ++i)
@@ -163,7 +169,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		m_num_Q_points[i]->setMinimum(1);
 		m_num_Q_points[i]->setMaximum(9999);
 		m_num_Q_points[i]->setSingleStep(1);
-		m_num_Q_points[i]->setValue(32);
+		m_num_Q_points[i]->setValue(64);
 	}
 
 	// Q and E scale for plot
@@ -171,6 +177,10 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_Q_scale1 = new QDoubleSpinBox(groupPlotOptions);
 	m_Q_scale2 = new QDoubleSpinBox(groupPlotOptions);
 	m_E_scale = new QDoubleSpinBox(groupPlotOptions);
+
+	m_Q_scale1->setToolTip("Scaling factor along the first momentum axis.");
+	m_Q_scale2->setToolTip("Scaling factor along the second momentum axis.");
+	m_E_scale->setToolTip("Scaling factor along the energy axis.");
 
 	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
 	{
@@ -181,6 +191,28 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		box->setValue(box == m_E_scale ? 1. : 32.);
 		box->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Preferred});
 	}
+
+	// camera view angle
+	m_cam_phi = new QDoubleSpinBox(this);
+	m_cam_phi->setRange(0., 360.);
+	m_cam_phi->setSingleStep(1.);
+	m_cam_phi->setDecimals(std::max(g_prec_gui - 2, 2));
+	m_cam_phi->setPrefix("φ = ");
+	m_cam_phi->setSuffix("°");
+	m_cam_phi->setToolTip("Camera polar rotation angle φ.");
+
+	m_cam_theta = new QDoubleSpinBox(this);
+	m_cam_theta->setRange(-180., 180.);
+	m_cam_theta->setSingleStep(1.);
+	m_cam_theta->setDecimals(std::max(g_prec_gui - 2, 2));
+	m_cam_theta->setPrefix("θ = ");
+	m_cam_theta->setSuffix("°");
+	m_cam_theta->setToolTip("Camera azimuthal rotation angle θ.");
+
+	// camera perspective projection
+	m_perspective = new QCheckBox("Perspective Projection", this);
+	m_perspective->setToolTip("Switch between perspective and parallel projection.");
+	m_perspective->setChecked(true);
 
 	// progress bar
 	m_progress = new QProgressBar(this);
@@ -232,6 +264,10 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	plot_options_grid->addWidget(m_Q_scale2, y, 2, 1, 1);
 	plot_options_grid->addWidget(new QLabel("E Scale:", this), y, 3, 1, 1);
 	plot_options_grid->addWidget(m_E_scale, y++, 4, 1, 1);
+	plot_options_grid->addWidget(new QLabel("Camera Angles:", this), y, 0, 1, 1);
+	plot_options_grid->addWidget(m_cam_phi, y, 1, 1, 1);
+	plot_options_grid->addWidget(m_cam_theta, y, 2, 1, 1);
+	plot_options_grid->addWidget(m_perspective, y++, 3, 1, 2);
 
 	// status grid
 	QWidget *status_panel = new QWidget(this);
@@ -279,6 +315,27 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(m_dispplot, &tl2::GlPlot::MouseClick, this, &Dispersion3DDlg::PlotMouseClick);
 	connect(m_dispplot, &tl2::GlPlot::MouseDown, this, &Dispersion3DDlg::PlotMouseDown);
 	connect(m_dispplot, &tl2::GlPlot::MouseUp, this, &Dispersion3DDlg::PlotMouseUp);
+	connect(m_perspective, &QCheckBox::toggled, this, &Dispersion3DDlg::SetPlotPerspectiveProjection);
+
+	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
+	{
+		connect(box, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			[this]() { Plot(false); });
+	}
+
+	connect(m_cam_phi,
+		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		[this](t_real_gl phi) -> void
+	{
+		this->SetPlotCameraRotation(phi, m_cam_theta->value());
+	});
+
+	connect(m_cam_theta,
+		static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		[this](t_real_gl theta) -> void
+	{
+		this->SetPlotCameraRotation(m_cam_phi->value(), theta);
+	});
 
 	// calculation
 	connect(m_btn_start_stop, &QAbstractButton::clicked, [this]()
@@ -289,12 +346,6 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		else
 			m_stop_requested = true;
 	});
-
-	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
-	{
-		connect(box, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
-			[this]() { Plot(false); });
-	}
 
 	EnableCalculation(true);
 }
@@ -480,7 +531,7 @@ void Dispersion3DDlg::Calculate()
 		asio::post(pool, [taskptr]() { (*taskptr)(); });
 	}
 
-	m_status->setText(QString("Calculating in %1 threads...").arg(g_num_threads));
+	m_status->setText(QString("Calculating dispersion in %1 threads...").arg(g_num_threads));
 
 	// get results from tasks
 	for(std::size_t task_idx = 0; task_idx < tasks.size(); ++task_idx)
@@ -508,7 +559,7 @@ void Dispersion3DDlg::Calculate()
 	// show elapsed time
 	std::ostringstream ostrMsg;
 	ostrMsg.precision(g_prec_gui);
-	ostrMsg << "Calculation";
+	ostrMsg << "Dispersion calculation";
 	if(m_stop_requested)
 		ostrMsg << " stopped ";
 	else
@@ -746,13 +797,13 @@ void Dispersion3DDlg::EnableCalculation(bool enable)
 	if(enable)
 	{
 		m_btn_start_stop->setText("Calculate");
-		m_btn_start_stop->setToolTip("Start calculation.");
+		m_btn_start_stop->setToolTip("Start dispersion calculation.");
 		m_btn_start_stop->setIcon(QIcon::fromTheme("media-playback-start"));
 	}
 	else
 	{
 		m_btn_start_stop->setText("Stop");
-		m_btn_start_stop->setToolTip("Stop running calculation.");
+		m_btn_start_stop->setToolTip("Stop running dispersion calculation.");
 		m_btn_start_stop->setIcon(QIcon::fromTheme("media-playback-stop"));
 	}
 }
@@ -809,7 +860,21 @@ void Dispersion3DDlg::PlotPickerIntersection(
  */
 void Dispersion3DDlg::PlotCameraHasUpdated()
 {
-	//auto [phi, theta] = m_dispplot->GetRenderer()->GetCamera().GetRotation();
+	auto [phi, theta] = m_dispplot->GetRenderer()->GetCamera().GetRotation();
+
+	phi = tl2::r2d<t_real>(phi);
+	theta = tl2::r2d<t_real>(theta);
+
+	BOOST_SCOPE_EXIT(this_)
+	{
+		this_->m_cam_phi->blockSignals(false);
+		this_->m_cam_theta->blockSignals(false);
+	} BOOST_SCOPE_EXIT_END
+	m_cam_phi->blockSignals(true);
+	m_cam_theta->blockSignals(true);
+
+	m_cam_phi->setValue(phi);
+	m_cam_theta->setValue(theta);
 }
 
 
@@ -884,7 +949,7 @@ void Dispersion3DDlg::AfterPlotGLInitialisation()
 
 	ShowPlotCoordCross(false);
 	ShowPlotLabels(false);
-	//SetPlotPerspectiveProjection(m_perspective->isChecked());
+	SetPlotPerspectiveProjection(m_perspective->isChecked());
 	//SetPlotCoordinateSystem(m_coordsys->currentIndex());
 
 	PlotCameraHasUpdated();
