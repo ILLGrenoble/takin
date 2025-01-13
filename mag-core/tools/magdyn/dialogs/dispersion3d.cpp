@@ -101,7 +101,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_table_bands->resizeColumnsToContents();
 
 	m_only_pos_E = new QCheckBox("E ≥ 0", bands_panel);
-	m_only_pos_E->setChecked(true);
+	//m_only_pos_E->setChecked(true);
 	m_only_pos_E->setToolTip("Ignore magnon annihilation.");
 
 	// splitter for plot and magnon band list
