@@ -1232,9 +1232,132 @@ void Dispersion3DDlg::SaveScript()
 		<< "#\n# Number of energy bands: " << num_bands << "\n"
 		<< "#\n\n";
 
-	// TODO: script
-	std::string pyscr = R"RAW("
+	// ------------------------------------------------------------------------
+	// plot script
+	std::string pyscr = R"RAW(import sys
+import numpy
+import matplotlib.pyplot as pyplot
+pyplot.rcParams.update({
+	"font.sans-serif" : "DejaVu Sans",
+	"font.family" : "sans-serif",
+	"font.size" : 12,
+})
+
+# -----------------------------------------------------------------------------
+# options
+# -----------------------------------------------------------------------------
+plot_file      = ""     # file to save plot to
+only_pos_E     = True   # ignore magnon annihilation?
+S_filter_min   = 1e-5   # cutoff minimum spectral weight
+width_ratios   = None   # lengths from one dispersion point to the next
+
+h_column       = 0      # h column index in data files
+k_column       = 1      # k column index
+l_column       = 2      # l column index
+E_column       = 3      # E column index
+S_column       = -1     # S column index, -1: not available
+branch_column  = 4      # branch column index
+# -----------------------------------------------------------------------------
+
+def plot_disp(data, Q_idx1 = -1, Q_idx2 = -1):
+	# find x and y axis to plot
+	if Q_idx1 < 0 or Q_idx2 < 0:
+		# Q start and end points
+		b1 = ( data[:, h_column][0],  data[:, k_column][0],  data[:, l_column][0] )
+		b2 = ( data[:, h_column][-1], data[:, k_column][-1], data[:, l_column][-1] )
+
+		# find scan axis
+		Q_diff = [
+			numpy.abs(b1[0] - b2[0]),
+			numpy.abs(b1[1] - b2[1]),
+			numpy.abs(b1[2] - b2[2]) ]
+
+		# first scan axis
+		if Q_idx1 < 0:
+			if Q_diff[1] > 0. and Q_idx2 != 0:
+				Q_idx1 = 0
+			if Q_diff[1] > Q_diff[Q_idx1] and Q_idx2 != 1:
+				Q_idx1 = 1
+			elif Q_diff[2] > Q_diff[Q_idx1] and Q_idx2 != 2:
+				Q_idx1 = 2
+
+		# second scan axis
+		if Q_idx2 < 0:
+			if Q_diff[1] > 0. and Q_idx1 != 0:
+				Q_idx2 = 0
+			if Q_diff[1] > Q_diff[Q_idx2] and Q_idx1 != 1:
+				Q_idx2 = 1
+			elif Q_diff[2] > Q_diff[Q_idx2] and Q_idx1 != 2:
+				Q_idx2 = 2
+
+	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
+
+	(plt, axis) = pyplot.subplots(nrows = 1, ncols = 1,
+		width_ratios = width_ratios, sharey = True,
+		subplot_kw = { "projection" : "3d" })
+
+	E_branch_idx = 0
+	E_branch_max = int(numpy.max(data[:, branch_column]))
+
+	# iterate energy branches
+	for E_branch_idx in range(0, E_branch_max + 1):
+		# filter data for given branch
+		data_Q = [
+			[ row[h_column + Q_idx1] for row in data if row[branch_column] == E_branch_idx ],
+			[ row[h_column + Q_idx2] for row in data if row[branch_column] == E_branch_idx ]
+		]
+		data_E = [ row[E_column] for row in data if row[branch_column] == E_branch_idx ]
+		if S_column >= 0:
+			data_S = [ row[S_column] for row in data if row[branch_column] == E_branch_idx ]
+
+		if only_pos_E:
+			# ignore magnon annihilation
+			data_Q[0] = [ Q for (Q, E) in zip(data_Q[0], data_E) if E >= 0. ]
+			data_Q[1] = [ Q for (Q, E) in zip(data_Q[1], data_E) if E >= 0. ]
+			if S_column >= 0:
+				data_S = [ S for (S, E) in zip(data_S, data_E) if E >= 0. ]
+			data_E = [ E for E in data_E if E >= 0. ]
+
+		if S_column >= 0 and S_filter_min >= 0.:
+			# filter weights below cutoff
+			data_Q[0] = [ Q for (Q, S) in zip(data_Q[0], data_S) if S >= S_filter_min ]
+			data_Q[1] = [ Q for (Q, S) in zip(data_Q[1], data_S) if S >= S_filter_min ]
+			data_E = [ E for (E, S) in zip(data_E, data_S) if S >= S_filter_min ]
+			data_S = [ S for S in data_S if S >= S_filter_min ]
+
+		if(len(data_E) < 1):
+			continue
+
+		# choose branch colour
+		r = int(0xff - 0xff * (E_branch_idx / E_branch_max))
+		b = int(0x00 + 0xff * (E_branch_idx / E_branch_max))
+
+		axis.plot_trisurf(data_Q[0], data_Q[1], data_E,
+			color = "#%02x00%02xaf" % (r, b),
+			antialiased = True)
+
+	axis.set_xlabel(labels[Q_idx1])
+	axis.set_ylabel(labels[Q_idx2])
+	axis.set_zlabel("E (meV)")
+
+	plt.tight_layout()
+	plt.subplots_adjust(wspace = 0)
+
+	if plot_file != "":
+		pyplot.savefig(plot_file)
+	pyplot.show()
+
+if __name__ == "__main__":
+	h_data = %%H_DATA%%
+	k_data = %%K_DATA%%
+	l_data = %%L_DATA%%
+	E_data = %%E_DATA%%
+	b_data = %%B_DATA%%
+	data = numpy.array([ h_data, k_data, l_data, E_data, b_data ]).T
+
+	plot_disp(data)
 )RAW";
+	// ------------------------------------------------------------------------
 
 	// create data arrays
 	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data;
