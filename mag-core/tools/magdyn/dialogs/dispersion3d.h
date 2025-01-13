@@ -39,6 +39,7 @@
 
 #include <qcustomplot.h>
 #include <vector>
+#include <array>
 #include <tuple>
 #include <unordered_map>
 
@@ -78,9 +79,11 @@ protected:
 	void EnableCalculation(bool enable = true);
 	void Calculate();
 	void Plot(bool clear_settings = true);
+
 	t_real GetMeanEnergy(const t_data_Qs& data) const;
 	t_real GetMeanEnergy(t_size band_idx) const;
 	std::tuple<t_vec_real, t_vec_real, t_vec_real> GetQVectors() const;
+	std::array<int, 3> GetBranchColour(t_size branch_idx, t_size num_branches) const;
 
 	// band table functions
 	void ClearBands();

@@ -686,6 +686,20 @@ t_real Dispersion3DDlg::GetMeanEnergy(t_size band_idx) const
 
 
 /**
+ * get a unique colour for a given magnon band
+ */
+std::array<int, 3> Dispersion3DDlg::GetBranchColour(t_size branch_idx, t_size num_branches) const
+{
+	return std::array<int, 3>{{
+		int(std::lerp(1., 0., t_real(branch_idx) / t_real(num_branches - 1)) * 255.),
+		0x00,
+		int(std::lerp(0., 1., t_real(branch_idx) / t_real(num_branches - 1)) * 255.),
+	}};
+}
+
+
+
+/**
  * plot the calculated dispersion
  */
 void Dispersion3DDlg::Plot(bool clear_settings)
@@ -727,12 +741,7 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 		bool band_active = band_idx < active_bands.size() ? active_bands[band_idx] : true;
 
 		// colour for this magnon band
-		int col[3] = {
-			int(std::lerp(1., 0., t_real(band_idx) / t_real(num_bands - 1)) * 255.),
-			0x00,
-			int(std::lerp(0., 1., t_real(band_idx) / t_real(num_bands - 1)) * 255.),
-		};
-
+		std::array<int, 3> col = GetBranchColour(band_idx, num_bands);
 		const QColor colFull(col[0], col[1], col[2]);
 
 		if(band_active)
@@ -1191,7 +1200,7 @@ void Dispersion3DDlg::SaveData()
 		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
 		<< "# User: " << user << "\n"
 		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
-		<< "#\n# band_count: " << num_bands << "\n"
+		<< "#\n# branch_count: " << num_bands << "\n"
 		<< "# Q_origin: " << Q_origin << "\n"
 		<< "# Q_direction_1: " << Q_dir_1 << "\n"
 		<< "# Q_direction_2: " << Q_dir_2 << "\n"
@@ -1280,7 +1289,7 @@ void Dispersion3DDlg::SaveScript()
 		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
 		<< "# User: " << user << "\n"
 		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
-		<< "#\n# band_count: " << num_bands << "\n"
+		<< "#\n# branch_count: " << num_bands << "\n"
 		<< "# Q_origin: " << Q_origin << "\n"
 		<< "# Q_direction_1: " << Q_dir_1 << "\n"
 		<< "# Q_direction_2: " << Q_dir_2 << "\n"
@@ -1313,15 +1322,16 @@ S_column       = -1     # S column index, -1: not available
 branch_column  = 4      # branch column index
 # -----------------------------------------------------------------------------
 
-def plot_disp(data, Q_idx1 = 0, Q_idx2 = 1):
+def plot_disp(data, branch_colours, Q_idx1 = 0, Q_idx2 = 1):
 	(plt, axis) = pyplot.subplots(nrows = 1, ncols = 1,
 		width_ratios = width_ratios, sharey = True,
-		subplot_kw = { "projection" : "3d" })
-
-	E_branch_idx = 0
-	E_branch_max = int(numpy.max(data[:, branch_column]))
+		subplot_kw = { "projection" : "3d", "proj_type" : "%%PROJ_TYPE%%",
+			"computed_zorder" : False,
+			"azim" : %%AZIMUTH%%, "elev" : %%ELEVATION%% })
 
 	# iterate energy branches
+	E_branch_eff_idx = 0  # effective index of actually plotted bands
+	E_branch_max = int(numpy.max(data[:, branch_column]))
 	for E_branch_idx in range(0, E_branch_max + 1):
 		# filter data for given branch
 		data_Q = [
@@ -1332,6 +1342,7 @@ def plot_disp(data, Q_idx1 = 0, Q_idx2 = 1):
 		if S_column >= 0:
 			data_S = [ row[S_column] for row in data if row[branch_column] == E_branch_idx ]
 
+		colour_idx = E_branch_eff_idx
 		if only_pos_E:
 			# ignore magnon annihilation
 			data_Q[0] = [ Q for (Q, E) in zip(data_Q[0], data_E) if E >= 0. ]
@@ -1339,6 +1350,7 @@ def plot_disp(data, Q_idx1 = 0, Q_idx2 = 1):
 			if S_column >= 0:
 				data_S = [ S for (S, E) in zip(data_S, data_E) if E >= 0. ]
 			data_E = [ E for E in data_E if E >= 0. ]
+			colour_idx *= 2
 
 		if S_column >= 0 and S_filter_min >= 0.:
 			# filter weights below cutoff
@@ -1350,16 +1362,10 @@ def plot_disp(data, Q_idx1 = 0, Q_idx2 = 1):
 		if(len(data_E) < 1):
 			continue
 
-		# choose branch colour
-		r = int(0xff - 0xff * (E_branch_idx / E_branch_max))
-		b = int(0x00 + 0xff * (E_branch_idx / E_branch_max))
-
 		axis.plot_trisurf(data_Q[0], data_Q[1], data_E,
-			color = "#%02x00%02xaf" % (r, b),
-			antialiased = True)
-
-	axis.azim = %%AZIMUTH%%
-	axis.elev = %%ELEVATION%%
+			color = branch_colours[colour_idx], alpha = 1., shade = True,
+			antialiased = False, zorder = E_branch_max - E_branch_idx)
+		E_branch_eff_idx += 1
 
 	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
 	axis.set_xlabel(labels[Q_idx1])
@@ -1379,19 +1385,20 @@ if __name__ == "__main__":
 	l_data = %%L_DATA%%
 	E_data = %%E_DATA%%
 	b_data = %%B_DATA%%
-	data = numpy.array([ h_data, k_data, l_data, E_data, b_data ]).T
+	colours = %%BRANCH_COLOURS%%
 
-	plot_disp(data, %%Q_IDX_1%%, %%Q_IDX_2%%)
-)RAW";
+	data = numpy.array([ h_data, k_data, l_data, E_data, b_data ]).T
+	plot_disp(data, colours, %%Q_IDX_1%%, %%Q_IDX_2%%))RAW";
 	// ------------------------------------------------------------------------
 
 	// create data arrays
-	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data;
-	for(std::ostringstream* ostr : { &h_data, &k_data, &l_data, &E_data, &bandidx_data })
+	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data, colours;
+	for(std::ostringstream* ostr : { &h_data, &k_data, &l_data, &E_data, &bandidx_data, &colours })
 		ostr->precision(g_prec);
 
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
 	{
+		// band data
 		for(t_data_Q& data : m_data[band_idx])
 		{
 			const t_vec_real& Q = std::get<0>(data);
@@ -1409,6 +1416,14 @@ if __name__ == "__main__":
 			E_data << E << ", ";
 			bandidx_data << band_idx << ", ";
 		}
+
+		// band colour
+		std::array<int, 3> col = GetBranchColour(band_idx, num_bands);
+		colours << "\"#" << std::hex
+			<< std::setw(2) << std::setfill('0') << col[0]
+			<< std::setw(2) << std::setfill('0') << col[1]
+			<< std::setw(2) << std::setfill('0') << col[2]
+			<< "\", ";
 	}
 
 	// find first Q axis index for plot
@@ -1445,7 +1460,9 @@ if __name__ == "__main__":
 	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
 	algo::replace_all(pyscr, "%%E_DATA%%", "[ " + E_data.str() + "]");
 	algo::replace_all(pyscr, "%%B_DATA%%", "[ " + bandidx_data.str() + "]");
+	algo::replace_all(pyscr, "%%BRANCH_COLOURS%%", "[ " + colours.str() + "]");
 	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True " : "False");
+	algo::replace_all(pyscr, "%%PROJ_TYPE%%", m_perspective->isChecked() ? "persp" : "ortho");
 	algo::replace_all(pyscr, "%%AZIMUTH%%", tl2::var_to_str(-m_cam_phi->value(), g_prec));
 	algo::replace_all(pyscr, "%%ELEVATION%%", tl2::var_to_str(90. + m_cam_theta->value(), g_prec));
 	algo::replace_all(pyscr, "%%Q_IDX_1%%", tl2::var_to_str(Q_idx_1, g_prec));
