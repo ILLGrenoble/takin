@@ -52,6 +52,14 @@
  */
 class Dispersion3DDlg : public QDialog
 { Q_OBJECT
+protected:
+	using t_data_Q = std::tuple<t_vec_real /*0: Q*/, t_real /*1: E*/, t_real /*2: S*/,
+		t_size /*3: Q_idx_1*/, t_size /*4: Q_idx_2*/,
+		t_size /*5: degen*/, bool /*6: valid*/>;
+	using t_data_Qs = std::vector<t_data_Q>;
+	using t_data_bands = std::vector<t_data_Qs>;
+
+
 public:
 	Dispersion3DDlg(QWidget *parent, QSettings *sett = nullptr);
 	virtual ~Dispersion3DDlg();
@@ -70,6 +78,7 @@ protected:
 	void EnableCalculation(bool enable = true);
 	void Calculate();
 	void Plot(bool clear_settings = true);
+	t_real GetMeanEnergy(const t_data_Qs& data) const;
 	t_real GetMeanEnergy(t_size band_idx) const;
 	std::tuple<t_vec_real, t_vec_real, t_vec_real> GetQVectors() const;
 
@@ -106,12 +115,6 @@ protected:
 
 
 private:
-	using t_data_Q = std::tuple<t_vec_real /*0: Q*/, t_real /*1: E*/, t_real /*2: S*/,
-		t_size /*3: Q_idx_1*/, t_size /*4: Q_idx_2*/,
-		t_size /*5: degen*/, bool /*6: valid*/>;
-	using t_data_Qs = std::vector<t_data_Q>;
-	using t_data_bands = std::vector<t_data_Qs>;
-
 	t_size m_Q_count_1{}, m_Q_count_2{}; // number of Q points along the two directions
 	t_data_bands m_data{};               // data for all energy bands
 

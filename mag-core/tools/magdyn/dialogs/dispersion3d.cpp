@@ -639,9 +639,32 @@ void Dispersion3DDlg::Calculate()
 	}
 
 	// sort band energies in descending order
-	std::reverse(m_data.begin(), m_data.end());
+	std::stable_sort(m_data.begin(), m_data.end(), [this](const t_data_Qs& dat1, const t_data_Qs& dat2)
+	{
+		return GetMeanEnergy(dat1) >= GetMeanEnergy(dat2);
+	});
 
 	Plot(true);
+}
+
+
+
+/**
+ * calculate the mean band energy
+ */
+t_real Dispersion3DDlg::GetMeanEnergy(const Dispersion3DDlg::t_data_Qs& data) const
+{
+	t_real E_mean = 0.;
+	t_size num_pts = 0;
+
+	for(const t_data_Q& data : data)
+	{
+		E_mean += std::get<1>(data);
+		++num_pts;
+	}
+
+	E_mean /= static_cast<t_real>(num_pts);
+	return E_mean;
 }
 
 
@@ -654,17 +677,7 @@ t_real Dispersion3DDlg::GetMeanEnergy(t_size band_idx) const
 	if(band_idx >= m_data.size())
 		return 0.;
 
-	t_real E_mean = 0.;
-	t_size num_pts = 0;
-
-	for(const t_data_Q& data : m_data[band_idx])
-	{
-		E_mean += std::get<1>(data);
-		++num_pts;
-	}
-
-	E_mean /= static_cast<t_real>(num_pts);
-	return E_mean;
+	return GetMeanEnergy(m_data[band_idx]);
 }
 
 
@@ -1263,7 +1276,7 @@ pyplot.rcParams.update({
 # options
 # -----------------------------------------------------------------------------
 plot_file      = ""     # file to save plot to
-only_pos_E     = %%ONLY_POS_E%%   # ignore magnon annihilation?
+only_pos_E     = %%ONLY_POS_E%%  # ignore magnon annihilation?
 S_filter_min   = 1e-5   # cutoff minimum spectral weight
 width_ratios   = None   # lengths from one dispersion point to the next
 
@@ -1406,7 +1419,7 @@ if __name__ == "__main__":
 	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
 	algo::replace_all(pyscr, "%%E_DATA%%", "[ " + E_data.str() + "]");
 	algo::replace_all(pyscr, "%%B_DATA%%", "[ " + bandidx_data.str() + "]");
-	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True" : "False");
+	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True " : "False");
 
 	ofstr << pyscr << std::endl;
 }
