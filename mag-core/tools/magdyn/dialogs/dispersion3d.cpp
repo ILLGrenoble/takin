@@ -34,7 +34,7 @@ namespace asio = boost::asio;
 #include <sstream>
 #include <fstream>
 #include <iomanip>
-#include <cstdlib>
+#include <limits>
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
@@ -448,6 +448,7 @@ void Dispersion3DDlg::Calculate()
 	if(!m_dyn)
 		return;
 
+	m_max_E = -std::numeric_limits<t_real>::max();
 	m_data.clear();
 
 	BOOST_SCOPE_EXIT(this_)
@@ -511,6 +512,8 @@ void Dispersion3DDlg::Calculate()
 				t_real E = E_and_S.E;
 				if(std::isnan(E) || std::isinf(E))
 					valid = false;
+
+				m_max_E = std::max(m_max_E, E);
 
 				t_real weight = -1;
 				if(use_weights)
@@ -699,10 +702,22 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 			active_bands.push_back(IsBandEnabled(t_size(row)));
 	}
 
+	t_real E_scale = m_E_scale->value();
+	t_real Q_scale1 = m_Q_scale1->value();
+	t_real Q_scale2 = m_Q_scale2->value();
+
+	// reset plot
 	ClearBands();
 	m_cam_centre = tl2::zero<t_vec_gl>(3);
 	m_dispplot->GetRenderer()->RemoveObjects();
+	m_dispplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>(
+		{ static_cast<t_real_gl>(1.5 * Q_scale2), static_cast<t_real_gl>(1.5 * Q_scale1),
+			static_cast<t_real_gl>(2.5 * (m_max_E + 4.) * E_scale) }));
+	m_dispplot->GetRenderer()->SetLight(1, -tl2::create<t_vec3_gl>(
+		{ static_cast<t_real_gl>(1.5 * Q_scale2), static_cast<t_real_gl>(1.5 * Q_scale1),
+			static_cast<t_real_gl>(2.5 * (m_max_E + 4.) * E_scale) }));
 
+	// plot the magnon bands
 	t_size num_bands = m_data.size();
 	if(m_only_pos_E->isChecked())
 		num_bands /= 2;
@@ -723,7 +738,6 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 		if(band_active)
 		{
 			t_data_Qs& data = m_data[band_idx];
-			t_real E_scale = m_E_scale->value();
 
 			auto patch_fkt = [this, &data, E_scale](
 				t_real_gl /*x2*/, t_real_gl /*x1*/, t_size idx_2, t_size idx_1) -> t_real_gl
@@ -751,8 +765,7 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 			t_real_gl b = t_real_gl(col[2]) / t_real_gl(255.);
 
 			std::size_t obj = m_dispplot->GetRenderer()->AddPatch(patch_fkt, 0., 0., 0.,
-				m_Q_scale2->value(), m_Q_scale1->value(),
-				m_Q_count_2, m_Q_count_1, r, g, b);
+				Q_scale2, Q_scale1, m_Q_count_2, m_Q_count_1, r, g, b);
 			m_dispplot->GetRenderer()->SetObjectLabel(obj, objLabel.str());
 			m_band_objs.insert(std::make_pair(obj, band_idx));
 

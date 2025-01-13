@@ -117,6 +117,7 @@ protected:
 private:
 	t_size m_Q_count_1{}, m_Q_count_2{}; // number of Q points along the two directions
 	t_data_bands m_data{};               // data for all energy bands
+	t_real m_max_E{};                    // maximum band energy
 
 	// ------------------------------------------------------------------------
 	// from main dialog
