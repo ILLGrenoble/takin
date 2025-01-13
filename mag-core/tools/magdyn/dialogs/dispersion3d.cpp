@@ -1149,6 +1149,7 @@ void Dispersion3DDlg::accept()
  */
 void Dispersion3DDlg::SaveData()
 {
+	using namespace tl2_ops;
 	bool skip_invalid_points = true;
 
 	if(m_data.size() == 0)
@@ -1182,6 +1183,7 @@ void Dispersion3DDlg::SaveData()
 		user = "";
 
 	const t_size num_bands = m_data.size();
+	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	ofstr << "#\n"
 		<< "# Created by Takin/Magdyn\n"
@@ -1189,7 +1191,10 @@ void Dispersion3DDlg::SaveData()
 		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
 		<< "# User: " << user << "\n"
 		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
-		<< "#\n# Number of energy bands: " << num_bands << "\n"
+		<< "#\n# band_count: " << num_bands << "\n"
+		<< "# Q_origin: " << Q_origin << "\n"
+		<< "# Q_direction_1: " << Q_dir_1 << "\n"
+		<< "# Q_direction_2: " << Q_dir_2 << "\n"
 		<< "#\n\n";
 
 	// write column header
@@ -1234,6 +1239,7 @@ void Dispersion3DDlg::SaveData()
  */
 void Dispersion3DDlg::SaveScript()
 {
+	using namespace tl2_ops;
 	bool skip_invalid_points = true;
 
 	if(m_data.size() == 0)
@@ -1266,6 +1272,7 @@ void Dispersion3DDlg::SaveScript()
 		user = "";
 
 	const t_size num_bands = m_data.size();
+	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	ofstr << "#\n"
 		<< "# Created by Takin/Magdyn\n"
@@ -1273,7 +1280,10 @@ void Dispersion3DDlg::SaveScript()
 		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
 		<< "# User: " << user << "\n"
 		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
-		<< "#\n# Number of energy bands: " << num_bands << "\n"
+		<< "#\n# band_count: " << num_bands << "\n"
+		<< "# Q_origin: " << Q_origin << "\n"
+		<< "# Q_direction_1: " << Q_dir_1 << "\n"
+		<< "# Q_direction_2: " << Q_dir_2 << "\n"
 		<< "#\n\n";
 
 	// ------------------------------------------------------------------------
@@ -1303,39 +1313,7 @@ S_column       = -1     # S column index, -1: not available
 branch_column  = 4      # branch column index
 # -----------------------------------------------------------------------------
 
-def plot_disp(data, Q_idx1 = -1, Q_idx2 = -1):
-	# find x and y axis to plot
-	if Q_idx1 < 0 or Q_idx2 < 0:
-		# Q start and end points
-		b1 = ( data[:, h_column][0],  data[:, k_column][0],  data[:, l_column][0] )
-		b2 = ( data[:, h_column][-1], data[:, k_column][-1], data[:, l_column][-1] )
-
-		# find scan axis
-		Q_diff = [
-			numpy.abs(b1[0] - b2[0]),
-			numpy.abs(b1[1] - b2[1]),
-			numpy.abs(b1[2] - b2[2]) ]
-
-		# first scan axis
-		if Q_idx1 < 0:
-			if Q_diff[1] > 0. and Q_idx2 != 0:
-				Q_idx1 = 0
-			if Q_diff[1] > Q_diff[Q_idx1] and Q_idx2 != 1:
-				Q_idx1 = 1
-			elif Q_diff[2] > Q_diff[Q_idx1] and Q_idx2 != 2:
-				Q_idx1 = 2
-
-		# second scan axis
-		if Q_idx2 < 0:
-			if Q_diff[1] > 0. and Q_idx1 != 0:
-				Q_idx2 = 0
-			if Q_diff[1] > Q_diff[Q_idx2] and Q_idx1 != 1:
-				Q_idx2 = 1
-			elif Q_diff[2] > Q_diff[Q_idx2] and Q_idx1 != 2:
-				Q_idx2 = 2
-
-	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
-
+def plot_disp(data, Q_idx1 = 0, Q_idx2 = 1):
 	(plt, axis) = pyplot.subplots(nrows = 1, ncols = 1,
 		width_ratios = width_ratios, sharey = True,
 		subplot_kw = { "projection" : "3d" })
@@ -1380,6 +1358,10 @@ def plot_disp(data, Q_idx1 = -1, Q_idx2 = -1):
 			color = "#%02x00%02xaf" % (r, b),
 			antialiased = True)
 
+	axis.azim = %%AZIMUTH%%
+	axis.elev = %%ELEVATION%%
+
+	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
 	axis.set_xlabel(labels[Q_idx1])
 	axis.set_ylabel(labels[Q_idx2])
 	axis.set_zlabel("E (meV)")
@@ -1399,7 +1381,7 @@ if __name__ == "__main__":
 	b_data = %%B_DATA%%
 	data = numpy.array([ h_data, k_data, l_data, E_data, b_data ]).T
 
-	plot_disp(data)
+	plot_disp(data, %%Q_IDX_1%%, %%Q_IDX_2%%)
 )RAW";
 	// ------------------------------------------------------------------------
 
@@ -1429,12 +1411,45 @@ if __name__ == "__main__":
 		}
 	}
 
+	// find first Q axis index for plot
+	int Q_idx_1 = 0;
+	t_real cur_comp1 = Q_dir_1[Q_idx_1];
+	for(int i = 0; i < 3; ++i)
+	{
+		// use largest absolute component as index
+		if(std::abs(Q_dir_1[i]) > std::abs(cur_comp1))
+		{
+			Q_idx_1 = i;
+			cur_comp1 = Q_dir_1[i];
+		}
+	}
+
+	// find second Q axis index for plot
+	int Q_idx_2 = (Q_idx_1 + 1) % 3;
+	t_real cur_comp2 = Q_dir_2[Q_idx_2];
+	for(int i = 0; i < 3; ++i)
+	{
+		if(i == Q_idx_1)
+			continue;
+
+		// use largest absolute component as index
+		if(std::abs(Q_dir_2[i]) > std::abs(cur_comp2))
+		{
+			Q_idx_2 = i;
+			cur_comp2 = Q_dir_2[i];
+		}
+	}
+
 	algo::replace_all(pyscr, "%%H_DATA%%", "[ " + h_data.str() + "]");
 	algo::replace_all(pyscr, "%%K_DATA%%", "[ " + k_data.str() + "]");
 	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
 	algo::replace_all(pyscr, "%%E_DATA%%", "[ " + E_data.str() + "]");
 	algo::replace_all(pyscr, "%%B_DATA%%", "[ " + bandidx_data.str() + "]");
 	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True " : "False");
+	algo::replace_all(pyscr, "%%AZIMUTH%%", tl2::var_to_str(-m_cam_phi->value(), g_prec));
+	algo::replace_all(pyscr, "%%ELEVATION%%", tl2::var_to_str(90. + m_cam_theta->value(), g_prec));
+	algo::replace_all(pyscr, "%%Q_IDX_1%%", tl2::var_to_str(Q_idx_1, g_prec));
+	algo::replace_all(pyscr, "%%Q_IDX_2%%", tl2::var_to_str(Q_idx_2, g_prec));
 
 	ofstr << pyscr << std::endl;
 }
