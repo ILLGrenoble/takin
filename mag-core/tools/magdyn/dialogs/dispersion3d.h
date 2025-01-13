@@ -131,6 +131,7 @@ private:
 	QTableWidget *m_table_bands{};       // table listing the magnon bands
 	QDoubleSpinBox *m_Q_origin[3]{}, *m_Q_dir1[3]{}, *m_Q_dir2[3]{};
 	QSpinBox *m_num_Q_points[2]{};
+	QCheckBox *m_only_pos_E{};           // ignore magnon annihilation
 	QMenu *m_context{};                  // general plot context menu
 	QMenu *m_context_band{};             // context menu for magnon bands
 

@@ -84,7 +84,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_dispplot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 
 	// magnon band table
-	m_table_bands = new QTableWidget(this);
+	QWidget *bands_panel = new QWidget(this);
+	m_table_bands = new QTableWidget(bands_panel);
 	m_table_bands->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 	m_table_bands->setShowGrid(true);
 	m_table_bands->setSortingEnabled(false);
@@ -99,16 +100,20 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_table_bands->setColumnWidth(COL_BC_ACTIVE, 25);
 	m_table_bands->resizeColumnsToContents();
 
+	m_only_pos_E = new QCheckBox("E ≥ 0", bands_panel);
+	m_only_pos_E->setChecked(true);
+	m_only_pos_E->setToolTip("Ignore magnon annihilation.");
+
 	// splitter for plot and magnon band list
 	m_split_plot = new QSplitter(this);
 	m_split_plot->setOrientation(Qt::Horizontal);
 	m_split_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 	m_split_plot->addWidget(m_dispplot);
-	m_split_plot->addWidget(m_table_bands);
+	m_split_plot->addWidget(bands_panel);
 	m_split_plot->setCollapsible(0, false);
 	m_split_plot->setCollapsible(1, true);
 	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_dispplot), 24);
-	m_split_plot->setStretchFactor(m_split_plot->indexOf(m_table_bands), 1);
+	m_split_plot->setStretchFactor(m_split_plot->indexOf(bands_panel), 1);
 
 	// general plot context menu
 	m_context = new QMenu(this);
@@ -251,8 +256,16 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	btnbox->addButton(QDialogButtonBox::Ok);
 	btnbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
-	// Q coordinates grid
+	// bands panel grid
 	int y = 0;
+	QGridLayout *grid_bands = new QGridLayout(bands_panel);
+	grid_bands->setSpacing(4);
+	grid_bands->setContentsMargins(6, 6, 6, 6);
+	grid_bands->addWidget(m_table_bands, y++, 0, 1, 1);
+	grid_bands->addWidget(m_only_pos_E, y++, 0, 1, 1);
+
+	// Q coordinates grid
+	y = 0;
 	QGridLayout *Qgrid = new QGridLayout(groupQ);
 	Qgrid->setSpacing(4);
 	Qgrid->setContentsMargins(6, 6, 6, 6);
@@ -336,6 +349,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(m_dispplot, &tl2::GlPlot::MouseDown, this, &Dispersion3DDlg::PlotMouseDown);
 	connect(m_dispplot, &tl2::GlPlot::MouseUp, this, &Dispersion3DDlg::PlotMouseUp);
 	connect(m_perspective, &QCheckBox::toggled, this, &Dispersion3DDlg::SetPlotPerspectiveProjection);
+	connect(m_only_pos_E, &QCheckBox::toggled, [this]() { Plot(true); });
 
 	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
 	{
@@ -676,7 +690,9 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 	m_cam_centre = tl2::zero<t_vec_gl>(3);
 	m_dispplot->GetRenderer()->RemoveObjects();
 
-	const t_size num_bands = m_data.size();
+	t_size num_bands = m_data.size();
+	if(m_only_pos_E->isChecked())
+		num_bands /= 2;
 	t_size num_active_bands = 0;
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
 	{
@@ -1247,7 +1263,7 @@ pyplot.rcParams.update({
 # options
 # -----------------------------------------------------------------------------
 plot_file      = ""     # file to save plot to
-only_pos_E     = True   # ignore magnon annihilation?
+only_pos_E     = %%ONLY_POS_E%%   # ignore magnon annihilation?
 S_filter_min   = 1e-5   # cutoff minimum spectral weight
 width_ratios   = None   # lengths from one dispersion point to the next
 
@@ -1390,6 +1406,7 @@ if __name__ == "__main__":
 	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
 	algo::replace_all(pyscr, "%%E_DATA%%", "[ " + E_data.str() + "]");
 	algo::replace_all(pyscr, "%%B_DATA%%", "[ " + bandidx_data.str() + "]");
+	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True" : "False");
 
 	ofstr << pyscr << std::endl;
 }
