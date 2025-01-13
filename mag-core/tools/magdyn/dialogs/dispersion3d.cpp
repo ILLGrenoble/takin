@@ -740,11 +740,12 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 			t_data_Qs& data = m_data[band_idx];
 
 			auto patch_fkt = [this, &data, E_scale](
-				t_real_gl /*x2*/, t_real_gl /*x1*/, t_size idx_2, t_size idx_1) -> t_real_gl
+				t_real_gl /*x2*/, t_real_gl /*x1*/, t_size idx_2, t_size idx_1)
+					-> std::pair<t_real_gl, bool>
 			{
 				t_size idx = idx_1 * m_Q_count_2 + idx_2;
 				if(idx >= data.size())
-					return 0.;
+					return std::make_pair(0., false);
 				if(std::get<3>(data[idx]) != idx_1 || std::get<4>(data[idx]) != idx_2)
 				{
 					std::cerr << "Error: Patch index mismatch: "
@@ -754,7 +755,8 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 				}
 
 				t_real_gl E = std::get<1>(data[idx]);
-				return E * E_scale;
+				bool valid = std::get<6>(data[idx]);
+				return std::make_pair(E * E_scale, valid);
 			};
 
 			std::ostringstream objLabel;

@@ -163,11 +163,13 @@ requires is_vec<t_vec>
 {
 	// create 2d grid in (x, y) for patch
 	t_cont<t_vec> vertices;
+	t_cont<bool> valid_vertices;
 	t_cont<t_cont<std::size_t>> faces;
 	t_cont<t_vec> normals;
 	t_cont<t_cont<t_vec>> uvs;
 
 	vertices.reserve(num_points_x * num_points_y);
+	valid_vertices.reserve(num_points_x * num_points_y);
 	faces.reserve((num_points_x - 1) * (num_points_y - 1));
 	normals.reserve((num_points_x - 1) * (num_points_y - 1));
 	uvs.reserve((num_points_x - 1) * (num_points_y - 1));
@@ -186,40 +188,45 @@ requires is_vec<t_vec>
 			t_real x = -width*0.5 + width *
 				static_cast<t_real>(i)/static_cast<t_real>(num_points_x - 1);
 
-			vertices.emplace_back(tl2::create<t_vec>({ x, y, func(x, y, i, j) }));
+			auto [z, valid] = func(x, y, i, j);
+			vertices.emplace_back(tl2::create<t_vec>({ x, y, z }));
+			valid_vertices.emplace_back(valid);
 
-			// create faces, normals and uv coords
-			if(i > 0 && j > 0)
-			{
-				// face
-				std::size_t idx_ij = j*num_points_x + i;
-				std::size_t idx_im1j = j*num_points_x + i - 1;
-				std::size_t idx_i1jm1 = (j - 1)*num_points_x + i;
-				std::size_t idx_im1jm1 = (j - 1)*num_points_x + i - 1;
+			if(i == 0 || j == 0)
+				continue;
 
-				faces.emplace_back(t_cont<std::size_t>{{
-					idx_im1jm1, idx_i1jm1, idx_ij, idx_im1j
-				}});
+			// create faces
+			std::size_t idx_ij = j*num_points_x + i;
+			std::size_t idx_im1j = j*num_points_x + i - 1;
+			std::size_t idx_i1jm1 = (j - 1)*num_points_x + i;
+			std::size_t idx_im1jm1 = (j - 1)*num_points_x + i - 1;
 
-				// normal
-				t_vec n = cross<t_vec>({
-					vertices[idx_i1jm1] - vertices[idx_im1jm1],
-					vertices[idx_ij] - vertices[idx_im1jm1]
-				});
-				n /= norm<t_vec>(n);
-				normals.emplace_back(n);
+			if(!valid_vertices[idx_ij] || !valid_vertices[idx_im1j] ||
+				!valid_vertices[idx_i1jm1] || !valid_vertices[idx_im1jm1])
+				continue;
 
-				// uv
-				t_real u0 = static_cast<t_real>(i - 1) / static_cast<t_real>(num_points_x - 1);
-				t_real u1 = static_cast<t_real>(i) / static_cast<t_real>(num_points_x - 1);
+			faces.emplace_back(t_cont<std::size_t>{{
+				idx_im1jm1, idx_i1jm1, idx_ij, idx_im1j
+			}});
 
-				uvs.emplace_back(t_cont<t_vec>{{
-					create<t_vec>({ u0, v0 }),  // face vertex 0
-					create<t_vec>({ u1, v0 }),  // face vertex 1
-					create<t_vec>({ u1, v1 }),  // face vertex 2
-					create<t_vec>({ u0, v1 }),  // face vertex 3
-				}});
-			}
+			// create normals
+			t_vec n = cross<t_vec>({
+				vertices[idx_i1jm1] - vertices[idx_im1jm1],
+				vertices[idx_ij] - vertices[idx_im1jm1]
+			});
+			n /= norm<t_vec>(n);
+			normals.emplace_back(n);
+
+			// create uv coordinates
+			t_real u0 = static_cast<t_real>(i - 1) / static_cast<t_real>(num_points_x - 1);
+			t_real u1 = static_cast<t_real>(i) / static_cast<t_real>(num_points_x - 1);
+
+			uvs.emplace_back(t_cont<t_vec>{{
+				create<t_vec>({ u0, v0 }),  // face vertex 0
+				create<t_vec>({ u1, v0 }),  // face vertex 1
+				create<t_vec>({ u1, v1 }),  // face vertex 2
+				create<t_vec>({ u0, v1 }),  // face vertex 3
+			}});
 		}
 	}
 
