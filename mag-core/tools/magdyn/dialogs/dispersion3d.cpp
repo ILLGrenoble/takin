@@ -690,6 +690,9 @@ t_real Dispersion3DDlg::GetMeanEnergy(t_size band_idx) const
  */
 std::array<int, 3> Dispersion3DDlg::GetBranchColour(t_size branch_idx, t_size num_branches) const
 {
+	if(num_branches <= 1)
+		return std::array<int, 3>{{ 0xff, 0x00, 0x00 }};
+
 	return std::array<int, 3>{{
 		int(std::lerp(1., 0., t_real(branch_idx) / t_real(num_branches - 1)) * 255.),
 		0x00,
@@ -725,10 +728,10 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 	m_cam_centre = tl2::zero<t_vec_gl>(3);
 	m_dispplot->GetRenderer()->RemoveObjects();
 	m_dispplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>(
-		{ static_cast<t_real_gl>(1.5 * Q_scale2), static_cast<t_real_gl>(1.5 * Q_scale1),
+		{ static_cast<t_real_gl>(1.5 * Q_scale1), static_cast<t_real_gl>(1.5 * Q_scale2),
 			static_cast<t_real_gl>(2.5 * (m_max_E + 4.) * E_scale) }));
 	m_dispplot->GetRenderer()->SetLight(1, -tl2::create<t_vec3_gl>(
-		{ static_cast<t_real_gl>(1.5 * Q_scale2), static_cast<t_real_gl>(1.5 * Q_scale1),
+		{ static_cast<t_real_gl>(1.5 * Q_scale1), static_cast<t_real_gl>(1.5 * Q_scale2),
 			static_cast<t_real_gl>(2.5 * (m_max_E + 4.) * E_scale) }));
 
 	// plot the magnon bands
@@ -749,7 +752,7 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 			t_data_Qs& data = m_data[band_idx];
 
 			auto patch_fkt = [this, &data, E_scale](
-				t_real_gl /*x2*/, t_real_gl /*x1*/, t_size idx_2, t_size idx_1)
+				t_real_gl /*x2*/, t_real_gl /*x1*/, t_size idx_1, t_size idx_2)
 					-> std::pair<t_real_gl, bool>
 			{
 				t_size idx = idx_1 * m_Q_count_2 + idx_2;
@@ -776,7 +779,7 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 			t_real_gl b = t_real_gl(col[2]) / t_real_gl(255.);
 
 			std::size_t obj = m_dispplot->GetRenderer()->AddPatch(patch_fkt, 0., 0., 0.,
-				Q_scale2, Q_scale1, m_Q_count_2, m_Q_count_1, r, g, b);
+				Q_scale1, Q_scale2, m_Q_count_1, m_Q_count_2, r, g, b);
 			m_dispplot->GetRenderer()->SetObjectLabel(obj, objLabel.str());
 			m_band_objs.insert(std::make_pair(obj, band_idx));
 
@@ -906,8 +909,8 @@ void Dispersion3DDlg::PlotPickerIntersection(
 	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	// TODO: check if Q position is correctly reconstructed
-	t_real_gl Q1param = (0.5*m_Q_scale1->value() + (*pos)[1]) / m_Q_scale1->value();
-	t_real_gl Q2param = (0.5*m_Q_scale2->value() + (*pos)[0]) / m_Q_scale2->value();
+	t_real_gl Q1param = (0.5*m_Q_scale1->value() + (*pos)[0]) / m_Q_scale1->value();
+	t_real_gl Q2param = (0.5*m_Q_scale2->value() + (*pos)[1]) / m_Q_scale2->value();
 	t_vec_real Q = Q_origin + Q_dir_1*Q1param + Q_dir_2*Q2param;
 
 	t_real_gl E = (*pos)[2] / m_E_scale->value();
@@ -1463,7 +1466,7 @@ if __name__ == "__main__":
 	algo::replace_all(pyscr, "%%BRANCH_COLOURS%%", "[ " + colours.str() + "]");
 	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True " : "False");
 	algo::replace_all(pyscr, "%%PROJ_TYPE%%", m_perspective->isChecked() ? "persp" : "ortho");
-	algo::replace_all(pyscr, "%%AZIMUTH%%", tl2::var_to_str(-m_cam_phi->value(), g_prec));
+	algo::replace_all(pyscr, "%%AZIMUTH%%", tl2::var_to_str(-90. - m_cam_phi->value(), g_prec));
 	algo::replace_all(pyscr, "%%ELEVATION%%", tl2::var_to_str(90. + m_cam_theta->value(), g_prec));
 	algo::replace_all(pyscr, "%%Q_IDX_1%%", tl2::var_to_str(Q_idx_1, g_prec));
 	algo::replace_all(pyscr, "%%Q_IDX_2%%", tl2::var_to_str(Q_idx_2, g_prec));
