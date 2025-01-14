@@ -68,22 +68,26 @@ public:
 	Dispersion3DDlg(const Dispersion3DDlg&) = delete;
 	Dispersion3DDlg& operator=(const Dispersion3DDlg&) = delete;
 
-	// set kernel from main window
+	// set kernel and Q path from the main window
 	void SetKernel(const t_magdyn* dyn);
+	void SetDispersionQ(const t_vec_real& Qstart, const t_vec_real& Qend);
 
 
 protected:
 	virtual void accept() override;
 
-	void ShowError(const char* msg);
+	// calculation functions
 	void EnableCalculation(bool enable = true);
 	void Calculate();
 	void Plot(bool clear_settings = true);
 
+	// calculation helper functions
 	t_real GetMeanEnergy(const t_data_Qs& data) const;
 	t_real GetMeanEnergy(t_size band_idx) const;
 	std::tuple<t_vec_real, t_vec_real, t_vec_real> GetQVectors() const;
 	std::array<int, 3> GetBranchColour(t_size branch_idx, t_size num_branches) const;
+	void FromMainQ();
+	void ShowError(const char* msg);
 
 	// band table functions
 	void ClearBands();
@@ -126,6 +130,7 @@ private:
 	// ------------------------------------------------------------------------
 	// from main dialog
 	const t_magdyn *m_dyn{};             // main calculation kernel
+	t_vec_real m_Qstart{}, m_Qend{};     // Qs from the main window
 	QSettings *m_sett{};                 // program settings
 	// ------------------------------------------------------------------------
 

@@ -149,7 +149,6 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_Q_dir2[2] = new QDoubleSpinBox(groupQ);
 	m_num_Q_points[0] = new QSpinBox(groupQ);
 	m_num_Q_points[1] = new QSpinBox(groupQ);
-
 	m_num_Q_points[0]->setToolTip("Number of grid points along the first momentum axis.");
 	m_num_Q_points[1]->setToolTip("Number of grid points along the first momentum axis.");
 
@@ -194,6 +193,10 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		m_num_Q_points[i]->setSingleStep(1);
 		m_num_Q_points[i]->setValue(64);
 	}
+
+	// main dispersion button
+	QPushButton *btnMainQ = new QPushButton("From Main Q", groupQ);
+	btnMainQ->setToolTip("Set the Q origin and directions from the dispersion in the main window.");
 
 	// Q and E scale for plot
 	QGroupBox *groupPlotOptions = new QGroupBox("Plot Options", this);
@@ -283,7 +286,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	Qgrid->addWidget(m_Q_dir2[2], y++, 3, 1, 1);
 	Qgrid->addWidget(new QLabel("Number of Points:", this), y, 0, 1, 1);
 	Qgrid->addWidget(m_num_Q_points[0], y, 1, 1, 1);
-	Qgrid->addWidget(m_num_Q_points[1], y++, 2, 1, 1);
+	Qgrid->addWidget(m_num_Q_points[1], y, 2, 1, 1);
+	Qgrid->addWidget(btnMainQ, y++, 3, 1, 1);
 
 	// plot options grid
 	y = 0;
@@ -350,6 +354,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(m_dispplot, &tl2::GlPlot::MouseUp, this, &Dispersion3DDlg::PlotMouseUp);
 	connect(m_perspective, &QCheckBox::toggled, this, &Dispersion3DDlg::SetPlotPerspectiveProjection);
 	connect(m_only_pos_E, &QCheckBox::toggled, [this]() { Plot(true); });
+	connect(btnMainQ, &QAbstractButton::clicked, this, &Dispersion3DDlg::FromMainQ);
 
 	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
 	{
@@ -398,6 +403,45 @@ Dispersion3DDlg::~Dispersion3DDlg()
 void Dispersion3DDlg::SetKernel(const t_magdyn* dyn)
 {
 	m_dyn = dyn;
+}
+
+
+
+/**
+ * save the Q start and end points from the main window's dispersion
+ */
+void Dispersion3DDlg::SetDispersionQ(const t_vec_real& Qstart, const t_vec_real& Qend)
+{
+	m_Qstart = Qstart;
+	m_Qend = Qend;
+}
+
+
+
+/**
+ * set the Q position and directions from the main window's Q start and end points
+ */
+void Dispersion3DDlg::FromMainQ()
+{
+	if(m_Qstart.size() < 3 || m_Qend.size() < 3 || !m_dyn)
+		return;
+
+	const t_mat_real& xtalB = m_dyn->GetCrystalBTrafo();
+	const t_vec_real* plane = m_dyn->GetScatteringPlane();
+	if(!plane)
+		return;
+
+	// direction 1 is from the start to the end point
+	t_vec_real Qdir1 = m_Qend - m_Qstart;
+	// direction 2 is perpendicular to direction 1 inside the scattering plane
+	t_vec_real Qdir2 = tl2::cross(xtalB, plane[2], Qdir1);
+
+	for(int i = 0; i < 3; ++i)
+	{
+		m_Q_origin[i]->setValue(m_Qstart[i]);
+		m_Q_dir1[i]->setValue(Qdir1[i]);
+		m_Q_dir2[i]->setValue(Qdir2[i]);
+	}
 }
 
 

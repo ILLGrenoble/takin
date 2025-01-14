@@ -335,6 +335,7 @@ protected:
 	void TermsTableItemChanged(QTableWidgetItem *item);
 	void VariablesTableItemChanged(QTableWidgetItem *item);
 
+	std::pair<t_vec_real, t_vec_real> GetDispersionQ() const;
 	void ClearDispersion(bool replot = false);
 	void Clear();
 

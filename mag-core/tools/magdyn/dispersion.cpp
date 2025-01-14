@@ -77,6 +77,30 @@ void MagDynDlg::ClearDispersion(bool replot)
 
 
 /**
+ * get the dispersion's start and end points
+ */
+std::pair<t_vec_real, t_vec_real> MagDynDlg::GetDispersionQ() const
+{
+	t_vec_real Q_start = tl2::create<t_vec_real>(
+	{
+		(t_real)m_Q_start[0]->value(),
+		(t_real)m_Q_start[1]->value(),
+		(t_real)m_Q_start[2]->value(),
+	});
+
+	t_vec_real Q_end = tl2::create<t_vec_real>(
+	{
+		(t_real)m_Q_end[0]->value(),
+		(t_real)m_Q_end[1]->value(),
+		(t_real)m_Q_end[2]->value(),
+	});
+
+	return std::make_pair(std::move(Q_start), std::move(Q_end));
+}
+
+
+
+/**
  * a new start or end Q coordinate has been entered
  */
 void MagDynDlg::DispersionQChanged()
@@ -84,24 +108,15 @@ void MagDynDlg::DispersionQChanged()
 	if(this->m_autocalc->isChecked())
 		this->CalcDispersion();
 
+	t_vec_real Q_start, Q_end;
+	if(m_topo_dlg || m_disp3d_dlg)
+		std::tie(Q_start, Q_end) = GetDispersionQ();
+
 	if(m_topo_dlg)
-	{
-		t_vec_real Q_start = tl2::create<t_vec_real>(
-		{
-			(t_real)m_Q_start[0]->value(),
-			(t_real)m_Q_start[1]->value(),
-			(t_real)m_Q_start[2]->value(),
-		});
-
-		t_vec_real Q_end = tl2::create<t_vec_real>(
-		{
-			(t_real)m_Q_end[0]->value(),
-			(t_real)m_Q_end[1]->value(),
-			(t_real)m_Q_end[2]->value(),
-		});
-
 		m_topo_dlg->SetDispersionQ(Q_start, Q_end);
-	}
+
+	if(m_disp3d_dlg)
+		m_disp3d_dlg->SetDispersionQ(Q_start, Q_end);
 }
 
 

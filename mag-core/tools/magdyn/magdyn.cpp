@@ -407,8 +407,8 @@ void MagDynDlg::CreateMenuBar()
 
 	// tools menu
 	QMenu *menuTools = new QMenu("Tools", m_menu);
-	QAction *acTopo = new QAction("Topology...", menuTools);
 	QAction *acDisp3D = new QAction("3D Dispersion...", menuTools);
+	QAction *acTopo = new QAction("Topology...", menuTools);
 	QAction *acTrafoCalc = new QAction("Transformations...", menuTools);
 	QAction *acPreferences = new QAction("Preferences...", menuTools);
 	acTrafoCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
@@ -491,8 +491,8 @@ void MagDynDlg::CreateMenuBar()
 	menuCalc->addAction(m_force_incommensurate);
 	menuCalc->addMenu(menuHamiltonians);
 
-	menuTools->addAction(acTopo);
 	menuTools->addAction(acDisp3D);
+	menuTools->addAction(acTopo);
 	menuTools->addSeparator();
 	menuTools->addAction(acTrafoCalc);
 	menuTools->addSeparator();
@@ -553,8 +553,8 @@ void MagDynDlg::CreateMenuBar()
 	connect(acStructSymIdx, &QAction::triggered, this, &MagDynDlg::CalcSymmetryIndices);
 	connect(acStructView, &QAction::triggered, this, &MagDynDlg::ShowStructPlotDlg);
 	connect(acGroundState, &QAction::triggered, this, &MagDynDlg::ShowGroundStateDlg);
-	connect(acTopo, &QAction::triggered, this, &MagDynDlg::ShowTopologyDlg);
 	connect(acDisp3D, &QAction::triggered, this, &MagDynDlg::ShowDispersion3DDlg);
+	connect(acTopo, &QAction::triggered, this, &MagDynDlg::ShowTopologyDlg);
 	connect(acStructImport, &QAction::triggered, this, &MagDynDlg::ShowTableImporter);
 	connect(acStructExportSun, &QAction::triggered,
 		this, static_cast<void (MagDynDlg::*)()>(&MagDynDlg::ExportToSunny));

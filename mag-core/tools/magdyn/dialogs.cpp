@@ -224,20 +224,7 @@ void MagDynDlg::ShowTopologyDlg(bool only_create)
 		m_topo_dlg->SetKernel(&m_dyn);
 
 		// set Q position
-		t_vec_real Q_start = tl2::create<t_vec_real>(
-		{
-			(t_real)m_Q_start[0]->value(),
-			(t_real)m_Q_start[1]->value(),
-			(t_real)m_Q_start[2]->value(),
-		});
-
-		t_vec_real Q_end = tl2::create<t_vec_real>(
-		{
-			(t_real)m_Q_end[0]->value(),
-			(t_real)m_Q_end[1]->value(),
-			(t_real)m_Q_end[2]->value(),
-		});
-
+		auto [Q_start, Q_end] = GetDispersionQ();
 		m_topo_dlg->SetDispersionQ(Q_start, Q_end);
 	}
 
@@ -262,6 +249,10 @@ void MagDynDlg::ShowDispersion3DDlg(bool only_create)
 		m_disp3d_dlg->setFont(this->font());
 
 		m_disp3d_dlg->SetKernel(&m_dyn);
+
+		// set Q position
+		auto [Q_start, Q_end] = GetDispersionQ();
+		m_disp3d_dlg->SetDispersionQ(Q_start, Q_end);
 
 		connect(m_disp3d_dlg, &Dispersion3DDlg::GlDeviceInfos,
 			m_info_dlg, &InfoDlg::SetGlDeviceInfos);
