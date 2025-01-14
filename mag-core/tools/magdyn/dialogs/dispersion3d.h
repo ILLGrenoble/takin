@@ -91,6 +91,7 @@ protected:
 	bool IsBandEnabled(t_size idx) const;
 
 	// export data
+	void WriteHeader(std::ostream& ostr) const;
 	void SaveData();
 	void SaveScript();
 

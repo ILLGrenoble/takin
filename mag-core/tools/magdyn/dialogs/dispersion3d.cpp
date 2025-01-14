@@ -211,7 +211,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 		box->setMinimum(0.001);
 		box->setMaximum(999.99);
 		box->setSingleStep(box == m_E_scale ? 0.1 : 0.5);
-		box->setValue(box == m_E_scale ? 1. : 32.);
+		box->setValue(box == m_E_scale ? 4. : 32.);
 		box->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Preferred});
 	}
 
@@ -793,7 +793,10 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 	if(num_active_bands)
 		m_cam_centre[2] /= static_cast<t_real>(num_active_bands);
 
-	m_dispplot->update();
+	if(clear_settings)
+		CentrePlotCamera();    // centre camera and update
+	else
+		m_dispplot->update();  // only update renderer
 }
 
 
@@ -1157,11 +1160,39 @@ void Dispersion3DDlg::accept()
 
 
 /**
+ * write the meta data header for text file exports
+ */
+void Dispersion3DDlg::WriteHeader(std::ostream& ostr) const
+{
+	using namespace tl2_ops;
+
+	const char* user = std::getenv("USER");
+	if(!user)
+		user = "";
+
+	const t_size num_bands = m_data.size();
+	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
+
+	ostr << "#\n"
+		<< "# Created by Takin/Magdyn\n"
+		<< "# URL: https://github.com/ILLGrenoble/takin\n"
+		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
+		<< "# User: " << user << "\n"
+		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
+		<< "#\n# branch_count: " << num_bands << "\n"
+		<< "# Q_origin: " << Q_origin << "\n"
+		<< "# Q_direction_1: " << Q_dir_1 << "\n"
+		<< "# Q_direction_2: " << Q_dir_2 << "\n"
+		<< "#\n\n";
+}
+
+
+
+/**
  * save the dispersion as a text data file
  */
 void Dispersion3DDlg::SaveData()
 {
-	using namespace tl2_ops;
 	bool skip_invalid_points = true;
 
 	if(m_data.size() == 0)
@@ -1187,29 +1218,10 @@ void Dispersion3DDlg::SaveData()
 	}
 
 	ofstr.precision(g_prec);
-	int field_len = g_prec * 2.5;
-
-	// write meta header
-	const char* user = std::getenv("USER");
-	if(!user)
-		user = "";
-
-	const t_size num_bands = m_data.size();
-	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
-
-	ofstr << "#\n"
-		<< "# Created by Takin/Magdyn\n"
-		<< "# URL: https://github.com/ILLGrenoble/takin\n"
-		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
-		<< "# User: " << user << "\n"
-		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
-		<< "#\n# branch_count: " << num_bands << "\n"
-		<< "# Q_origin: " << Q_origin << "\n"
-		<< "# Q_direction_1: " << Q_dir_1 << "\n"
-		<< "# Q_direction_2: " << Q_dir_2 << "\n"
-		<< "#\n\n";
+	WriteHeader(ofstr);
 
 	// write column header
+	int field_len = g_prec * 2.5;
 	ofstr << std::setw(field_len) << std::left << "# h" << " ";
 	ofstr << std::setw(field_len) << std::left << "k" << " ";
 	ofstr << std::setw(field_len) << std::left << "l" << " ";
@@ -1218,6 +1230,7 @@ void Dispersion3DDlg::SaveData()
 	ofstr << std::setw(field_len) << std::left << "Qidx1" << " ";
 	ofstr << std::setw(field_len) << std::left << "Qidx2" << "\n";
 
+	const t_size num_bands = m_data.size();
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
 	{
 		for(t_data_Q& data : m_data[band_idx])
@@ -1277,26 +1290,7 @@ void Dispersion3DDlg::SaveScript()
 	}
 
 	ofstr.precision(g_prec);
-
-	// write meta header
-	const char* user = std::getenv("USER");
-	if(!user)
-		user = "";
-
-	const t_size num_bands = m_data.size();
-	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
-
-	ofstr << "#\n"
-		<< "# Created by Takin/Magdyn\n"
-		<< "# URL: https://github.com/ILLGrenoble/takin\n"
-		<< "# DOI: https://doi.org/10.5281/zenodo.4117437\n"
-		<< "# User: " << user << "\n"
-		<< "# Date: " << tl2::epoch_to_str<t_real>(tl2::epoch<t_real>()) << "\n"
-		<< "#\n# branch_count: " << num_bands << "\n"
-		<< "# Q_origin: " << Q_origin << "\n"
-		<< "# Q_direction_1: " << Q_dir_1 << "\n"
-		<< "# Q_direction_2: " << Q_dir_2 << "\n"
-		<< "#\n\n";
+	WriteHeader(ofstr);
 
 	// ------------------------------------------------------------------------
 	// plot script
@@ -1393,6 +1387,9 @@ if __name__ == "__main__":
 	data = numpy.array([ h_data, k_data, l_data, E_data, b_data ]).T
 	plot_disp(data, colours, %%Q_IDX_1%%, %%Q_IDX_2%%))RAW";
 	// ------------------------------------------------------------------------
+
+	const t_size num_bands = m_data.size();
+	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	// create data arrays
 	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data, colours;
