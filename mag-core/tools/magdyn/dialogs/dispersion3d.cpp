@@ -252,11 +252,15 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_status->setFrameShape(QFrame::Panel);
 	m_status->setFrameShadow(QFrame::Sunken);
 	m_status->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-	m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	m_status->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
 	// close button
 	QDialogButtonBox *btnbox = new QDialogButtonBox(this);
 	btnbox->addButton(QDialogButtonBox::Ok);
+	QPushButton *btnSaveData = btnbox->addButton("Save Data...", QDialogButtonBox::ActionRole);
+	QPushButton *btnSaveScript = btnbox->addButton("Save Script...", QDialogButtonBox::ActionRole);
+	btnSaveData->setIcon(QIcon::fromTheme("text-x-generic"));
+	btnSaveScript->setIcon(QIcon::fromTheme("text-x-script"));
 	btnbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
 	// bands panel grid
@@ -342,6 +346,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(acCentre, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCamera);
 	connect(acSaveData, &QAction::triggered, this, &Dispersion3DDlg::SaveData);
 	connect(acSaveScript, &QAction::triggered, this, &Dispersion3DDlg::SaveScript);
+	connect(btnSaveData, &QAbstractButton::clicked, this, &Dispersion3DDlg::SaveData);
+	connect(btnSaveScript, &QAbstractButton::clicked, this, &Dispersion3DDlg::SaveScript);
 
 	connect(m_dispplot, &tl2::GlPlot::AfterGLInitialisation,
 		this, &Dispersion3DDlg::AfterPlotGLInitialisation);
