@@ -955,7 +955,7 @@ void Dispersion3DDlg::PlotPickerIntersection(
 	// get Q and E position at cursor intersection
 	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
-	// TODO: check if Q position is correctly reconstructed
+	// reconstruct Q position
 	t_real_gl Q1param = (0.5*m_Q_scale1->value() + (*pos)[0]) / m_Q_scale1->value();
 	t_real_gl Q2param = (0.5*m_Q_scale2->value() + (*pos)[1]) / m_Q_scale2->value();
 	t_vec_real Q = Q_origin + Q_dir_1*Q1param + Q_dir_2*Q2param;
@@ -1272,7 +1272,8 @@ void Dispersion3DDlg::SaveData()
 	ofstr << std::setw(field_len) << std::left << "E" << " ";
 	ofstr << std::setw(field_len) << std::left << "band" << " ";
 	ofstr << std::setw(field_len) << std::left << "Qidx1" << " ";
-	ofstr << std::setw(field_len) << std::left << "Qidx2" << "\n";
+	ofstr << std::setw(field_len) << std::left << "Qidx2" << " ";
+	ofstr << std::setw(field_len) << std::left << "degen" << "\n";
 
 	const t_size num_bands = m_data.size();
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
@@ -1283,6 +1284,7 @@ void Dispersion3DDlg::SaveData()
 			t_real E = std::get<1>(data);
 			t_size Qidx1 = std::get<3>(data);
 			t_size Qidx2 = std::get<4>(data);
+			t_size degen = std::get<5>(data);
 			bool valid = std::get<6>(data);
 
 			if(skip_invalid_points && !valid)
@@ -1294,7 +1296,8 @@ void Dispersion3DDlg::SaveData()
 			ofstr << std::setw(field_len) << std::left << E << " ";
 			ofstr << std::setw(field_len) << std::left << band_idx << " ";
 			ofstr << std::setw(field_len) << std::left << Qidx1 << " ";
-			ofstr << std::setw(field_len) << std::left << Qidx2 << "\n";
+			ofstr << std::setw(field_len) << std::left << Qidx2 << " ";
+			ofstr << std::setw(field_len) << std::left << degen << "\n";
 		}
 	}
 
@@ -1360,10 +1363,9 @@ k_column       = 1      # k column index
 l_column       = 2      # l column index
 E_column       = 3      # E column index
 S_column       = -1     # S column index, -1: not available
-branch_column  = 4      # branch column index
 # -----------------------------------------------------------------------------
 
-def plot_disp(data, branch_colours, Q_idx1 = 0, Q_idx2 = 1):
+def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 = 1):
 	(plt, axis) = pyplot.subplots(nrows = 1, ncols = 1,
 		width_ratios = width_ratios, sharey = True,
 		subplot_kw = { "projection" : "3d", "proj_type" : "%%PROJ_TYPE%%",
@@ -1371,17 +1373,21 @@ def plot_disp(data, branch_colours, Q_idx1 = 0, Q_idx2 = 1):
 			"azim" : %%AZIMUTH%%, "elev" : %%ELEVATION%% })
 
 	# iterate energy branches
-	E_branch_eff_idx = 0  # effective index of actually plotted bands
-	E_branch_max = int(numpy.max(data[:, branch_column]))
+	E_branch_eff_idx = 0             # effective index of actually plotted bands
+	E_branch_max = max(branch_data)  # maximum branch index
 	for E_branch_idx in range(0, E_branch_max + 1):
 		# filter data for given branch
 		data_Q = [
-			[ row[h_column + Q_idx1] for row in data if row[branch_column] == E_branch_idx ],
-			[ row[h_column + Q_idx2] for row in data if row[branch_column] == E_branch_idx ]
+			[ row[h_column + Q_idx1] for (row, branch_idx) in zip(data, branch_data) \
+				if branch_idx == E_branch_idx ],
+			[ row[h_column + Q_idx2] for (row, branch_idx) in zip(data, branch_data) \
+				if branch_idx == E_branch_idx ]
 		]
-		data_E = [ row[E_column] for row in data if row[branch_column] == E_branch_idx ]
+		data_E = [ row[E_column] for (row, branch_idx) in zip(data, branch_data) \
+			if branch_idx == E_branch_idx ]
 		if S_column >= 0:
-			data_S = [ row[S_column] for row in data if row[branch_column] == E_branch_idx ]
+			data_S = [ row[S_column] for (row, branch_idx) in zip(data, branch_data) \
+				if branch_idx == E_branch_idx ]
 
 		colour_idx = E_branch_eff_idx
 		if only_pos_E:
@@ -1391,7 +1397,7 @@ def plot_disp(data, branch_colours, Q_idx1 = 0, Q_idx2 = 1):
 			if S_column >= 0:
 				data_S = [ S for (S, E) in zip(data_S, data_E) if E >= 0. ]
 			data_E = [ E for E in data_E if E >= 0. ]
-			colour_idx *= 2
+			colour_idx *= 2  # skip every other colour if E >= 0
 
 		if S_column >= 0 and S_filter_min >= 0.:
 			# filter weights below cutoff
@@ -1425,20 +1431,24 @@ if __name__ == "__main__":
 	k_data = %%K_DATA%%
 	l_data = %%L_DATA%%
 	E_data = %%E_DATA%%
-	b_data = %%B_DATA%%
+	branch_data = %%BRANCH_DATA%%
+	degen_data = %%DEGEN_DATA%%
 	colours = %%BRANCH_COLOURS%%
 
-	data = numpy.array([ h_data, k_data, l_data, E_data, b_data ]).T
-	plot_disp(data, colours, %%Q_IDX_1%%, %%Q_IDX_2%%))RAW";
+	data = numpy.array([ h_data, k_data, l_data, E_data ]).T
+	plot_disp(data, branch_data, degen_data, colours, %%Q_IDX_1%%, %%Q_IDX_2%%))RAW";
 	// ------------------------------------------------------------------------
 
 	const t_size num_bands = m_data.size();
 	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	// create data arrays
-	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data, colours;
-	for(std::ostringstream* ostr : { &h_data, &k_data, &l_data, &E_data, &bandidx_data, &colours })
+	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data, degen_data, colours;
+	for(std::ostringstream* ostr : { &h_data, &k_data, &l_data, &E_data,
+		&bandidx_data, &degen_data, &colours })
+	{
 		ostr->precision(g_prec);
+	}
 
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
 	{
@@ -1449,6 +1459,7 @@ if __name__ == "__main__":
 			t_real E = std::get<1>(data);
 			//t_size Qidx1 = std::get<3>(data);
 			//t_size Qidx2 = std::get<4>(data);
+			t_size degen = std::get<5>(data);
 			bool valid = std::get<6>(data);
 
 			if(skip_invalid_points && !valid)
@@ -1458,7 +1469,9 @@ if __name__ == "__main__":
 			k_data << Q[1] << ", ";
 			l_data << Q[2] << ", ";
 			E_data << E << ", ";
+
 			bandidx_data << band_idx << ", ";
+			degen_data << degen << ", ";
 		}
 
 		// band colour
@@ -1499,11 +1512,13 @@ if __name__ == "__main__":
 		}
 	}
 
+	// TODO: for the moment the azimuth only matches for the [100], [010] Q directions -> add a trafo
 	algo::replace_all(pyscr, "%%H_DATA%%", "[ " + h_data.str() + "]");
 	algo::replace_all(pyscr, "%%K_DATA%%", "[ " + k_data.str() + "]");
 	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
 	algo::replace_all(pyscr, "%%E_DATA%%", "[ " + E_data.str() + "]");
-	algo::replace_all(pyscr, "%%B_DATA%%", "[ " + bandidx_data.str() + "]");
+	algo::replace_all(pyscr, "%%BRANCH_DATA%%", "[ " + bandidx_data.str() + "]");
+	algo::replace_all(pyscr, "%%DEGEN_DATA%%", "[ " + degen_data.str() + "]");
 	algo::replace_all(pyscr, "%%BRANCH_COLOURS%%", "[ " + colours.str() + "]");
 	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True " : "False");
 	algo::replace_all(pyscr, "%%PROJ_TYPE%%", m_perspective->isChecked() ? "persp" : "ortho");
