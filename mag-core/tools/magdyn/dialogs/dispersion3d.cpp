@@ -137,7 +137,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_context_band->addAction(acSaveScript);
 
 	// Q coordinates
-	QGroupBox *groupQ = new QGroupBox("Q Coordinates", this);
+	QGroupBox *groupQ = new QGroupBox("Dispersion", this);
 	m_Q_origin[0] = new QDoubleSpinBox(groupQ);
 	m_Q_origin[1] = new QDoubleSpinBox(groupQ);
 	m_Q_origin[2] = new QDoubleSpinBox(groupQ);
@@ -150,7 +150,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_num_Q_points[0] = new QSpinBox(groupQ);
 	m_num_Q_points[1] = new QSpinBox(groupQ);
 	m_num_Q_points[0]->setToolTip("Number of grid points along the first momentum axis.");
-	m_num_Q_points[1]->setToolTip("Number of grid points along the first momentum axis.");
+	m_num_Q_points[1]->setToolTip("Number of grid points along the second momentum axis.");
 
 	static const char* hklPrefix[] = { "h = ", "k = ","l = ", };
 	for(int i = 0; i < 3; ++i)
@@ -197,6 +197,25 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	// main dispersion button
 	QPushButton *btnMainQ = new QPushButton("From Main Q", groupQ);
 	btnMainQ->setToolTip("Set the Q origin and directions from the dispersion in the main window.");
+
+	// minimum cutoff for filtering S(Q, E)
+	m_S_filter_enable = new QCheckBox("Minimum S(Q, E):", groupQ);
+	m_S_filter_enable->setChecked(false);
+	m_S_filter_enable->setToolTip("Enable minimum S(Q, E).");
+
+	m_S_filter = new QDoubleSpinBox(groupQ);
+	m_S_filter->setDecimals(5);
+	m_S_filter->setMinimum(0.);
+	m_S_filter->setMaximum(9999.99999);
+	m_S_filter->setSingleStep(0.01);
+	m_S_filter->setValue(0.01);
+	m_S_filter->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Preferred});
+	m_S_filter->setToolTip("Minimum S(Q, E) to keep.");
+
+	// unite degenerate energies
+	m_unite_degeneracies = new QCheckBox("Unite degenerate Es.", groupQ);
+	m_unite_degeneracies->setChecked(false);
+	m_unite_degeneracies->setToolTip("Unite degenerate energies.");
 
 	// Q and E scale for plot
 	QGroupBox *groupPlotOptions = new QGroupBox("Plot Options", this);
@@ -276,22 +295,25 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	QGridLayout *Qgrid = new QGridLayout(groupQ);
 	Qgrid->setSpacing(4);
 	Qgrid->setContentsMargins(6, 6, 6, 6);
-	Qgrid->addWidget(new QLabel("Origin:", this), y, 0, 1, 1);
+	Qgrid->addWidget(new QLabel("Q Origin:", this), y, 0, 1, 1);
 	Qgrid->addWidget(m_Q_origin[0], y, 1, 1, 1);
 	Qgrid->addWidget(m_Q_origin[1], y, 2, 1, 1);
 	Qgrid->addWidget(m_Q_origin[2], y++, 3, 1, 1);
-	Qgrid->addWidget(new QLabel("Direction 1:", this), y, 0, 1, 1);
+	Qgrid->addWidget(new QLabel("Q Direction 1:", this), y, 0, 1, 1);
 	Qgrid->addWidget(m_Q_dir1[0], y, 1, 1, 1);
 	Qgrid->addWidget(m_Q_dir1[1], y, 2, 1, 1);
 	Qgrid->addWidget(m_Q_dir1[2], y++, 3, 1, 1);
-	Qgrid->addWidget(new QLabel("Direction 2:", this), y, 0, 1, 1);
+	Qgrid->addWidget(new QLabel("Q Direction 2:", this), y, 0, 1, 1);
 	Qgrid->addWidget(m_Q_dir2[0], y, 1, 1, 1);
 	Qgrid->addWidget(m_Q_dir2[1], y, 2, 1, 1);
 	Qgrid->addWidget(m_Q_dir2[2], y++, 3, 1, 1);
-	Qgrid->addWidget(new QLabel("Number of Points:", this), y, 0, 1, 1);
+	Qgrid->addWidget(new QLabel("Q Grid Points:", this), y, 0, 1, 1);
 	Qgrid->addWidget(m_num_Q_points[0], y, 1, 1, 1);
 	Qgrid->addWidget(m_num_Q_points[1], y, 2, 1, 1);
 	Qgrid->addWidget(btnMainQ, y++, 3, 1, 1);
+	Qgrid->addWidget(m_S_filter_enable, y, 0, 1, 1);
+	Qgrid->addWidget(m_S_filter, y, 1, 1, 1);
+	Qgrid->addWidget(m_unite_degeneracies, y++, 2, 1, 1);
 
 	// plot options grid
 	y = 0;
@@ -361,6 +383,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(m_perspective, &QCheckBox::toggled, this, &Dispersion3DDlg::SetPlotPerspectiveProjection);
 	connect(m_only_pos_E, &QCheckBox::toggled, [this]() { Plot(true); });
 	connect(btnMainQ, &QAbstractButton::clicked, this, &Dispersion3DDlg::FromMainQ);
+	connect(m_S_filter_enable, &QCheckBox::toggled, m_S_filter, &QDoubleSpinBox::setEnabled);
 
 	for(QDoubleSpinBox *box : { m_Q_scale1, m_Q_scale2, m_E_scale })
 	{
@@ -392,6 +415,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 			m_stop_requested = true;
 	});
 
+	m_S_filter->setEnabled(m_S_filter_enable->isChecked());
 	EnableCalculation(true);
 }
 
@@ -516,12 +540,14 @@ void Dispersion3DDlg::Calculate()
 	t_vec_real Q_step_1 = Q_dir_1 / t_real(m_Q_count_1);
 	t_vec_real Q_step_2 = Q_dir_2 / t_real(m_Q_count_2);
 
-	bool use_weights = false;
+	t_real min_S = m_S_filter->value();
+	bool use_weights = m_S_filter_enable->isChecked();
 	bool use_projector = true;
+	bool unite_degen = m_unite_degeneracies->isChecked();
 
 	// calculate the dispersion
 	t_magdyn dyn = *m_dyn;
-	dyn.SetUniteDegenerateEnergies(false);
+	dyn.SetUniteDegenerateEnergies(unite_degen);
 
 	// tread pool and mutex to protect the data vectors
 	asio::thread_pool pool{g_num_threads};
@@ -547,7 +573,7 @@ void Dispersion3DDlg::Calculate()
 	{
 		auto task = [this, &mtx, &dyn, Q_idx_1, Q_idx_2,
 			&Q_origin, &Q_step_1, &Q_step_2,
-			use_weights, use_projector]()
+			use_weights, use_projector, min_S]()
 		{
 			// calculate the dispersion at the given Q point
 			t_vec_real Q = Q_origin + Q_step_1*t_real(Q_idx_1) + Q_step_2*t_real(Q_idx_2);
@@ -563,8 +589,6 @@ void Dispersion3DDlg::Calculate()
 				if(std::isnan(E) || std::isinf(E))
 					valid = false;
 
-				m_max_E = std::max(m_max_E, E);
-
 				t_real weight = -1;
 				if(use_weights)
 				{
@@ -576,19 +600,27 @@ void Dispersion3DDlg::Calculate()
 						weight = tl2::trace<t_mat>(S).real();
 					}
 
+					// filter invalid S(Q, E)
 					if(std::isnan(weight) || std::isinf(weight))
 						weight = 0.;
+
+					// filter minimum S(Q, E)
+					if(min_S >= 0. && std::abs(weight) <= min_S)
+						valid = false;
 				}
 
+				if(valid)
+					m_max_E = std::max(m_max_E, E);
+
 				// count energy degeneracy
-				t_size degeneracy = 1;
+				t_size degeneracy = E_and_S.degeneracy;
 				for(t_size band_idx2 = 0; band_idx2 < Es_and_S.size(); ++band_idx2)
 				{
 					if(band_idx2 == band_idx)
 						continue;
 
 					if(tl2::equals(E, Es_and_S[band_idx2].E, g_eps))
-						++degeneracy;
+						degeneracy += Es_and_S[band_idx2].degeneracy;
 				}
 
 				// generate and add data point
@@ -712,11 +744,16 @@ t_real Dispersion3DDlg::GetMeanEnergy(const Dispersion3DDlg::t_data_Qs& data) co
 
 	for(const t_data_Q& data : data)
 	{
+		// data point invalid?
+		if(!std::get<6>(data))
+			continue;
+
 		E_mean += std::get<1>(data);
 		++num_pts;
 	}
 
-	E_mean /= static_cast<t_real>(num_pts);
+	if(num_pts)
+		E_mean /= static_cast<t_real>(num_pts);
 	return E_mean;
 }
 
@@ -808,16 +845,18 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 				t_size idx = idx_1 * m_Q_count_2 + idx_2;
 				if(idx >= data.size())
 					return std::make_pair(0., false);
+
+				bool valid = std::get<6>(data[idx]);
 				if(std::get<3>(data[idx]) != idx_1 || std::get<4>(data[idx]) != idx_2)
 				{
 					std::cerr << "Error: Patch index mismatch: "
 						<< "Expected " << std::get<3>(data[idx]) << " for x, but got " << idx_1
 						<< "; expected " << std::get<4>(data[idx]) << " for y, but got " << idx_2
 						<< "." << std::endl;
+					valid = false;
 				}
 
 				t_real_gl E = std::get<1>(data[idx]);
-				bool valid = std::get<6>(data[idx]);
 				return std::make_pair(E * E_scale, valid);
 			};
 
@@ -1244,6 +1283,7 @@ void Dispersion3DDlg::WriteHeader(std::ostream& ostr) const
 void Dispersion3DDlg::SaveData()
 {
 	bool skip_invalid_points = true;
+	bool use_weights = m_S_filter_enable->isChecked();
 
 	if(m_data.size() == 0)
 		return;
@@ -1276,6 +1316,8 @@ void Dispersion3DDlg::SaveData()
 	ofstr << std::setw(field_len) << std::left << "k" << " ";
 	ofstr << std::setw(field_len) << std::left << "l" << " ";
 	ofstr << std::setw(field_len) << std::left << "E" << " ";
+	if(use_weights)
+		ofstr << std::setw(field_len) << std::left << "S" << " ";
 	ofstr << std::setw(field_len) << std::left << "band" << " ";
 	ofstr << std::setw(field_len) << std::left << "Qidx1" << " ";
 	ofstr << std::setw(field_len) << std::left << "Qidx2" << " ";
@@ -1288,6 +1330,7 @@ void Dispersion3DDlg::SaveData()
 		{
 			const t_vec_real& Q = std::get<0>(data);
 			t_real E = std::get<1>(data);
+			t_real S = std::get<2>(data);
 			t_size Qidx1 = std::get<3>(data);
 			t_size Qidx2 = std::get<4>(data);
 			t_size degen = std::get<5>(data);
@@ -1300,6 +1343,8 @@ void Dispersion3DDlg::SaveData()
 			ofstr << std::setw(field_len) << std::left << Q[1] << " ";
 			ofstr << std::setw(field_len) << std::left << Q[2] << " ";
 			ofstr << std::setw(field_len) << std::left << E << " ";
+			if(use_weights)
+				ofstr << std::setw(field_len) << std::left << S << " ";
 			ofstr << std::setw(field_len) << std::left << band_idx << " ";
 			ofstr << std::setw(field_len) << std::left << Qidx1 << " ";
 			ofstr << std::setw(field_len) << std::left << Qidx2 << " ";
@@ -1318,7 +1363,9 @@ void Dispersion3DDlg::SaveData()
 void Dispersion3DDlg::SaveScript()
 {
 	using namespace tl2_ops;
+
 	bool skip_invalid_points = true;
+	bool use_weights = m_S_filter_enable->isChecked();
 
 	if(m_data.size() == 0)
 		return;
@@ -1362,18 +1409,17 @@ pyplot.rcParams.update({
 plot_file      = ""     # file to save plot to
 only_pos_E     = %%ONLY_POS_E%%  # ignore magnon annihilation?
 S_filter_min   = 1e-5   # cutoff minimum spectral weight
-width_ratios   = None   # lengths from one dispersion point to the next
 
-h_column       = 0      # h column index in data files
-k_column       = 1      # k column index
-l_column       = 2      # l column index
-E_column       = 3      # E column index
-S_column       = -1     # S column index, -1: not available
+h_column       =  0     # h column index in data files
+k_column       =  1     # k column index
+l_column       =  2     # l column index
+E_column       =  3     # E column index
+S_column       = %%S_INDEX%%     # S column index, -1: not available
 # -----------------------------------------------------------------------------
 
 def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 = 1):
 	(plt, axis) = pyplot.subplots(nrows = 1, ncols = 1,
-		width_ratios = width_ratios, sharey = True,
+		width_ratios = None, sharey = True,
 		subplot_kw = { "projection" : "3d", "proj_type" : "%%PROJ_TYPE%%",
 			"computed_zorder" : False,
 			"azim" : %%AZIMUTH%%, "elev" : %%ELEVATION%% })
@@ -1437,11 +1483,15 @@ if __name__ == "__main__":
 	k_data = %%K_DATA%%
 	l_data = %%L_DATA%%
 	E_data = %%E_DATA%%
+	S_data = %%S_DATA%%
 	branch_data = %%BRANCH_DATA%%
 	degen_data = %%DEGEN_DATA%%
 	colours = %%BRANCH_COLOURS%%
 
-	data = numpy.array([ h_data, k_data, l_data, E_data ]).T
+	if len(S_data) == len(E_data):
+		data = numpy.array([ h_data, k_data, l_data, E_data, S_data ]).T
+	else:
+		data = numpy.array([ h_data, k_data, l_data, E_data ]).T
 	plot_disp(data, branch_data, degen_data, colours, %%Q_IDX_1%%, %%Q_IDX_2%%))RAW";
 	// ------------------------------------------------------------------------
 
@@ -1449,8 +1499,8 @@ if __name__ == "__main__":
 	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	// create data arrays
-	std::ostringstream h_data, k_data, l_data, E_data, bandidx_data, degen_data, colours;
-	for(std::ostringstream* ostr : { &h_data, &k_data, &l_data, &E_data,
+	std::ostringstream h_data, k_data, l_data, E_data, S_data, bandidx_data, degen_data, colours;
+	for(std::ostringstream* ostr : { &h_data, &k_data, &l_data, &E_data, &S_data,
 		&bandidx_data, &degen_data, &colours })
 	{
 		ostr->precision(g_prec);
@@ -1463,6 +1513,7 @@ if __name__ == "__main__":
 		{
 			const t_vec_real& Q = std::get<0>(data);
 			t_real E = std::get<1>(data);
+			t_real S = std::get<2>(data);
 			//t_size Qidx1 = std::get<3>(data);
 			//t_size Qidx2 = std::get<4>(data);
 			t_size degen = std::get<5>(data);
@@ -1475,6 +1526,8 @@ if __name__ == "__main__":
 			k_data << Q[1] << ", ";
 			l_data << Q[2] << ", ";
 			E_data << E << ", ";
+			if(use_weights)
+				S_data << S << ", ";
 
 			bandidx_data << band_idx << ", ";
 			degen_data << degen << ", ";
@@ -1523,6 +1576,8 @@ if __name__ == "__main__":
 	algo::replace_all(pyscr, "%%K_DATA%%", "[ " + k_data.str() + "]");
 	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
 	algo::replace_all(pyscr, "%%E_DATA%%", "[ " + E_data.str() + "]");
+	algo::replace_all(pyscr, "%%S_DATA%%", "[ " + S_data.str() + "]");
+	algo::replace_all(pyscr, "%%S_INDEX%%", use_weights ? " 4" : "-1");
 	algo::replace_all(pyscr, "%%BRANCH_DATA%%", "[ " + bandidx_data.str() + "]");
 	algo::replace_all(pyscr, "%%DEGEN_DATA%%", "[ " + degen_data.str() + "]");
 	algo::replace_all(pyscr, "%%BRANCH_COLOURS%%", "[ " + colours.str() + "]");

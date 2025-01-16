@@ -192,7 +192,7 @@ requires is_vec<t_vec>
 			vertices.emplace_back(tl2::create<t_vec>({ x, y, z }));
 			valid_vertices.emplace_back(valid);
 
-			if(i == 0 || j == 0)
+			if(i == 0 || j == 0 || !valid)
 				continue;
 
 			// create faces

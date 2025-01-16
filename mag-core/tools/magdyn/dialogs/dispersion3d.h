@@ -142,9 +142,18 @@ private:
 
 	QSplitter *m_split_plot{};
 	QTableWidget *m_table_bands{};       // table listing the magnon bands
+
+	// dispersion options
 	QDoubleSpinBox *m_Q_origin[3]{}, *m_Q_dir1[3]{}, *m_Q_dir2[3]{};
-	QSpinBox *m_num_Q_points[2]{};
+	QSpinBox *m_num_Q_points[2]{};       // number of points on the Q grid
 	QCheckBox *m_only_pos_E{};           // ignore magnon annihilation
+
+	// correlation options
+	QCheckBox *m_S_filter_enable{};      // switch to enable minimum S(Q,E) value
+	QDoubleSpinBox *m_S_filter{};        // minimum S(Q,E) value
+	QCheckBox *m_unite_degeneracies{};   // unite degenerate energies
+
+	// context menus
 	QMenu *m_context{};                  // general plot context menu
 	QMenu *m_context_band{};             // context menu for magnon bands
 
