@@ -7,7 +7,7 @@ Version 2.8.1.
 
 ## Documentation
 - The software documentation is available [here](https://github.com/ILLGrenoble/takin/wiki).
-- A demonstration of the new magnon module can be found in the [*Tutorials* section](https://github.com/ILLGrenoble/takin/wiki/Magnon-Convolution-Tutorial).
+- A tutorial for the new magnon calculation module can be found in the [here](https://github.com/ILLGrenoble/takin/wiki/Exercises-for-MDanse-2024).
 
 
 ## Repository
