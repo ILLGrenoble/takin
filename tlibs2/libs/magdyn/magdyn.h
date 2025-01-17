@@ -407,6 +407,11 @@ public:
 	std::tuple<t_Jmap, t_Jmap> CalcReciprocalJs(const t_vec_real& Qvec) const;
 
 	/**
+	 * sort eigenstates by their energies
+	 */
+	void SortByEnergies(SofQE& S) const;
+
+	/**
 	 * get the hamiltonian at the given momentum
 	 * @note implements the formalism given by (Toth 2015)
 	 * @note a first version for a simplified ferromagnetic dispersion was based on (Heinsdorf 2021)

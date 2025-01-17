@@ -568,19 +568,25 @@ void Dispersion3DDlg::Calculate()
 	std::vector<t_taskptr> tasks;
 	tasks.reserve(m_Q_count_1 * m_Q_count_2);
 
+	t_size expected_bands = dyn.GetMagneticSitesCount() * 2;
+	if(dyn.IsIncommensurate())
+		expected_bands *= 3;
+	m_data.resize(expected_bands);
+
 	for(t_size Q_idx_1 = 0; Q_idx_1 < m_Q_count_1; ++Q_idx_1)
 	for(t_size Q_idx_2 = 0; Q_idx_2 < m_Q_count_2; ++Q_idx_2)
 	{
 		auto task = [this, &mtx, &dyn, Q_idx_1, Q_idx_2,
-			&Q_origin, &Q_step_1, &Q_step_2,
-			use_weights, use_projector, min_S]()
+			&Q_origin, &Q_step_1, &Q_step_2, expected_bands,
+			unite_degen, use_weights, use_projector, min_S]()
 		{
 			// calculate the dispersion at the given Q point
 			t_vec_real Q = Q_origin + Q_step_1*t_real(Q_idx_1) + Q_step_2*t_real(Q_idx_2);
 			auto Es_and_S = dyn.CalcEnergies(Q, !use_weights).E_and_S;
 
 			// iterate the energies for this Q point
-			for(t_size band_idx = 0; band_idx < Es_and_S.size(); ++band_idx)
+			t_size data_band_idx = 0;
+			for(t_size band_idx = 0; band_idx < Es_and_S.size() && data_band_idx < expected_bands; ++band_idx, ++data_band_idx)
 			{
 				const auto& E_and_S = Es_and_S[band_idx];
 
@@ -623,25 +629,38 @@ void Dispersion3DDlg::Calculate()
 						degeneracy += Es_and_S[band_idx2].degeneracy;
 				}
 
+				/*if(degeneracy > 1)
+				{
+					std::cout << "degenerate point: Q indices: " << Q_idx_1 << " " << Q_idx_2
+						<< ", band index: " << band_idx << " (" << data_band_idx
+						<< "): " << E << " meV (" << degeneracy << "x)" << std::endl;
+				}*/
+
 				// generate and add data point
 				t_data_Q dat{std::make_tuple(Q, E, weight, Q_idx_1, Q_idx_2, degeneracy, valid)};
 
 				std::lock_guard<std::mutex> _lck{mtx};
-				if(m_data.size() < Es_and_S.size())
-					m_data.resize(Es_and_S.size());
-				m_data[band_idx].emplace_back(std::move(dat));
+				m_data[data_band_idx].emplace_back(std::move(dat));
+
+				if(unite_degen && degeneracy > 1)
+				{
+					// skip degeneracies to keep matching bands together
+					for(t_size band_idx2 = data_band_idx + 1; band_idx2 < data_band_idx + degeneracy; ++band_idx2)
+						m_data[band_idx2].emplace_back(std::make_tuple(Q, 0., 0., Q_idx_1, Q_idx_2, 1, false));
+
+					data_band_idx += degeneracy - 1;
+
+					// TODO: move degenerate point to the band where most of the other points are
+				}
 			}
 
 			// fill up band data in case some indices were skipped due to invalid hamiltonians
-			t_size expected_bands = dyn.GetMagneticSitesCount() * 2;
-			for(t_size band_idx = Es_and_S.size(); band_idx < expected_bands; ++band_idx)
+			for(; data_band_idx < expected_bands; ++data_band_idx)
 			{
 				t_data_Q dat{std::make_tuple(Q, 0., 0., Q_idx_1, Q_idx_2, 1, false)};
 
 				std::lock_guard<std::mutex> _lck{mtx};
-				if(m_data.size() < expected_bands)
-					m_data.resize(expected_bands);
-				m_data[band_idx].emplace_back(std::move(dat));
+				m_data[data_band_idx].emplace_back(std::move(dat));
 			}
 		};
 
@@ -685,6 +704,15 @@ void Dispersion3DDlg::Calculate()
 		ostrMsg << " finished ";
 	ostrMsg << "after " << stopwatch.GetDur() << " s.";
 	m_status->setText(ostrMsg.str().c_str());
+
+	// remove fully invalid bands
+	for(auto iter = m_data.begin(); iter != m_data.end();)
+	{
+		if(!IsValid(*iter))
+			iter = m_data.erase(iter);
+		else
+			++iter;
+	}
 
 	// get sorting of data by Q
 	for(t_size band_idx = 0; band_idx < m_data.size(); ++band_idx)
@@ -730,6 +758,59 @@ void Dispersion3DDlg::Calculate()
 	});
 
 	Plot(true);
+}
+
+
+
+/**
+ * count number of bands with positive energies (should be half of all bands)
+ */
+t_size Dispersion3DDlg::NumPositive() const
+{
+	t_size num_pos = 0;
+
+	for(const t_data_Qs& band : m_data)
+	{
+		if(IsPositive(band))
+			++num_pos;
+	}
+
+	return num_pos;
+}
+
+
+
+/**
+ * determine if a band only contains positive energies
+ */
+bool Dispersion3DDlg::IsPositive(const t_data_Qs& data) const
+{
+	for(const t_data_Q& data : data)
+	{
+		t_real E = std::get<1>(data);
+		if(E < 0.)
+			return false;
+	}
+
+	return true;
+}
+
+
+
+/**
+ * determine if a band is valid or only contains invalid points
+ */
+bool Dispersion3DDlg::IsValid(const t_data_Qs& data) const
+{
+	for(const t_data_Q& data : data)
+	{
+		// data point valid?
+		if(std::get<6>(data))
+			return true;
+	}
+
+	// all points invalid
+	return false;
 }
 
 
@@ -824,7 +905,10 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 	// plot the magnon bands
 	t_size num_bands = m_data.size();
 	if(m_only_pos_E->isChecked())
-		num_bands /= 2;
+	{
+		num_bands = NumPositive();
+		//num_bands /= 2;
+	}
 	t_size num_active_bands = 0;
 	for(t_size band_idx = 0; band_idx < num_bands; ++band_idx)
 	{
@@ -1282,7 +1366,7 @@ void Dispersion3DDlg::WriteHeader(std::ostream& ostr) const
  */
 void Dispersion3DDlg::SaveData()
 {
-	bool skip_invalid_points = true;
+	bool skip_invalid_points = false;
 	bool use_weights = m_S_filter_enable->isChecked();
 
 	if(m_data.size() == 0)
@@ -1316,6 +1400,8 @@ void Dispersion3DDlg::SaveData()
 	ofstr << std::setw(field_len) << std::left << "k" << " ";
 	ofstr << std::setw(field_len) << std::left << "l" << " ";
 	ofstr << std::setw(field_len) << std::left << "E" << " ";
+	if(!skip_invalid_points)
+		ofstr << std::setw(field_len) << std::left << "valid" << " ";
 	if(use_weights)
 		ofstr << std::setw(field_len) << std::left << "S" << " ";
 	ofstr << std::setw(field_len) << std::left << "band" << " ";
@@ -1343,6 +1429,8 @@ void Dispersion3DDlg::SaveData()
 			ofstr << std::setw(field_len) << std::left << Q[1] << " ";
 			ofstr << std::setw(field_len) << std::left << Q[2] << " ";
 			ofstr << std::setw(field_len) << std::left << E << " ";
+			if(!skip_invalid_points)
+				ofstr << std::setw(field_len) << std::left << valid << " ";
 			if(use_weights)
 				ofstr << std::setw(field_len) << std::left << S << " ";
 			ofstr << std::setw(field_len) << std::left << band_idx << " ";

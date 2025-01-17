@@ -390,6 +390,24 @@ MAGDYN_TYPE::SofQE MAGDYN_INST::CalcEnergiesFromHamiltonian(
 
 	return S;
 }
+
+
+
+/**
+ * sort states by energies
+ */
+MAGDYN_TEMPL
+void MAGDYN_INST::SortByEnergies(MAGDYN_TYPE::SofQE& S) const
+{
+	// get the sorting of the energies
+	const std::vector<t_size> sorting = tl2::get_perm(S.E_and_S.size(),
+		[&S](t_size idx1, t_size idx2) -> bool
+	{
+		return S.E_and_S[idx1].E >= S.E_and_S[idx2].E;
+	});
+
+	S.E_and_S = tl2::reorder(S.E_and_S, sorting);
+}
 // --------------------------------------------------------------------
 
 #endif

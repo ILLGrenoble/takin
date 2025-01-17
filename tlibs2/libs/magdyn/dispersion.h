@@ -163,6 +163,8 @@ MAGDYN_INST::CalcEnergies(const t_vec_real& Q_rlu, bool only_energies) const
 			S.E_and_S.emplace_back(std::move(EandW));
 		for(EnergyAndWeight& EandW : S_m.E_and_S)
 			S.E_and_S.emplace_back(std::move(EandW));
+
+		SortByEnergies(S);
 	}
 
 	if(!only_energies)

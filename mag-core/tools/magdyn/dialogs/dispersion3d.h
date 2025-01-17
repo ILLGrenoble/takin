@@ -82,6 +82,9 @@ protected:
 	void Plot(bool clear_settings = true);
 
 	// calculation helper functions
+	t_size NumPositive() const;
+	bool IsPositive(const t_data_Qs& data) const;
+	bool IsValid(const t_data_Qs& data) const;
 	t_real GetMeanEnergy(const t_data_Qs& data) const;
 	t_real GetMeanEnergy(t_size band_idx) const;
 	std::tuple<t_vec_real, t_vec_real, t_vec_real> GetQVectors() const;
