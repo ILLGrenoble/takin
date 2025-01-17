@@ -1366,7 +1366,7 @@ void Dispersion3DDlg::WriteHeader(std::ostream& ostr) const
  */
 void Dispersion3DDlg::SaveData()
 {
-	bool skip_invalid_points = false;
+	bool skip_invalid_points = true;
 	bool use_weights = m_S_filter_enable->isChecked();
 
 	if(m_data.size() == 0)
