@@ -120,12 +120,16 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	QAction *acCentre = new QAction("Centre Camera", m_context);
 	QAction *acSaveData = new QAction("Save Data...", m_context);
 	QAction *acSaveScript = new QAction("Save Data As Script...", m_context);
+	QAction *acSaveImage = new QAction("Save Image...", m_context);
 	acSaveData->setIcon(QIcon::fromTheme("text-x-generic"));
 	acSaveScript->setIcon(QIcon::fromTheme("text-x-script"));
+	acSaveImage->setIcon(QIcon::fromTheme("image-x-generic"));
 	m_context->addAction(acCentre);
 	m_context->addSeparator();
 	m_context->addAction(acSaveData);
 	m_context->addAction(acSaveScript);
+	m_context->addSeparator();
+	m_context->addAction(acSaveImage);
 
 	// context menu for sites
 	m_context_band = new QMenu(this);
@@ -135,6 +139,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	m_context_band->addSeparator();
 	m_context_band->addAction(acSaveData);
 	m_context_band->addAction(acSaveScript);
+	m_context_band->addSeparator();
+	m_context_band->addAction(acSaveImage);
 
 	// Q coordinates
 	QGroupBox *groupQ = new QGroupBox("Dispersion", this);
@@ -368,6 +374,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(acCentre, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCamera);
 	connect(acSaveData, &QAction::triggered, this, &Dispersion3DDlg::SaveData);
 	connect(acSaveScript, &QAction::triggered, this, &Dispersion3DDlg::SaveScript);
+	connect(acSaveImage, &QAction::triggered, this, &Dispersion3DDlg::SaveImage);
 	connect(btnSaveData, &QAbstractButton::clicked, this, &Dispersion3DDlg::SaveData);
 	connect(btnSaveScript, &QAbstractButton::clicked, this, &Dispersion3DDlg::SaveScript);
 
@@ -476,7 +483,7 @@ void Dispersion3DDlg::FromMainQ()
 
 
 
-void Dispersion3DDlg::ShowError(const char* msg)
+void Dispersion3DDlg::ShowError(const QString& msg)
 {
 	QMessageBox::critical(this, windowTitle() + " -- Error", msg);
 }
@@ -1431,8 +1438,7 @@ void Dispersion3DDlg::SaveData()
 	std::ofstream ofstr(filename.toStdString());
 	if(!ofstr)
 	{
-		ShowError(QString("Could not save data to file \"%1\".")
-			.arg(filename).toStdString().c_str());
+		ShowError(QString("Could not save data to file \"%1\".").arg(filename));
 		return;
 	}
 
@@ -1517,8 +1523,7 @@ void Dispersion3DDlg::SaveScript()
 	std::ofstream ofstr(filename.toStdString());
 	if(!ofstr)
 	{
-		ShowError(QString("Could not save data to file \"%1\".")
-			.arg(filename).toStdString().c_str());
+		ShowError(QString("Could not save data to file \"%1\".").arg(filename));
 		return;
 	}
 
@@ -1722,4 +1727,29 @@ if __name__ == "__main__":
 	algo::replace_all(pyscr, "%%Q_IDX_2%%", tl2::var_to_str(Q_idx_2, g_prec));
 
 	ofstr << pyscr << std::endl;
+}
+
+
+
+/**
+ * save an image of the plot
+ */
+void Dispersion3DDlg::SaveImage()
+{
+	if(!m_dispplot)
+		return;
+
+	QString dirLast;
+	if(m_sett)
+		dirLast = m_sett->value("dispersion3d/dir", "").toString();
+	QString filename = QFileDialog::getSaveFileName(
+		this, "Save Plot Image",
+		dirLast, "PNG Files (*.png)");
+	if(filename == "")
+		return;
+	if(m_sett)
+		m_sett->setValue("dispersion3d/dir", QFileInfo(filename).path());
+
+	if(!m_dispplot->grabFramebuffer().save(filename, nullptr, 90))
+		ShowError(QString("Could not save plot image to file \"%1\".").arg(filename));
 }

@@ -31,6 +31,8 @@
 
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 
 #include <unordered_set>
 #include <functional>
@@ -115,7 +117,11 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett)
 	// general context menu
 	m_context = new QMenu(this);
 	QAction *acCentre = new QAction("Centre Camera", m_context);
+	QAction *acSaveImage = new QAction("Save Image...", m_context);
+	acSaveImage->setIcon(QIcon::fromTheme("image-x-generic"));
 	m_context->addAction(acCentre);
+	m_context->addSeparator();
+	m_context->addAction(acSaveImage);
 
 	// context menu for sites
 	m_context_site = new QMenu(this);
@@ -127,6 +133,8 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett)
 	m_context_site->addSeparator();
 	m_context_site->addAction(acCentre);
 	m_context_site->addAction(acCentreOnObject);
+	m_context_site->addSeparator();
+	m_context_site->addAction(acSaveImage);
 
 	// context menu for terms
 	m_context_term = new QMenu(this);
@@ -135,6 +143,8 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett)
 	m_context_term->addSeparator();
 	m_context_term->addAction(acCentre);
 	m_context_term->addAction(acCentreOnObject);
+	m_context_term->addSeparator();
+	m_context_term->addAction(acSaveImage);
 
 	int y = 0;
 	auto grid = new QGridLayout(this);
@@ -170,6 +180,7 @@ StructPlotDlg::StructPlotDlg(QWidget *parent, QSettings *sett)
 	connect(acDelTerm, &QAction::triggered, this, &StructPlotDlg::DeleteItem);
 	connect(acCentreOnObject, &QAction::triggered, this, &StructPlotDlg::CentreCameraOnObject);
 	connect(acCentre, &QAction::triggered, this, &StructPlotDlg::CentreCamera);
+	connect(acSaveImage, &QAction::triggered, this, &StructPlotDlg::SaveImage);
 	connect(m_coordcross, &QCheckBox::toggled, this, &StructPlotDlg::ShowCoordCross);
 	connect(m_labels, &QCheckBox::toggled, this, &StructPlotDlg::ShowLabels);
 	connect(m_perspective, &QCheckBox::toggled, this, &StructPlotDlg::SetPerspectiveProjection);
@@ -867,4 +878,36 @@ void StructPlotDlg::Sync()
 
 	CentreCamera();
 	m_structplot->update();
+}
+
+
+
+/**
+ * save an image of the structure plot
+ */
+void StructPlotDlg::SaveImage()
+{
+	if(!m_structplot)
+		return;
+
+	QString dirLast;
+	if(m_sett)
+		dirLast = m_sett->value("struct_view/dir", "").toString();
+	QString filename = QFileDialog::getSaveFileName(
+		this, "Save Structure Plot Image",
+		dirLast, "PNG Files (*.png)");
+	if(filename == "")
+		return;
+	if(m_sett)
+		m_sett->setValue("struct_view/dir", QFileInfo(filename).path());
+
+	if(!m_structplot->grabFramebuffer().save(filename, nullptr, 90))
+		ShowError(QString("Could not save structure plot image to file \"%1\".").arg(filename));
+}
+
+
+
+void StructPlotDlg::ShowError(const QString& msg)
+{
+	QMessageBox::critical(this, windowTitle() + " -- Error", msg);
 }

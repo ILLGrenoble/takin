@@ -91,7 +91,7 @@ protected:
 	std::tuple<t_vec_real, t_vec_real, t_vec_real> GetQVectors() const;
 	std::array<int, 3> GetBranchColour(t_size branch_idx, t_size num_branches) const;
 	void FromMainQ();
-	void ShowError(const char* msg);
+	void ShowError(const QString& msg);
 
 	// band table functions
 	void ClearBands();
@@ -102,6 +102,7 @@ protected:
 	void WriteHeader(std::ostream& ostr) const;
 	void SaveData();
 	void SaveScript();
+	void SaveImage();
 
 	// ------------------------------------------------------------------------
 	// plotter interface

@@ -85,6 +85,8 @@ public:
 
 
 protected:
+	void ShowError(const QString& msg);
+
 	void MouseClick(bool left, bool mid, bool right);
 	void MouseDown(bool left, bool mid, bool right);
 	void MouseUp(bool left, bool mid, bool right);
@@ -109,6 +111,8 @@ protected:
 
 	void HighlightSite(const std::string& name);
 	void HighlightTerm(const std::string& name);
+
+	void SaveImage();
 
 	virtual void accept() override;
 
