@@ -649,8 +649,6 @@ void Dispersion3DDlg::Calculate()
 						m_data[band_idx2].emplace_back(std::make_tuple(Q, 0., 0., Q_idx_1, Q_idx_2, 1, false));
 
 					data_band_idx += degeneracy - 1;
-
-					// TODO: move degenerate point to the band where most of the other points are
 				}
 			}
 
@@ -691,28 +689,8 @@ void Dispersion3DDlg::Calculate()
 		m_progress->setValue(task_idx + 1);
 	}
 
+	// finish parallel calculations
 	pool.join();
-	stopwatch.stop();
-
-	// show elapsed time
-	std::ostringstream ostrMsg;
-	ostrMsg.precision(g_prec_gui);
-	ostrMsg << "Dispersion calculation";
-	if(m_stop_requested)
-		ostrMsg << " stopped ";
-	else
-		ostrMsg << " finished ";
-	ostrMsg << "after " << stopwatch.GetDur() << " s.";
-	m_status->setText(ostrMsg.str().c_str());
-
-	// remove fully invalid bands
-	for(auto iter = m_data.begin(); iter != m_data.end();)
-	{
-		if(!IsValid(*iter))
-			iter = m_data.erase(iter);
-		else
-			++iter;
-	}
 
 	// get sorting of data by Q
 	for(t_size band_idx = 0; band_idx < m_data.size(); ++band_idx)
@@ -751,11 +729,57 @@ void Dispersion3DDlg::Calculate()
 		m_data[band_idx] = tl2::reorder(m_data[band_idx], perm);
 	}
 
+	// move degenerate points to the bands where most of the other points are
+	if(unite_degen && m_data.size())
+	{
+		for(t_size band_idx = 0; band_idx < m_data.size() - 1; ++band_idx)
+		{
+			t_data_Qs& band1 = m_data[band_idx];
+			t_data_Qs& band2 = m_data[band_idx + 1];
+			if(band1.size() != band2.size())
+				continue;
+
+			auto [_valid1, invalid1] = NumValid(band1);
+			auto [_valid2, invalid2] = NumValid(band2);
+
+			for(t_size Q_idx = 0; Q_idx < band1.size(); ++Q_idx)
+			{
+				t_size degen1 = std::get<5>(band1[Q_idx]);
+				bool valid1 = std::get<6>(band1[Q_idx]);
+				bool valid2 = std::get<6>(band2[Q_idx]);
+
+				if(degen1 > 1 && valid1 && !valid2 && invalid1 > invalid2)
+					std::swap(band1[Q_idx], band2[Q_idx]);
+			}
+		}
+	}
+
+	// remove fully invalid bands
+	for(auto iter = m_data.begin(); iter != m_data.end();)
+	{
+		if(!IsValid(*iter))
+			iter = m_data.erase(iter);
+		else
+			++iter;
+	}
+
 	// sort band energies in descending order
 	std::stable_sort(m_data.begin(), m_data.end(), [this](const t_data_Qs& dat1, const t_data_Qs& dat2)
 	{
 		return GetMeanEnergy(dat1) >= GetMeanEnergy(dat2);
 	});
+
+	// show elapsed time
+	stopwatch.stop();
+	std::ostringstream ostrMsg;
+	ostrMsg.precision(g_prec_gui);
+	ostrMsg << "Dispersion calculation";
+	if(m_stop_requested)
+		ostrMsg << " stopped ";
+	else
+		ostrMsg << " finished ";
+	ostrMsg << "after " << stopwatch.GetDur() << " s.";
+	m_status->setText(ostrMsg.str().c_str());
 
 	Plot(true);
 }
@@ -811,6 +835,27 @@ bool Dispersion3DDlg::IsValid(const t_data_Qs& data) const
 
 	// all points invalid
 	return false;
+}
+
+
+
+/**
+ * count the number of valid and invalid points in a band
+ */
+std::pair<t_size, t_size> Dispersion3DDlg::NumValid(const t_data_Qs& data) const
+{
+	t_size valid = 0, invalid = 0;
+
+	for(const t_data_Q& data : data)
+	{
+		// data point valid?
+		if(std::get<6>(data))
+			++valid;
+		else
+			++invalid;
+	}
+
+	return std::make_pair(valid, invalid);
 }
 
 
