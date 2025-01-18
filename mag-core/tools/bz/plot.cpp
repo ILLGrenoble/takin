@@ -30,6 +30,7 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStyle>
+#include <QtWidgets/QFileDialog>
 
 #include <sstream>
 
@@ -89,6 +90,12 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 	m_plot->setSizePolicy(QSizePolicy{QSizePolicy::Expanding, QSizePolicy::Expanding});
 	//labCoordSys->setSizePolicy(QSizePolicy{QSizePolicy::Fixed, QSizePolicy::Fixed});
 
+	// plot context menu
+	m_context = new QMenu(this);
+	QAction *acSaveImage = new QAction("Save Image...", m_context);
+	acSaveImage->setIcon(QIcon::fromTheme("image-x-generic"));
+	m_context->addAction(acSaveImage);
+
 	auto grid = new QGridLayout(this);
 	grid->setSpacing(2);
 	grid->setContentsMargins(4, 4, 4, 4);
@@ -107,6 +114,7 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 		this, &BZPlotDlg::AfterGLInitialisation);
 	connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection,
 		this, &BZPlotDlg::PickerIntersection);
+	connect(m_plot.get(), &tl2::GlPlot::MouseClick, this, &BZPlotDlg::PlotMouseClick);
 	connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &BZPlotDlg::PlotMouseDown);
 	connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, &BZPlotDlg::PlotMouseUp);
 	connect(m_show_coordcross_lab, &QCheckBox::toggled, this, &BZPlotDlg::ShowCoordCrossLab);
@@ -121,8 +129,8 @@ BZPlotDlg::BZPlotDlg(QWidget* parent, QSettings *sett, QLabel **infos)
 		if(this->m_plot)
 			this->m_plot->GetRenderer()->SetCoordSys(val);
 	});*/
+	connect(acSaveImage, &QAction::triggered, this, &BZPlotDlg::SaveImage);
 	connect(okbtn, &QAbstractButton::clicked, this, &QDialog::accept);
-
 
 	if(m_sett && m_sett->contains("3dview/geo"))
 		restoreGeometry(m_sett->value("3dview/geo").toByteArray());
@@ -444,6 +452,23 @@ void BZPlotDlg::SetStatusMsg(const std::string& msg)
 }
 
 
+/**
+ * mouse button clicked
+ */
+void BZPlotDlg::PlotMouseClick(
+	[[maybe_unused]] bool left,
+	[[maybe_unused]] bool mid,
+	[[maybe_unused]] bool right)
+{
+	if(right)
+	{
+		const QPointF& _pt = m_plot->GetRenderer()->GetMousePosition();
+		QPoint pt = m_plot->mapToGlobal(_pt.toPoint());
+
+		m_context->popup(pt);
+	}
+}
+
 
 /**
  * mouse button pressed
@@ -453,9 +478,6 @@ void BZPlotDlg::PlotMouseDown(
 	[[maybe_unused]] bool mid,
 	[[maybe_unused]] bool right)
 {
-	if(left && m_curPickedObj > 0)
-	{
-	}
 }
 
 
@@ -495,4 +517,27 @@ void BZPlotDlg::AfterGLInitialisation()
 		m_labelGlInfos[2]->setText(QString("GL Vendor: ") + strGlVendor.c_str() + QString("."));
 		m_labelGlInfos[3]->setText(QString("GL Device: ") + strGlRenderer.c_str() + QString("."));
 	}
+}
+
+
+/**
+ * save an image of the brillouin zone
+ */
+void BZPlotDlg::SaveImage()
+{
+	if(!m_plot)
+		return;
+
+	QString dirLast;
+	if(m_sett)
+		dirLast = m_sett->value("3dview/dir", "").toString();
+	QString filename = QFileDialog::getSaveFileName(
+		this, "Save Brillouin Zone Image",
+		dirLast, "PNG Files (*.png)");
+	if(filename == "")
+		return;
+	if(m_sett)
+		m_sett->setValue("3dview/dir", QFileInfo(filename).path());
+
+	m_plot->grabFramebuffer().save(filename, nullptr, 90);
 }

@@ -31,6 +31,7 @@
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QMenu>
 #include <QtCore/QSettings>
 
 #include <memory>
@@ -68,12 +69,15 @@ protected:
 	void ShowPlane(bool show);
 	void ShowQVertices(bool show);
 
+	void PlotMouseClick(bool left, bool mid, bool right);
 	void PlotMouseDown(bool left, bool mid, bool right);
 	void PlotMouseUp(bool left, bool mid, bool right);
 	void PickerIntersection(const t_vec3_gl* pos,
 		std::size_t objIdx, std::size_t triagIdx,
 		const t_vec3_gl* posSphere);
 	void AfterGLInitialisation();
+
+	void SaveImage();
 
 	virtual void closeEvent(QCloseEvent *evt) override;
 
@@ -94,6 +98,8 @@ private:
 	QCheckBox *m_show_labels = nullptr;
 	QCheckBox *m_show_plane = nullptr;
 	QCheckBox *m_show_Qs = nullptr;
+
+	QMenu *m_context{};                       // plot context menu
 
 	long m_curPickedObj = -1;                 // current 3d bz object
 	std::vector<std::size_t> m_objsBragg{};   // Bragg peak plot objects
