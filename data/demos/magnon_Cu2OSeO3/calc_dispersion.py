@@ -43,6 +43,7 @@ only_positive_energies = True   # ignore magnon annihilation?
 max_threads            = 0      # number of worker threads, 0: automatic determination
 num_Q_points           = 256    # number of Qs on a dispersion branch
 show_dividers          = False  # show vertical bars between dispersion branches
+show_markers           = False  # mark scan positions
 use_custom_labels      = True   # show custom dispersion labels (branch_labels)
 use_colours            = True   # use dispersion colours (branch_colours)
 S_scale                = 64.    # weight scaling and clamp factors
@@ -63,10 +64,17 @@ pt_M3 = numpy.array([ 0.0, 0.5, 0.5 ])
 pt_R  = numpy.array([ 0.5, 0.5, 0.5 ])
 
 # dispersion branches to plot
-dispersion = [ pt_G, pt_X1, pt_M1, pt_R ]
-
-branch_labels = [ "Γ", "X", "M", "R" ]
+dispersion     = [ pt_G, pt_X1, pt_M1, pt_R ]
+branch_labels  = [ "Γ", "X", "M", "R" ]
 branch_colours = [ "#ffffff", "#eeeeee", "#ffffff" ]
+
+# scan markers
+marker_colour = "#00000055"
+marker_Qs     = [ [ ], [ 0.25 ], [ ] ]
+marker_dQs    = [ 0.025, 0.025, 0.025 ]
+marker_Es     = [ [ ], [ 9 ], [ ] ]
+marker_dEs    = [ [ ], [ 7 ], [ ] ]
+marker_labels = [ [ ], [ "(a)" ], [ ] ]
 
 width_ratios = []                   # lengths from one dispersion point to the next
 num_branches = len(dispersion) - 1  # number of dispersion braches
@@ -263,6 +271,21 @@ def plot_disp(data, dispersion_plot_indices):
 
 		# plot the dispersion branch
 		axes[branch_idx].scatter(data_x, data_E, marker = '.', s = data_S)
+
+		if show_markers:
+			for marker_Q, marker_E, marker_dE, marker_label in zip(marker_Qs[branch_idx], \
+				marker_Es[branch_idx], marker_dEs[branch_idx], marker_labels[branch_idx]):
+				# scan marker
+				axes[branch_idx].add_patch(plot.Rectangle(
+					(marker_Q - marker_dQs[branch_idx]*0.5, marker_E - marker_dE*0.5),
+					marker_dQs[branch_idx], marker_dE,
+					color = marker_colour))
+
+				# marker label
+				axes[branch_idx].annotate(marker_label, xy = (
+					marker_Q - marker_dQs[branch_idx]*0.5,
+					marker_E - marker_dE*0.6))
+
 
 	plt.tight_layout()
 	plt.subplots_adjust(wspace = 0)
