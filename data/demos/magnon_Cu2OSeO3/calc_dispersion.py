@@ -277,8 +277,9 @@ def plot_disp(data, dispersion_plot_indices):
 				marker_Es[branch_idx], marker_dEs[branch_idx], marker_labels[branch_idx]):
 				# scan marker
 				axes[branch_idx].add_patch(plot.Rectangle(
-					(marker_Q - marker_dQs[branch_idx]*0.5, marker_E - marker_dE*0.5),
-					marker_dQs[branch_idx], marker_dE,
+					xy = (marker_Q - marker_dQs[branch_idx]*0.5,
+						marker_E - marker_dE*0.5),
+					width = marker_dQs[branch_idx], height = marker_dE,
 					color = marker_colour))
 
 				# marker label
