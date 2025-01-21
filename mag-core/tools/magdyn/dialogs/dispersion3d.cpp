@@ -1563,6 +1563,9 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 			"azim" : %%AZIMUTH%%, "elev" : %%ELEVATION%% })
 
 	# iterate energy branches
+	Q1_minmax = [ +999999999., -999999999. ]
+	Q2_minmax = [ +999999999., -999999999. ]
+	E_minmax  = [ +999999999., -999999999. ]
 	E_branch_eff_idx = 0             # effective index of actually plotted bands
 	E_branch_max = max(branch_data)  # maximum branch index
 	for E_branch_idx in range(0, E_branch_max + 1):
@@ -1596,8 +1599,16 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 			data_E = [ E for (E, S) in zip(data_E, data_S) if S >= S_filter_min ]
 			data_S = [ S for S in data_S if S >= S_filter_min ]
 
-		if(len(data_E) < 1):
+		if len(data_E) < 1:
 			continue
+
+		# data ranges
+		Q1_minmax[0] = numpy.min([ numpy.min(data_Q[0]), Q1_minmax[0] ])
+		Q1_minmax[1] = numpy.max([ numpy.max(data_Q[0]), Q1_minmax[1] ])
+		Q2_minmax[0] = numpy.min([ numpy.min(data_Q[1]), Q2_minmax[0] ])
+		Q2_minmax[1] = numpy.max([ numpy.max(data_Q[1]), Q2_minmax[1] ])
+		E_minmax[0] = numpy.min([ numpy.min(data_E), E_minmax[0] ])
+		E_minmax[1] = numpy.max([ numpy.max(data_E), E_minmax[1] ])
 
 		axis.plot_trisurf(data_Q[0], data_Q[1], data_E,
 			color = branch_colours[colour_idx], alpha = 1., shade = True,
@@ -1608,6 +1619,11 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 	axis.set_xlabel(labels[Q_idx1])
 	axis.set_ylabel(labels[Q_idx2])
 	axis.set_zlabel("E (meV)")
+
+	axis.set_xlim([Q1_minmax[0], Q1_minmax[1]])
+	axis.set_ylim([Q2_minmax[0], Q2_minmax[1]])
+	axis.set_zlim([E_minmax[0], E_minmax[1]])
+	axis.set_box_aspect([ 1., 1., 1. ])
 
 	plt.tight_layout()
 	plt.subplots_adjust(wspace = 0)
@@ -1709,7 +1725,7 @@ if __name__ == "__main__":
 		}
 	}
 
-	// TODO: for the moment the azimuth only matches for the [100], [010] Q directions -> add a trafo
+	// TODO: for the moment the azimuth only matches for Q directions in a right-handed system -> add a trafo
 	algo::replace_all(pyscr, "%%H_DATA%%", "[ " + h_data.str() + "]");
 	algo::replace_all(pyscr, "%%K_DATA%%", "[ " + k_data.str() + "]");
 	algo::replace_all(pyscr, "%%L_DATA%%", "[ " + l_data.str() + "]");
