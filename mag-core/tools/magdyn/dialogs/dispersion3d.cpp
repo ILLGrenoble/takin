@@ -1534,6 +1534,7 @@ void Dispersion3DDlg::SaveScript()
 	// plot script
 	std::string pyscr = R"RAW(import sys
 import numpy
+import matplotlib.colors as colors
 import matplotlib.pyplot as pyplot
 pyplot.rcParams.update({
 	"font.sans-serif" : "DejaVu Sans",
@@ -1561,6 +1562,7 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 		subplot_kw = { "projection" : "3d", "proj_type" : "%%PROJ_TYPE%%",
 			"computed_zorder" : False,
 			"azim" : %%AZIMUTH%%, "elev" : %%ELEVATION%% })
+	light = colors.LightSource(azdeg = %%AZIMUTH%%, altdeg = 45.)
 
 	# iterate energy branches
 	Q1_minmax = [ +999999999., -999999999. ]
@@ -1612,7 +1614,8 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 
 		axis.plot_trisurf(data_Q[0], data_Q[1], data_E,
 			color = branch_colours[colour_idx], alpha = 1., shade = True,
-			antialiased = False, zorder = E_branch_max - E_branch_idx)
+			lightsource = light, antialiased = False,
+			zorder = E_branch_max - E_branch_idx)
 		E_branch_eff_idx += 1
 
 	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
