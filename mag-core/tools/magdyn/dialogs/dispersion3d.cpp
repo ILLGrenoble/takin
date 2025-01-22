@@ -1539,7 +1539,7 @@ import matplotlib.pyplot as pyplot
 pyplot.rcParams.update({
 	"font.sans-serif" : "DejaVu Sans",
 	"font.family" : "sans-serif",
-	"font.size" : 12,
+	"font.size" : 16,
 })
 
 # -----------------------------------------------------------------------------
@@ -1619,9 +1619,9 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 		E_branch_eff_idx += 1
 
 	labels = [ "h (rlu)", "k (rlu)", "l (rlu)" ]
-	axis.set_xlabel(labels[Q_idx1])
-	axis.set_ylabel(labels[Q_idx2])
-	axis.set_zlabel("E (meV)")
+	axis.set_xlabel(labels[Q_idx1], labelpad = 12)
+	axis.set_ylabel(labels[Q_idx2], labelpad = 12)
+	axis.set_zlabel("E (meV)", labelpad = 12)
 
 	axis.set_xlim([Q1_minmax[0], Q1_minmax[1]])
 	axis.set_ylim([Q2_minmax[0], Q2_minmax[1]])
@@ -1629,7 +1629,7 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 	axis.set_box_aspect([ 1., 1., 1. ])
 
 	plt.tight_layout()
-	plt.subplots_adjust(wspace = 0)
+	plt.subplots_adjust(wspace = 0, bottom = 0.15)
 
 	if plot_file != "":
 		pyplot.savefig(plot_file)
