@@ -1560,7 +1560,7 @@ def plot_disp(data, branch_data, degen_data, branch_colours, Q_idx1 = 0, Q_idx2 
 	(plt, axis) = pyplot.subplots(nrows = 1, ncols = 1,
 		width_ratios = None, sharey = True,
 		subplot_kw = { "projection" : "3d", "proj_type" : "%%PROJ_TYPE%%",
-			"computed_zorder" : False,
+			%%FOCAL_LEN%% "computed_zorder" : False,
 			"azim" : %%AZIMUTH%%, "elev" : %%ELEVATION%% })
 	light = colors.LightSource(azdeg = %%AZIMUTH%%, altdeg = 45.)
 
@@ -1728,6 +1728,15 @@ if __name__ == "__main__":
 		}
 	}
 
+	std::ostringstream focal_len;
+	focal_len.precision(g_prec);
+	if(m_perspective->isChecked())
+	{
+		// see: https://en.wikipedia.org/wiki/Focal_length
+		focal_len << "\"focal_length\" : 1. / numpy.tan(0.5 * "
+			<< g_structplot_fov << "/180.*numpy.pi),\n";
+	}
+
 	// TODO: for the moment the azimuth only matches for Q directions in a right-handed system -> add a trafo
 	algo::replace_all(pyscr, "%%H_DATA%%", "[ " + h_data.str() + "]");
 	algo::replace_all(pyscr, "%%K_DATA%%", "[ " + k_data.str() + "]");
@@ -1740,6 +1749,7 @@ if __name__ == "__main__":
 	algo::replace_all(pyscr, "%%BRANCH_COLOURS%%", "[ " + colours.str() + "]");
 	algo::replace_all(pyscr, "%%ONLY_POS_E%%", m_only_pos_E->isChecked() ? "True " : "False");
 	algo::replace_all(pyscr, "%%PROJ_TYPE%%", m_perspective->isChecked() ? "persp" : "ortho");
+	algo::replace_all(pyscr, "%%FOCAL_LEN%%", focal_len.str());
 	algo::replace_all(pyscr, "%%AZIMUTH%%", tl2::var_to_str(-90. - m_cam_phi->value(), g_prec));
 	algo::replace_all(pyscr, "%%ELEVATION%%", tl2::var_to_str(90. + m_cam_theta->value(), g_prec));
 	algo::replace_all(pyscr, "%%Q_IDX_1%%", tl2::var_to_str(Q_idx_1, g_prec));
