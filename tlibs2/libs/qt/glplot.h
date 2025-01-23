@@ -91,6 +91,7 @@ protected:
 	GLint m_uniConstCol = -1;
 	GLint m_uniLightPos = -1;
 	GLint m_uniNumActiveLights = -1;
+	GLint m_uniLighting = -1;
 	GLint m_uniMatrixProj = -1;
 	GLint m_uniMatrixCam = -1;
 	GLint m_uniMatrixCamInv = -1;
@@ -121,6 +122,7 @@ protected:
 	std::vector<t_vec3_gl> m_lights{};
 	std::vector<GlPlotObj> m_objs{};
 	std::optional<std::size_t> m_coordCrossLab{}, m_coordCrossXtal{};
+	std::optional<std::size_t> m_coordCubeLab{};
 
 	QPointF m_posMouse{};
 	QPointF m_posMouseRotationStart{}, m_posMouseRotationEnd{};
@@ -147,6 +149,9 @@ protected:
 	void DoPaintNonGL(QPainter &painter);
 
 	void tick(const std::chrono::milliseconds& ms);
+
+	std::size_t AddCoordinateCross(t_real_gl min, t_real_gl max);
+	std::size_t AddCoordinateCube(t_real_gl min, t_real_gl max);
 
 	void CollectGarbage();
 
@@ -199,6 +204,9 @@ public:
 		t_real_gl x = 0, t_real_gl y = 0, t_real_gl z = 0,
 		t_real_gl r = 1, t_real_gl g = 1, t_real_gl b = 1, t_real_gl a = 1);
 
+	std::size_t AddCuboid(t_real_gl lx = 1, t_real_gl ly = 1, t_real_gl lz = 1,
+		t_real_gl x = 0, t_real_gl y = 0, t_real_gl z = 0,
+		t_real_gl r = 0, t_real_gl g = 0, t_real_gl b = 0, t_real_gl a = 1);
 	std::size_t AddSphere(t_real_gl rad = 1,
 		t_real_gl x = 0, t_real_gl y = 0, t_real_gl z = 0,
 		t_real_gl r = 0, t_real_gl g = 0, t_real_gl b = 0, t_real_gl a = 1);
@@ -223,7 +231,6 @@ public:
 	std::size_t AddTriangleObject(const std::vector<t_vec3_gl>& triag_verts,
 		const std::vector<t_vec3_gl>& triag_norms,
 		t_real_gl r = 0, t_real_gl g = 0, t_real_gl b = 0, t_real_gl a = 1);
-	std::size_t AddCoordinateCross(t_real_gl min, t_real_gl max);
 
 	void SetObjectMatrix(std::size_t idx, const t_mat_gl& mat);
 	void SetObjectCol(std::size_t idx, t_real_gl r, t_real_gl g, t_real_gl b, t_real_gl a = 1);
@@ -231,8 +238,12 @@ public:
 	void SetObjectDataString(std::size_t idx, const std::string& data);
 	void SetObjectVisible(std::size_t idx, bool visible);
 	void SetObjectIntersectable(std::size_t idx, bool intersect);
-	void SetObjectHighlight(std::size_t idx, bool highlight);
 	void SetObjectPriority(std::size_t idx, int prio);
+	void SetObjectInvariant(std::size_t idx, bool invariant);
+	void SetObjectForceCull(std::size_t idx, bool cull);
+	void SetObjectCullBack(std::size_t idx, bool cull_back);
+	void SetObjectLighting(std::size_t idx, int lighting);
+	void SetObjectHighlight(std::size_t idx, bool highlight);
 	void SetObjectsHighlight(bool highlight);
 
 	const t_mat_gl& GetObjectMatrix(std::size_t idx) const;
@@ -265,8 +276,7 @@ public:
 		m_restrict_cam_theta = b;
 	}
 
-	void SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA = nullptr,
-		bool is_real_space = true);
+	void SetBTrafo(const t_mat_gl& matB, const t_mat_gl* matA = nullptr, bool is_real_space = true);
 	void SetCoordSys(int iSys);
 
 	bool IsInitialised() const
@@ -289,6 +299,13 @@ public:
 		if(xtal)
 			return m_coordCrossXtal;
 		return m_coordCrossLab;
+	}
+
+	std::optional<std::size_t> GetCoordCube(bool xtal = false) const
+	{
+		if(xtal)
+			return std::nullopt;
+		return m_coordCubeLab;
 	}
 
 	void RequestViewportUpdate();

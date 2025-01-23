@@ -120,7 +120,7 @@ protected:
 	void PlotMouseUp(bool left, bool mid, bool right);
 
 	void SetPlotCoordinateSystem(int which);
-	void ShowPlotCoordCross(bool show);
+	void ShowPlotCoordCube(bool show);
 	void ShowPlotLabels(bool show);
 	void SetPlotPerspectiveProjection(bool proj);
 	void SetPlotCameraRotation(t_real_gl phi, t_real_gl theta);
@@ -130,7 +130,7 @@ protected:
 private:
 	t_size m_Q_count_1{}, m_Q_count_2{}; // number of Q points along the two directions
 	t_data_bands m_data{};               // data for all energy bands
-	t_real m_max_E{};                    // maximum band energy
+	std::array<t_real, 2> m_minmax_E{};  // minimum and maximum band energy
 
 	// ------------------------------------------------------------------------
 	// from main dialog

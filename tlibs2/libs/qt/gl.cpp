@@ -240,9 +240,9 @@ bool create_triangle_object(QOpenGLWidget* pGLWidget, GlRenderObj& obj,
 
 		std::vector<t_real_gl> vecCols;
 		vecCols.reserve(4*triagverts.size());
-		for(std::size_t iVert=0; iVert<triagverts.size(); ++iVert)
+		for(std::size_t iVert = 0; iVert < triagverts.size(); ++iVert)
 		{
-			for(int icol=0; icol<obj.m_colour.size(); ++icol)
+			for(int icol = 0; icol < obj.m_colour.size(); ++icol)
 				vecCols.push_back(obj.m_colour[icol]);
 		}
 
@@ -316,7 +316,7 @@ bool create_line_object(QOpenGLWidget* pGLWidget, GlRenderObj& obj,
 
 		for(const t_vec3_gl& vert : verts)
 		{
-			for(int iElem=0; iElem<iElems; ++iElem)
+			for(int iElem = 0; iElem < iElems; ++iElem)
 				vecRet.push_back(vert[iElem]);
 		}
 
@@ -361,9 +361,9 @@ bool create_line_object(QOpenGLWidget* pGLWidget, GlRenderObj& obj,
 
 		std::vector<t_real_gl> vecCols;
 		vecCols.reserve(4*verts.size());
-		for(std::size_t iVert=0; iVert<verts.size(); ++iVert)
+		for(std::size_t iVert = 0; iVert < verts.size(); ++iVert)
 		{
-			for(int icol=0; icol<obj.m_colour.size(); ++icol)
+			for(int icol = 0; icol < obj.m_colour.size(); ++icol)
 				vecCols.push_back(obj.m_colour[icol]);
 		}
 

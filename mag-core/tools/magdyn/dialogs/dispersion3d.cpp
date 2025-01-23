@@ -529,7 +529,8 @@ void Dispersion3DDlg::Calculate()
 	if(!m_dyn)
 		return;
 
-	m_max_E = -std::numeric_limits<t_real>::max();
+	m_minmax_E[0] = +std::numeric_limits<t_real>::max();
+	m_minmax_E[1] = -std::numeric_limits<t_real>::max();
 	m_data.clear();
 
 	BOOST_SCOPE_EXIT(this_)
@@ -623,7 +624,10 @@ void Dispersion3DDlg::Calculate()
 				}
 
 				if(valid)
-					m_max_E = std::max(m_max_E, E);
+				{
+					m_minmax_E[0] = std::min(m_minmax_E[0], E);
+					m_minmax_E[1] = std::max(m_minmax_E[1], E);
+				}
 
 				// count energy degeneracy
 				t_size degeneracy = E_and_S.degeneracy;
@@ -939,6 +943,7 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 			active_bands.push_back(IsBandEnabled(t_size(row)));
 	}
 
+	bool only_pos_E = m_only_pos_E->isChecked();
 	t_real E_scale = m_E_scale->value();
 	t_real Q_scale1 = m_Q_scale1->value();
 	t_real Q_scale2 = m_Q_scale2->value();
@@ -949,14 +954,33 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 	m_dispplot->GetRenderer()->RemoveObjects();
 	m_dispplot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>(
 		{ static_cast<t_real_gl>(1.5 * Q_scale1), static_cast<t_real_gl>(1.5 * Q_scale2),
-			static_cast<t_real_gl>(2.5 * (m_max_E + 4.) * E_scale) }));
+			static_cast<t_real_gl>(2.5 * (m_minmax_E[1] + 4.) * E_scale) }));
 	m_dispplot->GetRenderer()->SetLight(1, -tl2::create<t_vec3_gl>(
 		{ static_cast<t_real_gl>(1.5 * Q_scale1), static_cast<t_real_gl>(1.5 * Q_scale2),
-			static_cast<t_real_gl>(2.5 * (m_max_E + 4.) * E_scale) }));
+			static_cast<t_real_gl>(2.5 * (m_minmax_E[1] + 4.) * E_scale) }));
+
+	// set coordinate cube size
+	if(auto obj = m_dispplot->GetRenderer()->GetCoordCube(); obj)
+	{
+		t_real E_range = m_minmax_E[1];
+
+		if(!only_pos_E)
+			E_range -= m_minmax_E[0];
+
+		t_real E_mean = only_pos_E ? 0.5*E_range : m_minmax_E[0] + 0.5*E_range;
+
+		t_mat_gl obj_scale = tl2::hom_scaling<t_mat_gl>(
+			0.6 * Q_scale1, 0.6 * Q_scale2,
+			0.6 * E_scale * E_range);
+		t_mat_gl obj_shift = tl2::hom_translation<t_mat_gl>(0., 0., E_scale * E_mean);
+
+		using namespace tl2_ops;
+		m_dispplot->GetRenderer()->SetObjectMatrix(*obj, obj_shift * obj_scale);
+	}
 
 	// plot the magnon bands
 	t_size num_bands = m_data.size();
-	if(m_only_pos_E->isChecked())
+	if(only_pos_E)
 	{
 		num_bands = NumPositive();
 		//num_bands /= 2;
@@ -1133,15 +1157,20 @@ void Dispersion3DDlg::PlotPickerIntersection(
 
 	m_cur_obj = objIdx;
 
+	// coordinate scaling
+	t_real E_scale = m_E_scale->value();
+	t_real Q_scale1 = m_Q_scale1->value();
+	t_real Q_scale2 = m_Q_scale2->value();
+
 	// get Q and E position at cursor intersection
 	auto [Q_origin, Q_dir_1, Q_dir_2] = GetQVectors();
 
 	// reconstruct Q position
-	t_real_gl Q1param = (0.5*m_Q_scale1->value() + (*pos)[0]) / m_Q_scale1->value();
-	t_real_gl Q2param = (0.5*m_Q_scale2->value() + (*pos)[1]) / m_Q_scale2->value();
+	t_real_gl Q1param = (0.5*Q_scale1 + (*pos)[0]) / Q_scale1;
+	t_real_gl Q2param = (0.5*Q_scale2 + (*pos)[1]) / Q_scale2;
 	t_vec_real Q = Q_origin + Q_dir_1*Q1param + Q_dir_2*Q2param;
 
-	t_real_gl E = (*pos)[2] / m_E_scale->value();
+	t_real_gl E = (*pos)[2] / E_scale;
 
 	std::ostringstream ostr;
 	ostr.precision(g_prec_gui);
@@ -1251,7 +1280,7 @@ void Dispersion3DDlg::AfterPlotGLInitialisation()
 
 	m_dispplot->GetRenderer()->SetCull(false);
 
-	ShowPlotCoordCross(false);
+	ShowPlotCoordCube(false);
 	ShowPlotLabels(false);
 	SetPlotPerspectiveProjection(m_perspective->isChecked());
 	//SetPlotCoordinateSystem(m_coordsys->currentIndex());
@@ -1264,9 +1293,14 @@ void Dispersion3DDlg::AfterPlotGLInitialisation()
 /**
  * show or hide the coordinate system
  */
-void Dispersion3DDlg::ShowPlotCoordCross(bool show)
+void Dispersion3DDlg::ShowPlotCoordCube(bool show)
 {
+	// always hide coordinate cross
 	if(auto obj = m_dispplot->GetRenderer()->GetCoordCross(); obj)
+		m_dispplot->GetRenderer()->SetObjectVisible(*obj, false);
+
+	// show coordinate cube
+	if(auto obj = m_dispplot->GetRenderer()->GetCoordCube(); obj)
 	{
 		m_dispplot->GetRenderer()->SetObjectVisible(*obj, show);
 		m_dispplot->update();

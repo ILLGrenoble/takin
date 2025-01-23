@@ -225,12 +225,15 @@ struct GlPlotObj : public GlRenderObj
 
 	t_mat_gl m_mat = tl2::unit<t_mat_gl>();
 
-	bool m_invariant = false;	// invariant to A, B matrices
-	bool m_visible = true;		// object shown?
-	bool m_highlighted = false;	// object highlighted?
-	bool m_valid = true;		// object deleted?
-	bool m_intersect = true;        // object can be intersected by picker
-	int m_priority = 1;		// object rendering priority
+	bool m_invariant = false;   // invariant to A, B matrices
+	bool m_visible = true;      // object shown?
+	bool m_highlighted = false; // object highlighted?
+	bool m_valid = true;        // object deleted?
+	bool m_intersect = true;    // object can be intersected by picker
+	bool m_cull_back = true;    // cull back or front faces
+	bool m_force_cull = false;  // cull enabled (otherwise use global setting)
+	int m_lighting = 1;         // lighting model
+	int m_priority = 1;         // object rendering priority
 
 	t_vec3_gl m_labelPos = tl2::create<t_vec3_gl>({ 0., 0., 0. });
 	std::string m_label{};
