@@ -49,6 +49,10 @@ namespace asio = boost::asio;
 #include "tlibs2/libs/str.h"
 
 
+#define SHOW_COORD_CUBE  false   // show coordinate cube by default?
+#define COORD_PADDING    1.2     // space between magnon bands and coordinate planes
+
+
 
 /**
  * column indices in magnon band table
@@ -118,13 +122,18 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	// general plot context menu
 	m_context = new QMenu(this);
 	QAction *acCentre = new QAction("Centre Camera", m_context);
+	QAction *acShowCoords = new QAction("Show Coordinate Planes", m_context);
 	QAction *acSaveData = new QAction("Save Data...", m_context);
 	QAction *acSaveScript = new QAction("Save Data As Script...", m_context);
 	QAction *acSaveImage = new QAction("Save Image...", m_context);
+	acShowCoords->setCheckable(true);
+	acShowCoords->setChecked(SHOW_COORD_CUBE);
 	acSaveData->setIcon(QIcon::fromTheme("text-x-generic"));
 	acSaveScript->setIcon(QIcon::fromTheme("text-x-script"));
 	acSaveImage->setIcon(QIcon::fromTheme("image-x-generic"));
 	m_context->addAction(acCentre);
+	m_context->addSeparator();
+	m_context->addAction(acShowCoords);
 	m_context->addSeparator();
 	m_context->addAction(acSaveData);
 	m_context->addAction(acSaveScript);
@@ -136,6 +145,8 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	QAction *acCentreOnObject = new QAction("Centre Camera on Band", m_context_band);
 	m_context_band->addAction(acCentre);
 	m_context_band->addAction(acCentreOnObject);
+	m_context_band->addSeparator();
+	m_context_band->addAction(acShowCoords);
 	m_context_band->addSeparator();
 	m_context_band->addAction(acSaveData);
 	m_context_band->addAction(acSaveScript);
@@ -372,6 +383,7 @@ Dispersion3DDlg::Dispersion3DDlg(QWidget *parent, QSettings *sett)
 	connect(btnbox, &QDialogButtonBox::accepted, this, &Dispersion3DDlg::accept);
 	connect(acCentreOnObject, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCameraOnObject);
 	connect(acCentre, &QAction::triggered, this, &Dispersion3DDlg::CentrePlotCamera);
+	connect(acShowCoords, &QAction::toggled, this, &Dispersion3DDlg::ShowPlotCoordCube);
 	connect(acSaveData, &QAction::triggered, this, &Dispersion3DDlg::SaveData);
 	connect(acSaveScript, &QAction::triggered, this, &Dispersion3DDlg::SaveScript);
 	connect(acSaveImage, &QAction::triggered, this, &Dispersion3DDlg::SaveImage);
@@ -970,8 +982,8 @@ void Dispersion3DDlg::Plot(bool clear_settings)
 		t_real E_mean = only_pos_E ? 0.5*E_range : m_minmax_E[0] + 0.5*E_range;
 
 		t_mat_gl obj_scale = tl2::hom_scaling<t_mat_gl>(
-			0.6 * Q_scale1, 0.6 * Q_scale2,
-			0.6 * E_scale * E_range);
+			0.5 * COORD_PADDING * Q_scale1, 0.5 * COORD_PADDING * Q_scale2,
+			0.5 * COORD_PADDING * E_scale * E_range);
 		t_mat_gl obj_shift = tl2::hom_translation<t_mat_gl>(0., 0., E_scale * E_mean);
 
 		using namespace tl2_ops;
@@ -1280,7 +1292,7 @@ void Dispersion3DDlg::AfterPlotGLInitialisation()
 
 	m_dispplot->GetRenderer()->SetCull(false);
 
-	ShowPlotCoordCube(false);
+	ShowPlotCoordCube(SHOW_COORD_CUBE);
 	ShowPlotLabels(false);
 	SetPlotPerspectiveProjection(m_perspective->isChecked());
 	//SetPlotCoordinateSystem(m_coordsys->currentIndex());
