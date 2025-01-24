@@ -231,8 +231,8 @@ void ResoDlg::setupAlgos()
 {
 	comboAlgo->addItem("TAS: Cooper-Nathans (Pointlike)", static_cast<int>(ResoAlgo::CN));
 	comboAlgo->addItem("TAS: Popovici (Pointlike)", static_cast<int>(ResoAlgo::POP_CN));
-	comboAlgo->addItem("TAS: Popovici (Extended)", static_cast<int>(ResoAlgo::POP));
-	comboAlgo->addItem("TAS: Eckold-Sobolev (Extended)", static_cast<int>(ResoAlgo::ECK));
+	comboAlgo->addItem("TAS: Popovici", static_cast<int>(ResoAlgo::POP));
+	comboAlgo->addItem("TAS: Eckold-Sobolev", static_cast<int>(ResoAlgo::ECK));
 	comboAlgo->insertSeparator(4);
 	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
 	comboAlgo->insertSeparator(6);

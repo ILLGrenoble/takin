@@ -53,13 +53,13 @@ def ellipsoid_volume(mat):
 #
 def quadric_proj(quadric, idx):
     if np.abs(quadric[idx, idx]) < g_eps:
-        return np.delete(np.delete(quadric, idx, axis=0), idx, axis=1)
+        return np.delete(np.delete(quadric, idx, axis = 0), idx, axis = 1)
 
     # row/column along which to perform the orthogonal projection
-    vec = 0.5 * (quadric[idx,:] + quadric[:,idx])   # symmetrise if not symmetric
-    vec /= np.sqrt(quadric[idx, idx])               # normalise to indexed component
-    proj_op = np.outer(vec, vec)                    # projection operator
-    ortho_proj = quadric - proj_op                  # projected quadric
+    vec = 0.5 * (quadric[idx, :] + quadric[:, idx])   # symmetrise if not symmetric
+    vec /= np.sqrt(quadric[idx, idx])                 # normalise to indexed component
+    proj_op = np.outer(vec, vec)                      # projection operator
+    ortho_proj = quadric - proj_op                    # projected quadric
 
     # comparing with simple projection
     #rank = len(quadric)
@@ -69,7 +69,26 @@ def quadric_proj(quadric, idx):
 
     # remove row/column that was projected out
     #print("\nProjected row/column %d:\n%s\n->\n%s.\n" % (idx, str(quadric), str(ortho_proj)))
-    return np.delete(np.delete(ortho_proj, idx, axis=0), idx, axis=1)
+    return np.delete(np.delete(ortho_proj, idx, axis = 0), idx, axis = 1)
+
+
+#
+# projects along one axis of the quadric
+# (see [eck14], equ. 57)
+#
+def quadric_proj_mat(mat, quadric, idx):
+    if np.abs(quadric[idx, idx]) < g_eps:
+        return np.delete(np.delete(mat, idx, axis = 0), idx, axis = 1)
+
+    # row/column along which to perform the orthogonal projection
+    vec = 0.5 * (quadric[idx, :] + quadric[:, idx])   # symmetrise if not symmetric
+    vec /= np.sqrt(quadric[idx, idx])                 # normalise to indexed component
+    proj_op = np.outer(vec, mat[idx, :])              # projection operator
+    ortho_proj = mat - proj_op                        # projected matrix
+
+    # remove row/column that was projected out
+    #return np.delete(np.delete(ortho_proj, idx, axis = 0), idx, axis = 1)
+    return np.delete(ortho_proj, idx, axis = 0)
 
 
 #
@@ -78,11 +97,11 @@ def quadric_proj(quadric, idx):
 #
 def quadric_proj_vec(vec, quadric, idx):
     _col = quadric[:,idx]
-    col = np.delete(_col, idx, axis=0)
+    col = np.delete(_col, idx, axis = 0)
     if np.abs(_col[idx]) < g_eps:
         return col
 
-    v = np.delete(vec, idx, axis=0)
+    v = np.delete(vec, idx, axis = 0)
     v = v - col*vec[idx]/_col[idx]
 
     return v

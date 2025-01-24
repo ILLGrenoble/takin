@@ -45,7 +45,7 @@ params = {
     # options
     "verbose" : True,
 
-    # resolution method, "eck", "pop", or "cn"
+    # resolution method, "eck", "eck_ext", "pop", or "cn"
     "reso_method" : "pop",
 
     # scattering triangle
@@ -175,7 +175,7 @@ argparser.add_argument("--plot_file", default = "", type = str,
 argparser.add_argument("-p", "--plot", action = "store_true",
     help = "plot results on screen")
 argparser.add_argument("-m", "--reso_method", default = None, type = str,
-    help = "resolution method to use (cn/pop/eck)")
+    help = "resolution method to use (cn/pop/eck/eck_ext)")
 argparser.add_argument("--kf_vert", default = None, action = "store_true",
     help = "scatter vertically in the kf axis (only for Eckold-Sobolev method)")
 argparser.add_argument("--ki", default = None, type = float,
@@ -334,11 +334,16 @@ log("ki = %g / A, kf = %g / A, E = %g meV, Q = %g / A." %
 import reso
 import pop
 import eck
+import eck_ext
 
 if params["reso_method"] == "eck":
     log("\nCalculating using Eckold-Sobolev method. Scattering %s in kf." %
         ("vertically" if params["kf_vert"] else "horizontally"))
     res = eck.calc(params)
+elif params["reso_method"] == "eck_ext":
+    log("\nCalculating using extended Eckold-Sobolev method. Scattering %s in kf." %
+        ("vertically" if params["kf_vert"] else "horizontally"))
+    res = eck_ext.calc(params)
 elif params["reso_method"] == "pop":
     log("\nCalculating using Popovici method.")
     res = pop.calc(params, False)
