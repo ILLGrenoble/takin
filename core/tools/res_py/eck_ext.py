@@ -1,5 +1,6 @@
 #
 # implementation of Mechthild's extended version of the eckold-sobolev algo (see [end25])
+# WARNING: WORK IN PROGRESS -- NOT YET WORKING!
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date jan-2025
