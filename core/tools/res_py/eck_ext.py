@@ -159,9 +159,6 @@ def calc(param):
     E = param["E"]
     Q = param["Q"]
 
-    # TODO: find the sign error for x position
-    sample_pos = np.array([ -param["pos_x"],  param["pos_y"], param["pos_z"] ])
-
     # angles
     twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
     thetam = helpers.get_mono_angle(ki, param["mono_xtal_d"]) * param["mono_sense"]
@@ -352,7 +349,7 @@ def calc(param):
     # V matrix from equ. 2.9 [end25], corresponds to V1 vector in [eck14]
     matBF = np.zeros((6, 3))
     matBF[0:3, :] = np.dot(np.transpose(Dalph_i), B)
-    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), Dtwotheta)
+    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), np.transpose(Dtwotheta))
     matV = np.dot(np.transpose(Tinv), matBF)
 
 
@@ -364,7 +361,7 @@ def calc(param):
     U = 2. * reso.quadric_proj(U2, 4)
 
     # K matrix from equ. 2.11 in [end25]
-    matK = C + np.dot(np.dot(np.transpose(Dtwotheta), G), Dtwotheta)
+    matK = C + np.dot(np.dot(Dtwotheta, G), np.transpose(Dtwotheta))
     # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14]
     #for i in range(0, 3):
     #    for j in range(0, 3):
@@ -405,6 +402,7 @@ def calc(param):
     # quadratic part of quadric (matrix U)
     R = U
     # linear and constant part of quadric (V and W in [eck14], equ. 2.2 in [end25])
+    sample_pos = np.array([ param["pos_x"],  param["pos_y"], param["pos_z"] ])
     res["reso_v"] = np.dot(matP, sample_pos)
     res["reso_s"] = np.dot(sample_pos, np.dot(matK, sample_pos))
 
