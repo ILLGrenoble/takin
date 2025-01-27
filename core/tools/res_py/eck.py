@@ -58,15 +58,15 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
     A_t1 = A_t0 * A_tx
 
     # typo in paper?
-    A[0,0] = 0.5*helpers.sig2fwhm**2. / ki**2. * np.tan(thetam)**2. * \
+    A[0, 0] = 0.5*helpers.sig2fwhm**2. / ki**2. * np.tan(thetam)**2. * \
         ( (2./coll_h_pre_mono)**2. + (2*dist_hsrc_mono/src_w)**2. + A_t0**2. )
 
-    A[0,1] = A[1,0] = 0.5*helpers.sig2fwhm**2. / ki**2. * np.tan(thetam) * \
+    A[0, 1] = A[1, 0] = 0.5*helpers.sig2fwhm**2. / ki**2. * np.tan(thetam) * \
         ( + 2.*(1./coll_h_pre_mono)**2. + \
             2.*dist_hsrc_mono*(dist_hsrc_mono-dist_mono_sample)/src_w**2. + \
             A_t0**2. - A_t0*A_t1 )
 
-    A[1,1] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
+    A[1, 1] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
         ( 1./coll_h_pre_mono**2. + 1./coll_h_pre_sample**2. \
             + ((dist_hsrc_mono-dist_mono_sample)/src_w)**2. \
             + (dist_mono_sample/(mono_w*np.abs(np.sin(thetam))))**2. \
@@ -82,19 +82,19 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
     Av_t0 = 0.5 / (mono_mosaic_v * np.abs(np.sin(thetam)))
     Av_t1 = inv_mono_curv_v * dist_mono_sample / mono_mosaic_v
 
-    Av[0,0] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
+    Av[0, 0] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
         ( 1./coll_v_pre_sample**2. + (dist_mono_sample/src_h)**2. + (dist_mono_sample/mono_h)**2. + \
         (Av_t0 - Av_t1)**2. )     # typo/missing in paper?
 
-    Av[0,1] = Av[1,0] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
+    Av[0, 1] = Av[1, 0] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
         ( dist_vsrc_mono*dist_mono_sample/src_h**2. - Av_t0**2. + Av_t0*Av_t1 )
 
-    Av[1,1] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
+    Av[1, 1] = 0.5*helpers.sig2fwhm**2. / ki**2. * \
         ( (1./coll_v_pre_mono)**2. + (dist_vsrc_mono/src_h)**2. + Av_t0**2. )
 
 
     # B vector: equ. 27 in [eck14]
-    B = np.array([0,0,0])
+    B = np.array([0., 0., 0.])
     B_t0 = inv_mono_curv_h / (mono_mosaic**2. * np.abs(np.sin(thetam)))
 
     B[0] = helpers.sig2fwhm**2. * pos_y / ki * np.tan(thetam) * \
@@ -107,7 +107,7 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
 
 
     # Bv vector: equ. 39 in [eck14]
-    Bv = np.array([0,0])
+    Bv = np.array([0., 0.])
 
     Bv_t0 = inv_mono_curv_v / mono_mosaic_v**2
 
@@ -134,14 +134,14 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
 
 
     # z components, [eck14], equ. 42
-    A[2,2] = Av[0,0] - Av[0,1]**2./Av[1,1]
-    B[2] = Bv[0] - Bv[1]*Av[0,1]/Av[1,1]
+    A[2, 2] = Av[0, 0] - Av[0, 1]**2./Av[1, 1]
+    B[2] = Bv[0] - Bv[1]*Av[0, 1]/Av[1, 1]
     # typo in paper? (thanks to F. Bourdarot for pointing this out)
     D = Cv - (0.5*Bv[1])**2./Av[1,1]
 
 
     # [eck14], equ. 54
-    therefl = refl * np.sqrt(np.pi / Av[1,1])  # typo in paper?
+    therefl = refl * np.sqrt(np.pi / Av[1, 1])  # typo in paper?
 
     return [ A, B, C, D, therefl ]
 
@@ -371,11 +371,11 @@ def calc(param):
     W = C + D + G + H
 
     # squares in Vs missing in paper? (thanks to F. Bourdarot for pointing this out)
-    W -= (0.5*V1[5])**2./U1[5,5] + (0.5*V2[4])**2./U2[4,4]
+    #W -= (0.5*V1[5])**2./U1[5,5] + (0.5*V2[4])**2./U2[4,4]
 
     R0 = 0.
     if param["calc_R0"]:
-        R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5,5] * U2[4,4]))
+        R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
     # --------------------------------------------------------------------------
 
 

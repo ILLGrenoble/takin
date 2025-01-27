@@ -82,7 +82,7 @@ def quadric_proj_mat(mat, quadric, idx):
 
     # row/column along which to perform the orthogonal projection
     vec = 0.5 * (quadric[idx, :] + quadric[:, idx])   # symmetrise if not symmetric
-    vec /= np.sqrt(quadric[idx, idx])                 # normalise to indexed component
+    vec /= quadric[idx, idx]                          # normalise to indexed component
     proj_op = np.outer(vec, mat[idx, :])              # projection operator
     ortho_proj = mat - proj_op                        # projected matrix
 

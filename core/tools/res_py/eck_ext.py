@@ -108,7 +108,7 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
 
 
     # Bzz component from equ. 2.3 in [end25] which corresponds to the Bv vector from equ. 39 in [eck14]
-    Bv = np.array([0, 0])
+    Bv = np.array([0., 0.])
 
     Bv_t0 = inv_mono_curv_v / mono_mosaic_v**2
 
@@ -136,15 +136,15 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
 
 
     # Bzz component from equ. 2.3 in [end25] which corresponds to the Bv vector from equ. 42 in [eck14]
-    A[2, 2] = Av[0,0] - Av[0,1]**2./Av[1,1]
-    B[2, 2] = Bv[0] - Bv[1]*Av[0,1]/Av[1,1]
+    A[2, 2] = Av[0, 0] - Av[0, 1]**2./Av[1, 1]
+    B[2, 2] = Bv[0] - Bv[1]*Av[0,1]/Av[1, 1]
     # Czz component from equ. 2.14 in [end25] which corresponds to the Cv scalar from equ. 40 in [eck14]
     # typo in paper? (thanks to F. Bourdarot for pointing this out)
-    C[2, 2] = Cv - (0.5*Bv[1])**2./Av[1,1]
+    C[2, 2] = Cv - (0.5*Bv[1])**2./Av[1, 1]
 
 
     # [eck14], equ. 54
-    therefl = refl * np.sqrt(np.pi / Av[1,1])  # typo in paper?
+    therefl = refl * np.sqrt(np.pi / Av[1, 1])  # typo in paper?
 
     return [ A, B, C, therefl ]
 
@@ -159,7 +159,8 @@ def calc(param):
     E = param["E"]
     Q = param["Q"]
 
-    sample_pos = np.array([ param["pos_x"],  param["pos_y"], param["pos_z"] ])
+    # TODO: find the sign error for x position
+    sample_pos = np.array([ -param["pos_x"],  param["pos_y"], param["pos_z"] ])
 
     # angles
     twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
@@ -287,13 +288,6 @@ def calc(param):
     #--------------------------------------------------------------------------
     # ana part
     # equ. 43 in [eck14]
-    pos_y2 = - sample_pos[0]*np.sin(twotheta) + sample_pos[1]*np.cos(twotheta)
-    pos_z2 = sample_pos[2]
-
-    # vertical scattering in kf axis, formula from [eck20]
-    if param["kf_vert"]:
-        pos_z2 = -pos_y2
-        pos_y2 = sample_pos[2]
 
     [E, F, G, dReflA] = get_mono_vals(
         param["det_w"], param["det_h"],
@@ -329,7 +323,7 @@ def calc(param):
 
     # trafo, equ. 52 in [eck14]
     T = np.identity(6)
-    T[0, 3] = T[1,4] = T[2,5] = -1.
+    T[0, 3] = T[1, 4] = T[2, 5] = -1.
     T[3, 0] = 2.*helpers.ksq2E * Q*dEi
     T[3, 3] = 2.*helpers.ksq2E * Q*dEf
     T[3, 1] = 2.*helpers.ksq2E * kperp
@@ -343,6 +337,7 @@ def calc(param):
     # equ. 54 in [eck14]
     Dalph_i = helpers.rotation_matrix_3d_z(-Q_ki)
     Dalph_f = helpers.rotation_matrix_3d_z(-Q_kf)
+    Dtwotheta = helpers.rotation_matrix_3d_z(twotheta)
     Arot = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
     Erot = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
 
@@ -357,8 +352,8 @@ def calc(param):
     # V matrix from equ. 2.9 [end25], corresponds to V1 vector in [eck14]
     matBF = np.zeros((6, 3))
     matBF[0:3, :] = np.dot(np.transpose(Dalph_i), B)
-    matBF[3:6, :] = np.dot(np.transpose(Dalph_f), F)
-    matV = np.dot(Tinv, matBF)
+    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), Dtwotheta)
+    matV = np.dot(np.transpose(Tinv), matBF)
 
 
     # --------------------------------------------------------------------------
@@ -369,25 +364,25 @@ def calc(param):
     U = 2. * reso.quadric_proj(U2, 4)
 
     # K matrix from equ. 2.11 in [end25]
-    matK = C + G   # TODO: rotation and last component
+    matK = C + np.dot(np.dot(np.transpose(Dtwotheta), G), Dtwotheta)
+    # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14]
+    #for i in range(0, 3):
+    #    for j in range(0, 3):
+    #        matK[i, j] -= 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + matV[4, i]*matV[4, j]/U2[4, 4])
 
-    # C_all in [end25], equs. 1.1, 2.1, 2.2
-    W = np.dot(sample_pos, np.dot(matK, sample_pos))
 
     # C_all,0 in [end25], equ. 1.1, 2.1
     R0 = 0.
     if param["calc_R0"]:
-        R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5,5] * U2[4,4]))
+        R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
     # --------------------------------------------------------------------------
 
 
     # --------------------------------------------------------------------------
     # P matrix from equ. 2.20 in [end25]
-    # TODO: check if quadric_proj_mat() gives the same as equ. 2.20 in [end25]
+    # quadric_proj_mat() gives the same as equ. 2.20 in [end25]
     V2 = reso.quadric_proj_mat(matV, U1, 5)
     matP = reso.quadric_proj_mat(V2, U2, 4)
-
-    V = np.dot(matP, sample_pos)
     # --------------------------------------------------------------------------
 
 
@@ -397,21 +392,21 @@ def calc(param):
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
     vec1 = U[:, 1] / helpers.sig2fwhm**2.
     U -= helpers.sig2fwhm**2. * np.outer(vec1, vec1) / \
-        (1./mos_Q_sq + U[1,1]/helpers.sig2fwhm**2.)
+        (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
 
     # add vertical sample mosaic
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
     vec2 = U[:, 2] / helpers.sig2fwhm**2.
     U -= helpers.sig2fwhm**2. * np.outer(vec2, vec2) / \
-        (1./mos_v_Q_sq + U[2,2]/helpers.sig2fwhm**2.)
+        (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
     # --------------------------------------------------------------------------
 
 
     # quadratic part of quadric (matrix U)
     R = U
-    # linear (vector V) and constant (scalar W) part of quadric
-    res["reso_v"] = V
-    res["reso_s"] = W
+    # linear and constant part of quadric (V and W in [eck14], equ. 2.2 in [end25])
+    res["reso_v"] = np.dot(matP, sample_pos)
+    res["reso_s"] = np.dot(sample_pos, np.dot(matK, sample_pos))
 
 
     if param["mirror_Qperp"] and param["sample_sense"] < 0.:
@@ -428,7 +423,7 @@ def calc(param):
         # missing volume prefactor to normalise gaussian,
         # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
         R0 *= res_vol * np.pi * 3.
-        R0 *= np.exp(-W)
+        R0 *= np.exp(-res["reso_s"])
         R0 *= dxsec
 
     res["reso"] = R
