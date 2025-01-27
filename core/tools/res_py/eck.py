@@ -137,7 +137,7 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
     A[2, 2] = Av[0, 0] - Av[0, 1]**2./Av[1, 1]
     B[2] = Bv[0] - Bv[1]*Av[0, 1]/Av[1, 1]
     # typo in paper? (thanks to F. Bourdarot for pointing this out)
-    D = Cv - (0.5*Bv[1])**2./Av[1,1]
+    D = Cv - (0.5*Bv[1])**2./Av[1, 1]
 
 
     # [eck14], equ. 54
@@ -371,7 +371,7 @@ def calc(param):
     W = C + D + G + H
 
     # squares in Vs missing in paper? (thanks to F. Bourdarot for pointing this out)
-    W -= (0.5*V1[5])**2./U1[5,5] + (0.5*V2[4])**2./U2[4,4]
+    W -= (0.5*V1[5])**2./U1[5, 5] + (0.5*V2[4])**2./U2[4, 4]
 
     R0 = 0.
     if param["calc_R0"]:
