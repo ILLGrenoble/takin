@@ -363,9 +363,9 @@ def calc(param):
     # K matrix from equ. 2.11 in [end25]
     matK = C + np.dot(np.dot(Dtwotheta, G), np.transpose(Dtwotheta))
     # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14]
-    #for i in range(0, 3):
-    #    for j in range(0, 3):
-    #        matK[i, j] -= 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + matV[4, i]*matV[4, j]/U2[4, 4])
+    for i in range(0, 3):
+        for j in range(0, 3):
+            matK[i, j] -= 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + matV[4, i]*matV[4, j]/U2[4, 4])
 
 
     # C_all,0 in [end25], equ. 1.1, 2.1

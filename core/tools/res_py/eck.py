@@ -371,7 +371,7 @@ def calc(param):
     W = C + D + G + H
 
     # squares in Vs missing in paper? (thanks to F. Bourdarot for pointing this out)
-    #W -= (0.5*V1[5])**2./U1[5,5] + (0.5*V2[4])**2./U2[4,4]
+    W -= (0.5*V1[5])**2./U1[5,5] + (0.5*V2[4])**2./U2[4,4]
 
     R0 = 0.
     if param["calc_R0"]:
