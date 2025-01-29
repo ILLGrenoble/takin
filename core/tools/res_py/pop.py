@@ -6,6 +6,7 @@
 # @license GPLv2
 #
 # @desc for algorithm: [pop75] M. Popovici, Acta Cryst. A 31, 507 (1975), doi: 10.1107/S0567739475001088
+# @desc for algorithm: [zhe07] A. Zheludev, ResLib 3.4 manual (2007), https://ethz.ch/content/dam/ethz/special-interest/phys/solid-state-physics/neutron-scattering-and-magnetism-dam/images/research/manual.pdf
 # @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
 # @desc The initial version of this calculation was based on the "rescal5" software by Zinkin, McMorrow, Tennant, Farhi, and Wildes (ca. 1995-2007).
 #
@@ -429,9 +430,11 @@ def calc(param, pointlike = False):
     # [pop75], equ. 20
     cov = np.dot(np.dot(BA, HGinv), np.transpose(BA))
 
-
-    cov[1, 1] += Q**2. * param["sample_mosaic"]**2.
-    cov[2, 2] += Q**2. * param["sample_mosaic_v"]**2.
+    # include sample mosaic, see [zhe07], equs. 12-14
+    mos_h = Q**2. * param["sample_mosaic"]**2.
+    mos_v = Q**2. * param["sample_mosaic_v"]**2.
+    cov[1, 1] += mos_h
+    cov[2, 2] += mos_v
     R = la.inv(cov) * helpers.sig2fwhm**2.
 
     if param["mirror_Qperp"] and param["sample_sense"] < 0.:
@@ -443,6 +446,10 @@ def calc(param, pointlike = False):
     if param["calc_R0"]:
         R0 = dmono_refl*dana_effic * dxsec * (0.5*np.pi)**2. \
             / (np.sin(thetam) * np.sin(thetaa))
+
+        # include sample mosaic, see [zhe07], equs. 12-14
+        # typically this correction is too small to give any difference
+        R0 /= np.sqrt(1. + cov[1, 1]*mos_h - mos_h**2.) * np.sqrt(1. + cov[2, 2]*mos_v - mos_v**2.)
 
         # [pop75], equ. 5 & 9
         if pointlike:
