@@ -48,7 +48,7 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
     coll_v_pre_mono, coll_v_pre_sample,
     mono_mosaic, mono_mosaic_v,
     inv_mono_curv_h, inv_mono_curv_v,
-    pos_x, pos_y, pos_z, refl):
+    sample_pos, refl):
 
     # A matrix: equ. 26 in [eck14]
     A = np.identity(3)
@@ -97,10 +97,10 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
     B = np.array([0., 0., 0.])
     B_t0 = inv_mono_curv_h / (mono_mosaic**2. * np.abs(np.sin(thetam)))
 
-    B[0] = helpers.sig2fwhm**2. * pos_y / ki * np.tan(thetam) * \
+    B[0] = helpers.sig2fwhm**2. * sample_pos[1] / ki * np.tan(thetam) * \
         ( 2.*dist_hsrc_mono / src_w**2. + B_t0 )
 
-    B[1] = helpers.sig2fwhm**2. * pos_y / ki * \
+    B[1] = helpers.sig2fwhm**2. * sample_pos[1] / ki * \
         ( - dist_mono_sample / (mono_w*np.abs(np.sin(thetam)))**2. + \
         B_t0 - B_t0 * A_tx + \
         (dist_hsrc_mono-dist_mono_sample) / src_w**2. )
@@ -112,24 +112,24 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
     Bv_t0 = inv_mono_curv_v / mono_mosaic_v**2
 
     # typo in paper?
-    Bv[0] = (-1.) * helpers.sig2fwhm**2. * pos_z / ki * \
+    Bv[0] = (-1.) * helpers.sig2fwhm**2. * sample_pos[2] / ki * \
         ( dist_mono_sample / mono_h**2. + \
             dist_mono_sample / src_h**2. + \
             Bv_t0 * inv_mono_curv_v*dist_mono_sample - \
             0.5*Bv_t0 / np.abs(np.sin(thetam)) )
 
     # typo in paper?
-    Bv[1] = (-1.) * helpers.sig2fwhm**2. * pos_z / ki * \
+    Bv[1] = (-1.) * helpers.sig2fwhm**2. * sample_pos[2] / ki * \
         ( dist_vsrc_mono / (src_h*src_h) + 0.5*Bv_t0/np.abs(np.sin(thetam)) )
 
 
     # C scalar: equ. 28 in [eck14]
-    C = 0.5*helpers.sig2fwhm**2. * pos_y**2. * \
+    C = 0.5*helpers.sig2fwhm**2. * sample_pos[1]**2. * \
         ( 1./src_w**2. + (1./(mono_w*np.abs(np.sin(thetam))))**2. + \
             (inv_mono_curv_h/(mono_mosaic * np.abs(np.sin(thetam))))**2. )
 
     # Cv scalar: equ. 40 in [eck14]
-    Cv = 0.5*helpers.sig2fwhm**2. * pos_z**2. * \
+    Cv = 0.5*helpers.sig2fwhm**2. * sample_pos[2]**2. * \
         ( 1./src_h**2. + 1./mono_h**2. + (inv_mono_curv_v/mono_mosaic_v)**2. )
 
 
@@ -155,6 +155,8 @@ def calc(param):
     kf = param["kf"]
     E = param["E"]
     Q = param["Q"]
+
+    sample_pos = np.array([ param["pos_x"],  param["pos_y"], param["pos_z"] ])
 
     # angles
     twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
@@ -264,7 +266,6 @@ def calc(param):
 
     #--------------------------------------------------------------------------
     # mono part
-
     [A, B, C, D, dReflM] = get_mono_vals(
         param["src_w"], param["src_h"],
         param["mono_w"], param["mono_h"],
@@ -275,21 +276,23 @@ def calc(param):
         coll_v_pre_mono, param["coll_v_pre_sample"],
         param["mono_mosaic"], param["mono_mosaic_v"],
         inv_mono_curv_h, inv_mono_curv_v,
-        param["pos_x"] , param["pos_y"], param["pos_z"],
-        dmono_refl)
+        sample_pos, dmono_refl)
     #--------------------------------------------------------------------------
 
 
     #--------------------------------------------------------------------------
-    # ana part
-    # equ. 43 in [eck14]
-    pos_y2 = - param["pos_x"]*np.sin(twotheta) + param["pos_y"]*np.cos(twotheta)
-    pos_z2 = param["pos_z"]
+    # ana part, equ. 43 in [eck14]
+    Dtwotheta = helpers.rotation_matrix_3d_z(-twotheta)
+    sample_pos_kf = np.dot(Dtwotheta, sample_pos)
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
-        pos_z2 = -pos_y2
-        pos_y2 = param["pos_z"]
+        T_vert = np.array(
+            [[ 1.,  0., 0. ],
+             [ 0.,  0., 1. ],
+             [ 0., -1., 0. ]])
+
+        sample_pos_kf = np.dot(T_vert, sample_pos_kf)
 
     [E, F, G, H, dReflA] = get_mono_vals(
         param["det_w"], param["det_h"],
@@ -301,18 +304,12 @@ def calc(param):
         param["coll_v_post_ana"], param["coll_v_post_sample"],
         param["ana_mosaic"], param["ana_mosaic_v"],
         inv_ana_curv_h, inv_ana_curv_v,
-        param["pos_x"], pos_y2, pos_z2,
-        dana_effic)
+        sample_pos_kf, dana_effic)
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
-        T_vert = np.array(
-            [[ 1.,  0., 0. ],
-             [ 0.,  0., 1. ],
-             [ 0., -1., 0. ]])
-
         E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
-        F = np.dot(T_vert, F)
+        F = np.dot(np.transpose(T_vert), F)  # possible typo in [eck20]?
     #--------------------------------------------------------------------------
 
 
@@ -371,7 +368,7 @@ def calc(param):
     W = C + D + G + H
 
     # squares in Vs missing in paper? (thanks to F. Bourdarot for pointing this out)
-    W -= (0.5*V1[5])**2./U1[5, 5] + (0.5*V2[4])**2./U2[4, 4]
+    W -= (0.5*V1[5])**2. / U1[5, 5] + (0.5*V2[4])**2. / U2[4, 4]
 
     R0 = 0.
     if param["calc_R0"]:

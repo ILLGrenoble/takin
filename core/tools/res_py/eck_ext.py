@@ -8,8 +8,8 @@
 #
 # @desc for extended algorithm: [end25] M. Enderle, personal communication (21/jan/2025)
 # @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
-# @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
 # @desc for vertical scattering modification: [eck20] G. Eckold, personal communication, 2020.
+# @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
@@ -308,6 +308,8 @@ def calc(param):
         E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
         F = np.dot(np.dot(np.transpose(T_vert), F), T_vert)
         G = np.dot(np.dot(np.transpose(T_vert), G), T_vert)
+    else:
+        T_vert = np.eye(3)
     #--------------------------------------------------------------------------
 
 
@@ -350,7 +352,8 @@ def calc(param):
     # V matrix from equ. 2.9 [end25], corresponds to V1 vector in [eck14]
     matBF = np.zeros((6, 3))
     matBF[0:3, :] = np.dot(np.transpose(Dalph_i), B)
-    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), Dtwotheta)  # TODO: check
+    matBF[3:6, :] = np.dot(np.transpose(Dalph_f), F)
+    matBF[3:6, :] = np.dot(matBF[3:6, :], Dtwotheta)
     matV = np.dot(np.transpose(Tinv), matBF)
 
 
@@ -361,31 +364,24 @@ def calc(param):
     # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
     U = 2. * reso.quadric_proj(U2, 4)
 
+    # P matrix from equ. 2.20 in [end25]
+    # quadric_proj_mat() gives the same as equ. 2.20 in [end25]
+    V2 = reso.quadric_proj_mat(matV, U1, 5)
+    matP = reso.quadric_proj_mat(V2, U2, 4)
+
     # K matrix from equ. 2.11 in [end25]
     matK = C + np.dot(np.dot(np.transpose(Dtwotheta), G), Dtwotheta)
 
     # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14], "W -= ..." in eck.py
-    Z = np.zeros((3, 3))
     for i in range(0, 3):
         for j in range(0, 3):
-            Z[i, j] = 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + matV[4, i]*matV[4, j]/U2[4, 4])
-    if param["kf_vert"]:
-        Z = np.dot(np.dot(np.transpose(T_vert), Z), T_vert)
-    matK -= Z
+            matK[i, j] -= 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + V2[4, i]*V2[4, j]/U2[4, 4])
 
 
     # C_all,0 in [end25], equ. 1.1, 2.1
     R0 = 0.
     if param["calc_R0"]:
         R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
-    # --------------------------------------------------------------------------
-
-
-    # --------------------------------------------------------------------------
-    # P matrix from equ. 2.20 in [end25]
-    # quadric_proj_mat() gives the same as equ. 2.20 in [end25]
-    V2 = reso.quadric_proj_mat(matV, U1, 5)
-    matP = reso.quadric_proj_mat(V2, U2, 4)
     # --------------------------------------------------------------------------
 
 
