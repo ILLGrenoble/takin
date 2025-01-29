@@ -267,7 +267,6 @@ def calc(param):
 
     #--------------------------------------------------------------------------
     # mono part
-
     [A, B, C, dReflM] = get_mono_vals(
         param["src_w"], param["src_h"],
         param["mono_w"], param["mono_h"],
@@ -283,9 +282,7 @@ def calc(param):
 
 
     #--------------------------------------------------------------------------
-    # ana part
-    # equ. 43 in [eck14]
-
+    # ana part, equ. 43 in [eck14]
     [E, F, G, dReflA] = get_mono_vals(
         param["det_w"], param["det_h"],
         param["ana_w"], param["ana_h"],
@@ -295,8 +292,7 @@ def calc(param):
         param["coll_h_post_ana"], param["coll_h_post_sample"],
         param["coll_v_post_ana"], param["coll_v_post_sample"],
         param["ana_mosaic"], param["ana_mosaic_v"],
-        inv_ana_curv_h, inv_ana_curv_v,
-        dana_effic)
+        inv_ana_curv_h, inv_ana_curv_v, dana_effic)
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
@@ -305,11 +301,10 @@ def calc(param):
              [ 0.,  0., 1. ],
              [ 0., -1., 0. ]])
 
+        # T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.py
         E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
         F = np.dot(np.dot(np.transpose(T_vert), F), T_vert)
         G = np.dot(np.dot(np.transpose(T_vert), G), T_vert)
-    else:
-        T_vert = np.eye(3)
     #--------------------------------------------------------------------------
 
 
@@ -338,12 +333,10 @@ def calc(param):
     Dalph_i = helpers.rotation_matrix_3d_z(-Q_ki)
     Dalph_f = helpers.rotation_matrix_3d_z(-Q_kf)
     Dtwotheta = helpers.rotation_matrix_3d_z(-twotheta)
-    Arot = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
-    Erot = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
 
     matAE = np.zeros((6, 6))
-    matAE[0:3, 0:3] = Arot
-    matAE[3:6, 3:6] = Erot
+    matAE[0:3, 0:3] = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
+    matAE[3:6, 3:6] = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
 
     # U1 matrix
     # typo in paper in quadric trafo in equ. 54 (top)?
@@ -352,8 +345,8 @@ def calc(param):
     # V matrix from equ. 2.9 [end25], corresponds to V1 vector in [eck14]
     matBF = np.zeros((6, 3))
     matBF[0:3, :] = np.dot(np.transpose(Dalph_i), B)
-    matBF[3:6, :] = np.dot(np.transpose(Dalph_f), F)
-    matBF[3:6, :] = np.dot(matBF[3:6, :], Dtwotheta)
+    # the transpose of Dtwotheta is part of Dalph_f^T
+    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), Dtwotheta)
     matV = np.dot(np.transpose(Tinv), matBF)
 
 

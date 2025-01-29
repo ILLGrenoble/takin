@@ -282,8 +282,7 @@ def calc(param):
 
     #--------------------------------------------------------------------------
     # ana part, equ. 43 in [eck14]
-    Dtwotheta = helpers.rotation_matrix_3d_z(-twotheta)
-    sample_pos_kf = np.dot(Dtwotheta, sample_pos)
+    sample_pos_kf = np.dot(helpers.rotation_matrix_3d_z(-twotheta), sample_pos)
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
@@ -337,12 +336,10 @@ def calc(param):
     # equ. 54 in [eck14]
     Dalph_i = helpers.rotation_matrix_3d_z(-Q_ki)
     Dalph_f = helpers.rotation_matrix_3d_z(-Q_kf)
-    Arot = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
-    Erot = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
 
     matAE = np.zeros((6,6))
-    matAE[0:3, 0:3] = Arot
-    matAE[3:6, 3:6] = Erot
+    matAE[0:3, 0:3] = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
+    matAE[3:6, 3:6] = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
 
     # U1 matrix
     # typo in paper in quadric trafo in equ. 54 (top)?
