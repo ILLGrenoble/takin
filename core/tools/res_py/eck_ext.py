@@ -306,7 +306,8 @@ def calc(param):
              [ 0., -1., 0. ]])
 
         E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
-        F = np.dot(T_vert, F)
+        F = np.dot(np.dot(np.transpose(T_vert), F), T_vert)
+        G = np.dot(np.dot(np.transpose(T_vert), G), T_vert)
     #--------------------------------------------------------------------------
 
 
@@ -334,7 +335,7 @@ def calc(param):
     # equ. 54 in [eck14]
     Dalph_i = helpers.rotation_matrix_3d_z(-Q_ki)
     Dalph_f = helpers.rotation_matrix_3d_z(-Q_kf)
-    Dtwotheta = helpers.rotation_matrix_3d_z(twotheta)
+    Dtwotheta = helpers.rotation_matrix_3d_z(-twotheta)
     Arot = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
     Erot = np.dot(np.dot(np.transpose(Dalph_f), E), Dalph_f)
 
@@ -349,7 +350,7 @@ def calc(param):
     # V matrix from equ. 2.9 [end25], corresponds to V1 vector in [eck14]
     matBF = np.zeros((6, 3))
     matBF[0:3, :] = np.dot(np.transpose(Dalph_i), B)
-    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), np.transpose(Dtwotheta))
+    matBF[3:6, :] = np.dot(np.dot(np.transpose(Dalph_f), F), Dtwotheta)  # TODO: check
     matV = np.dot(np.transpose(Tinv), matBF)
 
 
@@ -361,11 +362,16 @@ def calc(param):
     U = 2. * reso.quadric_proj(U2, 4)
 
     # K matrix from equ. 2.11 in [end25]
-    matK = C + np.dot(np.dot(Dtwotheta, G), np.transpose(Dtwotheta))
-    # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14]
+    matK = C + np.dot(np.dot(np.transpose(Dtwotheta), G), Dtwotheta)
+
+    # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14], "W -= ..." in eck.py
+    Z = np.zeros((3, 3))
     for i in range(0, 3):
         for j in range(0, 3):
-            matK[i, j] -= 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + matV[4, i]*matV[4, j]/U2[4, 4])
+            Z[i, j] = 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + matV[4, i]*matV[4, j]/U2[4, 4])
+    if param["kf_vert"]:
+        Z = np.dot(np.dot(np.transpose(T_vert), Z), T_vert)
+    matK -= Z
 
 
     # C_all,0 in [end25], equ. 1.1, 2.1
