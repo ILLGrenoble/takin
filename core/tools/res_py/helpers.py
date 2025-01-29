@@ -32,6 +32,7 @@
 #
 
 import numpy as np
+import numpy.linalg as la
 
 
 
@@ -179,4 +180,23 @@ def foc_curv_2(f, k, d, vert):
         curv = 2. * f/s
 
     return curv
+
+
+#
+# adjugate matrix
+# see e.g.: https://en.wikipedia.org/wiki/Adjugate_matrix
+#
+def adjugate(mat):
+    rows = len(mat)
+    cols = len(mat[0])
+
+    adj = np.zeros((rows, cols))
+
+    for i in range(0, rows):
+        for j in range(0, cols):
+            submat = np.delete(np.delete(mat, i, axis = 0), j, axis = 1)
+            adj[i, j] = (-1.)**(i + j) * la.det(submat)
+
+    return np.transpose(adj)
+
 #--------------------------------------------------------------------------
