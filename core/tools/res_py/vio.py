@@ -1,6 +1,6 @@
 #
 # TODO: implementation of the violini algo
-# (this is just an stub file for now)
+# (this is just a stub file for now)
 #
 # @author 
 # @date 2025
