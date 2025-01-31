@@ -45,7 +45,7 @@ params = {
     # options
     "verbose" : True,
 
-    # resolution method, "eck", "eck_ext", "pop", or "cn"
+    # resolution method, "eck", "eck_ext", "pop", "cn", or "vio"
     "reso_method" : "pop",
 
     # scattering triangle
@@ -175,7 +175,7 @@ argparser.add_argument("--plot_file", default = "", type = str,
 argparser.add_argument("-p", "--plot", action = "store_true",
     help = "plot results on screen")
 argparser.add_argument("-m", "--reso_method", default = None, type = str,
-    help = "resolution method to use (cn/pop/eck/eck_ext)")
+    help = "resolution method to use (cn/pop/eck/eck_ext/vio)")
 argparser.add_argument("--kf_vert", default = None, action = "store_true",
     help = "scatter vertically in the kf axis (only for Eckold-Sobolev method)")
 argparser.add_argument("--ki", default = None, type = float,
@@ -335,6 +335,7 @@ import reso
 import pop
 import eck
 import eck_ext
+import vio
 
 if params["reso_method"] == "eck":
     log("\nCalculating using Eckold-Sobolev method. Scattering %s in kf." %
@@ -350,6 +351,9 @@ elif params["reso_method"] == "pop":
 elif params["reso_method"] == "cn":
     log("\nCalculating using Cooper-Nathans method.")
     res = pop.calc(params, True)
+elif params["reso_method"] == "vio":
+    log("\nCalculating using Violini method.")
+    res = vio.calc(params)
 else:
     raise "ResPy: Invalid resolution calculation method selected."
 
