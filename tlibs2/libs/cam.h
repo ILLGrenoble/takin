@@ -24,7 +24,7 @@
  *                          Grenoble, France).
  * magtools
  * Copyright (C) 2017-2018  Tobias WEBER (privately developed).
- * "misc" project 
+ * "misc" project
  * Copyright (C) 2017-2021  Tobias WEBER (privately developed).
  *
  * This program is free software: you can redistribute it and/or modify
@@ -70,11 +70,12 @@ public:
 	/**
 	 * centre camera on object matrix
 	 */
-	void Centre(const t_mat& objmat)
+	void Centre(const t_mat& objmat, bool set_z = true)
 	{
 		m_matTrans(0,3) = -objmat(0,3);
 		m_matTrans(1,3) = -objmat(1,3);
-		m_matTrans(2,3) = -objmat(2,3);
+		if(set_z)
+			m_matTrans(2,3) = -objmat(2,3);
 
 		m_trafo_needs_update = true;
 	}
@@ -602,7 +603,7 @@ public:
 		auto [org, dir] = tl2::hom_line_from_screen_coords<t_mat, t_vec>(
 			mouseX, mouseY, 0., 1.,
 			GetInverseTransformation(),
-			GetInversePerspective(), 
+			GetInversePerspective(),
 			GetInverseViewport(),
 			&GetViewport(), true);
 
