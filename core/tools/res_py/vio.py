@@ -6,7 +6,7 @@
 # @date 2025
 # @license GPLv2
 #
-# @desc for algorithm: [vio14] @desc for used algo, see: [vio14] N. Violini et al., NIM A 736 (2014) pp. 31-39, doi: 10.1016/j.nima.2013.10.042
+# @desc for algorithm: [vio14]: [vio14] N. Violini et al., NIM A 736 (2014) pp. 31-39, doi: 10.1016/j.nima.2013.10.042
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
