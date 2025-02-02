@@ -380,16 +380,43 @@ def calc(param):
 
     # --------------------------------------------------------------------------
     # include sample mosaic, see cn.cpp
-    # add horizontal sample mosaic
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
-    vec1 = U[:, 1] / helpers.sig2fwhm**2.
-    U -= helpers.sig2fwhm**2. * np.outer(vec1, vec1) / \
-        (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
-
-    # add vertical sample mosaic
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
-    vec2 = U[:, 2] / helpers.sig2fwhm**2.
-    U -= helpers.sig2fwhm**2. * np.outer(vec2, vec2) / \
+
+    # sample mosaic, equ. (3.3) in [end25]
+    if param["calc_R0"]:
+        M = np.delete(np.delete(U, 3, axis = 0), 3, axis = 1)
+        M = np.delete(np.delete(M, 0, axis = 0), 0, axis = 1)
+        M += np.diag([ helpers.sig2fwhm**2. / mos_Q_sq, helpers.sig2fwhm**2. / mos_v_Q_sq ])
+        Madj = helpers.adjugate(M)
+
+        # before equ. 3.4 in [end25]
+        # TODO: this is based on the assumption that M is diagonal,
+        #       which it is not for vertical scattering in kf
+        R0 *= np.pi / np.sqrt(la.det(Madj))
+        R0 *= 2.*helpers.sig2fwhm**2.*np.pi / np.sqrt(mos_Q_sq * mos_v_Q_sq)
+
+    Pvec1 = matP[1, 0:3] / helpers.sig2fwhm**2.
+    Pvec2 = matP[2, 0:3] / helpers.sig2fwhm**2.
+    Uvec1 = U[:, 1] / helpers.sig2fwhm**2.
+    Uvec2 = U[:, 2] / helpers.sig2fwhm**2.
+
+    # gives the same as equ. 3.5 in [end25]
+    matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec1, Pvec1) / \
+        (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
+    matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec2, Pvec2) / \
+        (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
+
+    # gives the same as equ. 3.7 in [end25]
+    matP -= helpers.sig2fwhm**2. * np.outer(Uvec1, Pvec1) / \
+        (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
+    matP -= helpers.sig2fwhm**2. * np.outer(Uvec2, Pvec2) / \
+        (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
+
+    # gives the same as equ. 3.6 in [end25]
+    U -= helpers.sig2fwhm**2. * np.outer(Uvec1, Uvec1) / \
+        (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
+    U -= helpers.sig2fwhm**2. * np.outer(Uvec2, Uvec2) / \
         (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
     # --------------------------------------------------------------------------
 
