@@ -433,7 +433,7 @@ def calc(param, pointlike = False):
     # include sample mosaic, see [zhe07], equs. 12-14
     mos_h = Q**2. * param["sample_mosaic"]**2.
     mos_v = Q**2. * param["sample_mosaic_v"]**2.
-    cov_nomosaic = np.copy(cov)
+    #cov_nomosaic = np.copy(cov)
     cov[1, 1] += mos_h
     cov[2, 2] += mos_v
     R = la.inv(cov) * helpers.sig2fwhm**2.
@@ -448,11 +448,15 @@ def calc(param, pointlike = False):
         R0 = dmono_refl*dana_effic * dxsec * (0.5*np.pi)**2. \
             / (np.sin(thetam) * np.sin(thetaa))
 
-        # include sample mosaic, see [zhe07], equs. 12-14, equs. 15 & 16
-        R0 *= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
+        # new: include sample mosaic, see [zhe07], equs. 12-14, equs. 15 & 16
+        #R0 *= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
 
-        # include sample mosaic, see [zhe07], equs. 12-14
+        # old: include sample mosaic, see [zhe07], equs. 12-14
         #R0 /= np.sqrt(1. + cov[1, 1]*mos_h - mos_h**2.) * np.sqrt(1. + cov[2, 2]*mos_v - mos_v**2.)
+
+        #print("Comparison of mosaic R0 scaling: %g, %g" % (
+        #    np.sqrt(la.det(cov) / la.det(cov_nomosaic)),
+        #    np.sqrt(1. + la.inv(cov_nomosaic)[1, 1]*mos_h) * np.sqrt(1. + la.inv(cov_nomosaic)[2, 2]*mos_v)))
 
         # [pop75], equ. 5 & 9
         if pointlike:

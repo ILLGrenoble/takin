@@ -530,12 +530,10 @@ ResoResults calc_pop(const PopParams& pop)
 	res.dR0 = dmono_refl * dana_effic * dxsec * dmonitor;
 
 	// include sample mosaic, see [zhe07], equs. 12-14 and cf. equs. 15 & 16
-	//res.dR0 *= std::sqrt(std::abs(tl::determinant(cov) / tl::determinant(cov_nomosaic)));
-
-	// include sample mosaic, see [zhe07], equs. 12-14 and cf. equs. 15 & 16
-	res.dR0 /= std::sqrt(1. + cov(1, 1)*mos_h - mos_h*mos_h)
-		* std::sqrt(1. + cov(2, 2)*mos_v - mos_v*mos_v);
-
+	// in [zhe07], equ. 16 the (det(...)/det(...))^(1/2) factor should be
+	// (det(...)/(det(...)))^(-1/2), cf. volume normalisation in [zhe07], equ. 8
+	// this just corrects the resolution volume, which is already normalised in the MC step
+	//res.dR0 /= std::sqrt(std::abs(tl::determinant(cov) / tl::determinant(cov_nomosaic)));
 
 	// --------------------------------------------------------------------
 	// mono parts of the matrices, see: [zhe07], p. 10
@@ -698,7 +696,7 @@ ResoResults calc_pop(const PopParams& pop)
 	res.dR0 = std::abs(res.dR0);
 
 	// rest of the prefactors, equ. 1 in [pop75], together with the mono and and ana reflectivities
-	// (defining the resolution volume) these give the same correction as in [mit84] equ. A.57
+	// (defining the resolution volume), these give the same correction as in [mit84] equ. A.57
 	// NOTE: these factors are not needed, because the normalisation of the 4d gaussian distribution
 	// is already taken care of in the MC step by the employed std::normal_distribution function
 	//res.dR0 *= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);

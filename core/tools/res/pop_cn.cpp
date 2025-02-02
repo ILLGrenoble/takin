@@ -295,11 +295,8 @@ ResoResults calc_pop_cn(const CNParams& pop)
 	res.dR0 = dmono_refl * dana_effic * dxsec * dmonitor;
 
 	// include sample mosaic, see [zhe07], equs. 12-14 and cf. equs. 15 & 16
-	//res.dR0 *= std::sqrt(std::abs(tl::determinant(cov) / tl::determinant(cov_nomosaic)));
-
-	// include sample mosaic, see [zhe07], equs. 12-14
-	res.dR0 /= std::sqrt(1. + cov(1, 1)*mos_h - mos_h*mos_h)
-		* std::sqrt(1. + cov(2, 2)*mos_v - mos_v*mos_v);
+	// this just corrects the resolution volume, which is already normalised in the MC step
+	//res.dR0 /= std::sqrt(std::abs(tl::determinant(cov) / tl::determinant(cov_nomosaic)));
 
 	// --------------------------------------------------------------------
 	// mono parts of the matrices, see: [zhe07], p. 10
