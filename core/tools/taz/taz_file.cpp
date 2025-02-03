@@ -855,7 +855,7 @@ static inline std::pair<std::string, std::string> get_ciftool_version()
 	if(cifbin == "")
 		return std::make_pair("", cifbin);
 
-	tl::PipeProc<char> proc((cifbin + " 2>/dev/null").c_str(), false);
+	tl::PipeProc<char> proc(("\"" + cifbin + "\" 2>/dev/null").c_str(), false);
 	if(!proc.IsReady())
 		return std::make_pair("", cifbin);
 

@@ -225,7 +225,7 @@ void PowderFitDlg::Plot()
 		tl::log_info("Invoking ", strVer, ".");
 
 		if(!m_pPlotProc)
-			m_pPlotProc.reset(new tl::PipeProc<char>((g_strGplTool + " -p 2>/dev/null 1>/dev/null").c_str(), 1));
+			m_pPlotProc.reset(new tl::PipeProc<char>(("\"" + g_strGplTool + "\" -p 2>/dev/null 1>/dev/null").c_str(), 1));
 
 		if(strVer == "" || !m_pPlotProc || !m_pPlotProc->IsReady())
 		{

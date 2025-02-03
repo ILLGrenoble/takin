@@ -253,7 +253,7 @@ std::string find_program_binary(const std::string& strExe, bool log_messages)
 
 std::string get_gpltool_version()
 {
-	tl::PipeProc<char> proc((g_strGplTool + " 2>/dev/null --version").c_str(), false);
+	tl::PipeProc<char> proc(("\"" + g_strGplTool + "\" 2>/dev/null --version").c_str(), false);
 	if(!proc.IsReady())
 		return "";
 

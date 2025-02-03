@@ -683,7 +683,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 						// run exernal tool process
 						tl::log_debug("Running process \"", toolbin, "\"...");
 
-						tl::PipeProc<char> proc((toolbin + "&").c_str(), false);
+						tl::PipeProc<char> proc(("\"" + toolbin + "\"&").c_str(), false);
 						if(!proc.IsReady())
 							tl::log_err("Process \"", toolbin, "\" could not be created.");
 					});

@@ -292,7 +292,7 @@ void load_sqw_ext_plugins()
 
 
 			// get module infos
-			tl::PipeProc<char> proc(strPlugin.c_str(), false);
+			tl::PipeProc<char> proc(("\"" + strPlugin + "\"").c_str(), false);
 			if(!proc.IsReady())
 			{
 				tl::log_err("Cannot query external plugin infos for \"", strPlugin, "\".");

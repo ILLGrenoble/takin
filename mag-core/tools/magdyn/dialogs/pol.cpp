@@ -32,31 +32,172 @@
 #include <QtCore/QDir>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QTabWidget>
+#include <QtWidgets/QDialogButtonBox>
 
 #include <locale>
 #include <iostream>
 #include <optional>
 
-#include <boost/version.hpp>
-#include <boost/config.hpp>
-#include <boost/algorithm/string/replace.hpp>
-namespace algo = boost::algorithm;
+#include "tlibs2/libs/maths.h"
+#include "tlibs2/libs/phys.h"
+#include "tlibs2/libs/str.h"
+#include "tlibs2/libs/qt/helper.h"
+
+
+// choose calculation method (both give the same results)
+#define USE_BLUME_MALEEV_INDIR
 
 
 using namespace tl2_ops;
 
 using t_vec = tl2::vec<t_cplx, std::vector>;
 using t_mat = tl2::mat<t_cplx, std::vector>;
-using t_matvec = std::vector<t_mat>;
 
 using t_real_gl = tl2::t_real_gl;
-using t_vec2_gl = tl2::t_vec2_gl;
 using t_vec3_gl = tl2::t_vec3_gl;
 using t_vec_gl = tl2::t_vec_gl;
 using t_mat_gl = tl2::t_mat_gl;
 
 
 // ----------------------------------------------------------------------------
+/**
+ * create UI
+ */
+PolDlg::PolDlg(QWidget* pParent, QSettings *sett)
+	: QDialog{pParent, Qt::Window}, m_sett{sett}
+{
+	setWindowTitle("Polarisation Vectors");
+	setSizeGripEnabled(true);
+
+
+	// plot panel
+	auto plotpanel = new QWidget(this);
+	plotpanel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+	auto labelN = new QLabel("Re{N}, Im{N}:", plotpanel);
+	auto labelMPerpRe = new QLabel("Re{M_perp}:", plotpanel);
+	auto labelMPerpIm = new QLabel("Im{M_perp}:", plotpanel);
+	auto labelPi = new QLabel("P_i:", plotpanel);
+	auto labelPf = new QLabel("P_f:", plotpanel);
+
+
+	for(auto* label : {labelMPerpRe, labelMPerpIm, labelPi, labelPf})
+		label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+	for(auto* editPf : {m_editPfX, m_editPfY, m_editPfZ})
+		editPf->setReadOnly(true);
+
+
+	// connections
+	for(auto* edit : { m_editNRe, m_editNIm,
+		m_editMPerpReX, m_editMPerpReY, m_editMPerpReZ,
+		m_editMPerpImX, m_editMPerpImY, m_editMPerpImZ,
+		m_editPiX, m_editPiY, m_editPiZ,
+		m_editPfX, m_editPfY, m_editPfZ })
+		connect(edit, &QLineEdit::textEdited, this, &PolDlg::CalcPol);
+
+	connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation, this, &PolDlg::AfterGLInitialisation);
+	connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection, this, &PolDlg::PickerIntersection);
+
+	connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &PolDlg::MouseDown);
+	connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, &PolDlg::MouseUp);
+
+
+	auto pGrid = new QGridLayout(plotpanel);
+	pGrid->setSpacing(0);
+	pGrid->setContentsMargins(0, 0, 0, 0);
+
+	pGrid->addWidget(m_plot.get(), 0, 0, 1, 4);
+
+	pGrid->addWidget(labelN, 1, 0, 1, 1);
+	pGrid->addWidget(labelMPerpRe, 2, 0, 1, 1);
+	pGrid->addWidget(labelMPerpIm, 3, 0, 1, 1);
+	pGrid->addWidget(labelPi, 4, 0, 1, 1);
+	pGrid->addWidget(labelPf, 5, 0, 1, 1);
+
+	pGrid->addWidget(m_editNRe, 1, 1, 1, 1);
+	pGrid->addWidget(m_editNIm, 1, 2, 1, 1);
+
+	pGrid->addWidget(m_editMPerpReX, 2, 1, 1, 1);
+	pGrid->addWidget(m_editMPerpReY, 2, 2, 1, 1);
+	pGrid->addWidget(m_editMPerpReZ, 2, 3, 1, 1);
+	pGrid->addWidget(m_editMPerpImX, 3, 1, 1, 1);
+	pGrid->addWidget(m_editMPerpImY, 3, 2, 1, 1);
+	pGrid->addWidget(m_editMPerpImZ, 3, 3, 1, 1);
+
+	pGrid->addWidget(m_editPiX, 4, 1, 1, 1);
+	pGrid->addWidget(m_editPiY, 4, 2, 1, 1);
+	pGrid->addWidget(m_editPiZ, 4, 3, 1, 1);
+	pGrid->addWidget(m_editPfX, 5, 1, 1, 1);
+	pGrid->addWidget(m_editPfY, 5, 2, 1, 1);
+	pGrid->addWidget(m_editPfZ, 5, 3, 1, 1);
+
+
+	// restore last values
+	if(m_sett->contains("pol/n_re"))
+		m_editNRe->setText(m_sett->value("pol/n_re").toString());
+	if(m_sett->contains("pol/n_im"))
+		m_editNIm->setText(m_sett->value("pol/n_im").toString());
+	if(m_sett->contains("pol/mx_re"))
+		m_editMPerpReX->setText(m_sett->value("pol/mx_re").toString());
+	if(m_sett->contains("pol/my_re"))
+		m_editMPerpReY->setText(m_sett->value("pol/my_re").toString());
+	if(m_sett->contains("pol/mz_re"))
+		m_editMPerpReZ->setText(m_sett->value("pol/mz_re").toString());
+	if(m_sett->contains("pol/mx_im"))
+		m_editMPerpImX->setText(m_sett->value("pol/mx_im").toString());
+	if(m_sett->contains("pol/my_im"))
+		m_editMPerpImY->setText(m_sett->value("pol/my_im").toString());
+	if(m_sett->contains("pol/mz_im"))
+		m_editMPerpImZ->setText(m_sett->value("pol/mz_im").toString());
+	if(m_sett->contains("pol/pix"))
+		m_editPiX->setText(m_sett->value("pol/pix").toString());
+	if(m_sett->contains("pol/piy"))
+		m_editPiY->setText(m_sett->value("pol/piy").toString());
+	if(m_sett->contains("pol/piz"))
+		m_editPiZ->setText(m_sett->value("pol/piz").toString());
+
+
+	// status bar
+	m_labelStatus->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	m_labelStatus->setFrameStyle(int(QFrame::Sunken) | int(QFrame::Panel));
+	m_labelStatus->setLineWidth(1);
+
+
+	// close button
+	QDialogButtonBox *btnbox = new QDialogButtonBox(this);
+	btnbox->addButton(QDialogButtonBox::Ok);
+	btnbox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+	connect(btnbox, &QDialogButtonBox::accepted, this, &PolDlg::accept);
+
+
+	// main grid
+	auto pmainGrid = new QGridLayout(this);
+	pmainGrid->setSpacing(4);
+	pmainGrid->setContentsMargins(4, 4, 4, 4);
+	pmainGrid->addWidget(plotpanel, 0, 0, 1, 4);
+	pmainGrid->addWidget(m_labelStatus, 1, 0, 1, 3);
+	pmainGrid->addWidget(btnbox, 1, 3, 1, 1);
+
+
+	// restory window size and position
+	if(m_sett->contains("pol/geo"))
+		restoreGeometry(m_sett->value("pol/geo").toByteArray());
+	else
+		resize(800, 800);
+
+
+	// have scattering plane in horizontal plane
+	m_plot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
+	m_plot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
+	m_plot->GetRenderer()->SetCoordMax(5.);
+	m_plot->GetRenderer()->GetCamera().SetDist(2.5);
+	m_plot->GetRenderer()->GetCamera().UpdateTransformation();
+
+	CalcPol();
+}
+
+
 void PolDlg::closeEvent(QCloseEvent *)
 {
 	// save window size and position
@@ -218,14 +359,11 @@ void PolDlg::MouseDown(bool left, bool mid, bool right)
 	if(right)
 		m_mouseDown[2] = true;
 
-	if(m_mouseDown[0])
+	if(m_mouseDown[0] && (m_curDraggedObj = m_curPickedObj))
 	{
-		if((m_curDraggedObj = m_curPickedObj))
-		{
-			auto lenVec = GetArrowLen(*m_curDraggedObj);
-			if(lenVec > 0.)
-				m_plot->GetRenderer()->SetPickerSphereRadius(lenVec);
-		}
+		auto lenVec = GetArrowLen(*m_curDraggedObj);
+		if(lenVec > 0.)
+			m_plot->GetRenderer()->SetPickerSphereRadius(lenVec);
 	}
 }
 
@@ -244,132 +382,6 @@ void PolDlg::MouseUp(bool left, bool mid, bool right)
 
 	if(!m_mouseDown[0])
 		m_curDraggedObj.reset();
-}
-
-
-/**
- * create UI
- */
-PolDlg::PolDlg(QWidget* pParent, QSettings *sett)
-	: QDialog{pParent, Qt::Window}, m_sett{sett}
-{
-	setWindowTitle("Polarisation Vectors");
-	setSizeGripEnabled(true);
-
-
-	// plot panel
-	auto plotpanel = new QWidget(this);
-
-	auto labelN = new QLabel("Re{N}, Im{N}:", plotpanel);
-	auto labelMPerpRe = new QLabel("Re{M_perp}:", plotpanel);
-	auto labelMPerpIm = new QLabel("Im{M_perp}:", plotpanel);
-	auto labelPi = new QLabel("P_i:", plotpanel);
-	auto labelPf = new QLabel("P_f:", plotpanel);
-
-
-	for(auto* label : {labelMPerpRe, labelMPerpIm, labelPi, labelPf})
-		label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-	for(auto* editPf : {m_editPfX, m_editPfY, m_editPfZ})
-		editPf->setReadOnly(true);
-
-	m_labelStatus->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	m_labelStatus->setFrameStyle(int(QFrame::Sunken) | int(QFrame::Panel));
-	m_labelStatus->setLineWidth(1);
-
-
-	// connections
-	for(auto* edit : {m_editNRe, m_editNIm,
-		m_editMPerpReX, m_editMPerpReY, m_editMPerpReZ,
-		m_editMPerpImX, m_editMPerpImY, m_editMPerpImZ,
-		m_editPiX, m_editPiY, m_editPiZ,
-		m_editPfX, m_editPfY, m_editPfZ})
-		connect(edit, &QLineEdit::textEdited, this, &PolDlg::CalcPol);
-
-	connect(m_plot.get(), &tl2::GlPlot::AfterGLInitialisation, this, &PolDlg::AfterGLInitialisation);
-	connect(m_plot->GetRenderer(), &tl2::GlPlotRenderer::PickerIntersection, this, &PolDlg::PickerIntersection);
-
-	connect(m_plot.get(), &tl2::GlPlot::MouseDown, this, &PolDlg::MouseDown);
-	connect(m_plot.get(), &tl2::GlPlot::MouseUp, this, &PolDlg::MouseUp);
-
-
-	auto pGrid = new QGridLayout(plotpanel);
-	pGrid->setSpacing(0);
-	pGrid->setContentsMargins(0, 0, 0, 0);
-
-	pGrid->addWidget(m_plot.get(), 0,0,1,4);
-
-	pGrid->addWidget(labelN, 1,0,1,1);
-	pGrid->addWidget(labelMPerpRe, 2,0,1,1);
-	pGrid->addWidget(labelMPerpIm, 3,0,1,1);
-	pGrid->addWidget(labelPi, 4,0,1,1);
-	pGrid->addWidget(labelPf, 5,0,1,1);
-
-	pGrid->addWidget(m_editNRe, 1,1,1,1);
-	pGrid->addWidget(m_editNIm, 1,2,1,1);
-
-	pGrid->addWidget(m_editMPerpReX, 2,1,1,1);
-	pGrid->addWidget(m_editMPerpReY, 2,2,1,1);
-	pGrid->addWidget(m_editMPerpReZ, 2,3,1,1);
-	pGrid->addWidget(m_editMPerpImX, 3,1,1,1);
-	pGrid->addWidget(m_editMPerpImY, 3,2,1,1);
-	pGrid->addWidget(m_editMPerpImZ, 3,3,1,1);
-
-	pGrid->addWidget(m_editPiX, 4,1,1,1);
-	pGrid->addWidget(m_editPiY, 4,2,1,1);
-	pGrid->addWidget(m_editPiZ, 4,3,1,1);
-	pGrid->addWidget(m_editPfX, 5,1,1,1);
-	pGrid->addWidget(m_editPfY, 5,2,1,1);
-	pGrid->addWidget(m_editPfZ, 5,3,1,1);
-
-	pGrid->addWidget(m_labelStatus, 6,0,1,4);
-
-	// restore last values
-	if(m_sett->contains("pol/n_re"))
-		m_editNRe->setText(m_sett->value("pol/n_re").toString());
-	if(m_sett->contains("pol/n_im"))
-		m_editNIm->setText(m_sett->value("pol/n_im").toString());
-	if(m_sett->contains("pol/mx_re"))
-		m_editMPerpReX->setText(m_sett->value("pol/mx_re").toString());
-	if(m_sett->contains("pol/my_re"))
-		m_editMPerpReY->setText(m_sett->value("pol/my_re").toString());
-	if(m_sett->contains("pol/mz_re"))
-		m_editMPerpReZ->setText(m_sett->value("pol/mz_re").toString());
-	if(m_sett->contains("pol/mx_im"))
-		m_editMPerpImX->setText(m_sett->value("pol/mx_im").toString());
-	if(m_sett->contains("pol/my_im"))
-		m_editMPerpImY->setText(m_sett->value("pol/my_im").toString());
-	if(m_sett->contains("pol/mz_im"))
-		m_editMPerpImZ->setText(m_sett->value("pol/mz_im").toString());
-	if(m_sett->contains("pol/pix"))
-		m_editPiX->setText(m_sett->value("pol/pix").toString());
-	if(m_sett->contains("pol/piy"))
-		m_editPiY->setText(m_sett->value("pol/piy").toString());
-	if(m_sett->contains("pol/piz"))
-		m_editPiZ->setText(m_sett->value("pol/piz").toString());
-
-
-
-	auto pmainGrid = new QGridLayout(this);
-	pmainGrid->setSpacing(4);
-	pmainGrid->setContentsMargins(4, 4, 4, 4);
-	pmainGrid->addWidget(plotpanel, 0, 0, 1, 1);
-
-
-	// restory window size and position
-	if(m_sett->contains("pol/geo"))
-		restoreGeometry(m_sett->value("pol/geo").toByteArray());
-	else
-		resize(800, 800);
-
-	// have scattering plane in horizontal plane
-	m_plot->GetRenderer()->SetLight(0, tl2::create<t_vec3_gl>({ 5, 5, 5 }));
-	m_plot->GetRenderer()->SetLight(1, tl2::create<t_vec3_gl>({ -5, -5, -5 }));
-	m_plot->GetRenderer()->SetCoordMax(5.);
-	m_plot->GetRenderer()->GetCamera().SetDist(2.5);
-	m_plot->GetRenderer()->GetCamera().UpdateTransformation();
-
-	CalcPol();
 }
 
 
@@ -401,8 +413,11 @@ void PolDlg::CalcPol()
 	const t_vec Pi = tl2::create<t_vec>({PiX, PiY, PiZ});
 
 	// calculate final polarisation vector and intensity
-	auto [I, P_f] = tl2::blume_maleev_indir<t_mat, t_vec, t_cplx>(Pi, Mperp, N);
-	//auto [I, P_f] = tl2::blume_maleev<t_vec, t_cplx>(Pi, Mperp, N);
+#ifdef USE_BLUME_MALEEV_INDIR
+	auto [ I, P_f ] = tl2::blume_maleev_indir<t_mat, t_vec, t_cplx>(Pi, Mperp, N);
+#else
+	auto [ I, P_f ] = tl2::blume_maleev<t_vec, t_cplx>(Pi, Mperp, N);
+#endif
 
 	// set final polarisation
 	m_editPfX->setText(tl2::var_to_str(P_f[0].real(), g_prec).c_str());
@@ -416,26 +431,26 @@ void PolDlg::CalcPol()
 		// P_i
 		t_mat_gl matPi = tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
 			tl2::create<t_vec_gl>({t_real_gl(PiX), t_real_gl(PiY), t_real_gl(PiZ)}),  // to
-			1.,                                     // scale
-			tl2::create<t_vec_gl>({0,0,0.5}),       // translate
-			tl2::create<t_vec_gl>({0,0,1}));        // from
+			1.,                                         // scale
+			tl2::create<t_vec_gl>({ 0, 0, 0.5 }),       // translate
+			tl2::create<t_vec_gl>({ 0, 0, 1 }));        // from
 		m_plot->GetRenderer()->SetObjectMatrix(m_arrow_pi, matPi);
 
 		// P_f
 		t_mat_gl matPf = tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
 			tl2::create<t_vec_gl>({t_real_gl(P_f[0].real()), t_real_gl(P_f[1].real()), t_real_gl(P_f[2].real())}),  // to
-			1.,                                     // scale
-			tl2::create<t_vec_gl>({0,0,0.5}),       // translate
-			tl2::create<t_vec_gl>({0,0,1}));        // from
+			1.,                                         // scale
+			tl2::create<t_vec_gl>({ 0, 0, 0.5 }),       // translate
+			tl2::create<t_vec_gl>({ 0, 0, 1 }));        // from
 		m_plot->GetRenderer()->SetObjectMatrix(m_arrow_pf, matPf);
 
 		// Re(M)
 		const t_real_gl lenReM = t_real_gl(std::sqrt(MPerpReX*MPerpReX + MPerpReY*MPerpReY + MPerpReZ*MPerpReZ));
 		t_mat_gl matMRe = tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
 			tl2::create<t_vec_gl>({t_real_gl(MPerpReX), t_real_gl(MPerpReY), t_real_gl(MPerpReZ)}),  // to
-			lenReM,                                 // scale
-			tl2::create<t_vec_gl>({0,0,0.5}),       // translate
-			tl2::create<t_vec_gl>({0,0,1}));        // from
+			lenReM,                                     // scale
+			tl2::create<t_vec_gl>({ 0, 0, 0.5 }),       // translate
+			tl2::create<t_vec_gl>({ 0, 0, 1 }));        // from
 		m_plot->GetRenderer()->SetObjectMatrix(m_arrow_M_Re, matMRe);
 		m_plot->GetRenderer()->SetObjectVisible(m_arrow_M_Re, !tl2::equals(lenReM, t_real_gl(0)));
 
@@ -443,9 +458,9 @@ void PolDlg::CalcPol()
 		const t_real_gl lenImM = t_real_gl(std::sqrt(MPerpImX*MPerpImX + MPerpImY*MPerpImY + MPerpImZ*MPerpImZ));
 		t_mat_gl matMIm = tl2::get_arrow_matrix<t_vec_gl, t_mat_gl, t_real_gl>(
 			tl2::create<t_vec_gl>({t_real_gl(MPerpImX), t_real_gl(MPerpImY), t_real_gl(MPerpImZ)}),  // to
-			lenImM,                                 // scale
-			tl2::create<t_vec_gl>({0,0,0.5}),       // translate
-			tl2::create<t_vec_gl>({0,0,1}));        // from
+			lenImM,                                     // scale
+			tl2::create<t_vec_gl>({ 0, 0, 0.5 }),       // translate
+			tl2::create<t_vec_gl>({ 0, 0, 1 }));        // from
 		m_plot->GetRenderer()->SetObjectMatrix(m_arrow_M_Im, matMIm);
 		m_plot->GetRenderer()->SetObjectVisible(m_arrow_M_Im, !tl2::equals(lenImM, t_real_gl(0)));
 
