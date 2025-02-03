@@ -176,7 +176,6 @@ chmod a+rx ${DST_PLUGIN_DIR}/install_pymods.py
 cp -v bin/takin "${BIN_DIR}"
 cp -v bin/takin_cif2xml "${BIN_DIR}"
 cp -v bin/takin_findsg "${BIN_DIR}"
-cp -v bin/takin_pol "${BIN_DIR}"
 cp -v bin/takin_bz "${BIN_DIR}"
 cp -v bin/takinmod_py "${BIN_DIR}"
 cp -v bin/takinmod_jl "${BIN_DIR}"

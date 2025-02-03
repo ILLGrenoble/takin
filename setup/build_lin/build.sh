@@ -188,7 +188,6 @@ if [ $build_takin2 -ne 0 ]; then
 		# copy tools to Takin main dir
 		cp -v ${BUILD_DIR}/tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
 		cp -v ${BUILD_DIR}/tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
-		cp -v ${BUILD_DIR}/tools/pol/takin_pol "${TAKIN_ROOT}"/core/bin/
 		cp -v ${BUILD_DIR}/tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/
 		cp -v ${BUILD_DIR}/tools/structfact/takin_structfact "${TAKIN_ROOT}"/core/bin/
 		cp -v ${BUILD_DIR}/tools/magstructfact/takin_magstructfact "${TAKIN_ROOT}"/core/bin/
