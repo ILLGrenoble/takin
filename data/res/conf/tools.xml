@@ -24,74 +24,68 @@
 	</entry_3>
 
 	<entry_4>
-		<type>program</type>
-		<name>Polarisation Vectors...</name>
-		<program>takin_pol</program>
+		<type>separator</type>
 	</entry_4>
 
 	<entry_5>
-		<type>separator</type>
-	</entry_5>
-
-	<entry_6>
 		<type>program</type>
 		<name>Molecular Dynamics...</name>
 		<program>takin_moldyn</program>
+	</entry_5>
+
+	<entry_6>
+		<type>separator</type>
 	</entry_6>
 
 	<entry_7>
-		<type>separator</type>
-	</entry_7>
-
-	<entry_8>
 		<type>program_internal</type>
 		<name>Space Groups...</name>
 		<program>takin_sgbrowser</program>
+	</entry_7>
+
+	<entry_8>
+		<type>program</type>
+		<name>Nuclear Stucture Factors...</name>
+		<program>takin_structfact</program>
 	</entry_8>
 
 	<entry_9>
 		<type>program</type>
-		<name>Nuclear Stucture Factors...</name>
-		<program>takin_structfact</program>
+		<name>Brillouin Zones...</name>
+		<program>takin_bz</program>
 	</entry_9>
 
 	<entry_10>
-		<type>program</type>
-		<name>Brillouin Zones...</name>
-		<program>takin_bz</program>
+		<type>separator</type>
 	</entry_10>
 
 	<entry_11>
-		<type>separator</type>
+		<type>program</type>
+		<name>Magnetic Space Groups...</name>
+		<program>takin_magsgbrowser</program>
 	</entry_11>
 
 	<entry_12>
 		<type>program</type>
-		<name>Magnetic Space Groups...</name>
-		<program>takin_magsgbrowser</program>
+		<name>Magnetic Stucture Factors...</name>
+		<program>takin_magstructfact</program>
 	</entry_12>
 
 	<entry_13>
 		<type>program</type>
-		<name>Magnetic Stucture Factors...</name>
-		<program>takin_magstructfact</program>
-	</entry_13>
-
-	<entry_14>
-		<type>program</type>
 		<name>Magnetic Dynamics...</name>
 		<program>takin_magdyn</program>
-	</entry_14>
+	</entry_13>
 
 <!--
-	<entry_15>
+	<entry_14>
 		<type>separator</type>
-	</entry_15>
+	</entry_14>
 
-	<entry_16>
+	<entry_15>
 		<type>program</type>
 		<name>TAS Pathfinding...</name>
 		<program>takin_taspaths</program>
-	</entry_16>
+	</entry_15>
 -->
 </tools>

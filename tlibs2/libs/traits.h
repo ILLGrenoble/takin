@@ -92,11 +92,11 @@ concept is_dyn_vec = requires(const T& a)
 template<class T>
 concept is_vec = requires(const T& a)
 {
-	a+a;			// operator+
-	a-a;			// operator-
-	a[0]*a;			// operator*
-	a*a[0];
-	a/a[0];			// operator/
+	a + a;			// operator+
+	a - a;			// operator-
+	a[0] * a;		// operator*
+	a * a[0];
+	a / a[0];		// operator/
 } && is_basic_vec<T>;
 
 
@@ -107,17 +107,17 @@ concept is_vec = requires(const T& a)
 template<class T>
 concept is_quat = requires(const T& a)
 {
-	a+a;			// operator+
-	a-a;			// operator-
-	a*a;			// operator*
-	a/a;			// operator/
+	a + a;			// operator+
+	a - a;			// operator-
+	a * a;			// operator*
+	a / a;			// operator/
 
 	a + a.R_component_1();
 	a.R_component_1() + a;
 
-	a.R_component_1()*a;	// operator*
-	a*a.R_component_1();
-	a/a.R_component_1();	// operator/
+	a.R_component_1() * a;	// operator*
+	a * a.R_component_1();
+	a / a.R_component_1();	// operator/
 
 	a.R_component_1();
 	a.R_component_2();
@@ -154,11 +154,11 @@ concept is_dyn_mat = requires(const T& a)
 template<class T>
 concept is_mat = requires(const T& a)
 {
-	a+a;			// operator+
-	a-a;			// operator-
-	a(0,0)*a;		// operator*
-	a*a(0,0);
-	a/a(0,0);		// operator/
+	a + a;			// operator+
+	a - a;			// operator-
+	a(0,0) * a;		// operator*
+	a * a(0,0);
+	a / a(0,0);		// operator/
 } && is_basic_mat<T>;
 
 
@@ -175,10 +175,10 @@ concept is_complex = requires(const T& a)
 	a.real();		// must have a real() member function
 	a.imag();		// must have an imag() member function
 
-	a+a;
-	a-a;
-	a*a;
-	a/a;
+	a + a;
+	a - a;
+	a * a;
+	a / a;
 } && has_value_type<T>;
 
 

@@ -173,6 +173,7 @@ if(USE_QT)
 		dialogs/dispersion3d.cpp dialogs/dispersion3d.h
 		dialogs/table_import.cpp dialogs/table_import.h
 		dialogs/trafos.cpp dialogs/trafos.h
+		dialogs/pol.cpp dialogs/pol.h
 		dialogs/notes.cpp dialogs/notes.h
 		dialogs/infos.cpp dialogs/infos.h
 		dialogs/settings.h

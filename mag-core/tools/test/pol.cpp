@@ -5,7 +5,7 @@
  * @license GPLv3, see 'LICENSE' file
  * @desc The present version was forked on 8-Nov-2018 from my privately developed "magtools" project (https://github.com/t-weber/magtools).
  *
- * g++ -std=c++2a -fconcepts -I../.. -o pol_cli pol_cli.cpp
+ * g++ -std=c++20 -I../.. -o pol pol.cpp
  *
  * ----------------------------------------------------------------------------
  * mag-core (part of the Takin software suite)
@@ -31,14 +31,12 @@
 #include <iostream>
 
 #include "tlibs2/libs/maths.h"
+#include "tlibs2/libs/phys.h"
 #include "libs/defs.h"
 
 
-using namespace tl2;
-using namespace tl2_ops;
-
-using t_vec = std::vector<t_cplx>;
-using t_mat = mat<t_cplx, std::vector>;
+using t_vec = tl2::vec<t_cplx, std::vector>;
+using t_mat = tl2::mat<t_cplx, std::vector>;
 using t_matvec = std::vector<t_mat>;
 
 
@@ -52,11 +50,14 @@ std::istringstream get_istr(std::istream& istr)
 
 int main()
 {
-	constexpr bool bCheck = true;
+	using namespace tl2_ops;
+
+	constexpr bool check = true;
+	t_real eps = 1e-5;
 
 	t_cplx N(0,0);
-	t_vec Mperp = create<t_vec>({0, 0, t_cplx(1,2)});
-	t_vec P = create<t_vec>({0, 1, 1});
+	t_vec Mperp = tl2::create<t_vec>({ 0, 0, t_cplx(1,2) });
+	t_vec P = tl2::create<t_vec>({ 0, 1, 1 });
 
 
 	std::cout << "N = "; get_istr(std::cin) >> N;
@@ -69,17 +70,17 @@ int main()
 	std::cout << "P = " << P << "\n";
 	std::cout << std::endl;
 
-	std::cout << "density matrix = " << pol_density_mat<t_vec, t_mat>(P) << "\n";
+	std::cout << "density matrix = " << tl2::pol_density_mat<t_vec, t_mat>(P) << "\n";
 	std::cout << std::endl;
 
-	auto [I, P_f] = blume_maleev_indir<t_mat, t_vec, t_cplx>(P, Mperp, N);
+	auto [ I, P_f ] = tl2::blume_maleev_indir<t_mat, t_vec, t_cplx>(P, Mperp, N);
 	std::cout << "I = " << I << "\nP_f = " << P_f << std::endl;
 
 	// double-check results
-	if constexpr(bCheck)
+	if constexpr(check)
 	{
-		auto [I2, P_f2] = blume_maleev<t_vec, t_cplx>(P, Mperp, N);
-		if(!equals(I, I2, 1e-5) || !equals(P_f, P_f2, 1e-5))
+		auto [ I2, P_f2 ] = tl2::blume_maleev<t_vec, t_cplx>(P, Mperp, N);
+		if(!tl2::equals<t_cplx>(I, I2, eps) || !equals<t_vec, t_cplx>(P_f, P_f2, eps))
 		{
 			std::cerr << "Mismatch between blume_maleev() and blume_maleev_indir()!" << std::endl;
 		}

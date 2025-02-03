@@ -343,7 +343,7 @@ int main(int argc, char** argv)
 
 		tl::log_info("--------------------------------------------------------------------------------");
 		tl::log_info("This is Takin version " TAKIN_VER " (built on " __DATE__ ").");
-		tl::log_info("Author: Tobias Weber <tweber@ill.fr>, 2014 - 2024.");
+		tl::log_info("Author: Tobias Weber <tweber@ill.fr>, 2014 - 2025.");
 		tl::log_info("Core program licensed under GPLv2, see the about dialog.");
 		tl::log_info("--------------------------------------------------------------------------------");
 

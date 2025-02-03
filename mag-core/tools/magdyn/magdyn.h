@@ -72,6 +72,7 @@
 #include "dialogs/topology.h"
 #include "dialogs/dispersion3d.h"
 #include "dialogs/trafos.h"
+#include "dialogs/pol.h"
 #include "dialogs/notes.h"
 #include "dialogs/infos.h"
 
@@ -227,6 +228,7 @@ protected:
 	TableImportDlg *m_table_import_dlg{};  // table import dialog
 	NotesDlg *m_notes_dlg{};               // notes dialog
 	TrafoCalculator *m_trafos{};           // trafo calculator
+	PolDlg *m_pol{};                       // polarisation calculator
 	InfoDlg *m_info_dlg{};                 // info dialog
 	StructPlotDlg *m_structplot_dlg{};     // magnetic structure plotter
 	GroundStateDlg *m_groundstate_dlg{};   // ground state minimiser

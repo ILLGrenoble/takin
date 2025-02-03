@@ -41,12 +41,6 @@ message("Configuring cif2xml...")
 message("================================================================================")
 add_subdirectory(tools/cif2xml)
 
-# polarisation tool
-message("\n================================================================================")
-message("Configuring pol...")
-message("================================================================================")
-add_subdirectory(tools/pol)
-
 # nuclear structure factor tool
 message("\n================================================================================")
 message("Configuring structfact...")

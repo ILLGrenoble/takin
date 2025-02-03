@@ -410,6 +410,7 @@ void MagDynDlg::CreateMenuBar()
 	QAction *acDisp3D = new QAction("3D Dispersion...", menuTools);
 	QAction *acTopo = new QAction("Topology...", menuTools);
 	QAction *acTrafoCalc = new QAction("Transformations...", menuTools);
+	QAction *acPolCalc = new QAction("Polarisation Vectors...", menuTools);
 	QAction *acPreferences = new QAction("Preferences...", menuTools);
 	acTrafoCalc->setIcon(QIcon::fromTheme("accessories-calculator"));
 	acPreferences->setIcon(QIcon::fromTheme("preferences-system"));
@@ -495,6 +496,7 @@ void MagDynDlg::CreateMenuBar()
 	menuTools->addAction(acTopo);
 	menuTools->addSeparator();
 	menuTools->addAction(acTrafoCalc);
+	menuTools->addAction(acPolCalc);
 	menuTools->addSeparator();
 	menuTools->addAction(acPreferences);
 
@@ -612,7 +614,7 @@ void MagDynDlg::CreateMenuBar()
 		this->CalcAll();
 	});
 
-	// show trafo dialog
+	// show trafo calculator dialog
 	connect(acTrafoCalc, &QAction::triggered, [this]()
 	{
 		if(!m_trafos)
@@ -621,6 +623,21 @@ void MagDynDlg::CreateMenuBar()
 		m_trafos->show();
 		m_trafos->raise();
 		m_trafos->activateWindow();
+	});
+
+	// show polarisation calculator dialog
+	connect(acPolCalc, &QAction::triggered, [this]()
+	{
+		if(!m_pol)
+		{
+			m_pol = new PolDlg(this, m_sett);
+			connect(m_pol, &PolDlg::GlDeviceInfos,
+				m_info_dlg, &InfoDlg::SetGlDeviceInfos);
+		}
+
+		m_pol->show();
+		m_pol->raise();
+		m_pol->activateWindow();
 	});
 
 	// show preferences dialog
