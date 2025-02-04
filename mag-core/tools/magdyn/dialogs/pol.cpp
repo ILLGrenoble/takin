@@ -184,7 +184,7 @@ PolDlg::PolDlg(QWidget* pParent, QSettings *sett)
 	if(m_sett->contains("pol/geo"))
 		restoreGeometry(m_sett->value("pol/geo").toByteArray());
 	else
-		resize(800, 800);
+		resize(640, 640);
 
 
 	// have scattering plane in horizontal plane
@@ -198,7 +198,7 @@ PolDlg::PolDlg(QWidget* pParent, QSettings *sett)
 }
 
 
-void PolDlg::closeEvent(QCloseEvent *)
+void PolDlg::accept()
 {
 	// save window size and position
 	m_sett->setValue("pol/geo", saveGeometry());
@@ -215,6 +215,8 @@ void PolDlg::closeEvent(QCloseEvent *)
 	m_sett->setValue("pol/pix", m_editPiX->text().toDouble());
 	m_sett->setValue("pol/piy", m_editPiY->text().toDouble());
 	m_sett->setValue("pol/piz", m_editPiZ->text().toDouble());
+
+	QDialog::accept();
 }
 
 

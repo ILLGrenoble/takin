@@ -55,7 +55,7 @@ public:
 
 
 protected:
-	virtual void closeEvent(QCloseEvent *) override;
+	virtual void accept() override;
 
 
 protected slots:
