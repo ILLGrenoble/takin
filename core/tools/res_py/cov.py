@@ -39,6 +39,24 @@ hbar = np.divide(h, 2*np.pi)
 moh = np.divide(m_n, hbar)
 covQhw = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
 
+# Calcul of the length of a segment cuts in small segments
+def calcDistLin(dist):
+    """dist in an array: [L1, delta1, L2, delta2, ...], L: distance, delta: uncerntainty"""
+    L = 0
+    nb = len(dist)
+    for i in range(0,nb,2):
+        L += dist[i]
+    return L
+
+# Storage of the given uncerntainty in a list
+def listDelta(list_param):
+    """list_param in an array: [P1, delta1, P2, delta2, ...], P: parameter, delta: uncerntainty"""
+    dlt = []
+    nb = len(list_param)
+    for i in range(1,nb,2):
+        dlt.append(list_param[i])
+    return dlt
+
 # Shape of the detector: vertical cylinder. The incident beam arrive align with the radius of the cylinder
 def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     """param_geo is a dictionary: {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[radius, sigma_r, heigh, sigma_h], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f]},
@@ -46,16 +64,10 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     v_i, v_f: velocity of the incident and scattered neutron"""
 
     # Calcul of distances
-    L_PM = 0
-    L_MS = 0
-    nb_PM = len(param_geo['dist_PM'])
-    nb_MS = len(param_geo['dist_MS'])
-    for i in range(0,nb_PM,2):
-        L_PM += param_geo['dist_PM'][i]
-    for i in range(0,nb_MS,2):
-        L_MS += param_geo['dist_MS'][i]
     rad = param_geo['dist_SD'][0]
     hei = param_geo['dist_SD'][2]
+    L_PM = calcDistLin(param_geo['dist_PM'])
+    L_MS = calcDistLin(param_geo['dist_MS'])
     L_SD = np.sqrt(np.square(rad) + np.square(hei))
     if(verbose):
         print('param_geo =', param_geo)
@@ -82,24 +94,27 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
         print('Be =', Be, 'Bx =', Bx, 'By =', By, 'Bz =', Bz)
     
     # Creation of the Jacobian and  the parameter's uncertainty matrices
-    size_PM = np.divide(nb_PM, 2)
-    size_MS = np.divide(nb_MS, 2)
-    size_SD = np.divide(len(param_geo['dist_SD']), 2)
+    size_PM = int(np.divide(len(param_geo['dist_PM']), 2))
+    size_MS = int(np.divide(len(param_geo['dist_MS']), 2))
+    size_SD = int(np.divide(len(param_geo['dist_SD']), 2))
     size_tps = 2
-    size_angles = np.divide(len(param_geo['angles']), 2)
-    nb_col = int(size_PM + size_MS + size_SD + size_tps + size_angles)
+    size_angles = int(np.divide(len(param_geo['angles']), 2))
+    nb_col = size_PM + size_MS + size_SD + size_tps + size_angles
     jacobian = np.zeros((4, nb_col))
     covxi = np.eye(nb_col)
+
     # Calcul of Jacobian's terms
     # x terms
     dQxdL_PMj = np.divide(moh, v_i)*(Ax + Bx*np.divide(L_MS, L_SD))
     dQxdL_MSj = -np.divide(moh, v_i)*Bx*np.divide(L_PM,L_SD)
     dQxdrad = -np.divide(moh, v_f)*Bx*np.divide(L_PM,rad)
+    dQxdz = 0
     dQxdt_PM = -moh*(Ax + Bx*np.divide(L_MS, L_SD))
     dQxdt_MD = moh*Bx*np.divide(L_PM, L_SD)
     dQxdtheta_i = -moh*v_i*np.sin(theta_i)*np.cos(phi_i)
     dQxdphi_i = -moh*v_i*np.cos(theta_i)*np.sin(phi_i)
     dQxdtheta_f = moh*v_f*np.sin(theta_f)*cos_phi_f
+    dQx = np.concatenate(( np.array([dQxdL_PMj]*size_PM), np.array([dQxdL_MSj]*size_MS), np.array([dQxdrad, dQxdz, dQxdt_PM, dQxdt_MD, dQxdtheta_i, dQxdphi_i, dQxdtheta_f]) ))
     if(verbose):
         print('dQx/dL_PMj =', dQxdL_PMj, 'dQx/dL_MSj =', dQxdL_MSj, 'dQx/drad =', dQxdrad)
         print('dQx/dt_PM =', dQxdt_PM, 'dQx/dt_MD =', dQxdt_MD)
@@ -108,11 +123,13 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     dQydL_PMj = np.divide(moh, v_i)*(Ay + By*np.divide(L_MS, L_SD))
     dQydL_MSj = -np.divide(moh, v_i)*By*np.divide(L_PM, L_SD)
     dQydrad = -np.divide(moh, v_f)*By*np.divide(L_PM, rad)
+    dQydz = 0
     dQydt_PM = -moh*(Ay + By*np.divide(L_MS, L_SD))
     dQydt_MD = moh*By*np.divide(L_PM, L_SD)
     dQydtheta_i = moh*v_i*np.cos(theta_i)*np.cos(phi_i)
     dQydphi_i = -moh*v_i*np.sin(theta_i)*np.sin(phi_i)
     dQydtheta_f = -moh*v_f*np.cos(theta_f)*cos_phi_f
+    dQy = np.concatenate(( np.array([dQydL_PMj]*size_PM), np.array([dQydL_MSj]*size_MS), np.array([dQydrad, dQydz, dQydt_PM, dQydt_MD, dQydtheta_i, dQydphi_i, dQydtheta_f]) ))
     if(verbose):
         print('dQy/dL_PMj =', dQydL_PMj, 'dQy/dL_MSj =', dQydL_MSj, 'dQy/drad =', dQydrad)
         print('dQy/dt_PM =', dQydt_PM, 'dQy/dt_MD =', dQydt_MD)
@@ -120,10 +137,14 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     # z terms
     dQzdL_PMj = np.divide(moh, v_i)*(Az + Bz*np.divide(L_MS, L_SD))
     dQzdL_MSj = -np.divide(moh, v_i)*Bz*np.divide(L_PM, L_SD)
+    dQzdrad = 0
     dQzdz = -moh*np.divide(v_f, L_SD)
     dQzdt_PM = -moh*(Az + Bz*np.divide(L_MS, L_SD))
     dQzdt_MD = moh*Bz*np.divide(L_PM, L_SD)
+    dQzdtheta_i = 0
     dQzdphi_i = moh*v_i*np.cos(phi_i)
+    dQzdtheta_f = 0
+    dQz = np.concatenate(( np.array([dQzdL_PMj]*size_PM), np.array([dQzdL_MSj]*size_MS), np.array([dQzdrad, dQzdz, dQzdt_PM, dQzdt_MD, dQzdtheta_i, dQzdphi_i, dQzdtheta_f]) ))
     if(verbose):
         print('dQz/dL_PMj =', dQzdL_PMj, 'dQz/dL_MSj =', dQzdL_MSj, 'dQz/dz =', dQzdz)
         print('dQz/dt_PM =', dQzdt_PM, 'dQz/dt_MD =', dQzdt_MD)
@@ -131,23 +152,48 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     # energy terms
     dEdL_PMj = np.divide(m_n, v_i)*(Ae + Be*np.divide(L_MS,L_SD))
     dEdL_MSj = -np.divide(m_n, v_i)*Be*np.divide(L_PM,L_SD)
-    dEdL_SDj = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)
+    dEdrad = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)*cos_phi_f
+    dEdz = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)*sin_phi_f
     dEdt_PM = -m_n*(Ae + Be*np.divide(L_MS,L_SD))
     dEdt_MD = m_n*Be*np.divide(L_PM,L_SD)
+    dEdtheta_i = 0
+    dEdphi_i = 0
+    dEdtheta_f = 0
+    dE = np.concatenate(( np.array([dEdL_PMj]*size_PM), np.array([dEdL_MSj]*size_MS), np.array([dEdrad, dEdz, dEdt_PM, dEdt_MD, dEdtheta_i, dEdphi_i, dEdtheta_f]) ))
     if(verbose):
-        print('dE/dL_PMj =', dEdL_PMj, 'dE/dL_MSj =', dEdL_MSj, 'dE/dL_SDj =', dEdL_SDj)
+        print('dE/dL_PMj =', dEdL_PMj, 'dE/dL_MSj =', dEdL_MSj, 'dE/drad =', dEdrad, 'dE/dz =', dEdz)
         print('dE/dt_PM =', dEdt_PM, 'dE/dt_MD =', dEdt_MD)
 
+    # Filling of the Jacobian and the uncertainty matrices
+    jacobian[0] = np.copy(dQx)
+    jacobian[1] = np.copy(dQy)
+    jacobian[2] = np.copy(dQz)
+    jacobian[3] = np.copy(dE)
+    delta = []
+    if(verbose):
+        print('Jacobian =', jacobian)
+        print(covxi)
 
 
 #test perso
 
-a = {"P":[1,2], "U":[3,4]}
-print(len(a['P']))
-print(np.square(5))
-print(np.power(3,4))
-print(np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
-b = {'u':12, 'x':'f'}
-print('b =', b['u'])
-print(np.zeros((4,7)))
-print(np.eye(7))
+#a = {"P":[1,2], "U":[3,4]}
+#print(len(a['P']))
+#print(np.square(5))
+#print(np.power(3,4))
+#print(np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
+#b = {'u':12, 'x':'f'}
+#print('b =', b['u'])
+#print(np.zeros((4,7)))
+#print(np.eye(7))
+#c = np.array([1,2])
+#d = np.array([3,4])
+#print(np.concatenate((c,d)))
+#print(np.array([1]*3))
+#e = np.array([5,6])
+#print(np.concatenate((c,d,e)))
+
+
+#geo = {'dist_PM':[1000, 1, 300, 1, 200, 1], 'dist_MS':[1500, 2, 200, 3], 'dist_SD':[750, 3, 90, 1], 'angles':[10, 0.2, 30, 0.4, 15, 0.3]}
+#chop ={}
+#covVcyl(geo,chop,2,4,True)
