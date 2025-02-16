@@ -36,7 +36,8 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" ".")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}" "."
+	"${PROJECT_SOURCE_DIR}/../../../setup/cmake")
 
 
 find_package(Boost REQUIRED)
@@ -44,6 +45,7 @@ find_package(Threads REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Gui REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qwt REQUIRED)
 
 add_definitions(-I${CMAKE_CURRENT_BINARY_DIR})
 add_definitions(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
@@ -51,17 +53,17 @@ add_definitions(${Boost_CXX_FLAGS})
 add_definitions(-std=c++14)
 
 
-include_directories("${PROJECT_SOURCE_DIR}" "." 
+include_directories("${PROJECT_SOURCE_DIR}" "."
 	"${PROJECT_SOURCE_DIR}/.." "${PROJECT_SOURCE_DIR}/../..")
 include_directories("${Boost_INCLUDE_DIRS}/..")
-include_directories("/usr/include/qwt")
+include_directories("${QWT_INCLUDE_DIRS}")
 
 
-add_executable(distr 
+add_executable(distr
 	../../log/log.cpp
 	distr_main.cpp distr.cpp distr.h)
 
-target_link_libraries(distr 
+target_link_libraries(distr
 	${Boost_LIBRARIES} Threads::Threads
 	Qt5::Core Qt5::Widgets Qt5::Gui
-	qwt-qt5)
+	${QWT_LIBRARIES})
