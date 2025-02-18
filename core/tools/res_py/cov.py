@@ -89,28 +89,46 @@ def energy(vi, vf):
     return np.divide(m_n, 2)*(np.square(vi) - np.square(vf))
 
 # Calcul of the norm of Q for a vertical cylindrical detector
-def QVcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f):
+# Vector 
+def vecQVcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f):
     """vi, vf are velocities, theta and phi are angles"""
     Qx = moh*(vi*np.cos(theta_i)*np.cos(phi_i) - vf*np.cos(theta_f)*cos_phi_f)
     Qy = moh*(vi*np.sin(theta_i)*np.cos(phi_i) - vf*np.sin(theta_f)*cos_phi_f)
     Qz = moh*(vi*np.sin(phi_i) - vf*sin_phi_f)
-    return np.sqrt(np.square(Qx) + np.square(Qy) + np.square(Qz))
+    return np.array([Qx, Qy, Qz])
+# Norm
+def QVcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f):
+    """vi, vf are velocities, theta and phi are angles"""
+    vecQ = vecQVcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f)
+    return np.sqrt(np.square(vecQ[0]) + np.square(vecQ[1]) + np.square(vecQ[2]))
 
 # Calcul of the norm of Q for a horizontal cylindrical detector
-def QHcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f):
+# Vector 
+def vecQHcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f):
     """vi, vf are velocities, theta and phi are angles"""
     Qx = moh*(vi*np.cos(theta_i)*np.cos(phi_i) - vf*sin_phi_f)
     Qy = moh*(vi*np.sin(theta_i)*np.cos(phi_i) - vf*np.sin(theta_f)*cos_phi_f)
     Qz = moh*(vi*np.sin(phi_i) - vf*np.cos(theta_f)*cos_phi_f)
-    return np.sqrt(np.square(Qx) + np.square(Qy) + np.square(Qz))
+    return np.array([Qx, Qy, Qz])
+# Norm
+def QHcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f):
+    """vi, vf are velocities, theta and phi are angles"""
+    vecQ = vecQHcyl(vi, vf, theta_i, phi_i, theta_f, cos_phi_f, sin_phi_f)
+    return np.sqrt(np.square(vecQ[0]) + np.square(vecQ[1]) + np.square(vecQ[2]))
 
 # Calcul of the norm of Q for a spherical detector
-def Qsph(vi, vf, theta_i, phi_i, theta_f, phi_f):
+# Vector 
+def vecQSph(vi, vf, theta_i, phi_i, theta_f, phi_f):
     """vi, vf are velocities, theta and phi are angles"""
     Qx = moh*(vi*np.cos(theta_i)*np.cos(phi_i) - vf*np.cos(theta_f)*np.cos(phi_f))
     Qy = moh*(vi*np.sin(theta_i)*np.cos(phi_i) - vf*np.sin(theta_f)*np.cos(phi_f))
     Qz = moh*(vi*np.sin(phi_i) - vf*np.sin(phi_f))
-    return np.sqrt(np.square(Qx) + np.square(Qy) + np.square(Qz))
+    return np.array([Qx, Qy, Qz])
+# Norm
+def Qsph(vi, vf, theta_i, phi_i, theta_f, phi_f):
+    """vi, vf are velocities, theta and phi are angles"""
+    vecQ = vecQSph(vi, vf, theta_i, phi_i, theta_f, phi_f)
+    return np.sqrt(np.square(vecQ[0]) + np.square(vecQ[1]) + np.square(vecQ[2]))
 
 # Creation and filling of the Jacobian matrix
 def jacobianMatrix(dQx, dQy, dQz, dE, Q, E):
@@ -148,9 +166,9 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
         print('L_PM =', L_PM, '; L_MS =', L_MS, '; L_SD =', L_SD, '\n')
 
     # Definition of variables
-    theta_i = param_geo['angles'][0]
-    phi_i = param_geo['angles'][2]
-    theta_f = param_geo['angles'][4]
+    theta_i = np.deg2rad(param_geo['angles'][0])
+    phi_i = np.deg2rad(param_geo['angles'][2])
+    theta_f = np.deg2rad(param_geo['angles'][4])
     cos_phi_f = np.divide(rad, L_SD)
     sin_phi_f = np.divide(z, L_SD)
     Ae = np.divide(np.power(v_i,3), L_PM)
@@ -266,7 +284,7 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     deltas[set1:set2] = listDeltaGeo(param_geo['dist_MS'])
     deltas[set2:set3] = listDeltaGeo(param_geo['dist_SD'])
     deltas[set3:set4] = listDeltaTime(win_angleP, rot_speedP, win_angleM, rot_speedM)
-    deltas[set4:] = listDeltaGeo(param_geo['angles'])
+    deltas[set4:] = listDeltaGeo(np.deg2rad(param_geo['angles']))
     ###########################################################################################
     if(verbose):
         print('deltas =', deltas, '\n')
@@ -289,7 +307,7 @@ def covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     if(verbose):
         print('covQhw =', covQhw)
 
-    return jacobian
+    return covQhw
 
 
 # Shape of the detector: horizontal cylinder. The incident beam arrive align with the width of the cylinder
@@ -312,9 +330,9 @@ def covHcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
         print('L_PM =', L_PM, '; L_MS =', L_MS, '; L_SD =', L_SD, '\n')
 
     # Definition of variables
-    theta_i = param_geo['angles'][0]
-    phi_i = param_geo['angles'][2]
-    theta_f = param_geo['angles'][4]
+    theta_i = np.deg2rad(param_geo['angles'][0])
+    phi_i = np.deg2rad(param_geo['angles'][2])
+    theta_f = np.deg2rad(param_geo['angles'][4])
     cos_phi_f = np.divide(rad, L_SD)
     sin_phi_f = np.divide(x, L_SD)
     Ae = np.divide(np.power(v_i,3), L_PM)
@@ -430,7 +448,7 @@ def covHcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     deltas[set1:set2] = listDeltaGeo(param_geo['dist_MS'])
     deltas[set2:set3] = listDeltaGeo(param_geo['dist_SD'])
     deltas[set3:set4] = listDeltaTime(win_angleP, rot_speedP, win_angleM, rot_speedM)
-    deltas[set4:] = listDeltaGeo(param_geo['angles'])
+    deltas[set4:] = listDeltaGeo(np.deg2rad(param_geo['angles']))
     ###########################################################################################
     if(verbose):
         print('deltas =', deltas, '\n')
@@ -453,10 +471,10 @@ def covHcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
     if(verbose):
         print('covQhw =', covQhw)
 
-    return jacobian
+    return covQhw 
 
 
-# Shape of the detector: vertical cylinder. The incident beam arrive align with the radius of the cylinder
+# Shape of the detector: sphere. The incident beam arrive align with the radius of the cylinder
 def covSph(param_geo, param_choppers, v_i, v_f, verbose=False):
     """param_geo is a dictionary: {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[radius, sigma_r], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, phi_f, sigma_phi_f]},
     param_choppers is a dictionary: {chopperP:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed]}, dist in m, angle in degree, rot_speed in RPM,
@@ -474,10 +492,10 @@ def covSph(param_geo, param_choppers, v_i, v_f, verbose=False):
         print('L_PM =', L_PM, '; L_MS =', L_MS, '; L_SD =', L_SD, '\n')
 
     # Definition of variables
-    theta_i = param_geo['angles'][0]
-    phi_i = param_geo['angles'][2]
-    theta_f = param_geo['angles'][4]
-    phi_f = param_geo['angles'][6]
+    theta_i = np.deg2rad(param_geo['angles'][0])
+    phi_i = np.deg2rad(param_geo['angles'][2])
+    theta_f = np.deg2rad(param_geo['angles'][4])
+    phi_f = np.deg2rad(param_geo['angles'][6])
     Ae = np.divide(np.power(v_i,3), L_PM)
     Ax = np.divide(np.square(v_i), L_PM)*np.cos(theta_i)*np.cos(phi_i)
     Ay = np.divide(np.square(v_i), L_PM)*np.sin(theta_i)*np.cos(phi_i)
@@ -591,7 +609,7 @@ def covSph(param_geo, param_choppers, v_i, v_f, verbose=False):
     deltas[set1:set2] = listDeltaGeo(param_geo['dist_MS'])
     deltas[set2:set3] = listDeltaGeo(param_geo['dist_SD'])
     deltas[set3:set4] = listDeltaTime(win_angleP, rot_speedP, win_angleM, rot_speedM)
-    deltas[set4:] = listDeltaGeo(param_geo['angles'])
+    deltas[set4:] = listDeltaGeo(np.deg2rad(param_geo['angles']))
     ###########################################################################################
     if(verbose):
         print('deltas =', deltas, '\n')
@@ -614,37 +632,39 @@ def covSph(param_geo, param_choppers, v_i, v_f, verbose=False):
     if(verbose):
         print('covQhw =', covQhw)
 
-    return jacobian
+    return covQhw
 
 
 
 
 
-print('Vertical cylinder\n')
+#print('Vertical cylinder\n')
 # Test for a vertical cylindrical detector
 # covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
 # param_geo : {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[radius, sigma_r, z_heigh, sigma_z], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f]}
 # param_choppers : {chopperP:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed]}
-geoV = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[4, 0.003, 0, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4]}
-chopV ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
-covVcyl(geoV,chopV,2000,1000,True)
 
-print('\nHorizontal cylinder\n')
+#geoV = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[4, 0.003, 0, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4]}
+#chopV ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
+#covVcyl(geoV,chopV,2000,1000,True)
+
+#print('\nHorizontal cylinder\n')
 # Test for a horizontal cylindrical detector
 # covHcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
 # param_geo : {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[x_width, sigma_x, radius, sigma_r], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f]}
 # param_choppers : {chopperP:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed]}
-geoH = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[0, 0.003, 4, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4]}
-chopH ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
-covHcyl(geoH,chopH,2000,1000,True)
 
-print('\nSphere\n')
+#geoH = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[0, 0.003, 4, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4]}
+#chopH ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
+#covHcyl(geoH,chopH,2000,1000,True)
+
+#print('\nSphere\n')
 # Test for a spherical detector
 # covSph(param_geo, param_choppers, v_i, v_f, verbose=False):
 # param_geo : {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[radius, sigma_r], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, phi_f, sigma_phi_f]}
 # param_choppers : {chopperP:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed]}
-geoS = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[4, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4, 0, 0.4]}
-chopS ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
-covSph(geoS,chopS,2000,1000,True)
 
-# Il faut que je convertisse les angles en radians
+#geoS = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[4, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4, 0, 0.4]}
+#chopS ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
+#covSph(geoS,chopS,2000,1000,True)
+
