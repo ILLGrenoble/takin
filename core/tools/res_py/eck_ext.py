@@ -394,7 +394,7 @@ def calc(param):
         # before equ. 3.4 in [end25]
         # TODO: this is based on the assumption that M is diagonal,
         #       which it is not for vertical scattering in kf
-        #R0 *= np.pi / np.sqrt(la.det(Madj))
+        #R0 *= np.pi**2. / np.sqrt(la.det(Madj))
         #R0 *= 2.*helpers.sig2fwhm**2.*np.pi / np.sqrt(mos_Q_sq * mos_v_Q_sq)
 
     Pvec1 = matP[1, 0:3] / helpers.sig2fwhm**2.
@@ -427,11 +427,24 @@ def calc(param):
     # --------------------------------------------------------------------------
     sample_r = np.array([ param["sample_d"], param["sample_w"], param["sample_h"] ])
 
-    # TODO: trafo
-    T_E = np.eye(3)
+    # trafo for sample rotation, equs. 5.2, 5.3 and below in [end25b]
+    # TODO: columns have to be parallel to ki, perpendicular to ki and up
+    basis_ki = np.array([
+        [1., 0., 0.],
+        [0., 1., 0.],
+        [0., 0., 1.]])
+
+    # TODO: principal axes of sample
+    sample_axes = np.array([
+        [1., 0., 0.],
+        [0., 1., 0.],
+        [0., 0., 1.]])
+
+    # TODO: additional theta rotation
+    T_E = np.dot(basis_ki, sample_axes)
 
     # sample integration, equ. 4.4 and below in [end25b]
-    matN = matK - 0.5 * (288. * np.pi)**(1./3.) * np.dot(T_E, np.dot(np.diag(1. / sample_r**2.), np.transpose(T_E)))
+    matN = matK + 0.5 * (288. * np.pi)**(1./3.) * np.dot(T_E, np.dot(np.diag(1. / sample_r**2.), np.transpose(T_E)))
     detN = la.det(matN)
     Nadj = helpers.adjugate(matN)
 
@@ -442,7 +455,7 @@ def calc(param):
 
     if param["calc_R0"]:
         # page 9 in [end25b]
-        R0 *= np.pi / detN
+        R0 *= np.pi**3. / detN
     # --------------------------------------------------------------------------
 
 
