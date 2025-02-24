@@ -1,9 +1,9 @@
 #
 # TODO: implementation of the violini algo
-# (this is just a stub file for now)
+# 
 #
-# @author 
-# @date 2025
+# @author Mecoli Victor <mecoli@ill.fr>
+# @date feb-2025
 # @license GPLv2
 #
 # @desc for algorithm: [vio14] N. Violini et al., NIM A 736 (2014) pp. 31-39, doi: 10.1016/j.nima.2013.10.042
@@ -35,6 +35,7 @@ import numpy.linalg as la
 import reso
 import helpers
 import cov
+import cr_json as js
 
 
 #
@@ -45,11 +46,20 @@ def calc(paramUser, paramInstr):
     #paramInstr are read from a file (not yet implemented)
 
     # Storage of informations given by users
-    vi = paramUser["vi"]
-    vf = paramUser["vf"]
+    # Normes of ki, kf and Q
+    ki = paramUser["ki"]
+    kf = paramUser["kf"]
+    Q = paramUser["Q"]
+    # Angular velocity of choppers
     rot_speedP = paramUser["rot_speedP"]
     rot_speedM = paramUser["rot_speedM"]
+    # Shape of the detector
     shape = paramUser["shape"]
+    # Velocity
+    vi = cov.k2v(ki)
+    vf = cov.k2v(kf)
+    # Angles
+    Q_ki = helpers.get_angle_Q_ki(ki, kf, Q)
 
     # Information on the instrument
     dict_geo = {"dist_PM":paramInstr["dist_PM"], "dist_MS":paramInstr["dist_MS"], "dist_SD":paramInstr["dist_SD"], "angles":paramInstr["angles"]}
@@ -63,32 +73,55 @@ def calc(paramUser, paramInstr):
 
     # Energy, Q vector and Covariance matrix
     E = cov.energy(vi, vf)
-    Q = np.array([0, 0, 0])
+#    Q = np.array([0, 0, 0])
     covQhw = np.eye(4)
     if(shape == "Sph"):
         covQhw = cov.covSph(dict_geo, dict_choppers, vi, vf)
-        Q = cov.vecQSph(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], paramInstr["angles"][6])
+#        Q = cov.vecQSph(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], paramInstr["angles"][6])
     elif(shape == "Hcyl"):
         covQhw = cov.covHcyl(dict_geo, dict_choppers, vi, vf)
-        cos_phi_f = np.divide(paramInstr["dist_SD"][2], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-        sin_phi_f = np.divide(paramInstr["dist_SD"][0], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-        Q = cov.vecQHcyl(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], cos_phi_f, sin_phi_f)
+#        cos_phi_f = np.divide(paramInstr["dist_SD"][2], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
+#        sin_phi_f = np.divide(paramInstr["dist_SD"][0], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
+#        Q = cov.vecQHcyl(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], cos_phi_f, sin_phi_f)
     elif(shape == "Vcyl"):
         covQhw = cov.covVcyl(dict_geo, dict_choppers, vi, vf)
-        cos_phi_f = np.divide(paramInstr["dist_SD"][0], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-        sin_phi_f = np.divide(paramInstr["dist_SD"][2], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-        Q = cov.vecQVcyl(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], cos_phi_f, sin_phi_f)
+#        cos_phi_f = np.divide(paramInstr["dist_SD"][0], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
+#        sin_phi_f = np.divide(paramInstr["dist_SD"][2], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
+#        Q = cov.vecQVcyl(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], cos_phi_f, sin_phi_f)
     covQhwInv = la.inv(covQhw)
     if(paramUser["verbose"]):
-        print("E =", E, "; Q =", Q)
+        print("E =", E) #, "; Q =", Q)
         print("covQhw =", covQhw)
         print("covQhwInv =", covQhwInv)
+    # Going from ki, kf, Qz to Qpara, Qperp, Qz :
+    rot = helpers.rotation_matrix_4d_zE(-Q_ki)
+    covQhwInv = np.dot(rot.T, np.dot(covQhwInv, rot))
+    if(paramUser["verbose"]):
+        print("In the base (Qpara, Qperp, Qz) :")
+        print("rot =", rot,'\ncovQhwInv =', covQhwInv)
+    res={}
+    res["ki"] = ki
+    res["kf"] = kf
+    res["Q"] = Q
+    res["E"] = E
+    res["reso"] = covQhwInv
+    return res
 
+#distances in mm, angle in degree
+IN5 = {"pos_P1":9000, "delta_p1":40, "pos_P2":9000, "delta_P2":40, "pos_M1":1000, "delta_M1":10, "pos_M2":1000, "delta_M2":10, "pos_S":0, "delat_S":0,
+       "det_R":4000, "delta_R":12.7, "det_h":3000, "delat_h":10, "det_theta":146.73, "delta_theta":0.19} #h_min = -1500, h_max = 1500, theta_min, theta_max
+js.create(IN5, '/home/mecoli/Git/IN5')
+param = js.read('/home/mecoli/Git/IN5.json')
 
-pU = {"vi":2000, "vf":1000, "rot_speedP":9000, "rot_speedM":8000, "shape":"Vcyl", "verbose": True}
+pU = {"ki":20000000000, "kf":16000000000, "Q":7000000000, "rot_speedP":9000, "rot_speedM":8000, "shape":"Vcyl", "verbose": True}
 pI = {"dist_PM":[20, 0.001, 3, 0.002], "dist_MS":[3, 0.005], "dist_SD":[4, 0.01, 0, 0.008], "angles":[0, 0.2, 0, 0.2, 0, 0.15], "chopperP":[0.8, 10, 7000, 1700], "chopperM":[0.8, 8, 7000, 1700]}
-calc(pU, pI)
+aff = calc(pU, pI)
 
+# describe and plot ellipses
+ellipses = reso.calc_ellipses(aff["reso"], True)
+reso.plot_ellipses(ellipses, True)
+
+print(param)
 
 # def calc(param, pointlike = False):
 #     # instrument position

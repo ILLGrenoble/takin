@@ -44,6 +44,11 @@ moh = np.divide(m_n, hbar)
 #Initialisation of the covariance Matrix
 covQhw = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
 
+# Give v in m/s using k in 1/m
+def k2v(k):
+    """k in 1/m"""
+    return np.divide(k, moh)
+
 # Calcul of the length of a segment cuts in small segments
 def calcDistLin(dist):
     """dist in an array: [L1, delta1, L2, delta2, ...], L: distance, delta: uncerntainty"""
@@ -85,7 +90,7 @@ def covxiMatrix(delta):
 
 # Calcul of the energy
 def energy(vi, vf):
-    """vi, vf are velocities of incomming and scatered neutrons"""
+    """vi, vf are velocities of incomming and scatered neutrons in m/s"""
     return np.divide(m_n, 2)*(np.square(vi) - np.square(vf))
 
 # Calcul of the norm of Q for a vertical cylindrical detector
