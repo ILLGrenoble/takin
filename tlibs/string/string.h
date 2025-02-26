@@ -55,28 +55,29 @@ namespace tl {
 
 // -----------------------------------------------------------------------------
 
-template<class t_str = std::string> const t_str& get_dir_seps();
-template<class t_str = std::string> const t_str& get_trim_chars();
+// returning this by reference seems to cause a problem with g++-13
+template<class t_str = std::string> const t_str/*&*/ get_dir_seps();
+template<class t_str = std::string> const t_str/*&*/ get_trim_chars();
 
-template<> inline const std::string& get_dir_seps()
+template<> inline const std::string/*&*/ get_dir_seps()
 {
 	static const std::string strSeps("\\/");
 	return strSeps;
 }
 
-template<> inline const std::wstring& get_dir_seps()
+template<> inline const std::wstring/*&*/ get_dir_seps()
 {
 	static const std::wstring strSeps(L"\\/");
 	return strSeps;
 }
 
-template<> inline const std::string& get_trim_chars()
+template<> inline const std::string/*&*/ get_trim_chars()
 {
 	static const std::string strC(" \t\r");
 	return strC;
 }
 
-template<> inline const std::wstring& get_trim_chars()
+template<> inline const std::wstring/*&*/ get_trim_chars()
 {
 	static const std::wstring strC(L" \t\r");
 	return strC;
