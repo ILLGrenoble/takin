@@ -108,18 +108,12 @@ if [ $setup_externals -ne 0 ]; then
 			exit -1
 		fi
 	popd
-
-	pushd "${TAKIN_ROOT}/mag-core"
-		if ! ../setup/externals/setup_externals_mag.sh; then
-			exit -1
-		fi
-	popd
 fi
 
 
 if [ $build_externals -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Building external libraries (Minuit, Qhull)..."
+	echo -e "Building external libraries..."
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/tmp"
@@ -136,10 +130,9 @@ if [ $build_externals -ne 0 ]; then
 		if ! "${TAKIN_ROOT}"/setup/externals/build_qcp.sh; then
 			exit -1
 		fi
-# no need to build gemmi, we're only using the headers
-#		if ! "${TAKIN_ROOT}"/setup/externals/build_gemmi.sh; then
-#			exit -1
-#		fi
+		if ! "${TAKIN_ROOT}"/setup/externals/build_gemmi.sh; then
+			exit -1
+		fi
 	popd
 fi
 

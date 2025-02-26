@@ -66,6 +66,12 @@ add_definitions(-DUSE_LAPACK=1)
 
 
 # -----------------------------------------------------------------------------
+# Gemmi
+find_package(Gemmi REQUIRED)
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
 # Python
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development REQUIRED)
 
@@ -80,7 +86,7 @@ include_directories(
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.."
 	"${Lapacke_INCLUDE_DIRS}"
 	"${Python3_INCLUDE_DIRS}"
-	"${PROJECT_SOURCE_DIR}/../../ext/gemmi/include" "${PROJECT_SOURCE_DIR}/../../ext/gemmi/third_party"
+	gemmi::headers
 )
 
 
@@ -98,6 +104,7 @@ swig_add_library(magdyn_py LANGUAGE python SOURCES magdyn.i)
 target_link_libraries(magdyn_py
 	Python3::Python
 	${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES}
+	gemmi::gemmi_cpp
 )
 #target_link_libraries(magdyn_py Python3::Python /usr/local/lib/liblapacke.a /usr/local/lib/liblapack.a /usr/local/lib/libblas.a libgfortran.so)
 

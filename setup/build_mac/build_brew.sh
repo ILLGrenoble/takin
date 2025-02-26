@@ -85,12 +85,6 @@ if [ $setup_externals -ne 0 ]; then
 			exit -1
 		fi
 	popd
-
-	pushd "${TAKIN_ROOT}/mag-core"
-		if ! ../setup/externals/setup_externals_mag.sh; then
-			exit -1
-		fi
-	popd
 fi
 
 

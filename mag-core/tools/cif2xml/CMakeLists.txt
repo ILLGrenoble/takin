@@ -29,6 +29,7 @@ project(cif2xml)
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 find_package(Boost REQUIRED)
+find_package(Gemmi REQUIRED)
 
 
 set(CMAKE_CXX_STANDARD 20)
@@ -39,21 +40,22 @@ add_definitions(${Boost_CXX_FLAGS})
 include_directories(
 	"${PROJECT_SOURCE_DIR}"
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.." "../.."
-	"../../ext/gemmi/include" "../../ext/gemmi/third_party"
-	"ext" "ext/gemmi/include" "ext/gemmi/third_party"
+	gemmi::headers
 )
 
 
 add_executable(takin_cif2xml
 	cif2xml.cpp ../../libs/loadcif.h)
 target_link_libraries(takin_cif2xml
-#	-static-libstdc++ -static-libgcc
+	gemmi::gemmi_cpp
 )
 
 
 add_executable(takin_findsg
 	findsg.cpp ../../libs/loadcif.h)
-target_link_libraries(takin_findsg)
+target_link_libraries(takin_findsg
+	gemmi::gemmi_cpp
+)
 
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")

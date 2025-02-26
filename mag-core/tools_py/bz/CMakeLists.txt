@@ -44,11 +44,12 @@ find_package(Boost)
 add_definitions(-DDONT_USE_BOOTS_PROGOPTS)
 add_compile_options(${Boost_CXX_FLAGS})
 
+find_package(Gemmi REQUIRED)
+
 include_directories(
 	"${PROJECT_SOURCE_DIR}"
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.." "../.."
-	"ext" "ext/gemmi/include" "ext/gemmi/third_party"
-	"../../ext/gemmi/include" "../../ext/gemmi/third_party"
+	gemmi::headers
 )
 
 find_package(Qhull REQUIRED)
@@ -87,6 +88,7 @@ if(SWIG_FOUND AND SWIG_python_FOUND)
 		Python3::Python
 		${Boost_LIBRARIES}
 		${Qhull_LIBRARIES}
+		gemmi::gemmi_cpp
 	)
 
 	# installation

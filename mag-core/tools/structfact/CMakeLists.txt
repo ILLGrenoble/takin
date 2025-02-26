@@ -53,6 +53,8 @@ endif()
 find_package(Boost REQUIRED)
 add_compile_options(${Boost_CXX_FLAGS})
 
+find_package(Gemmi REQUIRED)
+
 message("Trying to select Qt version ${QT_VER}.")
 if(QT_VER EQUAL 6)
 	find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets)
@@ -72,8 +74,7 @@ set(CMAKE_AUTOMOC TRUE)
 include_directories(
 	"${PROJECT_SOURCE_DIR}"
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.." "../.."
-	"ext" "ext/gemmi/include" "ext/gemmi/third_party"
-	"../../ext/gemmi/include" "../../ext/gemmi/third_party"
+	gemmi::headers
 )
 
 
@@ -113,4 +114,5 @@ endif()
 target_link_libraries(takin_structfact
 	${Boost_LIBRARIES}
 	${QtLibraries}
+	gemmi::gemmi_cpp
 )

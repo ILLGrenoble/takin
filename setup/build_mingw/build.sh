@@ -75,18 +75,12 @@ if [ $setup_externals -ne 0 ]; then
 			exit -1
 		fi
 	popd
-
-	pushd "${TAKIN_ROOT}/mag-core"
-		if ! ../setup/externals/setup_externals_mag.sh; then
-			exit -1
-		fi
-	popd
 fi
 
 
 if [ $build_externals -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Building external libraries (Minuit)..."
+	echo -e "Building external libraries..."
 	echo -e "================================================================================\n"
 
 	mkdir -p "${TAKIN_ROOT}/tmp"
@@ -102,6 +96,9 @@ if [ $build_externals -ne 0 ]; then
 		fi
 		cp -v "${TAKIN_ROOT}"/setup/externals/CMakeLists_qcp.txt .
 		if ! "${TAKIN_ROOT}"/setup/externals/build_qcp.sh --mingw; then
+			exit -1
+		fi
+		if ! "${TAKIN_ROOT}"/setup/externals/build_gemmi.sh --mingw; then
 			exit -1
 		fi
 	popd

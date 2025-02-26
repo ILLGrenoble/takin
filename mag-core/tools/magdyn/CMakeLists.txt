@@ -89,6 +89,8 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 set(Boost_USE_MULTITHREADED TRUE)
 add_definitions(${Boost_CXX_FLAGS})
 
+find_package(Gemmi REQUIRED)
+
 find_package(GFortran)
 find_package(Lapacke REQUIRED)
 add_definitions(-DUSE_LAPACK=1)
@@ -125,9 +127,8 @@ include_directories("${PROJECT_SOURCE_DIR}")
 
 include_directories(
 	SYSTEM "${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.." "../.."
-	"${PROJECT_SOURCE_DIR}/ext" "${PROJECT_SOURCE_DIR}/ext/gemmi/include" "${PROJECT_SOURCE_DIR}/ext/gemmi/third_party"
-	"${PROJECT_SOURCE_DIR}/../../ext/gemmi/include" "${PROJECT_SOURCE_DIR}/../../ext/gemmi/third_party"
-	"${PROJECT_SOURCE_DIR}/../../ext/qcp"
+	"${PROJECT_SOURCE_DIR}/ext" "${PROJECT_SOURCE_DIR}/../../ext/qcp"
+	gemmi::headers
 )
 
 
@@ -196,6 +197,7 @@ if(USE_QT)
 		${HDF5_CXX_LIBRARIES}
 		${Minuit2_LIBRARIES}
 		${MINGW_EXTRALIBS}
+		gemmi::gemmi_cpp
 
 #		/usr/local/lib/liblapack.a /usr/local/lib/libblas.a libgfortran.so    # for static lapack(e)
 	)
@@ -216,6 +218,7 @@ else()
 		${HDF5_CXX_LIBRARIES}
 		${Minuit2_LIBRARIES}
 		${MINGW_EXTRALIBS}
+		gemmi::gemmi_cpp
 	)
 endif()
 

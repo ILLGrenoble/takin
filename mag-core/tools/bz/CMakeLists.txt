@@ -58,12 +58,12 @@ else()
 endif()
 add_compile_options(${Boost_CXX_FLAGS})
 
+find_package(Gemmi REQUIRED)
 
 include_directories(
 	"${PROJECT_SOURCE_DIR}"
 	"${Boost_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}/.." "../.."
-	"ext" "ext/gemmi/include" "ext/gemmi/third_party"
-	"../../ext/gemmi/include" "../../ext/gemmi/third_party"
+	gemmi::headers
 )
 
 
@@ -113,6 +113,7 @@ if(USE_QT)
 		${Boost_LIBRARIES}
 		${Qhull_LIBRARIES}
 		${QtLibraries}
+		gemmi::gemmi_cpp
 	)
 else()
 	message("Compiling without Qt.")
@@ -129,6 +130,7 @@ else()
 	target_link_libraries(takin_bz
 		${Boost_LIBRARIES}
 		${Qhull_LIBRARIES}
+		gemmi::gemmi_cpp
 	)
 endif()
 
@@ -162,6 +164,7 @@ if(MAKE_LIB)
 	target_link_libraries(takinbz
 		${Boost_LIBRARIES}
 		${Qhull_LIBRARIES}
+		gemmi::gemmi_cpp
 	)
 endif()
 
