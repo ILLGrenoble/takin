@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -64,10 +64,10 @@
 
 enum class SqwProcStartMode
 {
-	// run the parent process and fork child processes
+	// run the parent process and create child processes
 	START_PARENT_CREATE_CHILD,
 
-	// run the parent process, forking a child process
+	// run the parent process and fork child processes
 	START_PARENT_FORK_CHILD,
 
 	// run the child process

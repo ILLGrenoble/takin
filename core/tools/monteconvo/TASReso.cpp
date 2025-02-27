@@ -549,7 +549,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 	if(std::fabs(vecQ[2]) > m_dPlaneDistTolerance)
 	{
 		tl::log_err("Position Q = (", h, " ", k, " ", l, "),",
-			" E = ", E, " meV not in scattering plane.",
+			" E = ", E, " meV is not in the scattering plane.",
 			" Distance: ", vecQ[2], "/A, tolerance: ", m_dPlaneDistTolerance, "/A.");
 
 		resores.strErr = "Not in scattering plane.";
