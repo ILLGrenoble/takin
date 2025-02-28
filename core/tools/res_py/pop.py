@@ -3,7 +3,7 @@
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date feb-2015, oct-2019, apr-2022
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # @desc for algorithm: [pop75] M. Popovici, Acta Cryst. A 31, 507 (1975), doi: 10.1107/S0567739475001088
 # @desc for algorithm: [zhe07] A. Zheludev, ResLib 3.4 manual (2007), https://ethz.ch/content/dam/ethz/special-interest/phys/solid-state-physics/neutron-scattering-and-magnetism-dam/images/research/manual.pdf

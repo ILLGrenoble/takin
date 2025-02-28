@@ -3,7 +3,7 @@
 # calculates TAS angles from rlu
 # @author Tobias Weber <tweber@ill.fr>
 # @date 1-aug-18
-# @license GPLv3, see 'LICENSE' file
+# @license see 'LICENSE' file
 #
 
 import sys

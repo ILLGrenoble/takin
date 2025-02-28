@@ -3,7 +3,7 @@
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date jul-2024
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)

@@ -3,7 +3,7 @@
 # calculate covariance from neutron events
 # @author Tobias Weber <tweber@ill.fr>
 # @date 30-mar-2019
-# @license GPLv3, see 'LICENSE' file
+# @license see 'LICENSE' file
 #
 # @desc For a good explanation of the covariance matrix method, see (Arens 2015), pp. 795 and 1372.
 # @desc reimplements the functionality of https://github.com/McStasMcXtrace/McCode/blob/master/tools/Legacy-Perl/mcresplot.pl
@@ -12,6 +12,8 @@
 
 import os
 import tas
+import reso
+import helpers
 
 try:
 	import numpy as np
@@ -52,11 +54,6 @@ options = {
 
 	"filter_eps" : 1e-4,
 }
-
-
-# constants
-sig2hwhm = np.sqrt(2. * np.log(2.))
-sig2fwhm = 2.*sig2hwhm
 
 
 
@@ -183,7 +180,7 @@ def calc_covar(Q, E, w, Qpara, Qperp):
 		print("Resolution matrix in (Qpara, Qperp, Qup, E) system:\n%s\n" % Qres_Q)
 
 	#[ evals, evecs ] = la.eig(Qcov_Q)
-	#print("Ellipsoid fwhm radii:\n%s\n" % (np.sqrt(np.abs(evals)) * sig2fwhm))
+	#print("Ellipsoid fwhm radii:\n%s\n" % (np.sqrt(np.abs(evals)) * helpers.sig2fwhm))
 
 	# transform all neutron events
 	Q4_Q = np.array([])
@@ -194,202 +191,6 @@ def calc_covar(Q, E, w, Qpara, Qperp):
 
 
 	return [Qres_Q, Q4_Q, Qmean_Q]
-
-
-
-#
-# calculates the characteristics of a given ellipse by principal axis trafo
-#
-def descr_ellipse(quadric):
-	[ evals, evecs ] = la.eig(quadric)
-
-	fwhms = 1./np.sqrt(np.abs(evals)) * sig2fwhm
-	angles = np.array([])
-
-	if len(quadric) == 2:
-		angles = np.array([ np.arctan2(evecs[1][0], evecs[0][0]) ])
-
-	return [fwhms, angles/np.pi*180., evecs]
-
-
-
-#
-# projects along one axis of the quadric
-# see [eck14], equ. 57
-#
-def proj_quad(_E, idx):
-	E = np.delete(np.delete(_E, idx, axis=0), idx, axis=1)
-	if np.abs(_E[idx, idx]) < 1e-8:
-		return E
-
-	v = (_E[idx,:] + _E[:,idx]) * 0.5
-	vv = np.outer(v, v) / _E[idx, idx]
-	vv = np.delete(np.delete(vv, idx, axis=0), idx, axis=1)
-
-	return E - vv
-
-
-
-#
-# describes the ellipsoid by a principal axis trafo and by 2d cuts
-#
-def calc_ellipses(Qres_Q):
-	# 4d ellipsoid
-	[fwhms_4d, angles_4d, rot_4d] = descr_ellipse(Qres_Q)
-
-	axes_to_delete = [ [2, 1], [2, 0], [1,0], [3,2] ]
-	slice_first = [ True, True, True, False ]
-	results = []
-
-	for ellidx in range(len(axes_to_delete)):
-		# sliced 2d ellipse
-		Qres = np.delete(np.delete(Qres_Q, axes_to_delete[ellidx][0], axis=0), axes_to_delete[ellidx][0], axis=1)
-		Qres = np.delete(np.delete(Qres, axes_to_delete[ellidx][1], axis=0), axes_to_delete[ellidx][1], axis=1)
-		[fwhms, angles, rot] = descr_ellipse(Qres)
-
-		# projected 2d ellipse
-		if slice_first[ellidx]:
-			Qres_proj = np.delete(np.delete(Qres_Q, axes_to_delete[ellidx][0], axis=0), axes_to_delete[ellidx][0], axis=1)
-			Qres_proj = proj_quad(Qres_proj, axes_to_delete[ellidx][1])
-		else:
-			Qres_proj = proj_quad(Qres_Q, axes_to_delete[ellidx][0])
-			Qres_proj = np.delete(np.delete(Qres_proj, axes_to_delete[ellidx][1], axis=0), axes_to_delete[ellidx][1], axis=1)
-		[fwhms_proj, angles_proj, rot_proj] = descr_ellipse(Qres_proj)
-
-		results.append({
-			"fwhms" : fwhms, "angles" : angles, "rot" : rot,
-			"fwhms_proj" : fwhms_proj, "angles_proj" : angles_proj, "rot_proj" : rot_proj,
-			"fwhms_4d" : fwhms_4d, "angles_4d" : angles_4d, "rot_4d" : rot_4d })
-
-
-	if options["verbose"]:
-		print("4d resolution ellipsoid principal axes fwhm lengths:\n%s\n" % fwhms_4d)
-
-		print("4d resolution ellipsoid diagonal elements fwhm (coherent-elastic scattering) lengths:\n%s\n" \
-			% (1./np.sqrt(np.abs(np.diag(Qres_Q))) * sig2fwhm))
-
-		Qres_proj_Qpara = proj_quad(proj_quad(proj_quad(Qres_Q, 3), 2), 1)
-		Qres_proj_Qperp = proj_quad(proj_quad(proj_quad(Qres_Q, 3), 2), 0)
-		Qres_proj_Qup = proj_quad(proj_quad(proj_quad(Qres_Q, 3), 1), 0)
-		Qres_proj_E = proj_quad(proj_quad(proj_quad(Qres_Q, 2), 1), 0)
-		print("Projected fwhms (incoherent-elastic scattering) lengths:\n" \
-			"%.4f / A, %.4f / A, %.4f / A, %.4f meV \n" % ( \
-			1./np.sqrt(np.abs(Qres_proj_Qpara[0,0])) * sig2fwhm, \
-			1./np.sqrt(np.abs(Qres_proj_Qperp[0,0])) * sig2fwhm, \
-			1./np.sqrt(np.abs(Qres_proj_Qup[0,0])) * sig2fwhm, \
-			1./np.sqrt(np.abs(Qres_proj_E[0,0])) * sig2fwhm ))
-
-		print("Qx,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[0]["fwhms"], results[0]["angles"][0]))
-		print("Qy,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[1]["fwhms"], results[1]["angles"][0]))
-		print("Qz,E sliced ellipse fwhm and slope angle: %s, %.4f" % (results[2]["fwhms"], results[2]["angles"][0]))
-		print("Qx,Qy sliced ellipse fwhm and slope angle: %s, %.4f" % (results[3]["fwhms"], results[3]["angles"][0]))
-		print()
-		print("Qx,E projected ellipse fwhm and slope angle: %s, %.4f" % (results[0]["fwhms_proj"], results[0]["angles_proj"][0]))
-		print("Qy,E projected ellipse fwhm and slope angle: %s, %.4f" % (results[1]["fwhms_proj"], results[1]["angles_proj"][0]))
-		print("Qz,E projected ellipse fwhm and slope angle: %s, %.4f" % (results[2]["fwhms_proj"], results[2]["angles_proj"][0]))
-		print("Qx,Qy projected ellipse fwhm and slope angle: %s, %.4f" % (results[3]["fwhms_proj"], results[3]["angles_proj"][0]))
-
-
-	return results
-
-
-
-
-#
-# shows the 2d ellipses
-#
-def plot_ellipses(file, Q4, w, Qmean, ellis):
-	try:
-		import mpl_toolkits.mplot3d as mplot3d
-		import matplotlib
-		import matplotlib.pyplot as plot
-	except ImportError:
-		print("Matplotlib could not be imported!")
-		exit(-1)
-
-	matplotlib.rc("text", usetex=options["use_tex"])
-
-	thesymsize = options["symsize"] * w
-	themarker = "."
-
-
-	ellfkt = lambda rad, rot, phi, Qmean2d : \
-		np.dot(rot, np.array([ rad[0]*np.cos(phi), rad[1]*np.sin(phi) ])) + Qmean2d
-
-
-	# 2d plots
-	fig = plot.figure()
-
-	num_ellis = len(ellis)
-	coord_axes = [[0,3], [1,3], [2,3], [0,1]]
-	coord_names = ["Qpara (1/A)", "Qperp (1/A)", "Qup (1/A)", "E (meV)"]
-
-	if options["use_tex"]:
-		coord_names[0] = "$Q_{\\parallel}$ (\\AA$^{-1}$)"
-		coord_names[1] = "$Q_{\\perp}$ (\\AA$^{-1}$)"
-		coord_names[2] = "$Q_{up}$ (\\AA$^{-1}$)"
-
-
-	ellplots = []
-	for ellidx in range(num_ellis):
-		# centre plots on zero or mean Q vector ?
-		QxE = np.array([[0], [0]])
-
-		if options["centre_on_Q"]:
-			QxE = np.array([[Qmean[coord_axes[ellidx][0]]], [Qmean[coord_axes[ellidx][0]]]])
-
-
-		phi = np.linspace(0, 2.*np.pi, options["ellipse_points"])
-
-		ell_QxE = ellfkt(ellis[ellidx]["fwhms"]*0.5, ellis[ellidx]["rot"], phi, QxE)
-		ell_QxE_proj = ellfkt(ellis[ellidx]["fwhms_proj"]*0.5, ellis[ellidx]["rot_proj"], phi, QxE)
-		ellplots.append({"sliced":ell_QxE, "proj":ell_QxE_proj})
-
-
-		subplot_QxE = fig.add_subplot(221 + ellidx)
-		subplot_QxE.set_xlabel(coord_names[coord_axes[ellidx][0]])
-		subplot_QxE.set_ylabel(coord_names[coord_axes[ellidx][1]])
-		if len(Q4.shape)==2 and len(Q4)>0 and len(Q4[0])==4:
-			subplot_QxE.scatter(Q4[:, coord_axes[ellidx][0]], Q4[:, coord_axes[ellidx][1]], marker=themarker, s=thesymsize)
-		subplot_QxE.plot(ell_QxE[0], ell_QxE[1], c="black", linestyle="dashed")
-		subplot_QxE.plot(ell_QxE_proj[0], ell_QxE_proj[1], c="black", linestyle="solid")
-
-	plot.tight_layout()
-
-
-	# 3d plot
-	fig3d = plot.figure()
-	subplot3d = fig3d.add_subplot(111, projection="3d")
-
-	subplot3d.set_xlabel(coord_names[0])
-	subplot3d.set_ylabel(coord_names[1])
-	subplot3d.set_zlabel(coord_names[3])
-
-	if len(Q4.shape)==2 and len(Q4)>0 and len(Q4[0])==4:
-		subplot3d.scatter(Q4[:,0], Q4[:,1], Q4[:,3], marker=themarker, s=thesymsize)
-	# xE
-	subplot3d.plot(ellplots[0]["sliced"][0], ellplots[0]["sliced"][1], zs=0., zdir="y", c="black", linestyle="dashed")
-	subplot3d.plot(ellplots[0]["proj"][0], ellplots[0]["proj"][1], zs=0., zdir="y", c="black", linestyle="solid")
-	# yE
-	subplot3d.plot(ellplots[1]["sliced"][0], ellplots[1]["sliced"][1], zs=0., zdir="x", c="black", linestyle="dashed")
-	subplot3d.plot(ellplots[1]["proj"][0], ellplots[1]["proj"][1], zs=0., zdir="x", c="black", linestyle="solid")
-	# xy
-	subplot3d.plot(ellplots[3]["sliced"][0], ellplots[3]["sliced"][1], zs=0., zdir="z", c="black", linestyle="dashed")
-	subplot3d.plot(ellplots[3]["proj"][0], ellplots[3]["proj"][1], zs=0., zdir="z", c="black", linestyle="solid")
-
-
-	if file != "":
-		splitext = os.path.splitext(file)
-		file3d = splitext[0] + "_3d" + splitext[1]
-
-		if options["verbose"]:
-			print("Saving 2d plot to \"%s\"." % file)
-			print("Saving 3d plot to \"%s\"." % file3d)
-		fig.savefig(file, dpi=options["dpi"])
-		fig3d.savefig(file3d, dpi=options["dpi"])
-
-	if options["plot_results"]:
-		plot.show()
 
 
 
@@ -515,11 +316,13 @@ def run_cov():
 		Qperp = np.array([])
 
 	[Qres, Q4, Qmean] = calc_covar(Q, E, w, Qpara, Qperp)
-	calcedellis = calc_ellipses(Qres)
+	calcedellis = reso.calc_ellipses(Qres, verbose = options["verbose"])
 
 	if options["plot_results"] or outfile!="":
-		plot_ellipses(outfile, Q4, w, Qmean, calcedellis)
-
+		reso.plot_ellipses(calcedellis, plot_file = outfile, Qs = Q4, Qmean = Qmean,
+			centre_on_Q = options["centre_on_Q"], symsize = options["symsize"] * w,
+			ellipse_points = options["ellipse_points"], dpi = options["dpi"],
+			use_tex = options["use_tex"], verbose = options["verbose"])
 
 
 #

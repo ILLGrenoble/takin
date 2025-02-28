@@ -2,9 +2,9 @@
 # TODO: implementation of the violini algo
 # (this is just a stub file for now)
 #
-# @author 
+# @author
 # @date 2025
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # @desc for algorithm: [vio14] N. Violini et al., NIM A 736 (2014) pp. 31-39, doi: 10.1016/j.nima.2013.10.042
 #

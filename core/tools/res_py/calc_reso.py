@@ -4,7 +4,7 @@
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date feb-2015, oct-2019, jul-2024
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
@@ -377,7 +377,7 @@ ellipses = reso.calc_ellipses(res["reso"], params["verbose"])
 
 if show_plots or plot_file != "":
     # plot ellipses
-    reso.plot_ellipses(ellipses, params["verbose"], show_plots, plot_file)
+    reso.plot_ellipses(ellipses, verbose = params["verbose"], plot_results = show_plots, plot_file = plot_file)
 # -----------------------------------------------------------------------------
 
 

@@ -4,7 +4,7 @@
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date jan-2025
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # @desc for extended algorithm: [end25] M. Enderle, personal communication (21/jan/2025)
 # @desc for extended algorithm with vertical scattering: [end25b] M. Enderle, personal communication (4/feb/2025)
