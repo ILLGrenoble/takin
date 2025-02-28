@@ -12,7 +12,7 @@ Version 2.8.5.
 
 ## Repository
 - *Takin's* main source code repository is available [here](https://github.com/ILLGrenoble/takin).
-- *Magdyn*, the magnon calculator, has now moved to [its own repository](https://github.com/ILLGrenoble/magpie).
+- *Magpie*, the magnon calculator, has now moved to [its own repository](https://github.com/ILLGrenoble/magpie).
 - *TAS-Paths*, the collision detection and motion planning tool, also has [its own repository](https://github.com/ILLGrenoble/taspaths).
 - An overview of historic repositories can be found [here](https://github.com/ILLGrenoble/takin/wiki/History).
 
