@@ -10,10 +10,10 @@ Version 2.8.5.
 - A tutorial for magnon calculations can be found [here](https://github.com/ILLGrenoble/takin/wiki/Exercises-for-MDanse-2024).
 
 
-## Repository
+## Repositories
 - *Takin's* main source code repository is available [here](https://github.com/ILLGrenoble/takin).
-- *Magpie*, the magnon calculator, has now moved to [its own repository](https://github.com/ILLGrenoble/magpie).
-- *TAS-Paths*, the collision detection and motion planning tool, also has [its own repository](https://github.com/ILLGrenoble/taspaths).
+- *Magpie*, a magnon calculator, has now moved to [its own repository](https://github.com/ILLGrenoble/magpie).
+- *TAS-Paths*, a collision detection and motion planning tool, also has [its own repository](https://github.com/ILLGrenoble/taspaths).
 - An overview of historic repositories can be found [here](https://github.com/ILLGrenoble/takin/wiki/History).
 
 
