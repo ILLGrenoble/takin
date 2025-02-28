@@ -55,7 +55,7 @@ for E in $(LC_ALL=C seq ${E_start} ${E_step} ${E_end}); do
 	results_file="results/Q_${Q}_E_${E}.dat"
 
 	# run the resolution calculation
-	if ! python3 ./calc.py -m pop \
+	if ! python3 ./calc_reso.py -m pop \
 		--kf 2.662 --Q ${Q} --E ${E} \
 		-o "${results_file}"
 	then

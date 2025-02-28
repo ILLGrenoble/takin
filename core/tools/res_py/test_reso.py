@@ -187,5 +187,5 @@ if verbose:
 
 
 # describe and plot ellipses
-ellipses = reso.calc_ellipses(res["reso"], verbose)
-reso.plot_ellipses(ellipses, verbose)
+ellipses = reso.calc_ellipses(res["reso"], verbose = verbose)
+reso.plot_ellipses(ellipses, verbose = verbose)

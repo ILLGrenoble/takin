@@ -50,7 +50,7 @@ do
     results_file="results/tt_${twotheta}_deg.dat"
 
     # run the resolution calculation
-    if ! python3 ./calc.py -i in20fc \
+    if ! python3 ./calc_reso.py -i in20fc \
         --ki 2.662 --kf 2.662 --twotheta ${twotheta} \
         -o "${results_file}"
     then

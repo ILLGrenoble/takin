@@ -193,10 +193,10 @@ def calc_ellipses(Qres_Q, verbose = True):
 
     if verbose:
         print()
-        print("4d resolution ellipsoid principal axes fwhm lengths:\n%s\n" % fwhms_4d)
-
-        print("4d resolution ellipsoid diagonal elements fwhm (coherent-elastic scattering) lengths:\n%s\n" \
+        print("4d resolution ellipsoid principal axes fwhm lengths:\n%s" % fwhms_4d)
+        print("4d resolution ellipsoid diagonal elements fwhm (coherent-elastic scattering) lengths:\n%s" \
             % (1./np.sqrt(np.abs(np.diag(Qres_Q))) * helpers.sig2fwhm))
+        print()
 
         fwhms_coh = calc_coh_fwhms(Qres_Q)
         fwhms_inc = calc_incoh_fwhms(Qres_Q)
