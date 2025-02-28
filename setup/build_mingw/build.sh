@@ -66,6 +66,10 @@ if [ $setup_externals -ne 0 ]; then
 	echo -e "Getting external dependencies..."
 	echo -e "================================================================================\n"
 
+	if ! ../setup/externals/setup_modules.sh; then
+		exit -1
+	fi
+
 	pushd "${TAKIN_ROOT}/core"
 		rm -rf tmp
 		if ! ../setup/externals/setup_externals.sh; then

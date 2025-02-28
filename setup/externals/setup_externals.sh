@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# gets external dependencies
+# gets external dependencies -- to be run in the "core" directory
 # @author Tobias Weber <tweber@ill.fr>
 # @license GPLv2
 #
