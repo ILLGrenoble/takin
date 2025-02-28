@@ -74,7 +74,7 @@
 	<entry_13>
 		<type>program</type>
 		<name>Magnetic Dynamics...</name>
-		<program>takin_magdyn</program>
+		<program>magpie</program>
 	</entry_13>
 
 <!--
@@ -85,7 +85,7 @@
 	<entry_15>
 		<type>program</type>
 		<name>TAS Pathfinding...</name>
-		<program>takin_taspaths</program>
+		<program>taspaths</program>
 	</entry_15>
 -->
 </tools>

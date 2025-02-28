@@ -174,6 +174,7 @@ chmod a+rx ${DST_PLUGIN_DIR}/install_pymods.py
 
 # copy binaries
 cp -v bin/takin "${BIN_DIR}"
+cp -v bin/magpie "${BIN_DIR}"
 cp -v bin/takin_cif2xml "${BIN_DIR}"
 cp -v bin/takin_findsg "${BIN_DIR}"
 cp -v bin/takin_bz "${BIN_DIR}"
@@ -183,7 +184,6 @@ cp -v bin/takin_structfact "${BIN_DIR}"
 cp -v bin/takin_magstructfact "${BIN_DIR}"
 cp -v bin/takin_scanbrowser "${BIN_DIR}"
 cp -v bin/takin_magsgbrowser "${BIN_DIR}"
-cp -v bin/takin_magdyn "${BIN_DIR}"
 cp -v bin/takin_moldyn "${BIN_DIR}"
 
 cp -v bin/takin_convofit "${BIN_DIR}"
