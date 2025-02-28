@@ -1,5 +1,5 @@
 # Takin - an inelastic neutron scattering suite.
-Version 2.8.1.
+Version 2.8.5.
 [![DOI: 10.5281/zenodo.4117437](https://zenodo.org/badge/DOI/10.5281/zenodo.4117437.svg)](https://doi.org/10.5281/zenodo.4117437)
 
 <img src="https://raw.githubusercontent.com/ILLGrenoble/takin/master/data/res/icons/takin.svg" width="10%" height="10%" title="Logo" alt="">
@@ -7,11 +7,13 @@ Version 2.8.1.
 
 ## Documentation
 - The software documentation is available [here](https://github.com/ILLGrenoble/takin/wiki).
-- A tutorial for the new magnon calculation module can be found [here](https://github.com/ILLGrenoble/takin/wiki/Exercises-for-MDanse-2024).
+- A tutorial for magnon calculations can be found [here](https://github.com/ILLGrenoble/takin/wiki/Exercises-for-MDanse-2024).
 
 
 ## Repository
 - *Takin's* main source code repository is available [here](https://github.com/ILLGrenoble/takin).
+- *Magdyn*, the magnon calculator, has now moved to [its own repository](https://github.com/ILLGrenoble/magpie).
+- *TAS-Paths*, the collision detection and motion planning tool, also has [its own repository](https://github.com/ILLGrenoble/taspaths).
 - An overview of historic repositories can be found [here](https://github.com/ILLGrenoble/takin/wiki/History).
 
 
