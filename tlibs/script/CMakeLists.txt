@@ -27,7 +27,7 @@
 #
 
 cmake_minimum_required(VERSION 3.5)
-project (hermelin)
+project(hermelin)
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
 set(CMAKE_BUILD_TYPE Release)
@@ -38,7 +38,7 @@ set(CMAKE_BINARY_DIR "${CMAKE_SOURCE_DIR}")
 
 
 add_custom_command(
-	OUTPUT script.cc tokens.h
+	OUTPUT ${PROJECT_SOURCE_DIR}/script.cc ${PROJECT_SOURCE_DIR}/tokens.h
 	COMMAND bison --defines=${PROJECT_SOURCE_DIR}/tokens.h --output-file=${PROJECT_SOURCE_DIR}/script.cc ${PROJECT_SOURCE_DIR}/lang/script.yy
 )
 
@@ -48,7 +48,7 @@ find_package(Threads REQUIRED)
 find_package(Minuit2 REQUIRED)
 
 
-add_definitions(-std=c++11)
+add_definitions(-std=c++14)
 add_definitions(-march=native -s)
 
 add_definitions(-DNO_LAPACK -DNO_QT)
