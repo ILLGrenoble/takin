@@ -117,10 +117,10 @@ p_geo = {'dist_PM':[25000, 0], 'dist_MS':[1300, 6], 'dist_SD':[3000, 6], 'angles
 p_chop = {'chopperP':[1, 1, 1, 4.386], 'chopperM':[1, 1, 1, 27.778]}
 covQhw = cov.cov(p_geo, p_chop, 620, 620, 'SPHERE', True)
 aff = la.inv(covQhw)
-print(aff)
+print('aff =', aff)
 ellipses = reso.calc_ellipses(aff, True)
 reso.plot_ellipses(ellipses, True)
-
+print(620*cov.moh/cov.m2A)
 
 #distances in mm, angle in degree
 #IN5 = {"pos_P1":9000, "delta_p1":40, "pos_P2":9000, "delta_P2":40, "pos_M1":1000, "delta_M1":10, "pos_M2":1000, "delta_M2":10, "pos_S":0, "delat_S":0,

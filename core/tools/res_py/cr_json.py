@@ -30,6 +30,7 @@
 #
 
 import json
+import numpy as np
 
 def create(param, path):
     """param is a dictionnary, path is where to save"""
@@ -42,3 +43,7 @@ def read(path):
     with open(path, 'r', encoding='utf-8') as file:
         param = json.load(file)
     return param
+
+print(type({}))
+a = np.array([1234, 45800])
+print(np.multiply(a,1e-3))
