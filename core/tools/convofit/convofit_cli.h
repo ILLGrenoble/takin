@@ -30,5 +30,6 @@
 #define __TAKIN_CONVOFIT_MAIN__
 
 extern int convofit_main(int argc, char** argv);
+extern int convoseries_main(int argc, char** argv);
 
 #endif

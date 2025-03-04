@@ -118,12 +118,12 @@ bool get_fileprops(const std::string& strFile, t_map& mapProps)
 /**
  * old behaviour expecting numbered files
  */
-int invoke_old(int argc, char** argv)
+int invoke_old(int argc, char** argv, int start_arg = 0)
 {
-	std::string strOutDir = argv[1];
+	std::string strOutDir = argv[1 + start_arg];
 
 	std::vector<std::string> vecCols;
-	for(int iArg=2; iArg<argc; ++iArg)
+	for(int iArg = 2 + start_arg; iArg < argc; ++iArg)
 		vecCols.push_back(argv[iArg]);
 
 
@@ -138,7 +138,7 @@ int invoke_old(int argc, char** argv)
 	ofstr.precision(16);
 
 
-	for(std::size_t iCol=0; iCol<vecCols.size(); ++iCol)
+	for(std::size_t iCol = 0; iCol < vecCols.size(); ++iCol)
 	{
 		if(iCol==0)
 			ofstr << std::left << std::setw(42) << ("# " + vecCols[iCol]);
@@ -148,7 +148,7 @@ int invoke_old(int argc, char** argv)
 	ofstr << "\n";
 
 
-	for(unsigned iNr=1; 1; ++iNr)
+	for(unsigned iNr = 1; true; ++iNr)
 	{
 		std::ostringstream ostrScFile;
 		ostrScFile << strOutDir << "/sc" << iNr << ".dat";
@@ -347,26 +347,35 @@ bool invoke_new(const char* pcFile)
 
 
 
-int main(int argc, char** argv)
+int convoseries_main(int argc, char** argv)
 {
 #ifdef NO_TERM_CMDS
 	tl::Log::SetUseTermCmds(0);
 #endif
 
-	if(argc <= 1)
+	// skip dummy argument when starting from takin
+	int start_arg = 0;
+	std::string progname = argv[0];
+	if(argc > 1 && std::string(argv[1]) == "--convoseries")
+	{
+		progname += std::string(" ") + argv[1];
+		++start_arg;
+	}
+
+	if(argc <= 1 + start_arg)
 	{
 		std::cerr << "Usage 1:\n";
-		std::cerr << "\t" << argv[0] << " -f <input.cfg>" << "\n";
+		std::cerr << "\t" << progname << " -f <input.cfg>" << "\n";
 
 		std::cerr << "Usage 2:\n";
-		std::cerr << "\t" << argv[0] << " <out dir>  <var1> <var2> ...\n";
-		std::cerr << "\te.g." << argv[0] << " out  T TA2_E_HWHM TA2_amp" << std::endl;
+		std::cerr << "\t" << progname << " <out dir>  <var1> <var2> ...\n";
+		std::cerr << "\te.g." << progname << " out  T TA2_E_HWHM TA2_amp" << std::endl;
 		return -1;
 	}
 
-	if(argc >= 3 && std::string(argv[1]) == "-f")
+	if(argc >= 3 + start_arg && std::string(argv[start_arg + 1]) == "-f")
 	{
-		for(int iArg=2; iArg<argc; ++iArg)
+		for(int iArg = 2 + start_arg; iArg < argc; ++iArg)
 		{
 			tl::log_info("Invoking \"", argv[iArg], "\"...");
 			if(!invoke_new(argv[iArg]))
@@ -375,7 +384,7 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-		return invoke_old(argc, argv);
+		return invoke_old(argc, argv, start_arg);
 	}
 
 	return 0;

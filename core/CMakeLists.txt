@@ -480,7 +480,7 @@ add_executable(takin
 	# convofit
 	tools/convofit/convofit.cpp tools/convofit/convofit_import.cpp
 	tools/convofit/model.cpp tools/convofit/scan.cpp
-	tools/convofit/convofit_cli.cpp
+	tools/convofit/convofit_cli.cpp tools/convofit/scanseries.cpp
 
 	# scanviewer
 	tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer_fit.cpp
