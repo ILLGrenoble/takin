@@ -60,7 +60,7 @@ hbarAU = 1
 meAU = 1
 m_nAU = np.divide(m_nSI,me2kg)
 mohAU = np.divide(m_nAU, hbarAU)
-#print(me2kg, mu2kg, a02m, hartree2J, hartree2eV, timeAU2s, vAU2vSI, hbarAU, meAU, m_nAU, mohAU)
+#print(me2kg, mu2kg, a02m, hartree2J, hartree2meV, timeAU2s, vAU2vSI, hbarAU, meAU, m_nAU, mohAU)
 
 #Initialisation of the covariance Matrix
 covQhw = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
@@ -69,7 +69,7 @@ covQhw = np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
 def k2v(k):
     """k in 1/A"""
     km = k*m2A                  # 1/m
-    return np.divide(k, mohSI)    # m/s
+    return np.divide(km, mohSI)    # m/s
 
 # Calcul of the length of a segment cuts in small segments
 def calcDistLin(dist):
@@ -108,7 +108,7 @@ def reducedCoef(v_i, v_f, L_PM, l_angles, shape, verbose=False):
 
 # Calcul of Jacobian's terms for every shape
 def jacobTerms(v_iAU, v_fAU, l_dist, l_angles, l_AB, l_sizes, shape, verbose=False):
-    '''v_i, v_f are velocities in AU, l_dist is a list of 6 distances in AU, l_AB is a list of 8 coef got from reducedCoef() in AU, l_sizes is a list of 6 numbers, shape in (SPHERE, HCYL, VCYL)'''
+    '''v_i, v_f are velocities in AU, l_dist is a list of 6 distances in AU, l_angles is a list of 4 angles in radian, l_AB is a list of 8 coef got from reducedCoef() in AU, l_sizes is a list of 6 numbers, shape in (SPHERE, HCYL, VCYL)'''
     L_PM = l_dist[0]
     L_MS = l_dist[1]
     L_SD = l_dist[2]
@@ -379,13 +379,26 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
     if shape not in ('SPHERE', 'VCYL', 'HCYL'):
         print("this shape is not taken in account")
         return None
-    
+    ###########################################################################################
+    if(verbose):
+        print('param_geo =', param_geo)
+        print('param_choppers =', param_choppers)
+        print('v_i =', v_i, '; v_f =', v_f)
+        print('det_shape =', shape, '\n')
+
     # Storage of values given by the user
     dist_PM = np.multiply(param_geo['dist_PM'], mm2m)           # m
     dist_MS = np.multiply(param_geo['dist_MS'], mm2m)           # m
     dist_SD = np.multiply(param_geo['dist_SD'], mm2m)           # m
     angles = param_geo['angles']                                # degree
     delta_time_detector = param_geo['delta_time_detector']      # s
+    ###########################################################################################
+    if(verbose):
+        print('dist_PM =', dist_PM)
+        print('dist_MS =', dist_MS)
+        print('dist_SD =', dist_SD)
+        print('angles =', angles)
+        print('delta_time_detector =', delta_time_detector, '\n')
 
     #Convertion to AU and radian
     dist_PM_AU = fromSItoAU(dist_PM, 'distance')                # AU
@@ -398,6 +411,16 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
 
     #dictionnary in AU
     param_geo_AU = {'dist_PM_AU':dist_PM_AU, 'dist_MS_AU':dist_MS_AU, 'dist_SD_AU':dist_SD_AU, 'angles_rad':angles_rad, 'delta_time_detectorAU': delta_time_detectorAU}
+    ###########################################################################################
+    if(verbose):
+        print('dist_PM_AU =', dist_PM_AU)
+        print('dist_MS_AU =', dist_MS_AU)
+        print('dist_SD_AU =', dist_SD_AU)
+        print('angles_rad =', angles_rad)
+        print('delta_time_detectorAU =', delta_time_detectorAU)
+        print('v_iAU =', v_iAU)
+        print('v_fAU =', v_fAU)
+        print('param_geo_AU =', param_geo_AU, '\n')
 
     # Calcul of distances and angles for each shape of detectors
     L_PM = calcDistLin(dist_PM_AU)
@@ -441,10 +464,6 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
     l_angles = np.array([theta_i, phi_i, theta_f, phi_f])
     ###########################################################################################
     if(verbose):
-        print('param_geo =', param_geo)
-        print('param_geo_AU =', param_geo_AU)
-        print('param_choppers =', param_choppers)
-        print('v_i =', v_i, '; v_f =', v_f)
         print('L_PM =', L_PM, '; L_MS =', L_MS, '; L_SD =', L_SD)
         print('x =', x, '; rad =', rad, '; z=', z, '; theta_i =', theta_i, '; phi_i =', phi_i, '; theta_f =', theta_f, '; phi_f =', phi_f, '\n')
 

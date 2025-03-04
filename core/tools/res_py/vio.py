@@ -42,6 +42,55 @@ import cr_json as js
 # resolution algorithm
 #
 
+
+# settings
+ki = 1  # 2.5 in A
+kf = 1
+Q = 1
+
+verbose = True
+
+
+params = {
+    "ki":ki,
+    "kf":kf,
+    "Q":Q,
+    "E":helpers.get_E(ki, kf),
+
+    "v_i":cov.k2v(ki),
+    "v_f":cov.k2v(kf),
+
+    "verbose" : verbose,
+
+    "det_shape": 'SPHERE', #'VCYL', #'HCYL', #'SPHERE'
+
+    "z":0
+}
+
+p_geo = {'dist_PM':[25000, 0], 'dist_MS':[1300, 6], 'dist_SD':[3000, 6], 'angles':[0, 0.2, 0, 0.2, 10, 0.2, 90, 0.2], 'delta_time_detector':0.006}
+p_chop = {'chopperP':[1, 1, 1, 4.386], 'chopperM':[1, 1, 1, 27.778]}
+
+instr = {
+    "L_PM":25000,
+    "L_MS":1300,
+    "rad":3000,
+    "delta_PM":0,
+    "delta_MS":6,
+    "delta_SD":6,
+    "theta_i":0,
+    "phi_i":0,
+    "delta_theta_i":0.2,
+    "delta_phi_i":0.2,
+    "rad_chop_P":1,
+    "RPM_min_chop_P":1,
+    "RPM_max_chop_P":1000,
+    "RPM_chop_P":4.386,
+    "rad_chop_M":1,
+    "RPM_min_chop_M":1,
+    "RPM_max_chop_M":1000,
+    "RPM_chop_M":27.778,
+}
+
 def calc(paramUser, paramInstr):
     #paramInstr are read from a file (not yet implemented)
 
@@ -120,7 +169,7 @@ aff = la.inv(covQhw)
 print('aff =', aff)
 ellipses = reso.calc_ellipses(aff, True)
 reso.plot_ellipses(ellipses, True)
-print(620*cov.moh/cov.m2A)
+print(620*cov.mohSI/cov.m2A)
 
 #distances in mm, angle in degree
 #IN5 = {"pos_P1":9000, "delta_p1":40, "pos_P2":9000, "delta_P2":40, "pos_M1":1000, "delta_M1":10, "pos_M2":1000, "delta_M2":10, "pos_S":0, "delat_S":0,
