@@ -67,7 +67,7 @@ function clone_magpie
 #
 # taspaths project
 #
-function clone_magpie
+function clone_taspaths
 {
 	# test for existing symlink
 	if [ -L taspaths ]; then

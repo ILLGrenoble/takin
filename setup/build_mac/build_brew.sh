@@ -31,7 +31,7 @@
 setup_buildenv=1
 setup_externals=1
 build_takin=1
-build_takin2=1
+build_magpie=1
 build_plugins=1
 build_package=1
 
@@ -76,7 +76,7 @@ if [ $setup_externals -ne 0 ]; then
 	echo -e "Getting external dependencies..."
 	echo -e "================================================================================\n"
 
-	if ! ../setup/externals/setup_modules.sh; then
+	if ! ./setup/externals/setup_modules.sh; then
 		exit -1
 	fi
 
@@ -104,7 +104,7 @@ if [ $build_takin -ne 0 ]; then
 		cd build
 
 		#if ! cmake -DDISABLE_INTERPROC_XSI=True -DDEBUG=False ..; then
-		if ! cmake -DDEBUG=False ..; then
+		if ! cmake -DCMAKE_BUILD_TYPE=Release -DDEBUG=False ..; then
 			echo -e "Failed configuring core package."
 			exit -1
 		fi
@@ -117,9 +117,9 @@ if [ $build_takin -ne 0 ]; then
 fi
 
 
-if [ $build_takin2 -ne 0 ]; then
+if [ $build_magpie -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Building Takin mag-core..."
+	echo -e "Building Magpie core..."
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/mag-core"

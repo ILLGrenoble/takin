@@ -32,7 +32,7 @@ setup_buildenv=1
 setup_externals=1
 build_externals=1
 build_takin=1
-build_takin2=1
+build_magpie=1
 build_plugins=1
 build_package=1
 
@@ -66,7 +66,7 @@ if [ $setup_externals -ne 0 ]; then
 	echo -e "Getting external dependencies..."
 	echo -e "================================================================================\n"
 
-	if ! ../setup/externals/setup_modules.sh; then
+	if ! ./setup/externals/setup_modules.sh; then
 		exit -1
 	fi
 
@@ -120,7 +120,7 @@ if [ $build_takin -ne 0 ]; then
 		mkdir -p build
 		cd build
 
-		if ! mingw64-cmake -DDEBUG=False ..; then
+		if ! mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DDEBUG=False -DUSE_CUSTOM_THREADPOOL=True ..; then
 			echo -e "Failed configuring core package."
 			exit -1
 		fi
@@ -133,9 +133,9 @@ if [ $build_takin -ne 0 ]; then
 fi
 
 
-if [ $build_takin2 -ne 0 ]; then
+if [ $build_magpie -ne 0 ]; then
 	echo -e "\n================================================================================"
-	echo -e "Building Takin 2 tools..."
+	echo -e "Building Magpie tools..."
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/mag-core"
