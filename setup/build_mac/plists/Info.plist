@@ -8,8 +8,8 @@
 	<key>CFBundleExecutable</key>		<string>takin</string>
 	<key>CFBundleIconFile</key>		<string>takin.icns</string>
 	<key>CFBundleIdentifier</key>		<string>eu.ill.cs.takin</string>
-	<key>CFBundleVersion</key>		<string>2.8.1</string>
-	<key>CFBundleShortVersionString</key>	<string>2.8.1</string>
+	<key>CFBundleVersion</key>		<string>2.8.5</string>
+	<key>CFBundleShortVersionString</key>	<string>2.8.5</string>
 	<key>CFBundlePackageType</key>		<string>APPL</string>
 	<key>CFBundleSupportedPlatforms</key>	<array> <string>MacOSX</string> </array>
 
@@ -18,7 +18,7 @@
 	<key>NSHighResolutionCapable</key>	<string>True</string>
 	<key>NSPrincipalClass</key>		<string>NSApplication</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>	<string>True</string>
-	<key>NSHumanReadableCopyright</key>	<string>Copyright (C) 2014-2024 by Tobias Weber (TUM, Garching, Germany and ILL, Grenoble, France). Copyleft: GPLv2.</string>
+	<key>NSHumanReadableCopyright</key>	<string>Copyright (C) 2014-2025 by Tobias Weber (TUM, Garching, Germany and ILL, Grenoble, France). Copyleft: GPLv2.</string>
 
 	<key>CFBundleDocumentTypes</key>
 	<array>

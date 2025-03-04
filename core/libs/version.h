@@ -29,7 +29,7 @@
 #ifndef __TAKIN_VERSION_H__
 #define __TAKIN_VERSION_H__
 
-#define TAKIN_VER "2.8.1"
+#define TAKIN_VER "2.8.5"
 
 #define TAKIN_LICENSE(PROG) PROG " is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 2 as published by the Free Software Foundation.\n" \
 	PROG " is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n" \
