@@ -1105,10 +1105,7 @@ class TasGUI:
         self.KiKfChanged_angles()
 
         dlg.show()
-        if qt_ver == 6:
-            app.exec()
-        else:
-            app.exec_()
+        app.exec()
 
 
         # save settings
