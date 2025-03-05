@@ -30,6 +30,7 @@
 # requires numpy version >= 1.10
 import numpy as np
 import helpers
+import tas
 import reso
 import pop
 import eck
@@ -57,7 +58,7 @@ params = {
     # scattering triangle
     "ki" : ki,
     "kf" : kf,
-    "E" : helpers.get_E(ki, kf),
+    "E" : tas.get_E(ki, kf),
     "Q" : Q,
 
     # d spacings

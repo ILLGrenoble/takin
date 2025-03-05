@@ -37,6 +37,7 @@
 import numpy as np
 import numpy.linalg as la
 import reso
+import tas
 import helpers
 
 
@@ -161,11 +162,11 @@ def calc(param):
     Q = param["Q"]
 
     # angles
-    twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
-    thetam = helpers.get_mono_angle(ki, param["mono_xtal_d"]) * param["mono_sense"]
-    thetaa = helpers.get_mono_angle(kf, param["ana_xtal_d"]) * param["ana_sense"]
-    Q_ki = helpers.get_angle_Q_ki(ki, kf, Q) * param["sample_sense"]
-    Q_kf = helpers.get_angle_Q_kf(ki, kf, Q) * param["sample_sense"]
+    twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
+    thetam = tas.get_mono_angle(ki, param["mono_xtal_d"], True) * param["mono_sense"]
+    thetaa = tas.get_mono_angle(kf, param["ana_xtal_d"], True) * param["ana_sense"]
+    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
+    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
 
     if param["verbose"]:
         print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
@@ -225,7 +226,7 @@ def calc(param):
     # --------------------------------------------------------------------
 
 
-    lam = helpers.k2lam(ki)
+    lam = tas.k_to_lam(ki)
 
     coll_h_pre_mono = param["coll_h_pre_mono"]
     coll_v_pre_mono = param["coll_v_pre_mono"]
@@ -320,10 +321,10 @@ def calc(param):
     # trafo, equ. 52 in [eck14]
     T = np.identity(6)
     T[0, 3] = T[1, 4] = T[2, 5] = -1.
-    T[3, 0] = 2.*helpers.ksq2E * Q*dEi
-    T[3, 3] = 2.*helpers.ksq2E * Q*dEf
-    T[3, 1] = 2.*helpers.ksq2E * kperp
-    T[3, 4] = -2.*helpers.ksq2E * kperp
+    T[3, 0] = 2.*tas.k2_to_E * Q*dEi
+    T[3, 3] = 2.*tas.k2_to_E * Q*dEf
+    T[3, 1] = 2.*tas.k2_to_E * kperp
+    T[3, 4] = -2.*tas.k2_to_E * kperp
     T[4, 1] = T[5, 2] = dEf
     T[4, 4] = T[5, 5] = dEi
 

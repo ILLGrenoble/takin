@@ -49,62 +49,6 @@ deg2rad = np.pi / 180.
 
 
 #--------------------------------------------------------------------------
-# scattering triangle
-# see: https://code.ill.fr/scientific-software/takin/mag-core/blob/master/tools/tascalc/tascalc.py
-#--------------------------------------------------------------------------
-#import scipy.constants as co
-#ksq2E = (co.Planck/co.elementary_charge/2./np.pi)**2. * co.elementary_charge / 2. / co.neutron_mass * 1e23
-ksq2E = 2.072124855   # calculated with scipy.constants using the formula above
-
-
-def k2lam(k):
-    return 2.*np.pi / k
-
-
-def get_E(ki, kf):
-    return ksq2E * (ki**2. - kf**2.)
-
-
-def get_ki(E, kf):
-    return np.sqrt(E/ksq2E + kf*kf)
-
-
-def get_scattering_angle(ki, kf, Q):
-    c = (ki**2. + kf**2. - Q**2.) / (2.*ki*kf)
-    return np.arccos(c)
-
-
-def get_Q(ki, kf, twotheta):
-    c = np.cos(twotheta)
-    return np.sqrt(ki**2. + kf**2. - c*(2.*ki*kf))
-
-
-#
-# angle rotating Q into ki (i.e. angle inside scattering triangle)
-#
-def get_angle_Q_ki(ki, kf, Q):
-    c = (ki**2. + Q**2. - kf**2.) / (2.*ki*Q)
-    return np.arccos(c)
-
-
-#
-# angle rotating Q into kf (i.e. angle outside scattering triangle),
-# Q_kf = Q_ki + twotheta_s
-#
-def get_angle_Q_kf(ki, kf, Q):
-    c = (ki**2. - Q**2. - kf**2.) / (2.*kf*Q)
-    return np.arccos(c)
-
-
-def get_mono_angle(k, d):
-    s = np.pi/(d*k)
-    angle = np.arcsin(s)
-    return angle
-#--------------------------------------------------------------------------
-
-
-
-#--------------------------------------------------------------------------
 # helpers
 #--------------------------------------------------------------------------
 #

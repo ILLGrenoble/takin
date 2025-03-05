@@ -28,6 +28,7 @@
 #
 
 import numpy as np
+import tas
 import helpers
 
 
@@ -104,7 +105,7 @@ params = {
     # scattering triangle
     "ki" : 2.662,
     "kf" : 2.662,
-    "E"  : helpers.get_E(2.662, 2.662),
+    "E"  : tas.get_E(2.662, 2.662),
     "Q"  : 2.,
 
     # d spacings
@@ -222,7 +223,7 @@ params_fc = {
     # scattering triangle
     "ki" : 2.981,
     "kf" : 2.981,
-    "E"  : helpers.get_E(2.981, 2.981),
+    "E"  : tas.get_E(2.981, 2.981),
     "Q"  : 2.,
 
     # d spacings

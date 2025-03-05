@@ -30,6 +30,7 @@
 
 # requires numpy version >= 1.10
 import numpy as np
+import tas
 import helpers
 import params_in20
 
@@ -51,7 +52,7 @@ params = {
     # scattering triangle
     "ki" : 1.4,
     "kf" : 1.4,
-    "E"  : helpers.get_E(1.4, 1.4),
+    "E"  : tas.get_E(1.4, 1.4),
     "Q"  : 1.777,
 
     # d spacings
@@ -248,9 +249,9 @@ if parsedargs.Q != None:
     params["Q"] = parsedargs.Q
 if parsedargs.twotheta != None:
     params["twotheta"] = parsedargs.twotheta * helpers.deg2rad
-    params["Q"] = helpers.get_Q(params["ki"], params["kf"], params["twotheta"])
+    params["Q"] = tas.get_Q(params["ki"], params["kf"], params["twotheta"])
 else:
-    params["twotheta"] = helpers.get_scattering_angle(params["ki"], params["kf"], params["Q"])
+    params["twotheta"] = tas.get_scattering_angle(params["ki"], params["kf"], params["Q"])
 
 if parsedargs.pos_x != None:
     params["pos_x"] = parsedargs.pos_x * helpers.cm2A
@@ -284,10 +285,10 @@ else:
 if parsedargs.E != None:
     # calculate ki from E and kf
     params["E"] = parsedargs.E
-    params["ki"] = helpers.get_ki(params["E"], params["kf"])
+    params["ki"] = tas.get_ki(params["kf"], params["E"])
 else:
     # calculate E from ki and kf
-    params["E"] = helpers.get_E(params["ki"], params["kf"])
+    params["E"] = tas.get_E(params["ki"], params["kf"])
 
 # set fixed curvatures
 if parsedargs.mono_curv_v != None:

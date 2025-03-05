@@ -33,6 +33,7 @@
 import numpy as np
 import numpy.linalg as la
 import reso
+import tas
 import helpers
 
 
@@ -46,13 +47,13 @@ def calc(param, pointlike = False):
     E = param["E"]
     Q = param["Q"]
 
-    lam = helpers.k2lam(ki)
+    lam = tas.k_to_lam(ki)
 
     # angles
-    twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
+    twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
     thetas = twotheta * 0.5
-    Q_ki = helpers.get_angle_Q_ki(ki, kf, Q) * param["sample_sense"]
-    Q_kf = helpers.get_angle_Q_kf(ki, kf, Q) * param["sample_sense"]
+    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
+    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
 
     if param["verbose"]:
         print("2theta = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %

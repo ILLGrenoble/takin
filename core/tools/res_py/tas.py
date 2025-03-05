@@ -24,8 +24,10 @@ use_scipy = False
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
+#
 # rotate a vector around an axis using Rodrigues' formula
 # see https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+#
 def rotate(_axis, vec, phi):
     axis = _axis / la.norm(_axis)
 
@@ -35,16 +37,20 @@ def rotate(_axis, vec, phi):
     return c*vec + (1.-c)*np.dot(vec, axis)*axis + s*np.cross(axis, vec)
 
 
+#
 # get metric from crystal B matrix
 # basis vectors are in the columns of B, i.e. the second index
 # see (Arens 2015), p. 815
+#
 def get_metric(B):
     #return np.einsum("ij,ik -> jk", B, B)
     return np.dot(np.transpose(B), B)
 
 
+#
 # cross product in fractional coordinates: c^l = eps_ijk g^li a^j b^k
 # see (Arens 2015), p. 815
+#
 def cross(a, b, B):
     # levi-civita in fractional coordinates
     def levi(i,j,k, B):
@@ -59,14 +65,18 @@ def cross(a, b, B):
     return np.einsum("ijk,j,k,li -> l", eps, a, b, metric_inv)
 
 
+#
 # dot product in fractional coordinates
 # see (Arens 2015), p. 808
+#
 def dot(a, b, metric):
     return np.dot(a, np.dot(metric, b))
 
 
+#
 # angle between peaks in fractional coordinates
 # see (Arens 2015), p. 808
+#
 def angle(a, b, metric):
     len_a = np.sqrt(dot(a, a, metric))
     len_b = np.sqrt(dot(b, b, metric))
@@ -104,14 +114,24 @@ k2_to_E = 1./E_to_k2
 
 
 # -----------------------------------------------------------------------------
+def k_to_lam(k):
+    return 2.*np.pi / k
+
+
+#
 # mono (or ana) k  ->  A1 & A2 angles (or A5 & A6)
-def get_a1a2(k, d):
+#
+def get_mono_angle(k, d, only_a1 = False):
     s = np.pi/(d*k)
     a1 = np.arcsin(s)
+    if only_a1:
+        return a1
     return [a1, 2.*a1]
 
 
+#
 # a1 angle (or a5)  ->  mono (or ana) k
+#
 def get_monok(theta, d):
     s = np.sin(theta)
     k = np.pi/(d*s)
@@ -120,13 +140,17 @@ def get_monok(theta, d):
 
 
 # -----------------------------------------------------------------------------
+#
 # scattering angle a4
-def get_a4(ki, kf, Q):
+#
+def get_scattering_angle(ki, kf, Q):
     c = (ki**2. + kf**2. - Q**2.) / (2.*ki*kf)
     return np.arccos(c)
 
 
+#
 # get |Q| from ki, kf and a4
+#
 def get_Q(ki, kf, a4):
     c = np.cos(a4)
     return np.sqrt(ki**2. + kf**2. - c*(2.*ki*kf))
@@ -134,14 +158,27 @@ def get_Q(ki, kf, a4):
 
 
 # -----------------------------------------------------------------------------
-# angle enclosed by ki and Q
-def get_psi(ki, kf, Q, sense=1.):
+#
+# angle rotating Q into ki (i.e. angle inside scattering triangle)
+#
+def get_psi(ki, kf, Q, sense = 1.):
     c = (ki**2. + Q**2. - kf**2.) / (2.*ki*Q)
     return sense*np.arccos(c)
 
 
+#
+# angle rotating Q into kf (i.e. angle outside scattering triangle),
+# Q_kf = Q_ki + twotheta_s
+#
+def get_eta(ki, kf, Q, sense = 1.):
+    c = (ki**2. - Q**2. - kf**2.) / (2.*kf*Q)
+    return sense*np.arccos(c)
+
+
+#
 # crystallographic A matrix converting fractional to lab coordinates
 # see https://de.wikipedia.org/wiki/Fraktionelle_Koordinaten
+#
 def get_A(lattice, angles):
     cs = np.cos(angles)
     s1 = np.sin(angles[1])
@@ -157,16 +194,20 @@ def get_A(lattice, angles):
     return np.transpose(np.array([a, b, c]))
 
 
+#
 # crystallographic B matrix converting rlu to 1/A
 # the reciprocal-space basis vectors form the columns of the B matrix
+#
 def get_B(lattice, angles):
     A = get_A(lattice, angles)
     B = 2.*np.pi * np.transpose(la.inv(A))
     return B
 
 
+#
 # UB orientation matrix
 # see https://dx.doi.org/10.1107/S0021889805004875
+#
 def get_UB(B, orient1_rlu, orient2_rlu, orientup_rlu):
     orient1_invA = np.dot(B, orient1_rlu)
     orient2_invA = np.dot(B, orient2_rlu)
@@ -181,8 +222,10 @@ def get_UB(B, orient1_rlu, orient2_rlu, orientup_rlu):
     return UB
 
 
+#
 # a3 & a4 angles
 # see https://dx.doi.org/10.1107/S0021889805004875
+#
 def get_a3a4(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
     metric = get_metric(B)
     #print("Metric: " + str(metric))
@@ -205,13 +248,15 @@ def get_a3a4(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_of
     psi = get_psi(ki, kf, Qlen, sense_sample)
 
     a3 = - psi - xi + a3_offs
-    a4 = get_a4(ki, kf, Qlen)
+    a4 = get_scattering_angle(ki, kf, Qlen)
 
     return [a3, a4, dist_Q_plane]
 
 
+#
 # hkl position
 # see https://dx.doi.org/10.1107/S0021889805004875
+#
 def get_hkl(ki, kf, a3, Qlen, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
     B_inv = la.inv(B)
 
@@ -230,17 +275,23 @@ def get_hkl(ki, kf, a3, Qlen, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_
 
 
 # -----------------------------------------------------------------------------
+#
 # get ki from kf and energy transfer
+#
 def get_ki(kf, E):
     return np.sqrt(kf**2. + E_to_k2*E)
 
 
+#
 # get kf from ki and energy transfer
+#
 def get_kf(ki, E):
     return np.sqrt(ki**2. - E_to_k2*E)
 
 
+#
 # get energy transfer from ki and kf
+#
 def get_E(ki, kf):
     return (ki**2. - kf**2.) / E_to_k2
 # -----------------------------------------------------------------------------
@@ -248,25 +299,29 @@ def get_E(ki, kf):
 
 
 # -----------------------------------------------------------------------------
+#
 # get the difference in tas angles for two positions
+#
 def get_angle_deltas(ki1, kf1, Q_rlu1, di1, df1, \
     ki2, kf2, Q_rlu2, di2, df2, \
     orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
 
     # position 1
-    [a1_1, a2_1] = get_a1a2(ki1, di1)
-    [a5_1, a6_1] = get_a1a2(kf1, df1)
+    [a1_1, a2_1] = get_mono_angle(ki1, di1)
+    [a5_1, a6_1] = get_mono_angle(kf1, df1)
     [a3_1, a4_1, dist_Q_plane_1] = get_a3a4(ki1, kf1, Q_rlu1, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
 
     # position 2
-    [a1_2, a2_2] = get_a1a2(ki2, di2)
-    [a5_2, a6_2] = get_a1a2(kf2, df2)
+    [a1_2, a2_2] = get_mono_angle(ki2, di2)
+    [a5_2, a6_2] = get_mono_angle(kf2, df2)
     [a3_2, a4_2, dist_Q_plane_2] = get_a3a4(ki2, kf2, Q_rlu2, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
 
     return [a1_2-a1_1, a2_2-a2_1, a3_2-a3_1, a4_2-a4_1, a5_2-a5_1, a6_2-a6_1, dist_Q_plane_1, dist_Q_plane_2]
 
 
+#
 # get the instrument driving time
+#
 def driving_time(deltas, rads_per_times):
     times = np.abs(deltas) / rads_per_times
     return np.max(times)
@@ -408,7 +463,7 @@ class TasGUI:
         kf = self.getfloat(self.editKf.text())
 
         try:
-            [a1, a2] = get_a1a2(ki, self.getfloat(self.editDm.text()))
+            [a1, a2] = get_mono_angle(ki, self.getfloat(self.editDm.text()))
 
             self.editA1.setText("%.6g" % (a1 / np.pi * 180.))
             self.editA2.setText("%.6g" % (a2 / np.pi * 180.))
@@ -417,7 +472,7 @@ class TasGUI:
             self.editA2.setText("invalid")
 
         try:
-            [a5, a6] = get_a1a2(kf, self.getfloat(self.editDa.text()))
+            [a5, a6] = get_mono_angle(kf, self.getfloat(self.editDa.text()))
 
             self.editA5.setText("%.6g" % (a5 / np.pi * 180.))
             self.editA6.setText("%.6g" % (a6 / np.pi * 180.))
@@ -603,24 +658,32 @@ class TasGUI:
     def __init__(self):
         # -----------------------------------------------------------------------------
         # dependencies
-        # try to import qt5...
+        # try to import qt6...
         try:
-            import PyQt5 as qt
-            import PyQt5.QtCore as qtc
-            import PyQt5.QtGui as qtg
-            import PyQt5.QtWidgets as qtw
-            qt_ver = 5
+            import PyQt6 as qt
+            import PyQt6.QtCore as qtc
+            import PyQt6.QtGui as qtg
+            import PyQt6.QtWidgets as qtw
+            qt_ver = 6
         except ImportError:
-            # ...and if not possible try to import qt4 instead
+            # ... next try to import qt5...
             try:
-                import PyQt4 as qt
-                import PyQt4.QtCore as qtc
-                import PyQt4.QtGui as qtg
-                qtw = qtg
-                qt_ver = 4
+                import PyQt5 as qt
+                import PyQt5.QtCore as qtc
+                import PyQt5.QtGui as qtg
+                import PyQt5.QtWidgets as qtw
+                qt_ver = 5
             except ImportError:
-                print("Error: No suitable version of Qt was found!")
-                exit(-1)
+                # ... finally try to import qt4
+                try:
+                    import PyQt4 as qt
+                    import PyQt4.QtCore as qtc
+                    import PyQt4.QtGui as qtg
+                    qtw = qtg
+                    qt_ver = 4
+                except ImportError:
+                    print("Error: No suitable version of Qt was found!")
+                    exit(-1)
         # -----------------------------------------------------------------------------
 
 
@@ -640,6 +703,16 @@ class TasGUI:
         # -----------------------------------------------------------------------------
 
 
+        if qt_ver == 6:
+            hline = qtw.QFrame.Shape.HLine
+            policy_min = qtw.QSizePolicy.Policy.Minimum
+            policy_exp = qtw.QSizePolicy.Policy.Expanding
+        else:
+            hline = qtw.QFrame.HLine
+            policy_min = qtw.QSizePolicy.Minimum
+            policy_exp = qtw.QSizePolicy.Expanding
+
+
         # -----------------------------------------------------------------------------
         # crystal tab
         xtalpanel = qtw.QWidget()
@@ -653,7 +726,7 @@ class TasGUI:
         self.editBeta = qtw.QLineEdit(xtalpanel)
         self.editGamma = qtw.QLineEdit(xtalpanel)
         separatorXtal = qtw.QFrame(xtalpanel)
-        separatorXtal.setFrameStyle(qtw.QFrame.HLine)
+        separatorXtal.setFrameStyle(hline)
         self.editAx = qtw.QLineEdit(xtalpanel)
         self.editAy = qtw.QLineEdit(xtalpanel)
         self.editAz = qtw.QLineEdit(xtalpanel)
@@ -750,11 +823,11 @@ class TasGUI:
         self.tasstatus = qtw.QLabel(taspanel)
 
         separatorTas = qtw.QFrame(taspanel)
-        separatorTas.setFrameStyle(qtw.QFrame.HLine)
+        separatorTas.setFrameStyle(hline)
         separatorTas2 = qtw.QFrame(taspanel)
-        separatorTas2.setFrameStyle(qtw.QFrame.HLine)
+        separatorTas2.setFrameStyle(hline)
         separatorTas3 = qtw.QFrame(taspanel)
-        separatorTas3.setFrameStyle(qtw.QFrame.HLine)
+        separatorTas3.setFrameStyle(hline)
 
 
         self.editA1.textEdited.connect(self.TASChanged)
@@ -833,7 +906,7 @@ class TasGUI:
         taslayout.addWidget(self.editDm, 14,1, 1,1)
         taslayout.addWidget(self.editDa, 14,2, 1,1)
 
-        taslayout.addItem(qtw.QSpacerItem(16,16, qtw.QSizePolicy.Minimum, qtw.QSizePolicy.Expanding), 15,0, 1,3)
+        taslayout.addItem(qtw.QSpacerItem(16,16, policy_min, policy_exp), 15,0, 1,3)
         taslayout.addWidget(self.tasstatus, 16,0, 1,3)
 
         tabs.addTab(taspanel, "TAS")
@@ -884,9 +957,9 @@ class TasGUI:
         self.anglesstatus = qtw.QLabel(anglespanel)
 
         separatorAngles = qtw.QFrame(anglespanel)
-        separatorAngles.setFrameStyle(qtw.QFrame.HLine)
+        separatorAngles.setFrameStyle(hline)
         separatorAngles2 = qtw.QFrame(anglespanel)
-        separatorAngles2.setFrameStyle(qtw.QFrame.HLine)
+        separatorAngles2.setFrameStyle(hline)
 
 
         self.edith1.textEdited.connect(self.QChanged_angles)
@@ -978,7 +1051,7 @@ class TasGUI:
         angleslayout.addWidget(self.editdA5, 16,1, 1,1)
         angleslayout.addWidget(self.editdA6, 16,2, 1,1)
 
-        angleslayout.addItem(qtw.QSpacerItem(16,16, qtw.QSizePolicy.Minimum, qtw.QSizePolicy.Expanding), 17,0, 1,3)
+        angleslayout.addItem(qtw.QSpacerItem(16,16, policy_min, policy_exp), 17,0, 1,3)
         angleslayout.addWidget(self.anglesstatus, 18,0, 1,3)
 
         tabs.addTab(anglespanel, "Distances")
@@ -992,18 +1065,18 @@ class TasGUI:
         infolayout.setSpacing(6)
 
         separatorInfo = qtw.QFrame(infopanel)
-        separatorInfo.setFrameStyle(qtw.QFrame.HLine)
+        separatorInfo.setFrameStyle(hline)
 
         infolayout.addWidget(qtw.QLabel("TAS Calculator.", infopanel), 0,0, 1,2)
         infolayout.addWidget(qtw.QLabel("Written by Tobias Weber <tweber@ill.fr>.", infopanel), 1,0, 1,2)
         infolayout.addWidget(qtw.QLabel("Date: October 24, 2018.", infopanel), 2,0, 1,2)
         infolayout.addWidget(separatorInfo, 3,0, 1,2)
-        interpreter = qtw.QLabel("Interpreter Version: " + sys.version + ".", infopanel)
+        interpreter = qtw.QLabel("Py Interpreter Version: " + sys.version + ".", infopanel)
         interpreter.setWordWrap(True)
         infolayout.addWidget(interpreter, 4,0, 1,2)
         infolayout.addWidget(qtw.QLabel("Numpy Version: " + np.__version__ + ".", infopanel), 5,0, 1,2)
         infolayout.addWidget(qtw.QLabel("Qt Version: " + qtc.QT_VERSION_STR + ".", infopanel), 6,0, 1,2)
-        infolayout.addItem(qtw.QSpacerItem(16,16, qtw.QSizePolicy.Minimum, qtw.QSizePolicy.Expanding), 7,0, 1,2)
+        infolayout.addItem(qtw.QSpacerItem(16,16, policy_min, policy_exp), 7,0, 1,2)
 
         tabs.addTab(infopanel, "Infos")
         # -----------------------------------------------------------------------------
@@ -1032,7 +1105,10 @@ class TasGUI:
         self.KiKfChanged_angles()
 
         dlg.show()
-        app.exec_()
+        if qt_ver == 6:
+            app.exec()
+        else:
+            app.exec_()
 
 
         # save settings
@@ -1170,8 +1246,8 @@ def run_tas():
         print("ki = %g / A, kf = %g / A, E = %g meV" % (ki, kf, E))
         print()
 
-        [a1, a2] = get_a1a2(ki, argv.dm)
-        [a5, a6] = get_a1a2(kf, argv.da)
+        [a1, a2] = get_mono_angle(ki, argv.dm)
+        [a5, a6] = get_mono_angle(kf, argv.da)
         [a3, a4, dist_Q_plane] = get_a3a4(ki, kf, Q_rlu, orient1_rlu, orient3_rlu, B)
         print("Monochromator theta = %g deg, 2theta = %g deg" %(a1 / np.pi * 180., a2 / np.pi * 180.))
         print("Sample        theta = %g deg, 2theta = %g deg" %(a3 / np.pi * 180., a4 / np.pi * 180.))
