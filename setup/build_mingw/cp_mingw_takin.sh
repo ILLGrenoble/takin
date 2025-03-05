@@ -48,6 +48,11 @@ cp -v bin/*.exe			${INSTDIR}/
 
 # info files
 cp -v *.txt			${INSTDIR}/
+cp -v ../LICENSE		${INSTDIR}/LICENSE.txt
+cp -v ../LICENSES		${INSTDIR}/LICENSES.txt
+cp -v ../LITERATURE		${INSTDIR}/LITERATURE.txt
+cp -v ../AUTHORS		${INSTDIR}/AUTHORS.txt
+
 cp -rv 3rdparty_licenses/	${INSTDIR}/
 rm -v ${INSTDIR}/CMakeLists.txt
 
