@@ -6,8 +6,7 @@
 # @date jan-2025
 # @license see 'LICENSE' file
 #
-# @desc for extended algorithm: [end25] M. Enderle, personal communication (21/jan/2025)
-# @desc for extended algorithm with vertical scattering: [end25b] M. Enderle, personal communication (4/feb/2025)
+# @desc for extended algorithm: [end25] M. Enderle, personal communication (17/feb/2025)
 # @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
 # @desc for vertical scattering modification: [eck20] G. Eckold, personal communication, 2020.
 # @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
@@ -359,8 +358,8 @@ def calc(param):
     # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
     U = 2. * reso.quadric_proj(U2, 4)
 
-    # P matrix from equ. 2.20 in [end25]
-    # quadric_proj_mat() gives the same as equ. 2.20 in [end25]
+    # P matrix from equ. 2.21 in [end25]
+    # quadric_proj_mat() gives the same as equ. 2.21 in [end25]
     V2 = reso.quadric_proj_mat(matV, U1, 5)
     matP = reso.quadric_proj_mat(V2, U2, 4)
 
@@ -428,7 +427,7 @@ def calc(param):
     # --------------------------------------------------------------------------
     sample_r = np.array([ param["sample_d"], param["sample_w"], param["sample_h"] ])
 
-    # trafo for sample rotation, equs. 5.2, 5.3 and below in [end25b]
+    # trafo for sample rotation, equ. 5.2 and below in [end25]
     # TODO: columns have to be parallel to ki, perpendicular to ki and up
     basis_ki = np.array([
         [1., 0., 0.],
@@ -444,18 +443,18 @@ def calc(param):
     # TODO: additional theta rotation
     T_E = np.dot(basis_ki, sample_axes)
 
-    # sample integration, equ. 4.4 and below in [end25b]
+    # sample integration, equ. 4.4 and below in [end25]
     matN = matK + 0.5 * (288. * np.pi)**(1./3.) * np.dot(T_E, np.dot(np.diag(1. / sample_r**2.), np.transpose(T_E)))
     detN = la.det(matN)
     Nadj = helpers.adjugate(matN)
 
-    # page 9 in [end25b]
+    # page 9 in [end25]
     U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
     matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
     matK -= 1. / detN * np.dot(matK, np.dot(Nadj, matK))
 
     if param["calc_R0"]:
-        # page 9 in [end25b]
+        # page 9 in [end25]
         R0 *= np.pi**3. / detN
     # --------------------------------------------------------------------------
 

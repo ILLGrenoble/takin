@@ -163,8 +163,8 @@ def calc(param):
     twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
     thetam = tas.get_mono_angle(ki, param["mono_xtal_d"], True) * param["mono_sense"]
     thetaa = tas.get_mono_angle(kf, param["ana_xtal_d"], True) * param["ana_sense"]
-    Q_ki = helpers.get_psi(ki, kf, Q, param["sample_sense"])
-    Q_kf = helpers.get_eta(ki, kf, Q, param["sample_sense"])
+    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
+    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
 
     if param["verbose"]:
         print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
