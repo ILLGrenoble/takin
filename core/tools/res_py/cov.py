@@ -43,6 +43,7 @@ mohSI = np.divide(m_nSI, hbarSI) # s/m^2
 
 # Conversion
 eV2J = 1.602176634e-19 # eV to J
+meV2J = eV2J*1e-3
 m2A = 1e10 # m to A
 mm2m = 1e-3 # mm to m
 # Conversion from atomic units
@@ -104,11 +105,18 @@ def reducedCoef(v_i, v_f, L_PM, l_angles, shape, verbose=False):
     if(verbose):
         print('Ae =', Ae, '; Ax =', Ax, '; Ay =', Ay, '; Az =', Az)
         print('Be =', Be, '; Bx =', Bx, '; By =', By, '; Bz =', Bz, '\n')
-    return(Ae, Ax, Ay, Az, Be, Bx, By, Bz) # Ae, Be : [L]^2/[T]^3 ; Ax, Ay, Az, Bx, By, Bz : [L]/[T]^2 , everything in AU
+    return(Ae, Ax, Ay, Az, Be, Bx, By, Bz) # Ae, Be : [L]^2/[T]^3 ; Ax, Ay, Az, Bx, By, Bz : [L]/[T]^2
 
 # Calcul of Jacobian's terms for every shape
-def jacobTerms(v_iAU, v_fAU, l_dist, l_angles, l_AB, l_sizes, shape, verbose=False):
-    '''v_i, v_f are velocities in AU, l_dist is a list of 6 distances in AU, l_angles is a list of 4 angles in radian, l_AB is a list of 8 coef got from reducedCoef() in AU, l_sizes is a list of 6 numbers, shape in (SPHERE, HCYL, VCYL)'''
+def jacobTerms(v_i, v_f, l_dist, l_angles, l_AB, l_sizes, shape, unit = 'SI', verbose=False):
+    '''v_i, v_f are velocities, l_dist is a list of 6 distances, l_angles is a list of 4 angles in radian, l_AB is a list of 8 coef got from reducedCoef(), l_sizes is a list of 6 numbers, shape in (SPHERE, HCYL, VCYL), unit in (SI, AU)'''
+    if(unit == 'SI'):
+        m_n = m_nSI
+        moh = mohSI
+    elif(unit == 'AU'):
+        m_n = m_nAU
+        moh = mohAU
+    
     L_PM = l_dist[0]
     L_MS = l_dist[1]
     L_SD = l_dist[2]
@@ -127,18 +135,19 @@ def jacobTerms(v_iAU, v_fAU, l_dist, l_angles, l_AB, l_sizes, shape, verbose=Fal
     Bz = l_AB[7]
     size_PM = l_sizes[0]
     size_MS = l_sizes[1]
+
     dQx = np.array([])
     dQy = np.array([])
     dQz = np.array([])
     dE = np.array([])
 
     # x terms in common
-    dQxdL_PMj = np.divide(mohAU, v_iAU)*(Ax + Bx*np.divide(L_MS, L_SD))
-    dQxdL_MSj = -np.divide(mohAU, v_iAU)*Bx*np.divide(L_PM,L_SD)
-    dQxdt_PM = -mohAU*(Ax + Bx*np.divide(L_MS, L_SD))
-    dQxdt_MD = mohAU*Bx*np.divide(L_PM, L_SD)
-    dQxdtheta_i = -mohAU*v_iAU*np.sin(theta_i)*np.cos(phi_i)
-    dQxdphi_i = -mohAU*v_iAU*np.cos(theta_i)*np.sin(phi_i)
+    dQxdL_PMj = np.divide(moh, v_i)*(Ax + Bx*np.divide(L_MS, L_SD))
+    dQxdL_MSj = -np.divide(moh, v_i)*Bx*np.divide(L_PM,L_SD)
+    dQxdt_PM = -moh*(Ax + Bx*np.divide(L_MS, L_SD))
+    dQxdt_MD = moh*Bx*np.divide(L_PM, L_SD)
+    dQxdtheta_i = -moh*v_i*np.sin(theta_i)*np.cos(phi_i)
+    dQxdphi_i = -moh*v_i*np.cos(theta_i)*np.sin(phi_i)
     # x terms that belong to a precise shape
     dQxdx = 0
     dQxdrad = 0
@@ -146,49 +155,49 @@ def jacobTerms(v_iAU, v_fAU, l_dist, l_angles, l_AB, l_sizes, shape, verbose=Fal
     dQxdtheta_f = 0
     dQxdphi_f = 0
     if(shape == 'SPHERE'):
-        dQxdrad = -np.divide(mohAU, v_fAU)*Bx*np.divide(L_PM,L_SD)
-        dQxdtheta_f = mohAU*v_fAU*np.sin(theta_f)*np.cos(phi_f)
-        dQxdphi_f = mohAU*v_fAU*np.cos(theta_f)*np.sin(phi_f)
+        dQxdrad = -np.divide(moh, v_f)*Bx*np.divide(L_PM,L_SD)
+        dQxdtheta_f = moh*v_f*np.sin(theta_f)*np.cos(phi_f)
+        dQxdphi_f = moh*v_f*np.cos(theta_f)*np.sin(phi_f)
         dQx = np.concatenate(( np.array([dQxdL_PMj]*size_PM), np.array([dQxdL_MSj]*size_MS), np.array([dQxdrad, dQxdt_PM, dQxdt_MD, dQxdtheta_i, dQxdphi_i, dQxdtheta_f, dQxdphi_f]) ))
     elif(shape == 'HCYL'):
-        dQxdx = -mohAU*np.divide(v_fAU, L_SD)
+        dQxdx = -moh*np.divide(v_f, L_SD)
         dQx = np.concatenate(( np.array([dQxdL_PMj]*size_PM), np.array([dQxdL_MSj]*size_MS), np.array([dQxdx, dQxdrad, dQxdt_PM, dQxdt_MD, dQxdtheta_i, dQxdphi_i, dQxdtheta_f]) ))
     elif(shape == 'VCYL'):
-        dQxdrad = -np.divide(mohAU, v_fAU)*Bx*np.divide(L_PM,rad)
-        dQxdtheta_f = mohAU*v_fAU*np.sin(theta_f)*np.cos(phi_f)
+        dQxdrad = -np.divide(moh, v_f)*Bx*np.divide(L_PM,rad)
+        dQxdtheta_f = moh*v_f*np.sin(theta_f)*np.cos(phi_f)
         dQx = np.concatenate(( np.array([dQxdL_PMj]*size_PM), np.array([dQxdL_MSj]*size_MS), np.array([dQxdrad, dQxdz, dQxdt_PM, dQxdt_MD, dQxdtheta_i, dQxdphi_i, dQxdtheta_f]) ))
     
     # y terms in common
-    dQydL_PMj = np.divide(mohAU, v_iAU)*(Ay + By*np.divide(L_MS, L_SD))
-    dQydL_MSj = -np.divide(mohAU, v_iAU)*By*np.divide(L_PM, L_SD)
-    dQydt_PM = -mohAU*(Ay + By*np.divide(L_MS, L_SD))
-    dQydt_MD = mohAU*By*np.divide(L_PM, L_SD)
-    dQydtheta_i = mohAU*v_iAU*np.cos(theta_i)*np.cos(phi_i)
-    dQydphi_i = -mohAU*v_iAU*np.sin(theta_i)*np.sin(phi_i)
-    dQydtheta_f = -mohAU*v_fAU*np.cos(theta_f)*np.cos(phi_f)
+    dQydL_PMj = np.divide(moh, v_i)*(Ay + By*np.divide(L_MS, L_SD))
+    dQydL_MSj = -np.divide(moh, v_i)*By*np.divide(L_PM, L_SD)
+    dQydt_PM = -moh*(Ay + By*np.divide(L_MS, L_SD))
+    dQydt_MD = moh*By*np.divide(L_PM, L_SD)
+    dQydtheta_i = moh*v_i*np.cos(theta_i)*np.cos(phi_i)
+    dQydphi_i = -moh*v_i*np.sin(theta_i)*np.sin(phi_i)
+    dQydtheta_f = -moh*v_f*np.cos(theta_f)*np.cos(phi_f)
     # y terms that belong to a precise shape
     dQydx = 0
     dQydrad = 0
     dQydz = 0
     dQydphi_f = 0
     if(shape == 'SPHERE'):
-        dQydrad = -np.divide(mohAU, v_fAU)*By*np.divide(L_PM, L_SD)
-        dQydphi_f = mohAU*v_fAU*np.sin(theta_f)*np.sin(phi_f)
+        dQydrad = -np.divide(moh, v_f)*By*np.divide(L_PM, L_SD)
+        dQydphi_f = moh*v_f*np.sin(theta_f)*np.sin(phi_f)
         dQy = np.concatenate(( np.array([dQydL_PMj]*size_PM), np.array([dQydL_MSj]*size_MS), np.array([dQydrad, dQydt_PM, dQydt_MD, dQydtheta_i, dQydphi_i, dQydtheta_f, dQydphi_f]) ))
     elif(shape == 'HCYL'):
-        dQydrad = -np.divide(mohAU, v_fAU)*By*np.divide(L_PM, rad)
+        dQydrad = -np.divide(moh, v_f)*By*np.divide(L_PM, rad)
         dQy = np.concatenate(( np.array([dQydL_PMj]*size_PM), np.array([dQydL_MSj]*size_MS), np.array([dQydx, dQydrad, dQydt_PM, dQydt_MD, dQydtheta_i, dQydphi_i, dQydtheta_f]) ))
     elif(shape == 'VCYL'):
-        dQydrad = -np.divide(mohAU, v_fAU)*By*np.divide(L_PM, rad)
+        dQydrad = -np.divide(moh, v_f)*By*np.divide(L_PM, rad)
         dQy = np.concatenate(( np.array([dQydL_PMj]*size_PM), np.array([dQydL_MSj]*size_MS), np.array([dQydrad, dQydz, dQydt_PM, dQydt_MD, dQydtheta_i, dQydphi_i, dQydtheta_f]) ))
 
     # z terms in common
-    dQzdL_PMj = np.divide(mohAU, v_iAU)*(Az + Bz*np.divide(L_MS, L_SD))
-    dQzdL_MSj = -np.divide(mohAU, v_iAU)*Bz*np.divide(L_PM, L_SD)
-    dQzdt_PM = -mohAU*(Az + Bz*np.divide(L_MS, L_SD))
-    dQzdt_MD = mohAU*Bz*np.divide(L_PM, L_SD)
+    dQzdL_PMj = np.divide(moh, v_i)*(Az + Bz*np.divide(L_MS, L_SD))
+    dQzdL_MSj = -np.divide(moh, v_i)*Bz*np.divide(L_PM, L_SD)
+    dQzdt_PM = -moh*(Az + Bz*np.divide(L_MS, L_SD))
+    dQzdt_MD = moh*Bz*np.divide(L_PM, L_SD)
     dQzdtheta_i = 0
-    dQzdphi_i = mohAU*v_iAU*np.cos(phi_i)
+    dQzdphi_i = moh*v_i*np.cos(phi_i)
     # z terms that belong to a precise shape
     dQzdx = 0
     dQzdrad = 0
@@ -196,22 +205,22 @@ def jacobTerms(v_iAU, v_fAU, l_dist, l_angles, l_AB, l_sizes, shape, verbose=Fal
     dQzdtheta_f = 0
     dQzdphi_f = 0
     if(shape == 'SPHERE'):
-        dQzdrad = -np.divide(mohAU, v_fAU)*Bz*np.divide(L_PM, L_SD)
-        dQzdphi_f = -mohAU*v_fAU*np.cos(phi_f)
+        dQzdrad = -np.divide(moh, v_f)*Bz*np.divide(L_PM, L_SD)
+        dQzdphi_f = -moh*v_f*np.cos(phi_f)
         dQz = np.concatenate(( np.array([dQzdL_PMj]*size_PM), np.array([dQzdL_MSj]*size_MS), np.array([dQzdrad, dQzdt_PM, dQzdt_MD, dQzdtheta_i, dQzdphi_i, dQzdtheta_f, dQzdphi_f]) ))
     elif(shape == 'HCYL'):
-        dQzdrad = -np.divide(mohAU, v_fAU)*Bz*np.divide(L_PM, rad)
-        dQzdtheta_f = mohAU*v_fAU*np.sin(theta_f)*np.cos(phi_f)
+        dQzdrad = -np.divide(moh, v_f)*Bz*np.divide(L_PM, rad)
+        dQzdtheta_f = moh*v_f*np.sin(theta_f)*np.cos(phi_f)
         dQz = np.concatenate(( np.array([dQzdL_PMj]*size_PM), np.array([dQzdL_MSj]*size_MS), np.array([dQzdx, dQzdrad, dQzdt_PM, dQzdt_MD, dQzdtheta_i, dQzdphi_i, dQzdtheta_f]) ))
     elif(shape == 'VCYL'):
-        dQzdz = -mohAU*np.divide(v_fAU, L_SD)
+        dQzdz = -moh*np.divide(v_f, L_SD)
         dQz = np.concatenate(( np.array([dQzdL_PMj]*size_PM), np.array([dQzdL_MSj]*size_MS), np.array([dQzdrad, dQzdz, dQzdt_PM, dQzdt_MD, dQzdtheta_i, dQzdphi_i, dQzdtheta_f]) ))
 
     # energy terms in common
-    dEdL_PMj = np.divide(m_nAU, v_iAU)*(Ae + Be*np.divide(L_MS,L_SD))
-    dEdL_MSj = -np.divide(m_nAU, v_iAU)*Be*np.divide(L_PM,L_SD)
-    dEdt_PM = -m_nAU*(Ae + Be*np.divide(L_MS,L_SD))
-    dEdt_MD = m_nAU*Be*np.divide(L_PM,L_SD)
+    dEdL_PMj = np.divide(m_n, v_i)*(Ae + Be*np.divide(L_MS,L_SD))
+    dEdL_MSj = -np.divide(m_n, v_i)*Be*np.divide(L_PM,L_SD)
+    dEdt_PM = -m_n*(Ae + Be*np.divide(L_MS,L_SD))
+    dEdt_MD = m_n*Be*np.divide(L_PM,L_SD)
     dEdtheta_i = 0
     dEdphi_i = 0
     dEdtheta_f = 0
@@ -221,15 +230,15 @@ def jacobTerms(v_iAU, v_fAU, l_dist, l_angles, l_AB, l_sizes, shape, verbose=Fal
     dEdz = 0
     dEdphi_f = 0
     if(shape == 'SPHERE'):
-        dEdrad = -np.divide(m_nAU, v_fAU)*Be*np.divide(L_PM,L_SD)
+        dEdrad = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)
         dE = np.concatenate(( np.array([dEdL_PMj]*size_PM), np.array([dEdL_MSj]*size_MS), np.array([dEdrad, dEdt_PM, dEdt_MD, dEdtheta_i, dEdphi_i, dEdtheta_f, dEdphi_f]) ))
     elif(shape == 'HCYL'):
-        dEdx = -np.divide(m_nAU, v_fAU)*Be*np.divide(L_PM,L_SD)*np.sin(phi_f)
-        dEdrad = -np.divide(m_nAU, v_fAU)*Be*np.divide(L_PM,L_SD)*np.cos(phi_f)
+        dEdx = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)*np.sin(phi_f)
+        dEdrad = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)*np.cos(phi_f)
         dE = np.concatenate(( np.array([dEdL_PMj]*size_PM), np.array([dEdL_MSj]*size_MS), np.array([dEdx, dEdrad, dEdt_PM, dEdt_MD, dEdtheta_i, dEdphi_i, dEdtheta_f]) ))
     elif(shape == 'VCYL'):
-        dEdrad = -np.divide(m_nAU, v_fAU)*Be*np.divide(L_PM,L_SD)*np.cos(phi_f)
-        dEdz = -np.divide(m_nAU, v_fAU)*Be*np.divide(L_PM,L_SD)*np.sin(phi_f)
+        dEdrad = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)*np.cos(phi_f)
+        dEdz = -np.divide(m_n, v_f)*Be*np.divide(L_PM,L_SD)*np.sin(phi_f)
         dE = np.concatenate(( np.array([dEdL_PMj]*size_PM), np.array([dEdL_MSj]*size_MS), np.array([dEdrad, dEdz, dEdt_PM, dEdt_MD, dEdtheta_i, dEdphi_i, dEdtheta_f]) ))
     ###########################################################################################
     if(verbose):
@@ -274,20 +283,22 @@ def listDeltaGeo(list_param):
     return dlt
 
 # Calcul of the chopper's time uncertainty
-def deltaTimeChopper(window_angle, rot_speed, verbose=False):
-    """angle in degree, rot_speed in RPM"""
+def deltaTimeChopper(window_angle, rot_speed, unit='SI', verbose=False):
+    """angle in degree, rot_speed in RPM, unit in (SI, AU)"""
     deltaTpsChop = np.divide(window_angle, 6*rot_speed) # s
     ###########################################################################################
     if(verbose):
         print('deltaTpsChop in s =', deltaTpsChop)
 
-    return( fromSItoAU(deltaTpsChop, 'time') ) # result in AU
+    if( unit == 'AU'):
+        deltaTpsChop = fromSItoAU(deltaTpsChop, 'time') # AU
+    return deltaTpsChop 
 
 # Return the time uncerntainty for t_PM and t_MD
-def listDeltaTime(window_angleP, rot_speedP, window_angleM, rot_speedM, dltD = 0, verbose = False):
-    """angles in degree, rot_speed in RPM, dltD in second (uncertainty for the detector)"""
-    dltP = deltaTimeChopper(window_angleP, rot_speedP, verbose)      # AU
-    dltM = deltaTimeChopper(window_angleM, rot_speedM, verbose)      # AU
+def listDeltaTime(window_angleP, rot_speedP, window_angleM, rot_speedM, dltD = 0, unit='SI', verbose = False):
+    """angles in degree, rot_speed in RPM, dltD in second (uncertainty for the detector), unit in (SI, AU)"""
+    dltP = deltaTimeChopper(window_angleP, rot_speedP, unit, verbose)      # AU
+    dltM = deltaTimeChopper(window_angleM, rot_speedM, unit, verbose)      # AU
     ###########################################################################################
     if(verbose):
         print('\ndltP =', dltP, 'dltM =', dltM, '\n')
@@ -295,11 +306,11 @@ def listDeltaTime(window_angleP, rot_speedP, window_angleM, rot_speedM, dltD = 0
     return np.array([ np.sqrt(np.square(dltP) + np.square(dltM)), np.sqrt(np.square(dltM) + np.square(dltD)) ])
 
 # Getting list of uncerntainty
-def getDeltas(param_geo_AU, param_choppers, l_sizes, verbose = False):
-    '''param_geo is a dictionary: {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)], 
-            angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, (if SPHERE: phi_f, sigma_phi_f)], delta_time_detector:value (0 by default)}, distances and time in AU, angles in rad
+def getDeltas(param_geo_u, param_choppers, l_sizes, unit='SI', verbose = False):
+    '''param_geo_u is a dictionary: {dist_PM_u:[PM1, sigma1, PM2, sigma2, ...], dist_MS_u:[MS1, sigma1, MS2, sigma2, ...], dist_SD_u:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)], 
+            angles_rad:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, (if SPHERE: phi_f, sigma_phi_f)], delta_time_detector_u:value (0 by default)}, distances and time in AU, angles in rad
     param_choppers is a dictionary: {chopperP:[window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[window_angle, min_rot_speed, max_rot_speed, rot_speed]}, angles in degree, rot_speed in RPM
-    l_sizes is a list of 6 numbers'''
+    l_sizes is a list of 6 numbers, unit in (SI, AU)'''
     set1 = l_sizes[0]
     set2 = l_sizes[0] + l_sizes[1]
     set3 = l_sizes[0] + l_sizes[1] + l_sizes[2]
@@ -312,11 +323,11 @@ def getDeltas(param_geo_AU, param_choppers, l_sizes, verbose = False):
         print('win_angleM =', win_angleM, '; rot_speedM = ', rot_speedM, '\n')
 
     deltas = np.zeros(l_sizes[5])
-    deltas[:set1] = listDeltaGeo(param_geo_AU['dist_PM_AU'])
-    deltas[set1:set2] = listDeltaGeo(param_geo_AU['dist_MS_AU'])
-    deltas[set2:set3] = listDeltaGeo(param_geo_AU['dist_SD_AU'])
-    deltas[set3:set4] = listDeltaTime(win_angleP, rot_speedP, win_angleM, rot_speedM, param_geo_AU['delta_time_detectorAU'], verbose)
-    deltas[set4:] = listDeltaGeo(param_geo_AU['angles_rad'])
+    deltas[:set1] = listDeltaGeo(param_geo_u['dist_PM_u'])
+    deltas[set1:set2] = listDeltaGeo(param_geo_u['dist_MS_u'])
+    deltas[set2:set3] = listDeltaGeo(param_geo_u['dist_SD_u'])
+    deltas[set3:set4] = listDeltaTime(win_angleP, rot_speedP, win_angleM, rot_speedM, param_geo_u['delta_time_detector_u'], unit, verbose)
+    deltas[set4:] = listDeltaGeo(param_geo_u['angles_rad'])
     return deltas
 
 # Creation and filling of the Jacobian matrix
@@ -370,7 +381,7 @@ def fromCovQhwAUToCovQhwAeV(covQhwAU):
     covAmeV[3][3] = covQhwAU[3][3]*np.square(hartree2meV)
     return covAmeV
 
-def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
+def cov(param_geo, param_choppers, v_i, v_f, shape, unit='SI', verbose=False):
     """param_geo is a dictionary: {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, (if SPHERE: phi_f, sigma_phi_f)], delta_time_detector:value (0 by default)},
     param_choppers is a dictionary: {chopperP:[window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[window_angle, min_rot_speed, max_rot_speed, rot_speed]}, dist in mm, angles in degree, rot_speed in RPM, delta_time in s
     v_i, v_f: velocity of the incident and scattered neutron m/s,
@@ -384,9 +395,11 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
         print('param_geo =', param_geo)
         print('param_choppers =', param_choppers)
         print('v_i =', v_i, '; v_f =', v_f)
-        print('det_shape =', shape, '\n')
+        print('det_shape =', shape, '; unit =', unit, '\n')
 
     # Storage of values given by the user
+    vi = v_i                                                    # m/s
+    vf = v_f                                                    # m/s
     dist_PM = np.multiply(param_geo['dist_PM'], mm2m)           # m
     dist_MS = np.multiply(param_geo['dist_MS'], mm2m)           # m
     dist_SD = np.multiply(param_geo['dist_SD'], mm2m)           # m
@@ -401,30 +414,31 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
         print('delta_time_detector =', delta_time_detector, '\n')
 
     #Convertion to AU and radian
-    dist_PM_AU = fromSItoAU(dist_PM, 'distance')                # AU
-    dist_MS_AU = fromSItoAU(dist_MS, 'distance')                # AU
-    dist_SD_AU = fromSItoAU(dist_SD, 'distance')                # AU
-    delta_time_detectorAU = fromSItoAU(delta_time_detector, 'time') #AU
-    v_iAU = fromSItoAU(v_i, 'velocity')                         #AU
-    v_fAU = fromSItoAU(v_f, 'velocity')                         #AU
+    if(unit == 'AU'):
+        dist_PM = fromSItoAU(dist_PM, 'distance')                # AU
+        dist_MS = fromSItoAU(dist_MS, 'distance')                # AU
+        dist_SD = fromSItoAU(dist_SD, 'distance')                # AU
+        delta_time_detector = fromSItoAU(delta_time_detector, 'time') #AU
+        vi = fromSItoAU(vi, 'velocity')                         #AU
+        vf = fromSItoAU(vf, 'velocity')                         #AU
     angles_rad = np.deg2rad(angles)                             #radian
 
     #dictionnary in AU
-    param_geo_AU = {'dist_PM_AU':dist_PM_AU, 'dist_MS_AU':dist_MS_AU, 'dist_SD_AU':dist_SD_AU, 'angles_rad':angles_rad, 'delta_time_detectorAU': delta_time_detectorAU}
+    param_geo_u = {'dist_PM_u':dist_PM, 'dist_MS_u':dist_MS, 'dist_SD_u':dist_SD, 'angles_rad':angles_rad, 'delta_time_detector_u': delta_time_detector}
     ###########################################################################################
     if(verbose):
-        print('dist_PM_AU =', dist_PM_AU)
-        print('dist_MS_AU =', dist_MS_AU)
-        print('dist_SD_AU =', dist_SD_AU)
+        print('dist_PM_u =', dist_PM)
+        print('dist_MS_u =', dist_MS)
+        print('dist_SD_u =', dist_SD)
         print('angles_rad =', angles_rad)
-        print('delta_time_detectorAU =', delta_time_detectorAU)
-        print('v_iAU =', v_iAU)
-        print('v_fAU =', v_fAU)
-        print('param_geo_AU =', param_geo_AU, '\n')
+        print('delta_time_detector_u =', delta_time_detector)
+        print('vi =', vi)
+        print('vf =', vf)
+        print('param_geo_u =', param_geo_u, '\n')
 
     # Calcul of distances and angles for each shape of detectors
-    L_PM = calcDistLin(dist_PM_AU)
-    L_MS = calcDistLin(dist_MS_AU)
+    L_PM = calcDistLin(dist_PM)
+    L_MS = calcDistLin(dist_MS)
     x = 0
     rad = 0
     z = 0
@@ -434,7 +448,7 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
     phi_f = 0
     if(shape == "SPHERE"):
         # Distances
-        L_SD = dist_SD_AU[0]
+        L_SD = dist_SD[0]
         # Angles
         theta_i = angles_rad[0]
         phi_i = angles_rad[2]
@@ -442,8 +456,8 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
         phi_f = angles_rad[6]
     if(shape == "HCYL"):
         # Distances
-        x = dist_SD_AU[0]
-        rad = dist_SD_AU[2]
+        x = dist_SD[0]
+        rad = dist_SD[2]
         L_SD = np.sqrt(np.square(x) + np.square(rad))
         # Angles
         theta_i = angles_rad[0]
@@ -452,8 +466,8 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
         phi_f = np.acos(np.divide(rad, L_SD))
     if(shape == "VCYL"):
         # Distances
-        rad = dist_SD_AU[0]
-        z = dist_SD_AU[2]
+        rad = dist_SD[0]
+        z = dist_SD[2]
         L_SD = np.sqrt(np.square(rad) + np.square(z))
         # Angles
         theta_i = angles_rad[0]
@@ -468,7 +482,7 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
         print('x =', x, '; rad =', rad, '; z=', z, '; theta_i =', theta_i, '; phi_i =', phi_i, '; theta_f =', theta_f, '; phi_f =', phi_f, '\n')
 
     # Definition of variables depending on the shape of the detector
-    Ae, Ax, Ay, Az, Be, Bx, By, Bz = reducedCoef(v_iAU, v_fAU, L_PM, l_angles, shape, verbose)
+    Ae, Ax, Ay, Az, Be, Bx, By, Bz = reducedCoef(vi, vf, L_PM, l_angles, shape, verbose)
     l_AB = np.array([Ae, Ax, Ay, Az, Be, Bx, By, Bz])
 
     # Number of variables for each set of instrument's parameters (distances, times, angles)
@@ -484,13 +498,18 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
         print('size_PM =', size_PM, '; size_MS =', size_MS, '; size_SD =', size_SD, '; size_tps =', size_tps, '; size_angles =', size_angles, '\n')
 
     # Calcul of Jacobian's terms
-    dQx, dQy, dQz, dE = jacobTerms(v_iAU, v_fAU, l_dist, l_angles, l_AB, l_sizes, shape, verbose)
+    dQx, dQy, dQz, dE = jacobTerms(vi, vf, l_dist, l_angles, l_AB, l_sizes, shape, unit, verbose)
+    if(unit == 'SI'):
+        dQx = np.divide(dQx,m2A)
+        dQy = np.divide(dQy,m2A)
+        dQz = np.divide(dQz,m2A)
+        dE = np.divide(dE, meV2J)
     ###########################################################################################
     if(verbose):
         print('dQx =', dQx, '\ndQy =', dQy, '\ndQz =', dQz, '\ndE =', dE, '\n')
     
     # List of uncertainty
-    deltas = getDeltas(param_geo_AU, param_choppers, l_sizes, verbose)
+    deltas = getDeltas(param_geo_u, param_choppers, l_sizes, unit, verbose)
     ###########################################################################################
     if(verbose):
         print('deltas =', deltas, '\n')
@@ -504,12 +523,15 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, verbose=False):
         print('covxi = ', covxi, '\n')
 
     jacobT = jacobian.T
-    covQhwAU = np.dot(jacobian, np.dot(covxi, jacobT))
+    covQhw_u = np.dot(jacobian, np.dot(covxi, jacobT))
     ###########################################################################################
     if(verbose):
-        print('covQhwAU =', covQhwAU, '\n')
+        print('covQhwAU =', covQhw_u, '\n')
 
-    covQhw = fromCovQhwAUToCovQhwAeV(covQhwAU)
+    if(unit == 'AU'):
+        covQhw = fromCovQhwAUToCovQhwAeV(covQhw_u)
+    elif(unit == 'SI'):
+        covQhw = np.copy(covQhw_u)
     ###########################################################################################
     if(verbose):
         print('covQhw =', covQhw, '\n')

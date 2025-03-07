@@ -162,9 +162,9 @@ def calc(paramUser, paramInstr):
 #param_choppers is a dictionary: {chopperP:[window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[window_angle, min_rot_speed, max_rot_speed, rot_speed]}, dist in mm, angles in degree, rot_speed in RPM,
 #v_i, v_f: velocity of the incident and scattered neutron m/s,
 #shape = SPHERE, VCYL, HCYL: shape of the detector (sphere, vertical cylinder or horizontal cylinder)"""
-p_geo = {'dist_PM':[25000, 0], 'dist_MS':[1300, 6], 'dist_SD':[3000, 6], 'angles':[0, 0.2, 0, 0.2, 10, 0.2, 90, 0.2], 'delta_time_detector':0.006}
-p_chop = {'chopperP':[1, 1, 1, 4.386], 'chopperM':[1, 1, 1, 27.778]}
-covQhw = cov.cov(p_geo, p_chop, 620, 620, 'SPHERE', True)
+p_geo = {'dist_PM':[25000, 0], 'dist_MS':[1300, 6], 'dist_SD':[3000, 6], 'angles':[0, 0.2, 0, 0.2, 10, 0.2, 90, 0.2], 'delta_time_detector':0.000006}
+p_chop = {'chopperP':[1, 1, 1, 4386], 'chopperM':[1, 1, 1, 27778]}
+covQhw = cov.cov(p_geo, p_chop, 620, 620, 'SPHERE', 'SI', True)
 aff = la.inv(covQhw)
 print('aff =', aff)
 ellipses = reso.calc_ellipses(aff, True)
