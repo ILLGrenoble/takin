@@ -26,7 +26,13 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <boost/asio/io_service.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 108700
+	#include <boost/asio/io_context.hpp>
+#else
+	#include <boost/asio/io_service.hpp>
+#endif
+
 #include <boost/asio/signal_set.hpp>
 #include <boost/scope_exit.hpp>
 #include <boost/program_options.hpp>

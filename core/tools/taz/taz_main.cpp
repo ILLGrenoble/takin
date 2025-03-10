@@ -47,10 +47,15 @@
 #include <system_error>
 #include <boost/version.hpp>
 #include <boost/system/system_error.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/scope_exit.hpp>
 #include <boost/program_options.hpp>
+
+#if BOOST_VERSION >= 108700
+	#include <boost/asio/io_context.hpp>
+#else
+	#include <boost/asio/io_service.hpp>
+#endif
 
 #ifndef USE_BOOST_REX
 	#include <regex>
@@ -223,7 +228,11 @@ int main(int argc, char** argv)
 #endif
 
 		// install exit signal handlers
+#if BOOST_VERSION >= 108700
+		asio::io_context ioSrv;
+#else
 		asio::io_service ioSrv;
+#endif
 		asio::signal_set sigInt(ioSrv, SIGABRT, SIGTERM, SIGINT);
 		sigInt.async_wait([&ioSrv, pidMain](const sys::error_code& err, int iSig)
 		{

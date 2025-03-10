@@ -98,14 +98,27 @@ bool TcpTxtClient<t_ch, t_str>::connect(const t_str& strHost, const t_str& strSe
 	{
 		disconnect();
 
+#if BOOST_VERSION >= 108700
+		m_pservice = new asio::io_context;
+#else
 		m_pservice = new asio::io_service;
+#endif
 		m_psock = new ip::tcp::socket(*m_pservice);
-
 		ip::tcp::resolver res(*m_pservice);
-		ip::tcp::resolver::iterator iter = res.resolve({strHost, strService});
+
+#if BOOST_VERSION >= 108700
+		using t_iter = typename ip::basic_resolver_results<ip::tcp>::iterator;
+		using t_results = typename ip::tcp::resolver::results_type;
+		t_results results = res.resolve(strHost, strService);
+
+		asio::async_connect(*m_psock, results.begin(), results.end(),
+#else
+		using t_iter = typename ip::tcp::resolver::iterator;
+		t_iter iter = res.resolve({strHost, strService});
 
 		asio::async_connect(*m_psock, iter,
-		[this](const sys::error_code& err, ip::tcp::resolver::iterator iter)
+#endif
+		[this](const sys::error_code& err, t_iter iter)
 		{
 			if(!err)
 			{
@@ -115,7 +128,7 @@ bool TcpTxtClient<t_ch, t_str>::connect(const t_str& strHost, const t_str& strSe
 			else
 			{
 				log_err("TCP connection error.",
-					" Category: ", err.category().name(), 
+					" Category: ", err.category().name(),
 					", message: ", err.message(), ".");
 			}
 		});
@@ -209,7 +222,11 @@ void TcpTxtClient<t_ch, t_str>::write(const t_str& str)
 		}
 
 		m_listWriteBuffer.push(new t_str(str));
+#if BOOST_VERSION >= 108700
+		boost::asio::post(*m_pservice, [&](){ flush_write(); });
+#else
 		m_pservice->post([&](){ flush_write(); });
+#endif
 	}
 	catch(const std::exception& ex)
 	{
@@ -339,7 +356,11 @@ bool TcpTxtServer<t_ch, t_str>::start_server(unsigned short iPort)
 	{
 		disconnect();
 
+#if BOOST_VERSION >= 108700
+		this->m_pservice = new asio::io_context;
+#else
 		this->m_pservice = new asio::io_service;
+#endif
 		this->m_psock = new ip::tcp::socket(*this->m_pservice);
 		m_pendpoint = new ip::tcp::endpoint(ip::tcp::v4(), iPort);
 		m_pacceptor = new ip::tcp::acceptor(*this->m_pservice, *m_pendpoint);

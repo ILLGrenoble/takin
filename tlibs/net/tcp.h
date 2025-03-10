@@ -61,7 +61,11 @@ public:
 protected:
 	t_str m_strHost, m_strService;
 
+#if BOOST_VERSION >= 108700
+	asio::io_context *m_pservice = nullptr;
+#else
 	asio::io_service *m_pservice = nullptr;
+#endif
 	ip::tcp::socket *m_psock = nullptr;
 	std::thread* m_pthread = nullptr;
 
