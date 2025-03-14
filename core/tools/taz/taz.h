@@ -324,7 +324,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void ShowSgListDlg();
 		void ShowFormfactorDlg();
 
-		void ShowAtomsDlg(bool bOnlyCreate=0);
+		void ShowAtomsDlg(bool bOnlyCreate = false);
 		void ApplyAtoms(const std::vector<xtl::AtomPos<t_real_glob>>& vecAtoms);
 
 		void ShowDarkAnglesDlg();

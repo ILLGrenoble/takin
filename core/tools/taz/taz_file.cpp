@@ -333,7 +333,7 @@ bool TazDlg::Load(const char* pcFile)
 		{
 			m_vecAtoms.reserve(iNumAtoms);
 
-			for(std::size_t iAtom=0; iAtom<iNumAtoms; ++iAtom)
+			for(std::size_t iAtom = 0; iAtom < iNumAtoms; ++iAtom)
 			{
 				xtl::AtomPos<t_real> theatom;
 				theatom.vecPos.resize(3,0);
@@ -347,12 +347,12 @@ bool TazDlg::Load(const char* pcFile)
 				m_vecAtoms.emplace_back(std::move(theatom));
 			}
 
-			ShowAtomsDlg(1);
+			ShowAtomsDlg(true);
 			if(m_pAtomsDlg)
 			{
 				m_pAtomsDlg->SetAtoms(m_vecAtoms);
 				if(!m_pAtomsDlg->ShowPossibleErrorDlg())
-					ShowAtomsDlg(0);
+					ShowAtomsDlg(false);
 			}
 		}
 	}
@@ -879,16 +879,12 @@ bool TazDlg::ImportCIF(const char* pcFile)
 
 
 		// check cif tool
-		const std::string strToolNotFound =
-			"The external Cif2Xml tool is not correctly installed. "
-			"Please specify its path in the program settings.";
-
 		std::string strCifVer;
 		std::string strCifBin;
 		std::tie(strCifVer, strCifBin) = get_ciftool_version();
 		if(strCifVer == "")
 		{
-			QMessageBox::critical(this, "Error", strToolNotFound.c_str());
+			QMessageBox::critical(this, "Error", "The external Cif2Xml tool could not be launched.");
 			return false;
 		}
 
@@ -898,7 +894,7 @@ bool TazDlg::ImportCIF(const char* pcFile)
 		tl::PipeProc<char> proc((strCifBin + " 2>/dev/null \"" + strFile1 + "\"").c_str(), false);
 		if(!proc.IsReady())
 		{
-			QMessageBox::critical(this, "Error", strToolNotFound.c_str());
+			QMessageBox::critical(this, "Error", "The external Cif2Xml tool could not be launched.");
 			return false;
 		}
 
@@ -944,9 +940,9 @@ bool TazDlg::ImportCIF(const char* pcFile)
 				"using P1 instead and generating all atomic positions.");
 
 			strSpaceGroup = "P1";
-			for(std::size_t iAtomType=0; iAtomType<vecAllAtomPos.size(); ++iAtomType)
+			for(std::size_t iAtomType = 0; iAtomType < vecAllAtomPos.size(); ++iAtomType)
 			{
-				for(std::size_t iAtom=0; iAtom<vecAllAtomPos[iAtomType].size(); ++iAtom)
+				for(std::size_t iAtom = 0; iAtom < vecAllAtomPos[iAtomType].size(); ++iAtom)
 				{
 					xtl::AtomPos<t_real> theatom;
 					theatom.vecPos = vecAllAtomPos[iAtomType][iAtom];
@@ -958,7 +954,7 @@ bool TazDlg::ImportCIF(const char* pcFile)
 		}
 		else
 		{
-			for(std::size_t iAtom=0; iAtom<vecAtomPos.size(); ++iAtom)
+			for(std::size_t iAtom = 0; iAtom < vecAtomPos.size(); ++iAtom)
 			{
 				xtl::AtomPos<t_real> theatom;
 				theatom.vecPos = vecAtomPos[iAtom];
@@ -968,12 +964,12 @@ bool TazDlg::ImportCIF(const char* pcFile)
 			}
 		}
 
-		ShowAtomsDlg(1);
+		ShowAtomsDlg(true);
 		if(m_pAtomsDlg)
 		{
 			m_pAtomsDlg->SetAtoms(m_vecAtoms);
 			if(!m_pAtomsDlg->ShowPossibleErrorDlg())
-				ShowAtomsDlg(0);
+				ShowAtomsDlg(false);
 		}
 
 

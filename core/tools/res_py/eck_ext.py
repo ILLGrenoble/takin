@@ -394,8 +394,8 @@ def calc(param):
         # before equ. 3.4 in [end25]
         # TODO: this is based on the assumption that M is diagonal,
         #       which it is not for vertical scattering in kf
-        #R0 *= np.pi**2. / np.sqrt(la.det(Madj))
-        #R0 *= 2.*helpers.sig2fwhm**2.*np.pi / np.sqrt(mos_Q_sq * mos_v_Q_sq)
+        R0 *= np.pi**2. / np.sqrt(la.det(M))
+        R0 *= 2.*helpers.sig2fwhm**2.*np.pi / np.sqrt(mos_Q_sq * mos_v_Q_sq)
 
     Pvec1 = matP[1, 0:3] / helpers.sig2fwhm**2.
     Pvec2 = matP[2, 0:3] / helpers.sig2fwhm**2.
