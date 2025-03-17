@@ -395,7 +395,7 @@ def calc(param):
         # TODO: this is based on the assumption that M is diagonal,
         #       which it is not for vertical scattering in kf
         R0 *= np.pi**2. / np.sqrt(la.det(M))
-        R0 *= 2.*helpers.sig2fwhm**2.*np.pi / np.sqrt(mos_Q_sq * mos_v_Q_sq)
+        R0 *= helpers.sig2fwhm / np.sqrt(2. * np.pi * mos_Q_sq * mos_v_Q_sq)
 
     Pvec1 = matP[1, 0:3] / helpers.sig2fwhm**2.
     Pvec2 = matP[2, 0:3] / helpers.sig2fwhm**2.
@@ -456,6 +456,15 @@ def calc(param):
     if param["calc_R0"]:
         # page 9 in [end25]
         R0 *= np.pi**3. / detN
+
+        if param["sample_shape"] == "cuboid":
+            V_sample = sample_r[0] * sample_r[1] * sample_r[2]
+        elif param["sample_shape"] == "cylindrical":
+            V_sample = np.pi * 0.5*sample_r[0] * 0.5*sample_r[1] * sample_r[2]
+        else:
+            raise "ResPy: No valid sample shape given."
+
+        R0 /= V_sample**2.
     # --------------------------------------------------------------------------
 
 
