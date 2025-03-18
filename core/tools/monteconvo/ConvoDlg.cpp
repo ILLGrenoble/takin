@@ -216,6 +216,23 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 
 
 	// --------------------------------------------------------------------
+	// fill in resolution calculation methods
+	comboAlgo->addItem("TAS: Cooper-Nathans (Pointlike)", static_cast<int>(ResoAlgo::CN));
+	comboAlgo->addItem("TAS: Popovici (Pointlike)", static_cast<int>(ResoAlgo::POP_CN));
+	comboAlgo->insertSeparator(2);
+	comboAlgo->addItem("TAS: Popovici", static_cast<int>(ResoAlgo::POP));
+	comboAlgo->addItem("TAS: Eckold-Sobolev", static_cast<int>(ResoAlgo::ECK));
+	comboAlgo->addItem("TAS: Eckold-Sobolev (Extended)", static_cast<int>(ResoAlgo::ECK_EXT));
+	comboAlgo->insertSeparator(6);
+	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
+	comboAlgo->insertSeparator(8);
+	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
+
+	comboAlgo->setCurrentIndex(3);  // default: pop
+	// --------------------------------------------------------------------
+
+
+	// --------------------------------------------------------------------
 	// fill sqw combo box
 	load_sqw_plugins();
 	auto vecSqwNames = get_sqw_names();

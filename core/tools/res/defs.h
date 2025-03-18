@@ -44,8 +44,6 @@ using t_real_reso = ::t_real_glob;
 
 enum ResoFlags : std::size_t
 {
-//	CALC_RESVOL	= 1<<0,
-
 	CALC_KI3        = 1<<0,
 	CALC_KF3        = 1<<1,
 
@@ -77,13 +75,15 @@ struct ResoResults
 // all algos
 enum class ResoAlgo
 {
-	CN       = 1,
-	POP_CN   = 2,
-	POP      = 3,
-	ECK      = 4,
-	VIO      = 5,
-	SIMPLE   = 100,
-	UNKNOWN  = -1
+	CN         = 1,
+	POP_CN     = 2,
+	POP        = 3,
+	ECK        = 4,
+	ECK_EXT    = 5,
+	VIO        = 6,
+	SIMPLE     = 100,
+	UNKNOWN    = -1,
 };
+
 
 #endif

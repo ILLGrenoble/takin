@@ -115,4 +115,5 @@ extern ublas::matrix<t_real_reso> get_trafo_dkidkf_dQdE(
 	const tl::t_angle_si<t_real_reso>& ki_Q, const tl::t_angle_si<t_real_reso>& kf_Q,
 	const tl::t_wavenumber_si<t_real_reso>& ki, const tl::t_wavenumber_si<t_real_reso>& kf);
 
+
 #endif

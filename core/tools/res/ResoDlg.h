@@ -44,6 +44,7 @@
 #include "cn.h"
 #include "pop.h"
 #include "eck.h"
+#include "eck_ext.h"
 #include "vio.h"
 #include "simple.h"
 #include "tlibs/math/linalg.h"

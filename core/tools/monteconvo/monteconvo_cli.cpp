@@ -213,6 +213,8 @@ static ConvoConfig load_config(const tl::Prop<std::string>& xml)
 			cfg.algo = ResoAlgo::POP;
 		else if(*algo == "eck"  || *algo == "2")
 			cfg.algo = ResoAlgo::ECK;
+		else if(*algo == "eck_ext"  || *algo == "4")
+			cfg.algo = ResoAlgo::ECK_EXT;
 		else if(*algo == "vio"  || *algo == "3")
 			cfg.algo = ResoAlgo::VIO;
 		else

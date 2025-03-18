@@ -356,6 +356,9 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 		case ResoAlgo::ECK:
 			mapConf[strXmlRoot + "reso/algo"] = "eck";
 			break;
+		case ResoAlgo::ECK_EXT:
+			mapConf[strXmlRoot + "reso/algo"] = "eck_ext";
+			break;
 		case ResoAlgo::VIO:
 			mapConf[strXmlRoot + "reso/algo"] = "vio";
 			break;
@@ -462,6 +465,8 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 			SetSelectedAlgo(ResoAlgo::POP);
 		else if(*opAlgo == "eck")
 			SetSelectedAlgo(ResoAlgo::ECK);
+		else if(*opAlgo == "eck_ext")
+			SetSelectedAlgo(ResoAlgo::ECK_EXT);
 		else if(*opAlgo == "vio" || *opAlgo == "viol")
 			SetSelectedAlgo(ResoAlgo::VIO);
 		else if(*opAlgo == "simple")

@@ -82,7 +82,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 	setupAlgos();
 	connect(comboAlgo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ResoDlg::AlgoChanged);
-	comboAlgo->setCurrentIndex(static_cast<int>(ResoAlgo::POP)-1);
+	comboAlgo->setCurrentIndex(3);  // default: pop
 
 	groupGuide->setChecked(false);
 
@@ -231,11 +231,13 @@ void ResoDlg::setupAlgos()
 {
 	comboAlgo->addItem("TAS: Cooper-Nathans (Pointlike)", static_cast<int>(ResoAlgo::CN));
 	comboAlgo->addItem("TAS: Popovici (Pointlike)", static_cast<int>(ResoAlgo::POP_CN));
+	comboAlgo->insertSeparator(2);
 	comboAlgo->addItem("TAS: Popovici", static_cast<int>(ResoAlgo::POP));
 	comboAlgo->addItem("TAS: Eckold-Sobolev", static_cast<int>(ResoAlgo::ECK));
-	comboAlgo->insertSeparator(4);
-	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
+	comboAlgo->addItem("TAS: Eckold-Sobolev (Extended)", static_cast<int>(ResoAlgo::ECK_EXT));
 	comboAlgo->insertSeparator(6);
+	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
+	comboAlgo->insertSeparator(8);
 	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
 }
 
@@ -557,6 +559,7 @@ void ResoDlg::Calc()
 			case ResoAlgo::POP_CN: res = calc_pop_cn(cn); break;
 			case ResoAlgo::POP: res = calc_pop(cn); break;
 			case ResoAlgo::ECK: res = calc_eck(cn); break;
+			case ResoAlgo::ECK_EXT: res = calc_eck_ext(cn); break;
 			case ResoAlgo::VIO: res = calc_vio(tof); break;
 			case ResoAlgo::SIMPLE: res = calc_simplereso(simple); break;
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
@@ -843,7 +846,7 @@ void ResoDlg::SetSelectedAlgo(ResoAlgo algo)
 		}
 	}
 
-	tl::log_err("Unknown resolution algorithm set.");
+	tl::log_err("Unknown resolution algorithm set, index: ", static_cast<int>(algo), ".");
 }
 
 
@@ -853,7 +856,7 @@ ResoAlgo ResoDlg::GetSelectedAlgo() const
 	ResoAlgo algoSel = ResoAlgo::UNKNOWN;
 	QVariant varAlgo = comboAlgo->itemData(comboAlgo->currentIndex());
 	if(varAlgo == QVariant::Invalid)
-		tl::log_err("Unknown resolution algorithm selected.");
+		tl::log_err("Unknown resolution algorithm selected, index: ", static_cast<int>(algoSel), ".");
 	else
 		algoSel = static_cast<ResoAlgo>(varAlgo.toInt());
 	return algoSel;
@@ -1218,6 +1221,20 @@ void ResoDlg::AlgoChanged()
 			break;
 		}
 		case ResoAlgo::ECK:
+		{
+			tabWidget->setTabEnabled(0,1);
+			tabWidget->setTabEnabled(1,1);
+			tabWidget->setTabEnabled(2,1);
+			tabWidget->setTabEnabled(3,0);
+			tabWidget->setTabEnabled(4,0);
+
+			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b><br>\n";
+			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2014.03.019>"
+				"NIM A 752, <br>pp. 54-64</a><br>\n";
+			strAlgo += "2014";
+			break;
+		}
+		case ResoAlgo::ECK_EXT:
 		{
 			tabWidget->setTabEnabled(0,1);
 			tabWidget->setTabEnabled(1,1);

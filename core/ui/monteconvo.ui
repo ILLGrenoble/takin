@@ -855,34 +855,6 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="currentIndex">
-             <number>2</number>
-            </property>
-            <item>
-             <property name="text">
-              <string>TAS: Cooper-Nathans (Pointlike)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>TAS: Popovici (Pointlike)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>TAS: Popovici (Extended)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>TAS: Eckold-Sobolev (Extended)</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>TOF: Violini</string>
-             </property>
-            </item>
            </widget>
           </item>
           <item row="1" column="4" colspan="2">

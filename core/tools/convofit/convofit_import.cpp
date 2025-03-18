@@ -145,7 +145,8 @@ std::string convert_monteconvo(
 	std::string strAlgo = propMC.Query<std::string>("taz/monteconvo/algo");
 
 	// if the algo id string is unrecognised, try the algo index
-	if(strAlgo!="cn" && strAlgo!="pop_cn" && strAlgo!="pop" && strAlgo!="eck" && strAlgo!="vio")
+	if(strAlgo != "cn" && strAlgo != "pop_cn" && strAlgo != "pop"
+		&& strAlgo != "eck" && strAlgo != "eck_ext" && strAlgo != "vio")
 	{
 		switch(propMC.Query<int>("taz/monteconvo/algo_idx"))
 		{
@@ -153,7 +154,8 @@ std::string convert_monteconvo(
 			case 1: strAlgo = "pop_cn"; break;
 			case 2: strAlgo = "pop"; break;
 			case 3: strAlgo = "eck"; break;
-			case 4: strAlgo = "vio"; break;
+			case 4: strAlgo = "eck_ext"; break;
+			case 5: strAlgo = "vio"; break;
 		}
 	}
 	mapJob["resolution/algorithm"] = strAlgo;

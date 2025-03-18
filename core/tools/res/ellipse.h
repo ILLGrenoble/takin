@@ -139,28 +139,57 @@ enum class EllipseCoordSys : int
  *                           ( m12 m01/m11    m12    m12 m12/m11 )
  */
 template<class T = t_real_reso>
-ublas::matrix<T> quadric_proj(const ublas::matrix<T>& mat, std::size_t iIdx)
+ublas::matrix<T> quadric_proj(const ublas::matrix<T>& quadric, std::size_t iIdx)
 {
 	using t_mat = ublas::matrix<T>;
 	using t_vec = ublas::vector<T>;
 
-	if(tl::float_equal<T>(mat(iIdx, iIdx), T{0}))
+	if(tl::float_equal<T>(quadric(iIdx, iIdx), T{0}))
 	{
 		tl::log_warn("Cannot project quadric, slicing instead.");
-		return tl::remove_elems(mat, iIdx);
+		return tl::remove_elems(quadric, iIdx);
 	}
 
 	// symmetric matrix -> col and row are equal to one another and to this average b
-	t_vec b = T(0.5)*(tl::get_column(mat, iIdx) + tl::get_row(mat, iIdx));
+	t_vec b = T(0.5)*(tl::get_column(quadric, iIdx) + tl::get_row(quadric, iIdx));
 	//T blen = tl::veclen(b);
 	//b /= blen;
 
-	t_mat m = mat;
+	t_mat m = quadric;
 	//T dscale = blen / b[iIdx];	// == blen*blen / mat(iIdx,iIdx)
-	T dscale = 1. / mat(iIdx, iIdx);
-	m -= dscale * tl::outer<t_vec,t_mat>(b,b);
+	T dscale = 1. / quadric(iIdx, iIdx);
+	m -= dscale * tl::outer<t_vec,t_mat>(b, b);
 
-	//tl::log_debug(mat, " -> ", m);
+	//tl::log_debug(quadric, " -> ", m);
+	m = tl::remove_elems(m, iIdx);
+
+	return m;
+}
+
+
+/**
+ * project along one axis of the linear part of the quadric
+ * (see [eck14], equ. 57)
+ */
+template<class T = t_real_reso>
+ublas::matrix<T> quadric_proj_mat(const ublas::matrix<T>& mat,
+	const ublas::matrix<T>& quadric, std::size_t iIdx)
+{
+	using t_mat = ublas::matrix<T>;
+	using t_vec = ublas::vector<T>;
+
+	if(tl::float_equal<T>(quadric(iIdx, iIdx), T{0}))
+	{
+		tl::log_warn("Cannot project quadric, slicing instead.");
+		return tl::remove_elems(quadric, iIdx);
+	}
+
+	// symmetric matrix -> col and row are equal to one another and to this average b
+	t_vec b = T(0.5)*(tl::get_column(quadric, iIdx) + tl::get_row(quadric, iIdx));
+	b /= quadric(iIdx, iIdx);
+	t_mat m = mat - tl::outer<t_vec,t_mat>(b, tl::get_column(mat, iIdx));
+
+	//tl::log_debug(quadric, " -> ", m);
 	m = tl::remove_elems(m, iIdx);
 
 	return m;
@@ -173,20 +202,20 @@ ublas::matrix<T> quadric_proj(const ublas::matrix<T>& mat, std::size_t iIdx)
  */
 template<class T = t_real_reso>
 ublas::vector<T> quadric_proj(const ublas::vector<T>& vec,
-	const ublas::matrix<T>& mat, std::size_t iIdx)
+	const ublas::matrix<T>& quadric, std::size_t iIdx)
 {
 	using t_vec = ublas::vector<T>;
 
-	if(tl::float_equal<T>(mat(iIdx, iIdx), T{0}))
+	if(tl::float_equal<T>(quadric(iIdx, iIdx), T{0}))
 	{
 		tl::log_warn("Cannot project vector part of quadric, slicing instead.");
 		return tl::remove_elem(vec, iIdx);
 	}
 
-	t_vec b = T(0.5)*(tl::get_column(mat, iIdx) + tl::get_row(mat, iIdx));
+	t_vec b = T(0.5)*(tl::get_column(quadric, iIdx) + tl::get_row(quadric, iIdx));
 
 	t_vec vecProj = vec;
-	T dscale = vecProj[iIdx] / mat(iIdx, iIdx);
+	T dscale = vecProj[iIdx] / quadric(iIdx, iIdx);
 	vecProj -= dscale * b;
 
 	vecProj = tl::remove_elem(vecProj, iIdx);

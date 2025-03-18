@@ -376,6 +376,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_algo = ResoAlgo::POP;
 	else if(algo == "eck")
 		m_algo = ResoAlgo::ECK;
+	else if(algo == "eck_ext")
+		m_algo = ResoAlgo::ECK_EXT;
 	else if(algo == "vio" || algo == "viol")
 		m_algo = ResoAlgo::VIO;
 	else
@@ -601,6 +603,11 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		{
 			//tl::log_info("Algorithm: Eckold-Sobolev (TAS)");
 			resores_cur = calc_eck(m_reso);
+		}
+		else if(m_algo == ResoAlgo::ECK_EXT)
+		{
+			//tl::log_info("Algorithm: Extended Eckold-Sobolev (TAS)");
+			resores_cur = calc_eck_ext(m_reso);
 		}
 		else if(m_algo == ResoAlgo::VIO)
 		{

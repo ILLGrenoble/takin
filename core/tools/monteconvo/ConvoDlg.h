@@ -116,6 +116,8 @@ protected:
 	void LoadSettings();
 	virtual void showEvent(QShowEvent *pEvt) override;
 
+	ResoAlgo GetSelectedAlgo() const;
+
 	void ClearPlot1D();
 	void Start1D();
 	void Start2D();

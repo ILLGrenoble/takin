@@ -575,6 +575,8 @@ bool Convofit::run_job(const std::string& _strJob)
 			reso.SetAlgo(ResoAlgo::CN);
 		else if(strResAlgo == "eck")
 			reso.SetAlgo(ResoAlgo::ECK);
+		else if(strResAlgo == "eck_ext")
+			reso.SetAlgo(ResoAlgo::ECK_EXT);
 		else if(strResAlgo == "vio" || strResAlgo == "viol")
 			reso.SetAlgo(ResoAlgo::VIO);
 		else

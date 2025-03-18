@@ -1,6 +1,6 @@
 #
-# implementation of Mechthild's extended version of the eckold-sobolev algo (see [end25])
-# WARNING: WORK IN PROGRESS -- NOT YET WORKING!
+# implementation of Mechthild's extended version of the Eckold-Sobolev method (see [end25])
+# WARNING: WORK IN PROGRESS
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date jan-2025
@@ -267,7 +267,8 @@ def calc(param):
 
 
     #--------------------------------------------------------------------------
-    # mono part
+    # mono & ana calculations, equ. 43 in [eck14]
+    #--------------------------------------------------------------------------
     [A, B, C, dReflM] = get_mono_vals(
         param["src_w"], param["src_h"],
         param["mono_w"], param["mono_h"],
@@ -279,11 +280,7 @@ def calc(param):
         param["mono_mosaic"], param["mono_mosaic_v"],
         inv_mono_curv_h, inv_mono_curv_v,
         dmono_refl)
-    #--------------------------------------------------------------------------
 
-
-    #--------------------------------------------------------------------------
-    # ana part, equ. 43 in [eck14]
     [E, F, G, dReflA] = get_mono_vals(
         param["det_w"], param["det_h"],
         param["ana_w"], param["ana_h"],
@@ -443,8 +440,20 @@ def calc(param):
     # TODO: additional theta rotation
     T_E = np.dot(basis_ki, sample_axes)
 
-    # sample integration, equ. 4.4 and below in [end25]
-    matN = matK + 0.5 * (288. * np.pi)**(1./3.) * np.dot(T_E, np.dot(np.diag(1. / sample_r**2.), np.transpose(T_E)))
+    if param["sample_shape"] == "ellipsoid":
+        # ellipsoid sample integration, equ. 4.4 and below in [end25]
+        matN = matK + 0.5 * (288. * np.pi)**(1./3.) * np.dot(
+            T_E, np.dot(np.diag(1. / sample_r**2.), np.transpose(T_E)))
+    elif param["sample_shape"] == "cylindrical":
+        # cylindrical sample integration, equ. 6.3 in [end25]
+        matN = matK + np.dot(T_E, np.dot(np.diag(
+            [4./sample_r[0]**2., 4./sample_r[1]**2., np.pi/sample_r[2]**2.]), np.transpose(T_E)))
+    elif param["sample_shape"] == "cuboid":
+        # cuboid sample integration, equ. 6.6 in [end25]
+        matN = matK + np.pi * np.dot(T_E, np.dot(np.diag(1. / sample_r**2.), np.transpose(T_E)))
+    else:
+        raise "ResPy: No valid sample shape given."
+
     detN = la.det(matN)
     Nadj = helpers.adjugate(matN)
 

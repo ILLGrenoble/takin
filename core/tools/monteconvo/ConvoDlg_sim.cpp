@@ -40,6 +40,22 @@ using t_stopwatch = tl::Stopwatch<t_real>;
 
 
 /**
+ * currently selected resolution calculation method
+ */
+ResoAlgo ConvoDlg::GetSelectedAlgo() const
+{
+	ResoAlgo algoSel = ResoAlgo::UNKNOWN;
+	QVariant varAlgo = comboAlgo->itemData(comboAlgo->currentIndex());
+	if(varAlgo == QVariant::Invalid)
+		tl::log_err("Unknown resolution algorithm selected, index: ", static_cast<int>(algoSel), ".");
+	else
+		algoSel = static_cast<ResoAlgo>(varAlgo.toInt());
+	return algoSel;
+}
+
+
+
+/**
  * create 1d convolution
  */
 void ConvoDlg::Start1D()
@@ -199,11 +215,10 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			// -------------------------------------------------------------------------
 		}
 
-		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()+1));
+		reso.SetAlgo(GetSelectedAlgo());
 		reso.SetKiFix(comboFixedK->currentIndex() == 0);
 		reso.SetKFix(spinKfix->value());
 		reso.SetOptimalFocus(get_reso_focus(comboFocMono->currentIndex(), comboFocAna->currentIndex()));
-
 
 		if(m_pSqw == nullptr || !m_pSqw->IsOk())
 		{
@@ -211,7 +226,6 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			fktEnableButtons();
 			return;
 		}
-
 
 
 		// meta data
@@ -741,7 +755,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 		// -------------------------------------------------------------------------
 
 
-		reso.SetAlgo(ResoAlgo(comboAlgo->currentIndex()+1));
+		reso.SetAlgo(GetSelectedAlgo());
 		reso.SetKiFix(comboFixedK->currentIndex() == 0);
 		reso.SetKFix(spinKfix->value());
 		reso.SetOptimalFocus(get_reso_focus(comboFocMono->currentIndex(), comboFocAna->currentIndex()));

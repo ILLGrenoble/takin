@@ -29,7 +29,7 @@
 #ifndef __DO_RESO_H__
 #define __DO_RESO_H__
 
-#include "../res/eck.h"
+#include "../res/eck_ext.h"
 #include "../res/vio.h"
 #include "../res/ellipse.h"
 #include "../res/mc.h"
