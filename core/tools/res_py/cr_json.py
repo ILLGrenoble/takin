@@ -44,6 +44,3 @@ def read(path):
         param = json.load(file)
     return param
 
-print(type({}))
-a = np.array([1234, 45800])
-print(np.multiply(a,1e-3))

@@ -282,10 +282,10 @@ def listDeltaGeo(list_param):
         dlt[ind]=list_param[i]
     return dlt
 
-# Calcul of the chopper's time uncertainty
+# Calcul of the chopper's time uncertainty for a pair of counter rotating choppers
 def deltaTimeChopper(window_angle, rot_speed, unit='SI', verbose=False):
     """angle in degree, rot_speed in RPM, unit in (SI, AU)"""
-    deltaTpsChop = np.divide(window_angle, 6*rot_speed) # s
+    deltaTpsChop = np.divide(window_angle, 2*6*rot_speed) # s
     ###########################################################################################
     if(verbose):
         print('deltaTpsChop in s =', deltaTpsChop)
@@ -380,6 +380,9 @@ def fromCovQhwAUToCovQhwAeV(covQhwAU):
     covAmeV[3][2] = covQhwAU[3][2]*np.divide(hartree2meV,a02A)
     covAmeV[3][3] = covQhwAU[3][3]*np.square(hartree2meV)
     return covAmeV
+
+def dQiFromSItoAeV(dQx, dQy, dQz, dE):
+    return (np.divide(dQx,m2A), np.divide(dQy,m2A), np.divide(dQz,m2A), np.divide(dE, meV2J))
 
 def cov(param_geo, param_choppers, v_i, v_f, shape, unit='SI', verbose=False):
     """param_geo is a dictionary: {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, (if SPHERE: phi_f, sigma_phi_f)], delta_time_detector:value (0 by default)},
@@ -495,15 +498,12 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, unit='SI', verbose=False):
     l_sizes = np.array([size_PM, size_MS, size_SD, size_tps, size_angles, nb_param])
     ###########################################################################################
     if(verbose):
-        print('size_PM =', size_PM, '; size_MS =', size_MS, '; size_SD =', size_SD, '; size_tps =', size_tps, '; size_angles =', size_angles, '\n')
+        print('size_PM =', size_PM, '; size_MS =', size_MS, '; size_SD =', size_SD, '; size_tps =', size_tps, '; size_angles =', size_angles, '\nl_sizes =', l_sizes, '\n')
 
     # Calcul of Jacobian's terms
     dQx, dQy, dQz, dE = jacobTerms(vi, vf, l_dist, l_angles, l_AB, l_sizes, shape, unit, verbose)
     if(unit == 'SI'):
-        dQx = np.divide(dQx,m2A)
-        dQy = np.divide(dQy,m2A)
-        dQz = np.divide(dQz,m2A)
-        dE = np.divide(dE, meV2J)
+        dQx, dQy, dQz, dE = dQiFromSItoAeV(dQx, dQy, dQz, dE)
     ###########################################################################################
     if(verbose):
         print('dQx =', dQx, '\ndQy =', dQy, '\ndQz =', dQz, '\ndE =', dE, '\n')
@@ -537,40 +537,3 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, unit='SI', verbose=False):
         print('covQhw =', covQhw, '\n')
 
     return covQhw
-
-#print('Vertical cylinder\n')
-# Test for a vertical cylindrical detector
-# covVcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
-# param_geo : {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[radius, sigma_r, z_heigh, sigma_z], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f]}
-# param_choppers : {chopperP:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed]}
-
-#geoV = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[4, 0.003, 0, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4]}
-#chopV ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
-#covVcyl(geoV,chopV,2000,1000,True)
-
-#print('\nHorizontal cylinder\n')
-# Test for a horizontal cylindrical detector
-# covHcyl(param_geo, param_choppers, v_i, v_f, verbose=False):
-# param_geo : {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[x_width, sigma_x, radius, sigma_r], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f]}
-# param_choppers : {chopperP:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed]}
-
-#geoH = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[0, 0.003, 4, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4]}
-#chopH ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
-#covHcyl(geoH,chopH,2000,1000,True)
-
-#print('\nSphere\n')
-# Test for a spherical detector
-# covSph(param_geo, param_choppers, v_i, v_f, verbose=False):
-# param_geo : {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[radius, sigma_r], angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, phi_f, sigma_phi_f]}
-# param_choppers : {chopperP:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[diameter, window_angle, min_rot_speed, max_rot_speed, rot_speed]}
-
-#geoS = {'dist_PM':[5, 0.001, 3, 0.001, 2, 0.001], 'dist_MS':[1.2, 0.002, 0.8, 0.002], 'dist_SD':[4, 0.003], 'angles':[0, 0.4, 0, 0.4, 0, 0.4, 0, 0.4]}
-#chopS ={'chopperP':[500.0, 9.0, 7000.0, 17000.0, -1], 'chopperM':[800.0, 3.25, 7000.0, 17000.0, -1]}
-#covSph(geoS,chopS,2000,1000,True)
-
-# print(reducedCoef(1,1,3,[0,0,0,0],"VCYL"))
-# print(np.zeros(5))
-# a = np.array([])
-# print(a)
-# a = np.concatenate(( np.array([0,1]), np.array([2,3]) ))
-# print(a)

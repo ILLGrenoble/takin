@@ -34,7 +34,7 @@ import numpy as np
 import numpy.linalg as la
 import reso
 import helpers
-import cov
+import vio_cov
 import cr_json as js
 
 
@@ -42,150 +42,98 @@ import cr_json as js
 # resolution algorithm
 #
 
-
-# settings
-ki = 1  # 2.5 in A
-kf = 1
-Q = 1
-
-verbose = True
+# Qup = Qz
 
 
-params = {
-    "ki":ki,
-    "kf":kf,
-    "Q":Q,
-    "E":helpers.get_E(ki, kf),
 
-    "v_i":cov.k2v(ki),
-    "v_f":cov.k2v(kf),
-
-    "verbose" : verbose,
-
-    "det_shape": 'SPHERE', #'VCYL', #'HCYL', #'SPHERE'
-
-    "z":0
-}
-
-p_geo = {'dist_PM':[25000, 0], 'dist_MS':[1300, 6], 'dist_SD':[3000, 6], 'angles':[0, 0.2, 0, 0.2, 10, 0.2, 90, 0.2], 'delta_time_detector':0.006}
-p_chop = {'chopperP':[1, 1, 1, 4.386], 'chopperM':[1, 1, 1, 27.778]}
-
-instr = {
-    "L_PM":25000,
-    "L_MS":1300,
-    "rad":3000,
-    "delta_PM":0,
-    "delta_MS":6,
-    "delta_SD":6,
-    "theta_i":0,
-    "phi_i":0,
-    "delta_theta_i":0.2,
-    "delta_phi_i":0.2,
-    "rad_chop_P":1,
-    "RPM_min_chop_P":1,
-    "RPM_max_chop_P":1000,
-    "RPM_chop_P":4.386,
-    "rad_chop_M":1,
-    "RPM_min_chop_M":1,
-    "RPM_max_chop_M":1000,
-    "RPM_chop_M":27.778,
-}
-
-def calc(paramUser, paramInstr):
-    #paramInstr are read from a file (not yet implemented)
-
-    # Storage of informations given by users
+def calc(param):
+    # Storage of informations
+    verbose = param["verbose"]
     # Normes of ki, kf and Q
-    ki = paramUser["ki"]
-    kf = paramUser["kf"]
-    Q = paramUser["Q"]
-    # Angular velocity of choppers
-    rot_speedP = paramUser["rot_speedP"]
-    rot_speedM = paramUser["rot_speedM"]
+    ki = param["ki"]
+    kf = param["kf"]
+    Q = param["Q"]
+    ###########################################################################################
+    if(verbose):
+        print("ki =", ki, "; kf =", kf, "; Q =", Q)
+
     # Shape of the detector
-    shape = paramUser["shape"]
-    # Velocity
-    vi = cov.k2v(ki)
-    vf = cov.k2v(kf)
+    det_shape = param["det_shape"]
+    ###########################################################################################
+    if(verbose):
+        print("det_shape =", det_shape)
+
+    # Velocity in m/s
+    vi = vio_cov.k2v(ki)
+    vf = vio_cov.k2v(kf)
+    ###########################################################################################
+    if(verbose):
+        print("vi =", vi, "; vf =", vf)
+
     # Angles
-    Q_ki = helpers.get_angle_Q_ki(ki, kf, Q)
-    print()
+    theta_i = param["angles"][0]
+    phi_i = param["angles"][2]
+    theta_f = param["angles"][4]
+    phi_f = 0
+    if(det_shape == 'SPHERE'):
+        phi_f = param["angles"][6]
+    if(det_shape == 'HCYL'):
+        phi_f = np.rad2deg( np.atan( np.divide(param["dist_SD"][0], param["dist_SD"][2]) ) )
+    if(det_shape == 'VCYL'):
+        phi_f = np.rad2deg( np.atan( np.divide(param["dist_SD"][2], param["dist_SD"][0]) ) )
+    ###########################################################################################
+    if(verbose):
+        print("theta_i =", theta_i, "; phi_i =", phi_i,"; theta_f =", theta_f, "; phi_f =", phi_f)
+    
+    ki_xy = ki*np.cos(np.deg2rad(phi_i))
+    ki_z = ki*np.sin(np.deg2rad(phi_i))
+    kf_xy = kf*np.cos(np.deg2rad(phi_f))
+    kf_z = kf*np.sin(np.deg2rad(phi_f))
+    Q_x = ki_xy*np.cos(np.deg2rad(theta_i)) - kf_xy*np.cos(np.deg2rad(theta_f))
+    Q_y = ki_xy*np.sin(np.deg2rad(theta_i)) - kf_xy*np.sin(np.deg2rad(theta_f))
+    Q_z = ki_z - kf_z
+    Q_xy = np.sqrt( np.square(Q_x) + np.square(Q_y) )
+    ###########################################################################################
+    if(verbose):
+        print("ki_xy =", ki_xy, "; ki_z =", ki_z,"; kf_xy =", kf_xy, "; kf_z =", kf_z, "; Q_x =", Q_x, "; Q_y =", Q_y, "; Q_xy =", Q_xy, "; Q_z =", Q_z)
 
     # Information on the instrument
-    dict_geo = {"dist_PM":paramInstr["dist_PM"], "dist_MS":paramInstr["dist_MS"], "dist_SD":paramInstr["dist_SD"], "angles":paramInstr["angles"]}
-    param_chopP = np.zeros(5)
-    param_chopP[:4] = paramInstr["chopperP"]
-    param_chopP[4] = rot_speedP
-    param_chopM = np.zeros(5)
-    param_chopM[:4] = paramInstr["chopperM"]
-    param_chopM[4] = rot_speedM
-    dict_choppers = {"chopperP":param_chopP, "chopperM":param_chopM}
+    dict_geo = {"dist_PM":param["dist_PM"], "dist_MS":param["dist_MS"], "dist_SD":param["dist_SD"], "angles":param["angles"], "delta_time_detector":param["delta_time_det"]}
+    dict_choppers = {"chopperP":param["chopperP"], "chopperM":param["chopperM"]}
+    ###########################################################################################
+    if(verbose):
+        print("\ndict_geo =", dict_geo, "\ndict_choppers =", dict_choppers, "\n")
 
-    # Energy, Q vector and Covariance matrix
-    E = cov.energy(vi, vf)
-#    Q = np.array([0, 0, 0])
-    covQhw = np.eye(4)
-    if(shape == "Sph"):
-        covQhw = cov.covSph(dict_geo, dict_choppers, vi, vf)
-#        Q = cov.vecQSph(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], paramInstr["angles"][6])
-    elif(shape == "Hcyl"):
-        covQhw = cov.covHcyl(dict_geo, dict_choppers, vi, vf)
-#        cos_phi_f = np.divide(paramInstr["dist_SD"][2], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-#        sin_phi_f = np.divide(paramInstr["dist_SD"][0], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-#        Q = cov.vecQHcyl(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], cos_phi_f, sin_phi_f)
-    elif(shape == "Vcyl"):
-        covQhw = cov.covVcyl(dict_geo, dict_choppers, vi, vf)
-#        cos_phi_f = np.divide(paramInstr["dist_SD"][0], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-#        sin_phi_f = np.divide(paramInstr["dist_SD"][2], np.sqrt(np.square(paramInstr["dist_SD"][0]) + np.square(paramInstr["dist_SD"][2])))
-#        Q = cov.vecQVcyl(vi, vf, paramInstr["angles"][0], paramInstr["angles"][2], paramInstr["angles"][4], cos_phi_f, sin_phi_f)
+    # Energy transfer, Q vector and Covariance matrix
+    E = helpers.get_E(ki, kf)
+    vec_Q = np.array([Q_x, Q_y, Q_z])
+    covQhw = vio_cov.cov(dict_geo, dict_choppers, vi, vf, det_shape, 'SI', verbose)
     covQhwInv = la.inv(covQhw)
-    if(paramUser["verbose"]):
-        print("E =", E) #, "; Q =", Q)
+    ###########################################################################################
+    if(param["verbose"]):
+        print("E =", E, "; vec_Q =", vec_Q)
         print("covQhw =", covQhw)
         print("covQhwInv =", covQhwInv)
+    
     # Going from ki, kf, Qz to Qpara, Qperp, Qz :
+    Q_ki = helpers.get_angle_Q_ki(ki_xy, kf_xy, Q_xy)
     rot = helpers.rotation_matrix_4d_zE(-Q_ki)
     covQhwInv = np.dot(rot.T, np.dot(covQhwInv, rot))
-    if(paramUser["verbose"]):
+    ###########################################################################################
+    if(verbose):
         print("In the base (Qpara, Qperp, Qz) :")
         print("rot =", rot,'\ncovQhwInv =', covQhwInv)
+
     res={}
     res["ki"] = ki
     res["kf"] = kf
     res["Q"] = Q
+    res["vec_Q"] = vec_Q
     res["E"] = E
     res["reso"] = covQhwInv
+    res["ok"] = True
     return res
 
-#param_geo is a dictionary: {dist_PM:[PM1, sigma1, PM2, sigma2, ...], dist_MS:[MS1, sigma1, MS2, sigma2, ...], dist_SD:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)], 
-#                            angles:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, (if SPHERE: phi_f, sigma_phi_f)], delta_time_detector:value (0 by default)},
-#param_choppers is a dictionary: {chopperP:[window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[window_angle, min_rot_speed, max_rot_speed, rot_speed]}, dist in mm, angles in degree, rot_speed in RPM,
-#v_i, v_f: velocity of the incident and scattered neutron m/s,
-#shape = SPHERE, VCYL, HCYL: shape of the detector (sphere, vertical cylinder or horizontal cylinder)"""
-p_geo = {'dist_PM':[25000, 0], 'dist_MS':[1300, 6], 'dist_SD':[3000, 6], 'angles':[0, 0.2, 0, 0.2, 10, 0.2, 90, 0.2], 'delta_time_detector':0.000006}
-p_chop = {'chopperP':[1, 1, 1, 4386], 'chopperM':[1, 1, 1, 27778]}
-covQhw = cov.cov(p_geo, p_chop, 620, 620, 'SPHERE', 'SI', True)
-aff = la.inv(covQhw)
-print('aff =', aff)
-ellipses = reso.calc_ellipses(aff, True)
-reso.plot_ellipses(ellipses, True)
-print(620*cov.mohSI/cov.m2A)
-
-#distances in mm, angle in degree
-#IN5 = {"pos_P1":9000, "delta_p1":40, "pos_P2":9000, "delta_P2":40, "pos_M1":1000, "delta_M1":10, "pos_M2":1000, "delta_M2":10, "pos_S":0, "delat_S":0,
-#       "det_R":4000, "delta_R":12.7, "det_h":3000, "delat_h":10, "det_theta":146.73, "delta_theta":0.19} #h_min = -1500, h_max = 1500, theta_min, theta_max
-#js.create(IN5, '/home/mecoli/Git/IN5')
-#param = js.read('/home/mecoli/Git/IN5.json')
-
-# pU = {"ki":16000000000, "kf":20000000000, "Q":7000000000, "rot_speedP":9000, "rot_speedM":8000, "shape":"Vcyl", "verbose": True}
-# pI = {"dist_PM":[20, 0.001, 3, 0.002], "dist_MS":[3, 0.005], "dist_SD":[4, 0.01, 0, 0.008], "angles":[0, 0.2, 0, 0.2, 0, 0.15], "chopperP":[0.8, 10, 7000, 1700], "chopperM":[0.8, 8, 7000, 1700]}
-# aff = calc(pU, pI)
-
-# describe and plot ellipses
-# ellipses = reso.calc_ellipses(aff["reso"], True)
-# reso.plot_ellipses(ellipses, True)
-
-#print(param)
 
 # def calc(param, pointlike = False):
 #     # instrument position
