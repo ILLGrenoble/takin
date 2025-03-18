@@ -187,10 +187,11 @@ ublas::matrix<T> quadric_proj_mat(const ublas::matrix<T>& mat,
 	// symmetric matrix -> col and row are equal to one another and to this average b
 	t_vec b = T(0.5)*(tl::get_column(quadric, iIdx) + tl::get_row(quadric, iIdx));
 	b /= quadric(iIdx, iIdx);
-	t_mat m = mat - tl::outer<t_vec,t_mat>(b, tl::get_column(mat, iIdx));
+	t_mat m = mat - tl::outer<t_vec,t_mat>(b, tl::get_row(mat, iIdx));
 
 	//tl::log_debug(quadric, " -> ", m);
-	m = tl::remove_elems(m, iIdx);
+	//m = tl::remove_elems(m, iIdx);
+	m = tl::remove_row(m, iIdx);
 
 	return m;
 }

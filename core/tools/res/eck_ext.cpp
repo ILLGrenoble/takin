@@ -328,6 +328,13 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		sample_mosaic_v = eck.sample_mosaic;
 
 
+	// sample position
+	t_vec sample_pos(3);
+	sample_pos[0] = eck.pos_x / angs;
+	sample_pos[1] = eck.pos_y / angs;
+	sample_pos[2] = eck.pos_z / angs;
+
+
 	//--------------------------------------------------------------------------
 	// mono & ana calculations, equ. 43 in [eck14]
 	std::launch lpol = std::launch::async;
@@ -377,19 +384,22 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// vertical scattering in kf axis, formula from [eck20]
 	if(eck.bKfVertical)
 	{
-		t_mat matTvert = ublas::zero_matrix<t_real>(3,3);
+		t_mat matTvert = ublas::zero_matrix<t_real>(3, 3);
 		matTvert(0 ,0) = 1.;
 		matTvert(1, 2) = 1.;
 		matTvert(2, 1) = -1.;
 
+		// T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.cpp
 		E = tl::transform(E, matTvert, true);
 		F = tl::transform(F, matTvert, true);
 		G = tl::transform(G, matTvert, true);
+
+		//sample_pos = ublas::prod(matTvert, sample_pos);
 	}
 	//--------------------------------------------------------------------------
 
 
-	// equ 4 & equ 53 in [eck14]
+	// equ. 4 & equ. 53 in [eck14]
 	const t_real dE = (eck.ki*eck.ki - eck.kf*eck.kf) / (t_real(2)*eck.Q*eck.Q);
 	const wavenumber kipara = eck.Q * (t_real(0.5)+dE);
 	const wavenumber kfpara = eck.Q - kipara;
@@ -398,7 +408,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	const t_real ksq2E = tl::get_KSQ2E<t_real>();
 
-	// trafo, equ 52 in [eck14]
+	// trafo, equ. 52 in [eck14]
 	t_mat T = ublas::zero_matrix<t_real>(ECK_NUM_QE, ECK_NUM_KIKF);
 	T(ECK_Q_X, ECK_KI_X) = T(ECK_Q_Y, ECK_KI_Y) = T(ECK_Q_Z, ECK_KI_Z) = +1.;
 	T(ECK_Q_X, ECK_KF_X) = T(ECK_Q_Y, ECK_KF_Y) = T(ECK_Q_Z, ECK_KF_Z) = -1.;
@@ -416,7 +426,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		return res;
 	}
 
-	// equ 54 in [eck14]
+	// equ. 54 in [eck14]
 	t_mat Dalph_i = tl::rotation_matrix_3d_z(-ki_Q/rads);
 	t_mat Dalph_f = tl::rotation_matrix_3d_z(-kf_Q/rads);
 	t_mat Dtwotheta = tl::rotation_matrix_3d_z(-twotheta/rads);
@@ -428,7 +438,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	tl::submatrix_copy(matAE, Erot, Arot.size1(), Arot.size2());
 
 	// U1 matrix
-	t_mat U1 = tl::transform(matAE, Tinv, true);  // typo in paper in quadric trafo in equ 54 (top)?
+	t_mat U1 = tl::transform(matAE, Tinv, true);  // typo in paper in quadric trafo in equ. 54 (top)?
 
 	// V matrix from equ. 2.9 [end25], corresponds to V1 vector in [eck14]
 	t_mat matBrot = ublas::prod(ublas::trans(Dalph_i), B);
@@ -460,9 +470,11 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// squares in Vs missing in paper? (thanks to F. Bourdarot for pointing this out)
 	for(std::size_t i = 0; i < 3; ++i)
 		for(std::size_t j = 0; j < 3; ++j)
-			matK(i, j) -= t_real(0.25) * (matV(ECK_K_Z, i)*matV(ECK_K_Z, j)/U1(ECK_K_Z, ECK_K_Z)
-				+ V2(ECK_K_Y, i)*V2(ECK_K_Y, j)/U2(ECK_K_Y, ECK_K_Y));
+			matK(i, j) -= t_real(0.25) *
+				(matV(ECK_K_Z, i) * matV(ECK_K_Z, j) / U1(ECK_K_Z, ECK_K_Z)
+				+ V2(ECK_K_Y, i) * V2(ECK_K_Y, j) / U2(ECK_K_Y, ECK_K_Y));
 
+	// C_all,0 in [end25], equ. 1.1, 2.1
 	t_real Z0 = std::sqrt(pi/std::abs(U1(ECK_K_Z, ECK_K_Z)))
 		* std::sqrt(pi/std::abs(U2(ECK_K_Y, ECK_K_Y)));
 	t_real Z = dReflM * dReflA * Z0;
@@ -485,11 +497,6 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	t_vec vec2 = tl::get_column<t_vec>(U/(sig2fwhm*sig2fwhm), 2);
 	U -= sig2fwhm*sig2fwhm * ublas::outer_prod(vec2, vec2)
 		/ (1./mos_v_Q_sq + U(2, 2)/(sig2fwhm*sig2fwhm));
-
-	t_vec sample_pos(3);
-	sample_pos[0] = eck.pos_x / angs;
-	sample_pos[1] = eck.pos_y / angs;
-	sample_pos[2] = eck.pos_z / angs;
 
 	// quadratic part of quadric (matrix U)
 	res.reso = U;

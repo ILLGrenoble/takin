@@ -773,13 +773,31 @@ matrix_type block_matrix(const matrix_type& mat1, const matrix_type& mat2)
 template<class matrix_type>
 matrix_type remove_column(const matrix_type& mat, std::size_t iCol)
 {
-	matrix_type matret(mat.size1(), mat.size2()-1);
-	for(std::size_t i=0; i<mat.size1(); ++i)
+	matrix_type matret(mat.size1(), mat.size2() - 1);
+	for(std::size_t i = 0; i < mat.size1(); ++i)
 	{
-		for(std::size_t j=0, j0=0; j<mat.size2() && j0<matret.size2(); ++j)
+		for(std::size_t j = 0, j0 = 0; j<mat.size2() && j0 < matret.size2(); ++j)
 		{
-			matret(i,j0) = mat(i,j);
-            if(j!=iCol) ++j0;
+			matret(i, j0) = mat(i, j);
+			if(j != iCol)
+				++j0;
+		}
+	}
+	return matret;
+}
+
+
+template<class matrix_type>
+matrix_type remove_row(const matrix_type& mat, std::size_t iRow)
+{
+	matrix_type matret(mat.size1() - 1, mat.size2());
+	for(std::size_t j = 0; j < mat.size2(); ++j)
+	{
+		for(std::size_t i = 0, i0 = 0; i<mat.size1() && i0 < matret.size1(); ++i)
+		{
+			matret(i0, j) = mat(i, j);
+			if(i != iRow)
+				++i0;
 		}
 	}
 	return matret;
