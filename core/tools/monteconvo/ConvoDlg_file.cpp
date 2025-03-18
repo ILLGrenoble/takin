@@ -240,6 +240,26 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 		if(odEditVal) m_vecTextBoxes[iEditBox]->setPlainText((*odEditVal).c_str());
 	}
 
+	// get reso algo by name
+	boost::optional<std::string> opAlgo = xml.QueryOpt<std::string>(strXmlRoot+"monteconvo/algo");
+	if(opAlgo)
+	{
+		if(*opAlgo == "cn")
+			SetSelectedAlgo(ResoAlgo::CN);
+		else if(*opAlgo == "pop_cn")
+			SetSelectedAlgo(ResoAlgo::POP_CN);
+		else if(*opAlgo == "pop")
+			SetSelectedAlgo(ResoAlgo::POP);
+		else if(*opAlgo == "eck")
+			SetSelectedAlgo(ResoAlgo::ECK);
+		else if(*opAlgo == "eck_ext")
+			SetSelectedAlgo(ResoAlgo::ECK_EXT);
+		else if(*opAlgo == "vio" || *opAlgo == "viol")
+			SetSelectedAlgo(ResoAlgo::VIO);
+		else if(*opAlgo == "simple")
+			SetSelectedAlgo(ResoAlgo::SIMPLE);
+	}
+
 	if(m_pFavDlg)
 		m_pFavDlg->Load(xml, strXmlRoot + "monteconvo/");
 
@@ -307,20 +327,19 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 	}
 
 	// save reso algo name
-	int algo_idx = comboAlgo->currentIndex();
 	std::string algo_name = "unknown";
-	if(algo_idx == 0)
-		algo_name = "cn";
-	else if(algo_idx == 1)
-		algo_name = "pop_cn";
-	else if(algo_idx == 2)
-		algo_name = "pop";
-	else if(algo_idx == 3)
-		algo_name = "eck";
-	else if(algo_idx == 4)
-		algo_name = "eck_ext";
-	else if(algo_idx == 5)
-		algo_name = "vio";
+	switch(GetSelectedAlgo())
+	{
+		case ResoAlgo::CN: algo_name = "cn"; break;
+		case ResoAlgo::POP_CN: algo_name = "pop_cn"; break;
+		case ResoAlgo::POP: algo_name = "pop"; break;
+		case ResoAlgo::ECK: algo_name = "eck"; break;
+		case ResoAlgo::ECK_EXT: algo_name = "eck_ext"; break;
+		case ResoAlgo::VIO: algo_name = "vio"; break;
+		case ResoAlgo::SIMPLE: algo_name = "simple"; break;
+		default: tl::log_err("Unknown resolution algorithm selected."); break;
+	}
+
 	mapConf[strXmlRoot + "monteconvo/algo"] = algo_name;
 
 	bool allow_scan_merging = false;

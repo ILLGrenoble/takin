@@ -338,36 +338,24 @@ void ResoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	for(std::size_t iCombo = 0; iCombo < m_vecComboBoxes.size(); ++iCombo)
 		mapConf[strXmlRoot + m_vecComboNames[iCombo]] = tl::var_to_str<int>(m_vecComboBoxes[iCombo]->currentIndex());
 
+	// get the resolution calculation method
 	ResoAlgo algo = ResoDlg::GetSelectedAlgo();
 	const int iAlgo = static_cast<int>(algo);
 	mapConf[strXmlRoot + "reso/algo_idx"] = tl::var_to_str<int>(static_cast<int>(algo));
 
+	std::string algo_name = "unknown";
 	switch(algo)
 	{
-		case ResoAlgo::CN:
-			mapConf[strXmlRoot + "reso/algo"] = "cn";
-			break;
-		case ResoAlgo::POP_CN:
-			mapConf[strXmlRoot + "reso/algo"] = "pop_cn";
-			break;
-		case ResoAlgo::POP:
-			mapConf[strXmlRoot + "reso/algo"] = "pop";
-			break;
-		case ResoAlgo::ECK:
-			mapConf[strXmlRoot + "reso/algo"] = "eck";
-			break;
-		case ResoAlgo::ECK_EXT:
-			mapConf[strXmlRoot + "reso/algo"] = "eck_ext";
-			break;
-		case ResoAlgo::VIO:
-			mapConf[strXmlRoot + "reso/algo"] = "vio";
-			break;
-		case ResoAlgo::SIMPLE:
-			mapConf[strXmlRoot + "reso/algo"] = "simple";
-			break;
-		default:
-			break;
+		case ResoAlgo::CN: algo_name = "cn"; break;
+		case ResoAlgo::POP_CN: algo_name = "pop_cn"; break;
+		case ResoAlgo::POP: algo_name = "pop"; break;
+		case ResoAlgo::ECK: algo_name = "eck"; break;
+		case ResoAlgo::ECK_EXT: algo_name = "eck_ext"; break;
+		case ResoAlgo::VIO: algo_name = "vio"; break;
+		case ResoAlgo::SIMPLE: algo_name = "simple"; break;
+		default: break;
 	}
+	mapConf[strXmlRoot + "reso/algo"] = algo_name;
 
 	mapConf[strXmlRoot + "reso/use_guide"] = groupGuide->isChecked() ? "1" : "0";
 

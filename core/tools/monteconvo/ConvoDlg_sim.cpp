@@ -40,6 +40,25 @@ using t_stopwatch = tl::Stopwatch<t_real>;
 
 
 /**
+ * select a new resolution calculation method
+ */
+void ConvoDlg::SetSelectedAlgo(ResoAlgo algo)
+{
+	for(int iItem = 0; iItem < comboAlgo->count(); ++iItem)
+	{
+		QVariant varAlgo = comboAlgo->itemData(iItem);
+		if(algo == static_cast<ResoAlgo>(varAlgo.toInt()))
+		{
+			comboAlgo->setCurrentIndex(iItem);
+			return;
+		}
+	}
+
+	tl::log_err("Unknown resolution algorithm set, index: ", static_cast<int>(algo), ".");
+}
+
+
+/**
  * currently selected resolution calculation method
  */
 ResoAlgo ConvoDlg::GetSelectedAlgo() const
@@ -50,6 +69,7 @@ ResoAlgo ConvoDlg::GetSelectedAlgo() const
 		tl::log_err("Unknown resolution algorithm selected, index: ", static_cast<int>(algoSel), ".");
 	else
 		algoSel = static_cast<ResoAlgo>(varAlgo.toInt());
+
 	return algoSel;
 }
 

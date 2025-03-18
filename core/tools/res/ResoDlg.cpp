@@ -836,7 +836,7 @@ void ResoDlg::Calc()
 
 void ResoDlg::SetSelectedAlgo(ResoAlgo algo)
 {
-	for(int iItem=0; iItem<comboAlgo->count(); ++iItem)
+	for(int iItem = 0; iItem < comboAlgo->count(); ++iItem)
 	{
 		QVariant varAlgo = comboAlgo->itemData(iItem);
 		if(algo == static_cast<ResoAlgo>(varAlgo.toInt()))
