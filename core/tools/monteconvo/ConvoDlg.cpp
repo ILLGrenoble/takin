@@ -225,8 +225,6 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	comboAlgo->addItem("TAS: Eckold-Sobolev (Extended)", static_cast<int>(ResoAlgo::ECK_EXT));
 	comboAlgo->insertSeparator(6);
 	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
-	comboAlgo->insertSeparator(8);
-	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
 
 	comboAlgo->setCurrentIndex(3);  // default: pop
 	// --------------------------------------------------------------------
