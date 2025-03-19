@@ -373,9 +373,10 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	const t_real& dReflA = std::get<3>(tupAna);
 
 	// vertical scattering in kf axis, formula from [eck20]
-	if(eck.bKfVertical)
+	bool bKfVertical = (eck.angle_kf/rads > t_real(0));
+	if(bKfVertical)
 	{
-		t_mat matTvert = tl::rotation_matrix_3d_x(-t_real(0.5)*pi);
+		t_mat matTvert = tl::rotation_matrix_3d_x(-eck.angle_kf/rads);
 
 		// T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.cpp
 		E = tl::transform(E, matTvert, true);

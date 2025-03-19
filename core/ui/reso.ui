@@ -81,7 +81,7 @@
    <item row="0" column="0" colspan="4">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>6</number>
      </property>
      <widget class="QWidget" name="tabTAS">
       <attribute name="title">
@@ -2278,13 +2278,38 @@
            <number>1</number>
           </property>
           <item row="2" column="0">
-           <widget class="QCheckBox" name="checkKfVert">
+           <widget class="QLabel" name="label_14">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Vertical Scattering</string>
+             <string>Angle in k_f:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="spinScatterKfAngle">
+            <property name="toolTip">
+             <string>Use 0° for normal horizontal scattering and 90° for vertical scattering in k_f.</string>
+            </property>
+            <property name="suffix">
+             <string> °</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="minimum">
+             <double>-90.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>90.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
            <spacer name="verticalSpacer_9">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -4217,7 +4242,7 @@
   <tabstop>spinSamplePosX</tabstop>
   <tabstop>spinSamplePosY</tabstop>
   <tabstop>spinSamplePosZ</tabstop>
-  <tabstop>checkKfVert</tabstop>
+  <tabstop>spinScatterKfAngle</tabstop>
   <tabstop>spinDistTofPulseMono</tabstop>
   <tabstop>spinDistTofMonoSample</tabstop>
   <tabstop>spinDistTofSampleDet</tabstop>

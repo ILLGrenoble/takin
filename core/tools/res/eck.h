@@ -43,8 +43,8 @@ struct EckParams : public PopParams
 {
 	tl::t_length_si<t_real_reso> pos_x, pos_y, pos_z;
 
-	// vertical scattering in k_f
-	bool bKfVertical = false;
+	// vertical scattering in k_f: angle_kf = 90 deg
+	tl::t_angle_si<t_real_reso> angle_kf;
 };
 
 

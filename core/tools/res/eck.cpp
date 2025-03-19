@@ -356,10 +356,14 @@ ResoResults calc_eck(const EckParams& eck)
 	length pos_z2 = eck.pos_z;
 
 	// vertical scattering in kf axis, formula from [eck20]
-	if(eck.bKfVertical)
+	bool bKfVertical = (eck.angle_kf/rads > t_real(0));
+	if(bKfVertical)
 	{
-		pos_z2 = -pos_y2;
-		pos_y2 = eck.pos_z;
+		// rotation around x
+		pos_z2 = pos_y2 * units::sin(-eck.angle_kf)
+			+ eck.pos_z * units::cos(-eck.angle_kf);
+		pos_y2 = pos_y2 * units::cos(-eck.angle_kf)
+			- eck.pos_z * units::sin(-eck.angle_kf);
 	}
 
 	std::future<std::tuple<t_mat, t_vec, t_real, t_real, t_real>> futAna
@@ -394,9 +398,9 @@ ResoResults calc_eck(const EckParams& eck)
 	const t_real& dReflA = std::get<4>(tupAna);
 
 	// vertical scattering in kf axis, formula from [eck20]
-	if(eck.bKfVertical)
+	if(bKfVertical)
 	{
-		t_mat matTvert = tl::rotation_matrix_3d_x(-t_real(0.5)*pi);
+		t_mat matTvert = tl::rotation_matrix_3d_x(-eck.angle_kf / rads);
 
 		E = tl::transform(E, matTvert, true);
 		F = ublas::prod(ublas::trans(matTvert), F);  // typo in paper (transpose)?

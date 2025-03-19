@@ -105,6 +105,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinDistVSrcMono, spinDistHSrcMono,
 
 		spinMonitorW, spinMonitorH, spinDistMonoMonitor,
+		spinScatterKfAngle,
 
 		spinMonoMosaicV, spinSampleMosaicV, spinAnaMosaicV,
 		spinSamplePosX, spinSamplePosY, spinSamplePosZ,
@@ -137,6 +138,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/pop_dist_vsrc_mono", "reso/pop_dist_hsrc_mono",
 
 		"reso/pop_monitor_w", "reso/pop_monitor_h", "reso/pop_dist_mono_monitor",
+		"reso/scatter_kf_angle",
 
 		"reso/eck_mono_mosaic_v", "reso/eck_sample_mosaic_v", "reso/eck_ana_mosaic_v",
 		"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z",
@@ -161,9 +163,9 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
 	m_vecCheckBoxes = {checkUseGeneralR0, checkUseKi3, checkUseKf3,
-		checkUseKfKi, checkUseKi, checkUseMonitor, checkKfVert};
+		checkUseKfKi, checkUseKi, checkUseMonitor};
 	m_vecCheckNames = {"reso/use_general_R0", "reso/use_ki3", "reso/use_kf3",
-		"reso/use_kfki", "reso/use_monki", "reso/use_mon", "reso/scatter_kf_vert"};
+		"reso/use_kfki", "reso/use_monki", "reso/use_mon"};
 
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
@@ -336,7 +338,7 @@ void ResoDlg::Calc()
 
 		ResoResults &res = m_res;
 
-		// CN parameters
+		// cn parameters
 		cn.mono_d = t_real_reso(spinMonod->value()) * angs;
 		cn.ana_d = t_real_reso(spinAnad->value()) * angs;
 		cn.mono_mosaic = t_real_reso(tl::m2r(spinMonoMosaic->value())) * rads;
@@ -414,14 +416,14 @@ void ResoDlg::Calc()
 		//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);*/
 
 
-		// Pop parameters
+		// pop parameters
 		cn.mono_w = t_real_reso(spinMonoW->value()) * cm;
 		cn.mono_h = t_real_reso(spinMonoH->value()) * cm;
 		cn.mono_thick = t_real_reso(spinMonoThick->value()) * cm;
 		cn.mono_curvh = t_real_reso(spinMonoCurvH->value()) * cm;
 		cn.mono_curvv = t_real_reso(spinMonoCurvV->value()) * cm;
-		cn.bMonoIsCurvedH = cn.bMonoIsCurvedV = 0;
-		cn.bMonoIsOptimallyCurvedH = cn.bMonoIsOptimallyCurvedV = 0;
+		cn.bMonoIsCurvedH = cn.bMonoIsCurvedV = false;
+		cn.bMonoIsOptimallyCurvedH = cn.bMonoIsOptimallyCurvedV = false;
 
 		spinMonoCurvH->setEnabled(comboMonoHori->currentIndex() == 2);
 		spinMonoCurvV->setEnabled(comboMonoVert->currentIndex() == 2);
@@ -485,11 +487,11 @@ void ResoDlg::Calc()
 		cn.dist_mono_monitor = t_real_reso(spinDistMonoMonitor->value()) * cm;
 
 
-		// eck
+		// eck parameters
 		cn.pos_x = t_real_reso(spinSamplePosX->value()) * cm;
 		cn.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
 		cn.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
-		cn.bKfVertical = checkKfVert->isChecked();
+		cn.angle_kf = tl::d2r(t_real_reso(spinScatterKfAngle->value())) * rads;
 
 		// TODO
 		cn.mono_numtiles_h = 1;

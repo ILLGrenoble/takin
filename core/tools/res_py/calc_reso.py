@@ -139,9 +139,6 @@ params = {
     "sample_mosaic_v" : 30. * helpers.min2rad,
     "ana_mosaic_v"    : 45. * helpers.min2rad,
 
-    # calculate R0 factor (not needed if only the ellipses are to be plotted)
-    "calc_R0" : True,
-
     # crystal reflectivities; TODO, so far always 1
     "dmono_refl" : 1.,
     "dana_effic" : 1.,

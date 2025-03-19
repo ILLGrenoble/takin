@@ -44,6 +44,7 @@ using t_mat = ublas::matrix<t_real>;
 
 static const auto angs = tl::get_one_angstrom<t_real>();
 static const auto rads = tl::get_one_radian<t_real>();
+static const auto degs = tl::get_one_deg<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
 static const auto cm = tl::get_one_centimeter<t_real>();
 static const auto meters = tl::get_one_meter<t_real>();
@@ -326,6 +327,11 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.pos_x = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_x").c_str(), 0.)*cm;
 	m_reso.pos_y = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_y").c_str(), 0.)*cm;
 	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*cm;
+	if(xml.Query<int>((strXmlRoot+"reso/scatter_kf_vert").c_str(), 0) != 0)
+		m_reso.angle_kf = t_real_reso(0.5)*tl::get_pi<t_real_reso>() * rads;
+	else
+		m_reso.angle_kf = t_real_reso(0.) * rads;
+	m_reso.angle_kf = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/scatter_kf_angle").c_str(), m_reso.angle_kf/degs)) * rads;
 
 	// TODO
 	m_reso.mono_numtiles_h = 1;

@@ -444,30 +444,27 @@ def calc(param, pointlike = False):
         matMirror = helpers.mirror_matrix(len(R), 1)
         R = np.dot(np.dot(np.transpose(matMirror), R), matMirror)
 
-    R0 = 0.
-    if param["calc_R0"]:
-        R0 = dmono_refl*dana_effic * dxsec * (0.5*np.pi)**2. \
+    R0 = dmono_refl*dana_effic * dxsec * (0.5*np.pi)**2. \
             / (np.sin(thetam) * np.sin(thetaa))
 
-        # new: include sample mosaic, see [zhe07], equs. 12-14, equs. 15 & 16
-        #R0 *= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
+    # new: include sample mosaic, see [zhe07], equs. 12-14, equs. 15 & 16
+    #R0 *= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
 
-        # old: include sample mosaic, see [zhe07], equs. 12-14
-        #R0 /= np.sqrt(1. + cov[1, 1]*mos_h - mos_h**2.) * np.sqrt(1. + cov[2, 2]*mos_v - mos_v**2.)
+    # old: include sample mosaic, see [zhe07], equs. 12-14
+    #R0 /= np.sqrt(1. + cov[1, 1]*mos_h - mos_h**2.) * np.sqrt(1. + cov[2, 2]*mos_v - mos_v**2.)
 
-        #print("Comparison of mosaic R0 scaling: %g, %g" % (
-        #    np.sqrt(la.det(cov) / la.det(cov_nomosaic)),
-        #    np.sqrt(1. + la.inv(cov_nomosaic)[1, 1]*mos_h) * np.sqrt(1. + la.inv(cov_nomosaic)[2, 2]*mos_v)))
+    #print("Comparison of mosaic R0 scaling: %g, %g" % (
+    #    np.sqrt(la.det(cov) / la.det(cov_nomosaic)),
+    #    np.sqrt(1. + la.inv(cov_nomosaic)[1, 1]*mos_h) * np.sqrt(1. + la.inv(cov_nomosaic)[2, 2]*mos_v)))
 
+    if pointlike:
         # [pop75], equ. 5 & 9
-        if pointlike:
-            R0 *= np.sqrt(la.det(F) / la.det(H))
-
+        R0 *= np.sqrt(la.det(F) / la.det(HG))
+    else:
         # [pop75], equ. 13a & 16
-        else:
-            DS = np.dot(np.dot(D, Sinv), np.transpose(D))
-            DSinv = la.inv(DS) + G
-            R0 *= np.sqrt(la.det(S)*la.det(F) / (la.det(K)*la.det(DSinv)))
+        DS = np.dot(np.dot(D, Sinv), np.transpose(D))
+        DSinv = la.inv(DS) + G
+        R0 *= np.sqrt(la.det(S)*la.det(F) / (la.det(K)*la.det(DSinv)))
 
     res["reso"] = R
     res["reso_v"] = np.array([0., 0., 0., 0.])

@@ -368,9 +368,7 @@ def calc(param):
     # squares in Vs missing in paper? (thanks to F. Bourdarot for pointing this out)
     W -= (0.5*V1[5])**2. / U1[5, 5] + (0.5*V2[4])**2. / U2[4, 4]
 
-    R0 = 0.
-    if param["calc_R0"]:
-        R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
+    R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
     # --------------------------------------------------------------------------
 
 
@@ -407,12 +405,11 @@ def calc(param):
     # prefactor and volume
     res_vol = reso.ellipsoid_volume(R)
 
-    if param["calc_R0"]:
-        # missing volume prefactor to normalise gaussian,
-        # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
-        R0 *= res_vol * np.pi * 3.
-        R0 *= np.exp(-W)
-        R0 *= dxsec
+    # missing volume prefactor to normalise gaussian,
+    # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
+    R0 *= res_vol * np.pi * 3.
+    R0 *= np.exp(-W)
+    R0 *= dxsec
 
     res["reso"] = R
     res["r0"] = R0
