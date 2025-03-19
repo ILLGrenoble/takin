@@ -223,7 +223,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 	// z components, [eck14], equ. 42
 	A(2, 2) = Av(0, 0) - Av(0, 1)*Av(0, 1)/Av(1, 1);
-	B[2] = Bv[0] - Bv[1]*Av(0, 1)/Av(1,1);
+	B[2] = Bv[0] - Bv[1]*Av(0, 1)/Av(1, 1);
 	t_real D = Cv - t_real(0.25)*Bv[1]*Bv[1]/Av(1, 1);  // typo in paper? (thanks to F. Bourdarot for pointing this out)
 
 	// [eck14], equ. 54, in th paper the sqrt factor is missing in some other equations
@@ -396,13 +396,10 @@ ResoResults calc_eck(const EckParams& eck)
 	// vertical scattering in kf axis, formula from [eck20]
 	if(eck.bKfVertical)
 	{
-		t_mat matTvert = ublas::zero_matrix<t_real>(3,3);
-		matTvert(0,0) = 1.;
-		matTvert(1,2) = 1.;
-		matTvert(2,1) = -1.;
+		t_mat matTvert = tl::rotation_matrix_3d_x(-t_real(0.5)*pi);
 
 		E = tl::transform(E, matTvert, true);
-		F = ublas::prod(matTvert, F);
+		F = ublas::prod(ublas::trans(matTvert), F);  // typo in paper (transpose)?
 	}
 	//--------------------------------------------------------------------------
 

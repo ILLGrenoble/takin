@@ -292,15 +292,6 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	}
 
 
-	ResoResults res;
-
-	res.Q_avg.resize(4);
-	res.Q_avg[0] = eck.Q*angs;
-	res.Q_avg[1] = 0.;
-	res.Q_avg[2] = 0.;
-	res.Q_avg[3] = eck.E/meV;
-
-
 	// -------------------------------------------------------------------------
 
 	// - if the instruments works in kf=const mode and the scans are counted for
@@ -384,10 +375,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// vertical scattering in kf axis, formula from [eck20]
 	if(eck.bKfVertical)
 	{
-		t_mat matTvert = ublas::zero_matrix<t_real>(3, 3);
-		matTvert(0 ,0) = 1.;
-		matTvert(1, 2) = 1.;
-		matTvert(2, 1) = -1.;
+		t_mat matTvert = tl::rotation_matrix_3d_x(-t_real(0.5)*pi);
 
 		// T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.cpp
 		E = tl::transform(E, matTvert, true);
@@ -399,9 +387,18 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	//--------------------------------------------------------------------------
 
 
+	ResoResults res;
+
+	res.Q_avg.resize(4);
+	res.Q_avg[0] = eck.Q*angs;
+	res.Q_avg[1] = 0.;
+	res.Q_avg[2] = 0.;
+	res.Q_avg[3] = eck.E/meV;
+
+
 	// equ. 4 & equ. 53 in [eck14]
 	const t_real dE = (eck.ki*eck.ki - eck.kf*eck.kf) / (t_real(2)*eck.Q*eck.Q);
-	const wavenumber kipara = eck.Q * (t_real(0.5)+dE);
+	const wavenumber kipara = eck.Q * (t_real(0.5) + dE);
 	const wavenumber kfpara = eck.Q - kipara;
 	wavenumber kperp = tl::my_units_sqrt<wavenumber>(units::abs(kipara*kipara - eck.ki*eck.ki));
 	kperp *= eck.dsample_sense * manually_changed_sense;
@@ -459,8 +456,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	// P matrix from equ. 2.21 in [end25]
 	// quadric_proj_mat() gives the same as equ. 2.21 in [end25]
-	t_mat V2 = quadric_proj_mat(matV, U1, ECK_K_Z);
-	t_mat matP = quadric_proj_mat(V2, U2, ECK_K_Y);
+	t_mat matV2 = quadric_proj_mat(matV, U1, ECK_K_Z);
+	t_mat matP = quadric_proj_mat(matV2, U2, ECK_K_Y);
 
 	// K matrix from equ. 2.11 in [end25]
 	t_mat matGrot = tl::transform(G, Dtwotheta, true);
@@ -472,7 +469,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		for(std::size_t j = 0; j < 3; ++j)
 			matK(i, j) -= t_real(0.25) *
 				(matV(ECK_K_Z, i) * matV(ECK_K_Z, j) / U1(ECK_K_Z, ECK_K_Z)
-				+ V2(ECK_K_Y, i) * V2(ECK_K_Y, j) / U2(ECK_K_Y, ECK_K_Y));
+				+ matV2(ECK_K_Y, i) * matV2(ECK_K_Y, j) / U2(ECK_K_Y, ECK_K_Y));
 
 	// C_all,0 in [end25], equ. 1.1, 2.1
 	t_real Z0 = std::sqrt(pi/std::abs(U1(ECK_K_Z, ECK_K_Z)))
