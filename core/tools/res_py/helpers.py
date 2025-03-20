@@ -52,6 +52,19 @@ deg2rad = np.pi / 180.
 # helpers
 #--------------------------------------------------------------------------
 #
+# x rotation matrix
+#
+def rotation_matrix_3d_x(angle):
+    s = np.sin(angle)
+    c = np.cos(angle)
+
+    return np.array([
+        [ 1, 0,  0 ],
+        [ 0, c, -s ],
+        [ 0, s,  c ]])
+
+
+#
 # z rotation matrix
 #
 def rotation_matrix_3d_z(angle):
@@ -59,9 +72,9 @@ def rotation_matrix_3d_z(angle):
     c = np.cos(angle)
 
     return np.array([
-        [c, -s, 0],
-        [s,  c, 0],
-        [0,  0, 1]])
+        [ c, -s, 0 ],
+        [ s,  c, 0 ],
+        [ 0,  0, 1 ]])
 
 
 def rotation_matrix_2d(angle):
@@ -69,8 +82,8 @@ def rotation_matrix_2d(angle):
     c = np.cos(angle)
 
     return np.array([
-        [c, -s],
-        [s,  c]])
+        [ c, -s ],
+        [ s,  c ]])
 
 
 def mirror_matrix(iSize, iComp):

@@ -287,11 +287,7 @@ def calc(param):
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
-        T_vert = np.array(
-            [[ 1.,  0., 0. ],
-             [ 0.,  0., 1. ],
-             [ 0., -1., 0. ]])
-
+        T_vert = helpers.rotation_matrix_3d_x(-np.pi / 2.)
         sample_pos_kf = np.dot(T_vert, sample_pos_kf)
 
     [E, F, G, H, dReflA] = get_mono_vals(

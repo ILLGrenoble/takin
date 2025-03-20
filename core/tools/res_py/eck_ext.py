@@ -294,10 +294,7 @@ def calc(param):
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
-        T_vert = np.array(
-            [[ 1.,  0., 0. ],
-             [ 0.,  0., 1. ],
-             [ 0., -1., 0. ]])
+        T_vert = helpers.rotation_matrix_3d_x(-np.pi / 2.)
 
         # T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.py
         E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
