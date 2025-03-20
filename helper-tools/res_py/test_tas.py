@@ -41,9 +41,9 @@ if __name__ == "__main__":
 	orient_up_rlu = tas.cross(orient_rlu, orient2_rlu, B)	# up vector in rlu
 
 	ki = tas.get_ki(kf, E)
-	[a1, a2] = tas.get_a1a2(ki, dmono)
-	[a5, a6] = tas.get_a1a2(kf, dana)
-	[a3, a4, dist_Q_plane] = tas.get_a3a4(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B)
+	[a1, a2] = tas.get_mono_angle(ki, dmono)
+	[a5, a6] = tas.get_mono_angle(kf, dana)
+	[a3, a4, dist_Q_plane] = tas.get_sample_angle(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B)
 	# --------------------------------------------------------------------------
 
 	# --------------------------------------------------------------------------

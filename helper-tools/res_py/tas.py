@@ -223,10 +223,10 @@ def get_UB(B, orient1_rlu, orient2_rlu, orientup_rlu):
 
 
 #
-# a3 & a4 angles
+# a3 sample rotation & a4 sample scattering angles
 # see https://dx.doi.org/10.1107/S0021889805004875
 #
-def get_a3a4(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
+def get_sample_angle(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
     metric = get_metric(B)
     #print("Metric: " + str(metric))
 
@@ -254,7 +254,7 @@ def get_a3a4(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_of
 
 
 #
-# hkl position
+# (hkl) position
 # see https://dx.doi.org/10.1107/S0021889805004875
 #
 def get_hkl(ki, kf, a3, Qlen, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
@@ -309,12 +309,12 @@ def get_angle_deltas(ki1, kf1, Q_rlu1, di1, df1, \
     # position 1
     [a1_1, a2_1] = get_mono_angle(ki1, di1)
     [a5_1, a6_1] = get_mono_angle(kf1, df1)
-    [a3_1, a4_1, dist_Q_plane_1] = get_a3a4(ki1, kf1, Q_rlu1, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
+    [a3_1, a4_1, dist_Q_plane_1] = get_sample_angle(ki1, kf1, Q_rlu1, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
 
     # position 2
     [a1_2, a2_2] = get_mono_angle(ki2, di2)
     [a5_2, a6_2] = get_mono_angle(kf2, df2)
-    [a3_2, a4_2, dist_Q_plane_2] = get_a3a4(ki2, kf2, Q_rlu2, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
+    [a3_2, a4_2, dist_Q_plane_2] = get_sample_angle(ki2, kf2, Q_rlu2, orient_rlu, orient_up_rlu, B, sense_sample, a3_offs)
 
     return [a1_2-a1_1, a2_2-a2_1, a3_2-a3_1, a4_2-a4_1, a5_2-a5_1, a6_2-a6_1, dist_Q_plane_1, dist_Q_plane_2]
 
@@ -485,7 +485,7 @@ class TasGUI:
             if self.checkA4Sense.isChecked() == False:
                 sense_sample = -1.
 
-            [a3, a4, dist_Q_plane] = get_a3a4(ki, kf, Q_rlu, self.orient_rlu, self.orient_up_rlu, self.B, sense_sample, self.a3_offs)
+            [a3, a4, dist_Q_plane] = get_sample_angle(ki, kf, Q_rlu, self.orient_rlu, self.orient_up_rlu, self.B, sense_sample, self.a3_offs)
             Qlen = get_Q(ki, kf, a4)
             Q_in_plane = np.abs(dist_Q_plane) < self.g_eps
 
@@ -1245,7 +1245,7 @@ def run_tas():
 
         [a1, a2] = get_mono_angle(ki, argv.dm)
         [a5, a6] = get_mono_angle(kf, argv.da)
-        [a3, a4, dist_Q_plane] = get_a3a4(ki, kf, Q_rlu, orient1_rlu, orient3_rlu, B)
+        [a3, a4, dist_Q_plane] = get_sample_angle(ki, kf, Q_rlu, orient1_rlu, orient3_rlu, B)
         print("Monochromator theta = %g deg, 2theta = %g deg" %(a1 / np.pi * 180., a2 / np.pi * 180.))
         print("Sample        theta = %g deg, 2theta = %g deg" %(a3 / np.pi * 180., a4 / np.pi * 180.))
         print("Analyser      theta = %g deg, 2theta = %g deg" %(a5 / np.pi * 180., a6 / np.pi * 180.))
