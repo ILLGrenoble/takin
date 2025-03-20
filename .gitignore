@@ -1,7 +1,26 @@
+*.o
+*.so
+*.moc
+*.pyc
+*.svg
+*.xml
+*.gz
+*.htm
+*.html
+*.dmg
+*.qch
+*.qhc
+*.swp
+*~
+*.kate-swp
+*-master.tar.*
+.~lock*
+.directory
+.DS_*
+
 tmp
 tmp/**
 __pycache__/**
-*.swp
 
 magpie
 taspaths
