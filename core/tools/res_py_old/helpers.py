@@ -2,6 +2,7 @@
 # helper functions
 #
 # @author Tobias Weber <tweber@ill.fr>
+# @modif_by Mecoli Victor <mecoli@ill.fr>
 # @date feb-2015, oct-2019
 # @license GPLv2
 #
@@ -110,6 +111,17 @@ def get_mono_angle(k, d):
 #
 # z rotation matrix
 #
+
+def rotation_matrix_4d_zE(angle):
+    s = np.sin(angle)
+    c = np.cos(angle)
+
+    return np.array([
+        [c, -s, 0, 0],
+        [s,  c, 0, 0],
+        [0,  0, 1, 0],
+        [0,  0, 0, 1]])
+
 def rotation_matrix_3d_z(angle):
     s = np.sin(angle)
     c = np.cos(angle)

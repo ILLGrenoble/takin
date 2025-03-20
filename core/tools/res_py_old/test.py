@@ -2,6 +2,7 @@
 # tests the resolution calculation
 #
 # @author Tobias Weber <tweber@ill.fr>
+# @ modif_by Mecoli Victor <mecoli.ill.fr>
 # @date feb-2015, oct-2019
 # @license GPLv2
 #
@@ -33,16 +34,46 @@ import helpers
 import reso
 import pop
 import eck
+import vio
+import cr_json as js
+
+# Important parameters of IN5
+# Hypothesis : perfect collimation of the incomming beem, point sample
+IN5 = {
+    "det_shape":"VCYL",
+    "L_chopP12":[149.8, 0.],            # [distance, delta]
+    "L_chopP2M1":[7800.6, 0.],           # [distance, delta]
+    "L_chopM12":[54.8, 0.],              # [distance, delta]
+    "L_chopM2S":[1229.5, 0.],            # [distance, delta]
+    "rad_det":[4000., 13],              # [distance, delta]
+    "theta_i":[0, 0], # [0., np.rad2deg(2.04e-3)],                 # [angle, delta]
+    "phi_i":[0, 0], # [0., np.rad2deg(1.25e-2)],                   # [angle, delta]
+    "delta_theta_f":np.rad2deg(3.25e-3),
+    "delta_z":10,
+    "prop_chopP":[9., 7000., 17000.],    # [window angle, min rot speed, max rot speed]
+    "prop_chopM":[3.25, 7000., 17000.],    # [window angle, min rot speed, max rot speed]
+    "delta_time_det":0
+}
+
+js.create(IN5, "/home/mecoli/Git/IN5")
+
+##########################################################################################
 
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
+IN5 = js.read("/home/mecoli/Git/IN5.json")
 
 # settings
-ki = 1.4  # 2.5
-kf = 1.4
-Q = 1.777
+ki = 2*np.pi/5  # 2.5
+kf = 2*np.pi/5
+Q = 1
 
-reso_method = "pop"    # "eck", "pop", or "cn"
+theta_f = np.rad2deg(helpers.get_scattering_angle(ki, kf, Q))
+rot_speedP = 8500
+rot_speedM = 8500
+shape = IN5["det_shape"]
+
+reso_method = "vio"    # "vio", "eck", "pop", or "cn"
 verbose = True
 
 
@@ -59,6 +90,18 @@ params = {
     "kf" : kf,
     "E" : helpers.get_E(ki, kf),
     "Q" : Q,
+
+    # geometrical informations of TOF instruments
+    "angles":IN5["theta_i"] + IN5["phi_i"] + [theta_f, IN5["delta_theta_f"]],
+    "dist_PM":IN5["L_chopP12"] + IN5["L_chopP2M1"] + IN5["L_chopM12"],
+    "dist_MS":IN5["L_chopM2S"],
+    "dist_SD":IN5["rad_det"] + [0, IN5["delta_z"]],
+
+    # chopper informations of TOF instruments
+    "chopperP":IN5["prop_chopP"] + [rot_speedP],
+    "chopperM":IN5["prop_chopM"] + [rot_speedM],
+
+    "delta_time_det":IN5["delta_time_det"],
 
     # d spacings
     "mono_xtal_d" : 3.355,
@@ -80,7 +123,7 @@ params = {
     # shapes
     "src_shape" : "rectangular",     # "rectangular" or "circular"
     "sample_shape" : "cylindrical",  # "cuboid" or "cylindrical"
-    "det_shape" : "rectangular",     # "rectangular" or "circular"
+    "det_shape" : shape, # "rectangular" or "circular" ; for violini : SPHERE, VCYL, HCYL
 
     # component sizes
     "src_w" : 6. * helpers.cm2A,
@@ -171,6 +214,8 @@ elif reso_method == "pop":
     res = pop.calc(params, False)
 elif reso_method == "cn":
     res = pop.calc(params, True)
+elif reso_method == "vio":
+    res = vio.calc(params)
 else:
     raise "ResPy: Invalid resolution calculation method selected."
 
@@ -179,7 +224,7 @@ if not res["ok"]:
     print("RESOLUTION CALCULATION FAILED!")
     exit(-1)
 
-if verbose:
+if(verbose and reso_method != "vio"):
     print("R0 = %g, Vol = %g" % (res["r0"], res["res_vol"]))
     print("Resolution matrix:\n%s" % res["reso"])
     print("Resolution vector: %s" % res["reso_v"])
