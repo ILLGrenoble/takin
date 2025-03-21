@@ -3,7 +3,7 @@
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date feb-2015, oct-2019, apr-2022
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # @desc for algorithm: [pop75] M. Popovici, Acta Cryst. A 31, 507 (1975), doi: 10.1107/S0567739475001088
 # @desc for algorithm: [zhe07] A. Zheludev, ResLib 3.4 manual (2007), https://ethz.ch/content/dam/ethz/special-interest/phys/solid-state-physics/neutron-scattering-and-magnetism-dam/images/research/manual.pdf
@@ -35,6 +35,7 @@
 import numpy as np
 import numpy.linalg as la
 import reso
+import tas
 import helpers
 
 
@@ -136,7 +137,7 @@ def get_mono_trafos(dist_vsrc_mono, dist_hsrc_mono,
     B = np.zeros([4, NUM_KI_COMPS])
     B[0:2, IDX_KI_X:IDX_KI_X+2] = sense * helpers.rotation_matrix_2d(Q_ki)
     B[2, IDX_KI_Z] = sense
-    B[3, IDX_KI_X] = 2. * sense * ki * helpers.ksq2E
+    B[3, IDX_KI_X] = 2. * sense * ki * tas.k2_to_E
 
 
     if pointlike:
@@ -220,15 +221,15 @@ def calc(param, pointlike = False):
     E = param["E"]
     Q = param["Q"]
 
-    lam = helpers.k2lam(ki)
+    lam = tas.k_to_lam(ki)
 
     # angles
-    twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
+    twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
     thetas = twotheta * 0.5
-    thetam = helpers.get_mono_angle(ki, param["mono_xtal_d"]) * param["mono_sense"]
-    thetaa = helpers.get_mono_angle(kf, param["ana_xtal_d"]) * param["ana_sense"]
-    Q_ki = helpers.get_angle_Q_ki(ki, kf, Q) * param["sample_sense"]
-    Q_kf = helpers.get_angle_Q_kf(ki, kf, Q) * param["sample_sense"]
+    thetam = tas.get_mono_angle(ki, param["mono_xtal_d"], True) * param["mono_sense"]
+    thetaa = tas.get_mono_angle(kf, param["ana_xtal_d"], True) * param["ana_sense"]
+    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
+    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
 
     if param["verbose"]:
         print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
@@ -443,30 +444,27 @@ def calc(param, pointlike = False):
         matMirror = helpers.mirror_matrix(len(R), 1)
         R = np.dot(np.dot(np.transpose(matMirror), R), matMirror)
 
-    R0 = 0.
-    if param["calc_R0"]:
-        R0 = dmono_refl*dana_effic * dxsec * (0.5*np.pi)**2. \
+    R0 = dmono_refl*dana_effic * dxsec * (0.5*np.pi)**2. \
             / (np.sin(thetam) * np.sin(thetaa))
 
-        # new: include sample mosaic, see [zhe07], equs. 12-14, equs. 15 & 16
-        #R0 *= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
+    # new: include sample mosaic, see [zhe07], equs. 12-14, equs. 15 & 16
+    #R0 *= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
 
-        # old: include sample mosaic, see [zhe07], equs. 12-14
-        #R0 /= np.sqrt(1. + cov[1, 1]*mos_h - mos_h**2.) * np.sqrt(1. + cov[2, 2]*mos_v - mos_v**2.)
+    # old: include sample mosaic, see [zhe07], equs. 12-14
+    #R0 /= np.sqrt(1. + cov[1, 1]*mos_h - mos_h**2.) * np.sqrt(1. + cov[2, 2]*mos_v - mos_v**2.)
 
-        #print("Comparison of mosaic R0 scaling: %g, %g" % (
-        #    np.sqrt(la.det(cov) / la.det(cov_nomosaic)),
-        #    np.sqrt(1. + la.inv(cov_nomosaic)[1, 1]*mos_h) * np.sqrt(1. + la.inv(cov_nomosaic)[2, 2]*mos_v)))
+    #print("Comparison of mosaic R0 scaling: %g, %g" % (
+    #    np.sqrt(la.det(cov) / la.det(cov_nomosaic)),
+    #    np.sqrt(1. + la.inv(cov_nomosaic)[1, 1]*mos_h) * np.sqrt(1. + la.inv(cov_nomosaic)[2, 2]*mos_v)))
 
+    if pointlike:
         # [pop75], equ. 5 & 9
-        if pointlike:
-            R0 *= np.sqrt(la.det(F) / la.det(H))
-
+        R0 *= np.sqrt(la.det(F) / la.det(HG))
+    else:
         # [pop75], equ. 13a & 16
-        else:
-            DS = np.dot(np.dot(D, Sinv), np.transpose(D))
-            DSinv = la.inv(DS) + G
-            R0 *= np.sqrt(la.det(S)*la.det(F) / (la.det(K)*la.det(DSinv)))
+        DS = np.dot(np.dot(D, Sinv), np.transpose(D))
+        DSinv = la.inv(DS) + G
+        R0 *= np.sqrt(la.det(S)*la.det(F) / (la.det(K)*la.det(DSinv)))
 
     res["reso"] = R
     res["reso_v"] = np.array([0., 0., 0., 0.])

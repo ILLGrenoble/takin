@@ -1,13 +1,12 @@
 #
-# implementation of Mechthild's extended version of the eckold-sobolev algo (see [end25])
-# WARNING: WORK IN PROGRESS -- NOT YET WORKING!
+# implementation of Mechthild's extended version of the Eckold-Sobolev method (see [end25])
+# WARNING: WORK IN PROGRESS
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date jan-2025
-# @license GPLv2
+# @license see 'LICENSE' file
 #
-# @desc for extended algorithm: [end25] M. Enderle, personal communication (21/jan/2025)
-# @desc for extended algorithm with vertical scattering: [end25b] M. Enderle, personal communication (4/feb/2025)
+# @desc for extended algorithm: [end25] M. Enderle, personal communication (17/feb/2025)
 # @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
 # @desc for vertical scattering modification: [eck20] G. Eckold, personal communication, 2020.
 # @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
@@ -37,6 +36,7 @@
 import numpy as np
 import numpy.linalg as la
 import reso
+import tas
 import helpers
 
 
@@ -161,11 +161,11 @@ def calc(param):
     Q = param["Q"]
 
     # angles
-    twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
-    thetam = helpers.get_mono_angle(ki, param["mono_xtal_d"]) * param["mono_sense"]
-    thetaa = helpers.get_mono_angle(kf, param["ana_xtal_d"]) * param["ana_sense"]
-    Q_ki = helpers.get_angle_Q_ki(ki, kf, Q) * param["sample_sense"]
-    Q_kf = helpers.get_angle_Q_kf(ki, kf, Q) * param["sample_sense"]
+    twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
+    thetam = tas.get_mono_angle(ki, param["mono_xtal_d"], True) * param["mono_sense"]
+    thetaa = tas.get_mono_angle(kf, param["ana_xtal_d"], True) * param["ana_sense"]
+    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
+    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
 
     if param["verbose"]:
         print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
@@ -225,7 +225,7 @@ def calc(param):
     # --------------------------------------------------------------------
 
 
-    lam = helpers.k2lam(ki)
+    lam = tas.k_to_lam(ki)
 
     coll_h_pre_mono = param["coll_h_pre_mono"]
     coll_v_pre_mono = param["coll_v_pre_mono"]
@@ -267,7 +267,8 @@ def calc(param):
 
 
     #--------------------------------------------------------------------------
-    # mono part
+    # mono & ana calculations, equ. 43 in [eck14]
+    #--------------------------------------------------------------------------
     [A, B, C, dReflM] = get_mono_vals(
         param["src_w"], param["src_h"],
         param["mono_w"], param["mono_h"],
@@ -279,11 +280,7 @@ def calc(param):
         param["mono_mosaic"], param["mono_mosaic_v"],
         inv_mono_curv_h, inv_mono_curv_v,
         dmono_refl)
-    #--------------------------------------------------------------------------
 
-
-    #--------------------------------------------------------------------------
-    # ana part, equ. 43 in [eck14]
     [E, F, G, dReflA] = get_mono_vals(
         param["det_w"], param["det_h"],
         param["ana_w"], param["ana_h"],
@@ -297,10 +294,7 @@ def calc(param):
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
-        T_vert = np.array(
-            [[ 1.,  0., 0. ],
-             [ 0.,  0., 1. ],
-             [ 0., -1., 0. ]])
+        T_vert = helpers.rotation_matrix_3d_x(-np.pi / 2.)
 
         # T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.py
         E = np.dot(np.dot(np.transpose(T_vert), E), T_vert)
@@ -320,10 +314,10 @@ def calc(param):
     # trafo, equ. 52 in [eck14]
     T = np.identity(6)
     T[0, 3] = T[1, 4] = T[2, 5] = -1.
-    T[3, 0] = 2.*helpers.ksq2E * Q*dEi
-    T[3, 3] = 2.*helpers.ksq2E * Q*dEf
-    T[3, 1] = 2.*helpers.ksq2E * kperp
-    T[3, 4] = -2.*helpers.ksq2E * kperp
+    T[3, 0] = 2.*tas.k2_to_E * Q*dEi
+    T[3, 3] = 2.*tas.k2_to_E * Q*dEf
+    T[3, 1] = 2.*tas.k2_to_E * kperp
+    T[3, 4] = -2.*tas.k2_to_E * kperp
     T[4, 1] = T[5, 2] = dEf
     T[4, 4] = T[5, 5] = dEi
 
@@ -358,10 +352,10 @@ def calc(param):
     # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
     U = 2. * reso.quadric_proj(U2, 4)
 
-    # P matrix from equ. 2.20 in [end25]
-    # quadric_proj_mat() gives the same as equ. 2.20 in [end25]
-    V2 = reso.quadric_proj_mat(matV, U1, 5)
-    matP = reso.quadric_proj_mat(V2, U2, 4)
+    # P matrix from equ. 2.21 in [end25]
+    # quadric_proj_mat() gives the same as equ. 2.21 in [end25]
+    matV2 = reso.quadric_proj_mat(matV, U1, 5)
+    matP = reso.quadric_proj_mat(matV2, U2, 4)
 
     # K matrix from equ. 2.11 in [end25]
     matK = C + np.dot(np.dot(np.transpose(Dtwotheta), G), Dtwotheta)
@@ -369,13 +363,11 @@ def calc(param):
     # equ. 2.19 in [end25], corresponds to equ. 57 & 58 in [eck14], "W -= ..." in eck.py
     for i in range(0, 3):
         for j in range(0, 3):
-            matK[i, j] -= 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + V2[4, i]*V2[4, j]/U2[4, 4])
+            matK[i, j] -= 0.25 * (matV[5, i]*matV[5, j]/U1[5, 5] + matV2[4, i]*matV2[4, j]/U2[4, 4])
 
 
     # C_all,0 in [end25], equ. 1.1, 2.1
-    R0 = 0.
-    if param["calc_R0"]:
-        R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
+    R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
     # --------------------------------------------------------------------------
 
 
@@ -385,39 +377,40 @@ def calc(param):
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
     # sample mosaic, equ. (3.3) in [end25]
-    if param["calc_R0"]:
-        M = np.delete(np.delete(U, 3, axis = 0), 3, axis = 1)
-        M = np.delete(np.delete(M, 0, axis = 0), 0, axis = 1)
-        M += np.diag([ helpers.sig2fwhm**2. / mos_Q_sq, helpers.sig2fwhm**2. / mos_v_Q_sq ])
-        Madj = helpers.adjugate(M)
+    M = np.delete(np.delete(U, 3, axis = 0), 3, axis = 1)
+    M = np.delete(np.delete(M, 0, axis = 0), 0, axis = 1)
+    M += np.diag([ helpers.sig2fwhm**2. / mos_Q_sq, helpers.sig2fwhm**2. / mos_v_Q_sq ])
+    Madj = helpers.adjugate(M)
 
-        # before equ. 3.4 in [end25]
-        # TODO: this is based on the assumption that M is diagonal,
-        #       which it is not for vertical scattering in kf
-        #R0 *= np.pi / np.sqrt(la.det(Madj))
-        #R0 *= 2.*helpers.sig2fwhm**2.*np.pi / np.sqrt(mos_Q_sq * mos_v_Q_sq)
+    # before equ. 3.4 in [end25]
+    # TODO: this is based on the assumption that M is diagonal,
+    #       which it is not for vertical scattering in kf
+    R0 *= np.pi**2. / np.sqrt(la.det(M))
+    R0 *= helpers.sig2fwhm / np.sqrt(2. * np.pi * mos_Q_sq * mos_v_Q_sq)
 
+
+    #Uorg = np.copy(U)
     Pvec1 = matP[1, 0:3] / helpers.sig2fwhm**2.
-    Pvec2 = matP[2, 0:3] / helpers.sig2fwhm**2.
     Uvec1 = U[:, 1] / helpers.sig2fwhm**2.
-    Uvec2 = U[:, 2] / helpers.sig2fwhm**2.
-
     # gives the same as equ. 3.5 in [end25]
     matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec1, Pvec1) / \
         (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
-    matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec2, Pvec2) / \
-        (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
-
     # gives the same as equ. 3.7 in [end25]
     matP -= helpers.sig2fwhm**2. * np.outer(Uvec1, Pvec1) / \
         (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
-    matP -= helpers.sig2fwhm**2. * np.outer(Uvec2, Pvec2) / \
-        (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
-
     # gives the same as equ. 3.6 in [end25]
-    #Uorg = np.copy(U)
     U -= helpers.sig2fwhm**2. * np.outer(Uvec1, Uvec1) / \
         (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
+
+    Pvec2 = matP[2, 0:3] / helpers.sig2fwhm**2.
+    Uvec2 = U[:, 2] / helpers.sig2fwhm**2.
+    # gives the same as equ. 3.5 in [end25]
+    matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec2, Pvec2) / \
+        (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
+    # gives the same as equ. 3.7 in [end25]
+    matP -= helpers.sig2fwhm**2. * np.outer(Uvec2, Pvec2) / \
+        (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
+    # gives the same as equ. 3.6 in [end25]
     U -= helpers.sig2fwhm**2. * np.outer(Uvec2, Uvec2) / \
         (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
     #print("Mosaic R0 scaling: %g" % (np.sqrt(la.det(Uorg) / la.det(U))))
@@ -425,24 +418,57 @@ def calc(param):
 
 
     # --------------------------------------------------------------------------
-    sample_r = np.array([ param["sample_d"], param["sample_w"], param["sample_h"] ])
+    sample_dims = np.array([ param["sample_d"], param["sample_w"], param["sample_h"] ])
 
-    # TODO: trafo
-    T_E = np.eye(3)
+    # trafo for sample rotation, equ. 5.2 and below in [end25]
+    # TODO: columns have to be parallel to ki, perpendicular to ki and up
+    basis_ki = np.array([
+        [1., 0., 0.],
+        [0., 1., 0.],
+        [0., 0., 1.]])
 
-    # sample integration, equ. 4.4 and below in [end25b]
-    matN = matK - 0.5 * (288. * np.pi)**(1./3.) * np.dot(T_E, np.dot(np.diag(1. / sample_r**2.), np.transpose(T_E)))
+    # TODO: principal axes of sample
+    sample_axes = np.array([
+        [1., 0., 0.],
+        [0., 1., 0.],
+        [0., 0., 1.]])
+
+    # TODO: additional theta rotation
+    T_E = np.dot(basis_ki, sample_axes)
+
+    if param["sample_shape"] == "ellipsoid":
+        # ellipsoid sample integration, equ. 4.4 and below in [end25]
+        matN = matK + 0.5 * (288. * np.pi)**(1./3.) * np.dot(
+            T_E, np.dot(np.diag(1. / sample_dims**2.), np.transpose(T_E)))
+    elif param["sample_shape"] == "cylindrical":
+        # cylindrical sample integration, equ. 6.3 in [end25]
+        matN = matK + np.dot(T_E, np.dot(np.diag(
+            [4./sample_dims[0]**2., 4./sample_dims[1]**2., np.pi/sample_dims[2]**2.]), np.transpose(T_E)))
+    elif param["sample_shape"] == "cuboid":
+        # cuboid sample integration, equ. 6.6 in [end25]
+        matN = matK + np.pi * np.dot(T_E, np.dot(np.diag(1. / sample_dims**2.), np.transpose(T_E)))
+    else:
+        raise "ResPy: No valid sample shape given."
+
     detN = la.det(matN)
     Nadj = helpers.adjugate(matN)
 
-    # page 9 in [end25b]
+    # page 9 in [end25]
     U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
     matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
     matK -= 1. / detN * np.dot(matK, np.dot(Nadj, matK))
 
-    if param["calc_R0"]:
-        # page 9 in [end25b]
-        R0 *= np.pi / detN
+    # page 9 in [end25]
+    R0 *= np.pi**3. / detN
+
+    if param["sample_shape"] == "cuboid":
+        V_sample = sample_dims[0] * sample_dims[1] * sample_dims[2]
+    elif param["sample_shape"] == "cylindrical":
+        V_sample = np.pi * 0.5*sample_dims[0] * 0.5*sample_dims[1] * sample_dims[2]
+    else:
+        raise "ResPy: No valid sample shape given."
+
+    R0 /= V_sample**2.
     # --------------------------------------------------------------------------
 
 
@@ -464,12 +490,11 @@ def calc(param):
     # prefactor and volume
     res_vol = reso.ellipsoid_volume(R)
 
-    if param["calc_R0"]:
-        # missing volume prefactor to normalise gaussian,
-        # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
-        R0 *= res_vol * np.pi * 3.
-        R0 *= np.exp(-res["reso_s"])
-        R0 *= dxsec
+    # missing volume prefactor to normalise gaussian,
+    # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
+    R0 *= res_vol * np.pi * 3.
+    R0 *= np.exp(-res["reso_s"])
+    R0 *= dxsec
 
     res["reso"] = R
     res["r0"] = R0

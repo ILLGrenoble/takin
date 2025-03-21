@@ -3,7 +3,7 @@
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date jul-2024
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
@@ -28,6 +28,7 @@
 #
 
 import numpy as np
+import tas
 import helpers
 
 
@@ -104,7 +105,7 @@ params = {
     # scattering triangle
     "ki" : 2.662,
     "kf" : 2.662,
-    "E"  : helpers.get_E(2.662, 2.662),
+    "E"  : tas.get_E(2.662, 2.662),
     "Q"  : 2.,
 
     # d spacings
@@ -191,9 +192,6 @@ params = {
     "sample_mosaic_v" : 30. * helpers.min2rad,
     "ana_mosaic_v"    : 27. * helpers.min2rad,
 
-    # calculate R0 factor (not needed if only the ellipses are to be plotted)
-    "calc_R0" : True,
-
     # crystal reflectivities; TODO, so far always 1
     "dmono_refl" : 1.,
     "dana_effic" : 1.,
@@ -222,7 +220,7 @@ params_fc = {
     # scattering triangle
     "ki" : 2.981,
     "kf" : 2.981,
-    "E"  : helpers.get_E(2.981, 2.981),
+    "E"  : tas.get_E(2.981, 2.981),
     "Q"  : 2.,
 
     # d spacings
@@ -308,9 +306,6 @@ params_fc = {
     "mono_mosaic_v"   : 27. * helpers.min2rad,
     "sample_mosaic_v" : 30. * helpers.min2rad,
     "ana_mosaic_v"    :  1. * helpers.min2rad,
-
-    # calculate R0 factor (not needed if only the ellipses are to be plotted)
-    "calc_R0" : True,
 
     # crystal reflectivities; TODO, so far always 1
     "dmono_refl" : 1.,

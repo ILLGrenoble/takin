@@ -2,9 +2,8 @@
 # helper functions
 #
 # @author Tobias Weber <tweber@ill.fr>
-# @modif_by Mecoli Victor <mecoli@ill.fr>
 # @date feb-2015, oct-2019
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # @desc for reso algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
 # @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984)
@@ -50,86 +49,32 @@ deg2rad = np.pi / 180.
 
 
 #--------------------------------------------------------------------------
-# scattering triangle
-# see: https://code.ill.fr/scientific-software/takin/mag-core/blob/master/tools/tascalc/tascalc.py
-#--------------------------------------------------------------------------
-#import scipy.constants as co
-#ksq2E = (co.Planck/co.elementary_charge/2./np.pi)**2. * co.elementary_charge / 2. / co.neutron_mass * 1e23
-ksq2E = 2.072124855   # calculated with scipy.constants using the formula above
-
-
-def k2lam(k):
-    return 2.*np.pi / k
-
-
-def get_E(ki, kf):
-    return ksq2E * (ki**2. - kf**2.)
-
-
-def get_ki(E, kf):
-    return np.sqrt(E/ksq2E + kf*kf)
-
-
-def get_scattering_angle(ki, kf, Q):
-    c = (ki**2. + kf**2. - Q**2.) / (2.*ki*kf)
-    return np.arccos(c)
-
-
-def get_Q(ki, kf, twotheta):
-    c = np.cos(twotheta)
-    return np.sqrt(ki**2. + kf**2. - c*(2.*ki*kf))
-
-
-#
-# angle rotating Q into ki (i.e. angle inside scattering triangle)
-#
-def get_angle_Q_ki(ki, kf, Q):
-    c = (ki**2. + Q**2. - kf**2.) / (2.*ki*Q)
-    return np.arccos(c)
-
-
-#
-# angle rotating Q into kf (i.e. angle outside scattering triangle),
-# Q_kf = Q_ki + twotheta_s
-#
-def get_angle_Q_kf(ki, kf, Q):
-    c = (ki**2. - Q**2. - kf**2.) / (2.*kf*Q)
-    return np.arccos(c)
-
-
-def get_mono_angle(k, d):
-    s = np.pi/(d*k)
-    angle = np.arcsin(s)
-    return angle
-#--------------------------------------------------------------------------
-
-
-
-#--------------------------------------------------------------------------
 # helpers
 #--------------------------------------------------------------------------
 #
-# z rotation matrix
+# x rotation matrix
 #
-
-def rotation_matrix_4d_zE(angle):
+def rotation_matrix_3d_x(angle):
     s = np.sin(angle)
     c = np.cos(angle)
 
     return np.array([
-        [c, -s, 0, 0],
-        [s,  c, 0, 0],
-        [0,  0, 1, 0],
-        [0,  0, 0, 1]])
+        [ 1, 0,  0 ],
+        [ 0, c, -s ],
+        [ 0, s,  c ]])
 
+
+#
+# z rotation matrix
+#
 def rotation_matrix_3d_z(angle):
     s = np.sin(angle)
     c = np.cos(angle)
 
     return np.array([
-        [c, -s, 0],
-        [s,  c, 0],
-        [0,  0, 1]])
+        [ c, -s, 0 ],
+        [ s,  c, 0 ],
+        [ 0,  0, 1 ]])
 
 
 def rotation_matrix_2d(angle):
@@ -137,8 +82,8 @@ def rotation_matrix_2d(angle):
     c = np.cos(angle)
 
     return np.array([
-        [c, -s],
-        [s,  c]])
+        [ c, -s ],
+        [ s,  c ]])
 
 
 def mirror_matrix(iSize, iComp):

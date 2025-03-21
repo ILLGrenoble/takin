@@ -3,7 +3,7 @@
 #
 # @author Tobias Weber <tweber@ill.fr>
 # @date feb-2015, oct-2019
-# @license GPLv2
+# @license see 'LICENSE' file
 #
 # @desc for algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
 # @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
@@ -34,6 +34,7 @@
 import numpy as np
 import numpy.linalg as la
 import reso
+import tas
 import helpers
 
 
@@ -159,11 +160,11 @@ def calc(param):
     sample_pos = np.array([ param["pos_x"],  param["pos_y"], param["pos_z"] ])
 
     # angles
-    twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
-    thetam = helpers.get_mono_angle(ki, param["mono_xtal_d"]) * param["mono_sense"]
-    thetaa = helpers.get_mono_angle(kf, param["ana_xtal_d"]) * param["ana_sense"]
-    Q_ki = helpers.get_angle_Q_ki(ki, kf, Q) * param["sample_sense"]
-    Q_kf = helpers.get_angle_Q_kf(ki, kf, Q) * param["sample_sense"]
+    twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
+    thetam = tas.get_mono_angle(ki, param["mono_xtal_d"], True) * param["mono_sense"]
+    thetaa = tas.get_mono_angle(kf, param["ana_xtal_d"], True) * param["ana_sense"]
+    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
+    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
 
     if param["verbose"]:
         print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
@@ -223,7 +224,7 @@ def calc(param):
     # --------------------------------------------------------------------
 
 
-    lam = helpers.k2lam(ki)
+    lam = tas.k_to_lam(ki)
 
     coll_h_pre_mono = param["coll_h_pre_mono"]
     coll_v_pre_mono = param["coll_v_pre_mono"]
@@ -286,11 +287,7 @@ def calc(param):
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
-        T_vert = np.array(
-            [[ 1.,  0., 0. ],
-             [ 0.,  0., 1. ],
-             [ 0., -1., 0. ]])
-
+        T_vert = helpers.rotation_matrix_3d_x(-np.pi / 2.)
         sample_pos_kf = np.dot(T_vert, sample_pos_kf)
 
     [E, F, G, H, dReflA] = get_mono_vals(
@@ -323,10 +320,10 @@ def calc(param):
     # trafo, equ. 52 in [eck14]
     T = np.identity(6)
     T[0,3] = T[1,4] = T[2,5] = -1.
-    T[3,0] = 2.*helpers.ksq2E * Q*dEi
-    T[3,3] = 2.*helpers.ksq2E * Q*dEf
-    T[3,1] = 2.*helpers.ksq2E * kperp
-    T[3,4] = -2.*helpers.ksq2E * kperp
+    T[3,0] = 2.*tas.k2_to_E * Q*dEi
+    T[3,3] = 2.*tas.k2_to_E * Q*dEf
+    T[3,1] = 2.*tas.k2_to_E * kperp
+    T[3,4] = -2.*tas.k2_to_E * kperp
     T[4,1] = T[5,2] = dEf
     T[4,4] = T[5,5] = dEi
 
@@ -367,9 +364,7 @@ def calc(param):
     # squares in Vs missing in paper? (thanks to F. Bourdarot for pointing this out)
     W -= (0.5*V1[5])**2. / U1[5, 5] + (0.5*V2[4])**2. / U2[4, 4]
 
-    R0 = 0.
-    if param["calc_R0"]:
-        R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
+    R0 = dReflM*dReflA * np.pi * np.sqrt(1. / np.abs(U1[5, 5] * U2[4, 4]))
     # --------------------------------------------------------------------------
 
 
@@ -406,12 +401,11 @@ def calc(param):
     # prefactor and volume
     res_vol = reso.ellipsoid_volume(R)
 
-    if param["calc_R0"]:
-        # missing volume prefactor to normalise gaussian,
-        # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
-        R0 *= res_vol * np.pi * 3.
-        R0 *= np.exp(-W)
-        R0 *= dxsec
+    # missing volume prefactor to normalise gaussian,
+    # cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
+    R0 *= res_vol * np.pi * 3.
+    R0 *= np.exp(-W)
+    R0 *= dxsec
 
     res["reso"] = R
     res["r0"] = R0
