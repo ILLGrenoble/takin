@@ -64,19 +64,6 @@ def rotation_matrix_3d_x(angle):
         [ 0, s,  c ]])
 
 
-#
-# z rotation matrix
-#
-def rotation_matrix_3d_z(angle):
-    s = np.sin(angle)
-    c = np.cos(angle)
-
-    return np.array([
-        [ c, -s, 0 ],
-        [ s,  c, 0 ],
-        [ 0,  0, 1 ]])
-
-
 def rotation_matrix_2d(angle):
     s = np.sin(angle)
     c = np.cos(angle)
@@ -84,6 +71,12 @@ def rotation_matrix_2d(angle):
     return np.array([
         [ c, -s ],
         [ s,  c ]])
+
+
+def rotation_matrix_nd(angle, dims = 3):
+    R = np.eye(dims)
+    R[0:2, 0:2] = rotation_matrix_2d(angle)
+    return R
 
 
 def mirror_matrix(iSize, iComp):

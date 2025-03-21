@@ -33,6 +33,7 @@
 import numpy as np
 import numpy.linalg as la
 import reso
+import tas
 import helpers
 import vio_cov
 import cr_json as js
@@ -84,7 +85,7 @@ def calc(param):
     ###########################################################################################
     if(verbose):
         print("theta_i =", theta_i, "; phi_i =", phi_i,"; theta_f =", theta_f, "; phi_f =", phi_f)
-    
+
     ki_xy = ki*np.cos(np.deg2rad(phi_i))
     ki_z = ki*np.sin(np.deg2rad(phi_i))
     kf_xy = kf*np.cos(np.deg2rad(phi_f))
@@ -105,7 +106,7 @@ def calc(param):
         print("\ndict_geo =", dict_geo, "\ndict_choppers =", dict_choppers, "\n")
 
     # Energy transfer, Q vector and Covariance matrix
-    E = helpers.get_E(ki, kf)
+    E = tas.get_E(ki, kf)
     vec_Q = np.array([Q_x, Q_y, Q_z])
     covQhw = vio_cov.cov(dict_geo, dict_choppers, vi, vf, det_shape, 'SI', verbose)
     covQhwInv = la.inv(covQhw)
@@ -114,10 +115,10 @@ def calc(param):
         print("E =", E, "; vec_Q =", vec_Q)
         print("covQhw =", covQhw)
         print("covQhwInv =", covQhwInv)
-    
+
     # Going from ki, kf, Qz to Qpara, Qperp, Qz :
-    Q_ki = helpers.get_angle_Q_ki(ki_xy, kf_xy, Q_xy)
-    rot = helpers.rotation_matrix_4d_zE(-Q_ki)
+    Q_ki = tas.get_psi(ki_xy, kf_xy, Q_xy, param["sample_sense"])
+    rot = helpers.rotation_matrix_nd(-Q_ki, 4)
     covQhwInv = np.dot(rot.T, np.dot(covQhwInv, rot))
     ###########################################################################################
     if(verbose):
@@ -133,51 +134,3 @@ def calc(param):
     res["reso"] = covQhwInv
     res["ok"] = True
     return res
-
-
-# def calc(param, pointlike = False):
-#     # instrument position
-#     ki = param["ki"]
-#     kf = param["kf"]
-#     E = param["E"]
-#     Q = param["Q"]
-
-#     lam = helpers.k2lam(ki)
-
-#     # angles
-#     twotheta = helpers.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
-#     thetas = twotheta * 0.5
-#     Q_ki = helpers.get_angle_Q_ki(ki, kf, Q) * param["sample_sense"]
-#     Q_kf = helpers.get_angle_Q_kf(ki, kf, Q) * param["sample_sense"]
-
-#     if param["verbose"]:
-#         print("2theta = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
-#             (twotheta*helpers.rad2deg, Q_ki*helpers.rad2deg, Q_kf*helpers.rad2deg))
-
-
-#     # TODO: resolution matrix
-#     R = np.eye(4)
-#     R0 = 1.
-
-
-#     # dict with results
-#     res = {}
-
-#     res["Q_avg"] = np.array([ Q, 0., 0., E ])
-#     res["ki"] = ki
-#     res["kf"] = kf
-#     res["Q_ki"] = Q_ki
-#     res["Q_kf"] = Q_kf
-#     res["twotheta"] = twotheta
-
-#     res["reso"] = R
-#     res["reso_v"] = np.array([0., 0., 0., 0.])
-#     res["reso_s"] = 0.
-#     res["r0"] = R0
-#     res["res_vol"] = reso.ellipsoid_volume(R)
-
-#     if np.isnan(res["r0"]) or np.isinf(res["r0"]) or np.isnan(res["reso"].any()) or np.isinf(res["reso"].any()):
-#         res["ok"] = False
-
-#     res["ok"] = True
-#     return res

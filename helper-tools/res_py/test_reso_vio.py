@@ -31,6 +31,7 @@
 # requires numpy version >= 1.10
 import numpy as np
 import helpers
+import tas
 import reso
 import pop
 import eck
@@ -55,20 +56,20 @@ IN5 = {
     "delta_time_det":0
 }
 
-js.create(IN5, "/home/mecoli/Git/IN5")
+js.create(IN5, "IN5")
 
 ##########################################################################################
 
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
-IN5 = js.read("/home/mecoli/Git/IN5.json")
+IN5 = js.read("IN5.json")
 
 # settings
 ki = 2*np.pi/5  # 2.5
 kf = 2*np.pi/5
 Q = 1
 
-theta_f = np.rad2deg(helpers.get_scattering_angle(ki, kf, Q))
+theta_f = np.rad2deg(tas.get_scattering_angle(ki, kf, Q))
 rot_speedP = 8500
 rot_speedM = 8500
 shape = IN5["det_shape"]
@@ -88,7 +89,7 @@ params = {
     # scattering triangle
     "ki" : ki,
     "kf" : kf,
-    "E" : helpers.get_E(ki, kf),
+    "E" : tas.get_E(ki, kf),
     "Q" : Q,
 
     # geometrical informations of TOF instruments
@@ -232,5 +233,5 @@ if(verbose and reso_method != "vio"):
 
 
 # describe and plot ellipses
-ellipses = reso.calc_ellipses(res["reso"], verbose)
-reso.plot_ellipses(ellipses, verbose)
+ellipses = reso.calc_ellipses(res["reso"], verbose = verbose)
+reso.plot_ellipses(ellipses, verbose = verbose)

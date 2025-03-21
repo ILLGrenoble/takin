@@ -283,7 +283,7 @@ def calc(param):
 
     #--------------------------------------------------------------------------
     # ana part, equ. 43 in [eck14]
-    sample_pos_kf = np.dot(helpers.rotation_matrix_3d_z(-twotheta), sample_pos)
+    sample_pos_kf = np.dot(helpers.rotation_matrix_nd(-twotheta, 3), sample_pos)
 
     # vertical scattering in kf axis, formula from [eck20]
     if param["kf_vert"]:
@@ -331,8 +331,8 @@ def calc(param):
 
 
     # equ. 54 in [eck14]
-    Dalph_i = helpers.rotation_matrix_3d_z(-Q_ki)
-    Dalph_f = helpers.rotation_matrix_3d_z(-Q_kf)
+    Dalph_i = helpers.rotation_matrix_nd(-Q_ki, 3)
+    Dalph_f = helpers.rotation_matrix_nd(-Q_kf, 3)
 
     matAE = np.zeros((6,6))
     matAE[0:3, 0:3] = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
