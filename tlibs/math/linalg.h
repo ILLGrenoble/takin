@@ -2798,11 +2798,11 @@ void sort_eigenvecs(std::vector<ublas::vector<T>>& evecs,
 
 /**
  * project vec1 onto vec2
- * proj_op = |vec2><vec2¦/ len(vec2)^2,  len(vec2) = sqrt(<vec2|vec2>)
+ * proj_op = |vec2><vec2| / len(vec2)^2,  len(vec2) = sqrt(<vec2|vec2>)
  * proj = proj_op * vec1 = |vec2> * <vec2|vec1> / <vec2|vec2>
  */
 template<typename t_vec = ublas::vector<double>>
-t_vec proj_vec(t_vec vec1, t_vec vec2)
+t_vec proj_vec(const t_vec& vec1, const t_vec& vec2)
 {
 	using T = typename t_vec::value_type;
 
