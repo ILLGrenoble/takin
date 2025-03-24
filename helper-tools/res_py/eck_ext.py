@@ -376,7 +376,7 @@ def calc(param):
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
-    # sample mosaic, equ. (3.3) in [end25]
+    # sample mosaic, gives the same as equs. (3.3) and (7.7) in [end25]
     M = np.delete(np.delete(U, 3, axis = 0), 3, axis = 1)
     M = np.delete(np.delete(M, 0, axis = 0), 0, axis = 1)
     M += np.diag([ helpers.sig2fwhm**2. / mos_Q_sq, helpers.sig2fwhm**2. / mos_v_Q_sq ])
@@ -392,25 +392,25 @@ def calc(param):
     #Uorg = np.copy(U)
     Pvec1 = matP[1, 0:3] / helpers.sig2fwhm**2.
     Uvec1 = U[:, 1] / helpers.sig2fwhm**2.
-    # gives the same as equ. 3.5 in [end25]
+    # gives the same as equs. 3.5 and 7.8 in [end25]
     matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec1, Pvec1) / \
         (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
-    # gives the same as equ. 3.7 in [end25]
+    # gives the same as equs. 3.7 and 7.10 in [end25]
     matP -= helpers.sig2fwhm**2. * np.outer(Uvec1, Pvec1) / \
         (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
-    # gives the same as equ. 3.6 in [end25]
+    # gives the same as equs. 3.6 and 7.9 in [end25]
     U -= helpers.sig2fwhm**2. * np.outer(Uvec1, Uvec1) / \
         (1./mos_Q_sq + U[1, 1]/helpers.sig2fwhm**2.)
 
     Pvec2 = matP[2, 0:3] / helpers.sig2fwhm**2.
     Uvec2 = U[:, 2] / helpers.sig2fwhm**2.
-    # gives the same as equ. 3.5 in [end25]
+    # gives the same as equs. 3.5 and 7.8 in [end25]
     matK -= 0.25 * helpers.sig2fwhm**2. * np.outer(Pvec2, Pvec2) / \
         (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
-    # gives the same as equ. 3.7 in [end25]
+    # gives the same as equs. 3.7 and 7.10 in [end25]
     matP -= helpers.sig2fwhm**2. * np.outer(Uvec2, Pvec2) / \
         (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
-    # gives the same as equ. 3.6 in [end25]
+    # gives the same as equs. 3.6 and 7.9 in [end25]
     U -= helpers.sig2fwhm**2. * np.outer(Uvec2, Uvec2) / \
         (1./mos_v_Q_sq + U[2, 2]/helpers.sig2fwhm**2.)
     #print("Mosaic R0 scaling: %g" % (np.sqrt(la.det(Uorg) / la.det(U))))
@@ -453,7 +453,7 @@ def calc(param):
     detN = la.det(matN)
     Nadj = helpers.adjugate(matN)
 
-    # page 9 in [end25]
+    # page 9 and equs. (7.11), (7.12) and (7.13) in [end25]
     U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
     matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
     matK -= 1. / detN * np.dot(matK, np.dot(Nadj, matK))
