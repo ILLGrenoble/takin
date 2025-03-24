@@ -141,7 +141,7 @@ def get_monok(theta, d):
 
 # -----------------------------------------------------------------------------
 #
-# scattering angle a4
+# sample scattering angle a4
 #
 def get_scattering_angle(ki, kf, Q):
     c = (ki**2. + kf**2. - Q**2.) / (2.*ki*kf)
@@ -226,7 +226,7 @@ def get_UB(B, orient1_rlu, orient2_rlu, orientup_rlu):
 # a3 sample rotation & a4 sample scattering angles
 # see https://dx.doi.org/10.1107/S0021889805004875
 #
-def get_sample_angle(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
+def get_sample_angle(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample = 1., a3_offs = np.pi):
     metric = get_metric(B)
     #print("Metric: " + str(metric))
 
@@ -257,7 +257,7 @@ def get_sample_angle(ki, kf, Q_rlu, orient_rlu, orient_up_rlu, B, sense_sample=1
 # (hkl) position
 # see https://dx.doi.org/10.1107/S0021889805004875
 #
-def get_hkl(ki, kf, a3, Qlen, orient_rlu, orient_up_rlu, B, sense_sample=1., a3_offs=np.pi):
+def get_hkl(ki, kf, a3, Qlen, orient_rlu, orient_up_rlu, B, sense_sample = 1., a3_offs = np.pi):
     B_inv = la.inv(B)
 
     # angle enclosed by ki and Q

@@ -53,7 +53,14 @@ params = {
     "ki" : 1.4,
     "kf" : 1.4,
     "E"  : tas.get_E(1.4, 1.4),
-    "Q"  : 1.777,
+    #"Q"  : 1.777,  # length in 1/A
+    "Q"  : np.array([1., 0., 0.]),  # (hkl) in rlu
+
+    # if Q is defined as (hkl) vector, the following crystal infos are also needed:
+    "sample_lattice" : np.array([ 5., 5., 5. ]),
+    "sample_angles"  : np.array([ 90., 90., 90. ]) * helpers.deg2rad,
+    "sample_plane_1" : np.array([ 1., 0., 0. ]),
+    "sample_plane_2" : np.array([ 0., 1., 0. ]),
 
     # d spacings
     "mono_xtal_d" : 3.355,
@@ -177,13 +184,19 @@ argparser.add_argument("-m", "--reso_method", default = None, type = str,
 argparser.add_argument("--kf_vert", default = None, action = "store_true",
     help = "scatter vertically in the kf axis (only for Eckold-Sobolev method)")
 argparser.add_argument("--ki", default = None, type = float,
-    help = "incoming wavenumber")
+    help = "incoming wavenumber in 1/A")
 argparser.add_argument("--kf", default = None, type = float,
-    help = "outgoing wavenumber")
+    help = "outgoing wavenumber in 1/A")
 argparser.add_argument("-E", "--E", default = None, type = float,
-    help = "energy transfer")
+    help = "energy transfer in meV")
 argparser.add_argument("-Q", "--Q", default = None, type = float,
-    help = "momentum transfer")
+    help = "momentum transfer in 1/A")
+argparser.add_argument("-Qh", "--Qh", default = None, type = float,
+    help = "h Miller index in rlu")
+argparser.add_argument("-Qk", "--Qk", default = None, type = float,
+    help = "k Miller index in rlu")
+argparser.add_argument("-Ql", "--Ql", default = None, type = float,
+    help = "l Miller index in rlu")
 argparser.add_argument("--twotheta", default = None, type = float,
     help = "sample scattering angle")
 argparser.add_argument("--pos_x", default = None, type = float,
@@ -242,13 +255,18 @@ if parsedargs.ki != None:
 if parsedargs.kf != None:
     params["kf"] = parsedargs.kf
 
-if parsedargs.Q != None:
+if parsedargs.Qh != None and parsedargs.Qk != None and parsedargs.Ql != None:
+    # Q is given as (hkl) vector
+    params["Q"] = np.array([ parsedargs.Qh, parsedargs.Qk, parsedargs.Ql ])
+elif parsedargs.Q != None:
+    # Q is given in 1/A
     params["Q"] = parsedargs.Q
-if parsedargs.twotheta != None:
+elif parsedargs.twotheta != None:
+    # Q is defined by the scattering angle
     params["twotheta"] = parsedargs.twotheta * helpers.deg2rad
     params["Q"] = tas.get_Q(params["ki"], params["kf"], params["twotheta"])
-else:
-    params["twotheta"] = tas.get_scattering_angle(params["ki"], params["kf"], params["Q"])
+#else:
+#    params["twotheta"] = tas.get_scattering_angle(params["ki"], params["kf"], params["Q"])
 
 if parsedargs.pos_x != None:
     params["pos_x"] = parsedargs.pos_x * helpers.cm2A
@@ -321,8 +339,13 @@ def log(msg):
         print(msg)
 
 
-log("ki = %g / A, kf = %g / A, E = %g meV, Q = %g / A." %
-    (params["ki"], params["kf"], params["E"], params["Q"]))
+# is Q given as (hkl) vector?
+if isinstance(params["Q"], type([])) or isinstance(params["Q"], type(np.array([]))):
+    log("ki = %g / A, kf = %g / A, E = %g meV, Q = %s rlu." %
+        (params["ki"], params["kf"], params["E"], params["Q"]))
+else:
+    log("ki = %g / A, kf = %g / A, E = %g meV, Q = %g / A." %
+        (params["ki"], params["kf"], params["E"], params["Q"]))
 # -----------------------------------------------------------------------------
 
 
@@ -353,7 +376,7 @@ elif params["reso_method"] == "vio":
     log("\nCalculating using Violini method.")
     res = vio.calc(params)
 else:
-    raise "ResPy: Invalid resolution calculation method selected."
+    raise ValueError("ResPy: Invalid resolution calculation method selected.")
 
 if not res["ok"]:
     print("RESOLUTION CALCULATION FAILED!")

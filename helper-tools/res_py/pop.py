@@ -69,7 +69,7 @@ NUM_KI_COMPS   = 3
 #
 def get_mono_trafos(dist_vsrc_mono, dist_hsrc_mono,
     dist_mono_sample,
-    thetam, thetas, inv_curvh, inv_curvv,
+    thetam, twotheta, inv_curvh, inv_curvv,
     ki, Q_ki, sense = 1., pointlike = False):
 
     sign_z = -1.  # to compare with the calculations by F. Bourdarot
@@ -77,8 +77,8 @@ def get_mono_trafos(dist_vsrc_mono, dist_hsrc_mono,
     s_th_m = np.sin(thetam)
     c_th_m = sense * np.cos(thetam)
     cot_th_m = c_th_m / s_th_m
-    s_th_s = np.sin(thetas)
-    c_th_s = sense * np.cos(thetas)
+    s_th_s = np.sin(twotheta * 0.5)
+    c_th_s = sense * np.cos(twotheta * 0.5)
     cot_th_s = c_th_s / s_th_s
 
 
@@ -215,27 +215,18 @@ def combine_mono_ana_trafos(Dm, Tm, Am, Bm, Da, Ta, Aa, Ba, pointlike = False):
 # resolution algorithm
 #
 def calc(param, pointlike = False):
-    # instrument position
+    helpers.calc_triangle(param)
+
     ki = param["ki"]
     kf = param["kf"]
     E = param["E"]
     Q = param["Q"]
-
+    twotheta = param["twotheta"]
+    thetam = param["thetam"]
+    thetaa = param["thetaa"]
+    Q_ki = param["Q_ki"]
+    Q_kf = param["Q_kf"]
     lam = tas.k_to_lam(ki)
-
-    # angles
-    twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
-    thetas = twotheta * 0.5
-    thetam = tas.get_mono_angle(ki, param["mono_xtal_d"], True) * param["mono_sense"]
-    thetaa = tas.get_mono_angle(kf, param["ana_xtal_d"], True) * param["ana_sense"]
-    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
-    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
-
-    if param["verbose"]:
-        print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
-            (twotheta*helpers.rad2deg, thetam*helpers.rad2deg, thetaa*helpers.rad2deg,
-            Q_ki*helpers.rad2deg, Q_kf*helpers.rad2deg))
-
 
     # --------------------------------------------------------------------
     # mono/ana focus
@@ -356,19 +347,19 @@ def calc(param, pointlike = False):
     elif param["src_shape"] == "circular":
         src_factor = 16.
     else:
-        raise "ResPy: No valid source shape given."
+        raise ValueError("ResPy: No valid source shape given.")
     if param["sample_shape"] == "cuboid":
         sample_factor = 12.
     elif param["sample_shape"] == "cylindrical":
         sample_factor = 16.
     else:
-        raise "ResPy: No valid sample shape given."
+        raise ValueError("ResPy: No valid sample shape given.")
     if param["det_shape"] == "rectangular":
         det_factor = 12.
     elif param["det_shape"] == "circular":
         det_factor = 16.
     else:
-        raise "ResPy: No valid detector shape given."
+        raise ValueError("ResPy: No valid detector shape given.")
 
     if not pointlike:
         S[IDX_SRC_Y, IDX_SRC_Y] = src_factor / param["src_w"]**2.
@@ -394,10 +385,10 @@ def calc(param, pointlike = False):
         # ki and kf trafo matrices
         [Cm, Am, Bm] = get_mono_trafos(param["dist_vsrc_mono"], param["dist_hsrc_mono"], \
             param["dist_mono_sample"], \
-            thetam, thetas, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
+            thetam, twotheta, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
         [Ca, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_ana_det"], \
             param["dist_sample_ana"], \
-            thetaa, thetas, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
+            thetaa, twotheta, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
 
         [C, BA] = combine_mono_ana_trafos(Cm, None, Am, Bm, Ca, None, Aa, Ba, pointlike)
 
@@ -408,10 +399,10 @@ def calc(param, pointlike = False):
         # ki and kf trafo matrices
         [Dm, Tm, Am, Bm] = get_mono_trafos(param["dist_vsrc_mono"], param["dist_hsrc_mono"], \
             param["dist_mono_sample"], \
-            thetam, thetas, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
+            thetam, twotheta, inv_mono_curv_h, inv_mono_curv_v, ki, Q_ki, 1., pointlike)
         [Da, Ta, Aa, Ba] = get_mono_trafos(param["dist_ana_det"], param["dist_ana_det"], \
             param["dist_sample_ana"], \
-            thetaa, thetas, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
+            thetaa, twotheta, inv_ana_curv_h, inv_ana_curv_v, kf, Q_kf, -1., pointlike)
 
         [D, T, BA] = combine_mono_ana_trafos(Dm, Tm, Am, Bm, Da, Ta, Aa, Ba, pointlike)
 

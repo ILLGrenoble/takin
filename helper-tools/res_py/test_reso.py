@@ -170,7 +170,7 @@ elif reso_method == "pop":
 elif reso_method == "cn":
     res = pop.calc(params, True)
 else:
-    raise "ResPy: Invalid resolution calculation method selected."
+    raise ValueError("ResPy: Invalid resolution calculation method selected.")
 
 
 if not res["ok"]:

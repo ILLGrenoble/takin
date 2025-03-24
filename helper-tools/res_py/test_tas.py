@@ -1,5 +1,5 @@
 #
-# calculates TAS angles from rlu (part of in20tools)
+# calculates TAS angles from rlu
 # @author Tobias Weber <tweber@ill.fr>
 # @date 1-aug-18
 # @license see 'LICENSE' file

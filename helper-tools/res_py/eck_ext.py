@@ -155,22 +155,18 @@ def get_mono_vals(src_w, src_h, mono_w, mono_h,
 # Eckold algorithm combining the mono and ana resolutions
 #
 def calc(param):
+    helpers.calc_triangle(param)
+
     ki = param["ki"]
     kf = param["kf"]
     E = param["E"]
     Q = param["Q"]
-
-    # angles
-    twotheta = tas.get_scattering_angle(ki, kf, Q) * param["sample_sense"]
-    thetam = tas.get_mono_angle(ki, param["mono_xtal_d"], True) * param["mono_sense"]
-    thetaa = tas.get_mono_angle(kf, param["ana_xtal_d"], True) * param["ana_sense"]
-    Q_ki = tas.get_psi(ki, kf, Q, param["sample_sense"])
-    Q_kf = tas.get_eta(ki, kf, Q, param["sample_sense"])
-
-    if param["verbose"]:
-        print("2theta = %g deg, thetam = %g deg, thetaa = %g deg, Q_ki = %g deg, Q_kf = %g deg.\n" %
-            (twotheta*helpers.rad2deg, thetam*helpers.rad2deg, thetaa*helpers.rad2deg,
-            Q_ki*helpers.rad2deg, Q_kf*helpers.rad2deg))
+    Q_ki = param["Q_ki"]
+    Q_kf = param["Q_kf"]
+    twotheta = param["twotheta"]   # a4
+    theta = param["theta"]         # a3
+    thetam = param["thetam"]       # a1
+    thetaa = param["thetaa"]       # a5
 
     # --------------------------------------------------------------------
     # mono/ana focus
@@ -328,6 +324,7 @@ def calc(param):
     Dalph_i = helpers.rotation_matrix_nd(-Q_ki, 3)
     Dalph_f = helpers.rotation_matrix_nd(-Q_kf, 3)
     Dtwotheta = helpers.rotation_matrix_nd(-twotheta, 3)
+    Dtheta = helpers.rotation_matrix_nd(-theta, 3)
 
     matAE = np.zeros((6, 6))
     matAE[0:3, 0:3] = np.dot(np.dot(np.transpose(Dalph_i), A), Dalph_i)
@@ -433,8 +430,7 @@ def calc(param):
         [0., 1., 0.],
         [0., 0., 1.]])
 
-    # TODO: additional theta rotation
-    T_E = np.dot(basis_ki, sample_axes)
+    T_E = np.dot(Dtheta, np.dot(basis_ki, sample_axes))
 
     if param["sample_shape"] == "ellipsoid":
         # ellipsoid sample integration, equ. 4.4 and below in [end25]
@@ -448,7 +444,7 @@ def calc(param):
         # cuboid sample integration, equ. 6.6 in [end25]
         matN = matK + np.pi * np.dot(T_E, np.dot(np.diag(1. / sample_dims**2.), np.transpose(T_E)))
     else:
-        raise "ResPy: No valid sample shape given."
+        raise ValueError("ResPy: No valid sample shape given.")
 
     detN = la.det(matN)
     Nadj = helpers.adjugate(matN)
@@ -466,7 +462,7 @@ def calc(param):
     elif param["sample_shape"] == "cylindrical":
         V_sample = np.pi * 0.5*sample_dims[0] * 0.5*sample_dims[1] * sample_dims[2]
     else:
-        raise "ResPy: No valid sample shape given."
+        raise ValueError("ResPy: No valid sample shape given.")
 
     R0 /= V_sample**2.
     # --------------------------------------------------------------------------
