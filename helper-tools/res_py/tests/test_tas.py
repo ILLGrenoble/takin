@@ -5,7 +5,12 @@
 # @license see 'LICENSE' file
 #
 
-import tas
+import sys
+import os
+sys.path.append(os.path.dirname(__file__) + "/..")
+
+import libs.tas as tas
+
 import numpy as np
 import numpy.linalg as la
 

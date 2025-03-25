@@ -8,7 +8,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -28,12 +28,12 @@
 # ----------------------------------------------------------------------------
 #
 
+import libs.tas as tas
+import libs.helpers as helpers
+import instruments.params_in20 as params_in20
+
 # requires numpy version >= 1.10
 import numpy as np
-import tas
-import helpers
-import params_in20
-
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
 
@@ -352,11 +352,11 @@ else:
 # -----------------------------------------------------------------------------
 # calculate resolution ellipsoid using the given backend
 # -----------------------------------------------------------------------------
-import reso
-import pop
-import eck
-import eck_ext
-import vio
+import libs.reso as reso
+import algos.pop as pop
+import algos.eck as eck
+import algos.eck_ext as eck_ext
+import algos.vio as vio
 
 if params["reso_method"] == "eck":
     log("\nCalculating using Eckold-Sobolev method. Scattering %s in kf." %

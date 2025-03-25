@@ -116,7 +116,7 @@ def jacobTerms(v_i, v_f, l_dist, l_angles, l_AB, l_sizes, shape, unit = 'SI', ve
     elif(unit == 'AU'):
         m_n = m_nAU
         moh = mohAU
-    
+
     L_PM = l_dist[0]
     L_MS = l_dist[1]
     L_SD = l_dist[2]
@@ -126,12 +126,12 @@ def jacobTerms(v_i, v_f, l_dist, l_angles, l_AB, l_sizes, shape, unit = 'SI', ve
     theta_f = l_angles[2]
     phi_f = l_angles[3]
     Ae = l_AB[0]
-    Ax = l_AB[1] 
-    Ay = l_AB[2] 
-    Az = l_AB[3] 
+    Ax = l_AB[1]
+    Ay = l_AB[2]
+    Az = l_AB[3]
     Be = l_AB[4]
-    Bx = l_AB[5] 
-    By = l_AB[6] 
+    Bx = l_AB[5]
+    By = l_AB[6]
     Bz = l_AB[7]
     size_PM = l_sizes[0]
     size_MS = l_sizes[1]
@@ -166,7 +166,7 @@ def jacobTerms(v_i, v_f, l_dist, l_angles, l_AB, l_sizes, shape, unit = 'SI', ve
         dQxdrad = -np.divide(moh, v_f)*Bx*np.divide(L_PM,rad)
         dQxdtheta_f = moh*v_f*np.sin(theta_f)*np.cos(phi_f)
         dQx = np.concatenate(( np.array([dQxdL_PMj]*size_PM), np.array([dQxdL_MSj]*size_MS), np.array([dQxdrad, dQxdz, dQxdt_PM, dQxdt_MD, dQxdtheta_i, dQxdphi_i, dQxdtheta_f]) ))
-    
+
     # y terms in common
     dQydL_PMj = np.divide(moh, v_i)*(Ay + By*np.divide(L_MS, L_SD))
     dQydL_MSj = -np.divide(moh, v_i)*By*np.divide(L_PM, L_SD)
@@ -292,7 +292,7 @@ def deltaTimeChopper(window_angle, rot_speed, unit='SI', verbose=False):
 
     if( unit == 'AU'):
         deltaTpsChop = fromSItoAU(deltaTpsChop, 'time') # AU
-    return deltaTpsChop 
+    return deltaTpsChop
 
 # Return the time uncerntainty for t_PM and t_MD
 def listDeltaTime(window_angleP, rot_speedP, window_angleM, rot_speedM, dltD = 0, unit='SI', verbose = False):
@@ -307,7 +307,7 @@ def listDeltaTime(window_angleP, rot_speedP, window_angleM, rot_speedM, dltD = 0
 
 # Getting list of uncerntainty
 def getDeltas(param_geo_u, param_choppers, l_sizes, unit='SI', verbose = False):
-    '''param_geo_u is a dictionary: {dist_PM_u:[PM1, sigma1, PM2, sigma2, ...], dist_MS_u:[MS1, sigma1, MS2, sigma2, ...], dist_SD_u:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)], 
+    '''param_geo_u is a dictionary: {dist_PM_u:[PM1, sigma1, PM2, sigma2, ...], dist_MS_u:[MS1, sigma1, MS2, sigma2, ...], dist_SD_u:[ (if HCYL: x, sigma_x), radius, sigma_r, (if VCYL: z, sigma_z)],
             angles_rad:[theta_i, sigma_theta_i, phi_i, sigma_phi_i, theta_f, sigma_theta_f, (if SPHERE: phi_f, sigma_phi_f)], delta_time_detector_u:value (0 by default)}, distances and time in AU, angles in rad
     param_choppers is a dictionary: {chopperP:[window_angle, min_rot_speed, max_rot_speed, rot_speed], chopperM:[window_angle, min_rot_speed, max_rot_speed, rot_speed]}, angles in degree, rot_speed in RPM
     l_sizes is a list of 6 numbers, unit in (SI, AU)'''
@@ -359,7 +359,7 @@ def fromSItoAU(object, type_of_unit):
         return np.divide(object, a02m)
     elif(type_of_unit == 'velocity'):
         return np.divide(object, vAU2vSI)
-    
+
 # To get covQhw in A and eV
 def fromCovQhwAUToCovQhwAeV(covQhwAU):
     covAmeV = np.zeros((4,4))
@@ -466,7 +466,7 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, unit='SI', verbose=False):
         theta_i = angles_rad[0]
         phi_i = angles_rad[2]
         theta_f = angles_rad[4]
-        phi_f = np.acos(np.divide(rad, L_SD))
+        phi_f = np.arccos(np.divide(rad, L_SD))
     if(shape == "VCYL"):
         # Distances
         rad = dist_SD[0]
@@ -476,7 +476,7 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, unit='SI', verbose=False):
         theta_i = angles_rad[0]
         phi_i = angles_rad[2]
         theta_f = angles_rad[4]
-        phi_f = np.acos(np.divide(rad, L_SD))
+        phi_f = np.arccos(np.divide(rad, L_SD))
     l_dist = np.array([L_PM, L_MS, L_SD, x, rad, z])
     l_angles = np.array([theta_i, phi_i, theta_f, phi_f])
     ###########################################################################################
@@ -507,7 +507,7 @@ def cov(param_geo, param_choppers, v_i, v_f, shape, unit='SI', verbose=False):
     ###########################################################################################
     if(verbose):
         print('dQx =', dQx, '\ndQy =', dQy, '\ndQz =', dQz, '\ndE =', dE, '\n')
-    
+
     # List of uncertainty
     deltas = getDeltas(param_geo_u, param_choppers, l_sizes, unit, verbose)
     ###########################################################################################

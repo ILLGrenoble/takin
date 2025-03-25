@@ -29,11 +29,17 @@
 # ----------------------------------------------------------------------------
 #
 
-# To execute the test : pytest core/tools/res_py/vio_cov_test.py
+# To execute the test : pytest helper-tools/res_py/tests/vio_cov_test.py
 
-import vio_cov
+import sys
+import os
+sys.path.append(os.path.dirname(__file__) + "/..")
+
+import algos.vio_cov as vio_cov
+
 import numpy as np
 import pytest
+
 
 def test_constant():
     assert vio_cov.m_nSI == 1.67492749804e-27
@@ -80,7 +86,7 @@ def test_jacobTerms():
     assert dQyHCYL == pytest.approx(np.array([25*vio_cov.mohAU, -40*vio_cov.mohAU, 0, -50*vio_cov.mohAU, -25*vio_cov.mohAU, 40*vio_cov.mohAU, 0.25*np.sqrt(3)*vio_cov.mohAU, -0.25*np.sqrt(3)*vio_cov.mohAU, -0.5*np.sqrt(6)*vio_cov.mohAU]), 0.00001)
     assert dQzHCYL == pytest.approx(np.array([30*vio_cov.mohAU, -48*vio_cov.mohAU, 0, -60*vio_cov.mohAU, -30*vio_cov.mohAU, 48*vio_cov.mohAU, 0, 0.5*np.sqrt(3)*vio_cov.mohAU, 0.5*np.sqrt(2)*vio_cov.mohAU]), 0.00001)
     assert dEHCYL == pytest.approx(np.array([500*vio_cov.m_nAU, -800*vio_cov.m_nAU, -200*np.sqrt(2)*vio_cov.m_nAU, -200*np.sqrt(2)*vio_cov.m_nAU, -500*vio_cov.m_nAU, 800*vio_cov.m_nAU, 0, 0, 0]), 0.00001)
-    
+
     dQxVCYL, dQyVCYL, dQzVCYL, dEVCYL = vio_cov.jacobTerms(1, 2, np.array([20, 10, 5, 2, 2, 2]), np.array([np.pi/3, np.pi/6, np.pi/6, np.pi/4]), np.array([100, 4, 5, 6, 200, 8, 10, 12]), np.array([1, 1, 1, 2, 4, 9]), 'VCYL', 'AU')
     assert dQxVCYL == pytest.approx(np.array([20*vio_cov.mohAU, -32*vio_cov.mohAU, -40*vio_cov.mohAU, -0, -20*vio_cov.mohAU, 32*vio_cov.mohAU, -0.75*vio_cov.mohAU, -0.25*vio_cov.mohAU, 0.5*np.sqrt(2)*vio_cov.mohAU]), 0.00001)
     assert dQyVCYL == pytest.approx(np.array([25*vio_cov.mohAU, -40*vio_cov.mohAU, -50*vio_cov.mohAU, 0, -25*vio_cov.mohAU, 40*vio_cov.mohAU, 0.25*np.sqrt(3)*vio_cov.mohAU, -0.25*np.sqrt(3)*vio_cov.mohAU, -0.5*np.sqrt(6)*vio_cov.mohAU]), 0.00001)

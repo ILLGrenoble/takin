@@ -1,6 +1,6 @@
 #
 # TODO: implementation of the violini algo
-# 
+#
 #
 # @author Mecoli Victor <mecoli@ill.fr>
 # @date feb-2025
@@ -30,12 +30,13 @@
 # ----------------------------------------------------------------------------
 #
 
+import libs.tas as tas
+import libs.helpers as helpers
+
+import algos.vio_cov as vio_cov
+
 import numpy as np
 import numpy.linalg as la
-import reso
-import tas
-import helpers
-import vio_cov
 
 
 #
@@ -78,9 +79,9 @@ def calc(param):
     if(det_shape == 'SPHERE'):
         phi_f = param["angles"][6]
     if(det_shape == 'HCYL'):
-        phi_f = np.rad2deg( np.atan( np.divide(param["dist_SD"][0], param["dist_SD"][2]) ) )
+        phi_f = np.rad2deg( np.arctan( np.divide(param["dist_SD"][0], param["dist_SD"][2]) ) )
     if(det_shape == 'VCYL'):
-        phi_f = np.rad2deg( np.atan( np.divide(param["dist_SD"][2], param["dist_SD"][0]) ) )
+        phi_f = np.rad2deg( np.arctan( np.divide(param["dist_SD"][2], param["dist_SD"][0]) ) )
     ###########################################################################################
     if(verbose):
         print("theta_i =", theta_i, "; phi_i =", phi_i,"; theta_f =", theta_f, "; phi_f =", phi_f)

@@ -27,20 +27,22 @@
 # ----------------------------------------------------------------------------
 #
 
-# requires numpy version >= 1.10
+import sys
+import os
+sys.path.append(os.path.dirname(__file__) + "/..")
+
+import libs.reso as reso
+import algos.vio as vio
+import instruments.params_in5 as in5
+
 import numpy as np
-import helpers
-import tas
-import reso
-import vio
-import params_in5
 
 
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
 reso_method = "vio"    # "vio", "eck", "pop", or "cn"
 verbose = True
-params = params_in5.params
+params = in5.params
 
 # calculate resolution
 res = vio.calc(params)

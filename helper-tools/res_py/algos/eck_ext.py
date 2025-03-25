@@ -33,11 +33,12 @@
 # ----------------------------------------------------------------------------
 #
 
+import libs.reso as reso
+import libs.tas as tas
+import libs.helpers as helpers
+
 import numpy as np
 import numpy.linalg as la
-import reso
-import tas
-import helpers
 
 
 #

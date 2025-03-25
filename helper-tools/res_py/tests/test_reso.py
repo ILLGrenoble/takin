@@ -27,14 +27,17 @@
 # ----------------------------------------------------------------------------
 #
 
-# requires numpy version >= 1.10
-import numpy as np
-import helpers
-import tas
-import reso
-import pop
-import eck
+import sys
+import os
+sys.path.append(os.path.dirname(__file__) + "/..")
 
+import libs.helpers as helpers
+import libs.tas as tas
+import libs.reso as reso
+import algos.pop as pop
+import algos.eck as eck
+
+import numpy as np
 np.set_printoptions(floatmode = "fixed",  precision = 4)
 
 

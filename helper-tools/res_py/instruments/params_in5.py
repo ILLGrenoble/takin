@@ -27,10 +27,10 @@
 # ----------------------------------------------------------------------------
 #
 
-# requires numpy version >= 1.10
+import libs.helpers as helpers
+import libs.tas as tas
+
 import numpy as np
-import helpers
-import tas
 
 
 # Important parameters of IN5
