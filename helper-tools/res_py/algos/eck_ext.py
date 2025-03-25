@@ -374,15 +374,13 @@ def calc(param):
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
-    # sample mosaic, gives the same as equs. (3.3) and (7.7) in [end25]
+    # sample mosaic, gives the same as equs. 3.3 and 7.7 in [end25]
     M = np.delete(np.delete(U, 3, axis = 0), 3, axis = 1)
     M = np.delete(np.delete(M, 0, axis = 0), 0, axis = 1)
     M += np.diag([ helpers.sig2fwhm**2. / mos_Q_sq, helpers.sig2fwhm**2. / mos_v_Q_sq ])
     Madj = helpers.adjugate(M)
 
-    # before equ. 3.4 in [end25]
-    # TODO: this is based on the assumption that M is diagonal,
-    #       which it is not for vertical scattering in kf
+    # equs. 3.4 and 7.14 in [end25]
     R0 *= np.pi**2. / np.sqrt(la.det(M))
     R0 *= helpers.sig2fwhm / np.sqrt(2. * np.pi * mos_Q_sq * mos_v_Q_sq)
 
@@ -418,12 +416,9 @@ def calc(param):
     # --------------------------------------------------------------------------
     sample_dims = np.array([ param["sample_d"], param["sample_w"], param["sample_h"] ])
 
+    # TODO: check this
     # trafo for sample rotation, equ. 5.2 and below in [end25]
-    # TODO: columns have to be parallel to ki, perpendicular to ki and up
-    basis_ki = np.array([
-        [1., 0., 0.],
-        [0., 1., 0.],
-        [0., 0., 1.]])
+    basis_ki = param["sample_orient"].T
 
     # TODO: principal axes of sample
     sample_axes = np.array([
@@ -450,7 +445,7 @@ def calc(param):
     detN = la.det(matN)
     Nadj = helpers.adjugate(matN)
 
-    # page 9 and equs. (7.11), (7.12) and (7.13) in [end25]
+    # page 9 and equs. 7.11, 7.12 and 7.13 in [end25]
     U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
     matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
     matK -= 1. / detN * np.dot(matK, np.dot(Nadj, matK))

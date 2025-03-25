@@ -201,6 +201,30 @@ argparser.add_argument("--twotheta", default = None, type = float,
     help = "sample scattering angle")
 argparser.add_argument("--pos_x", default = None, type = float,
     help = "sample x position")
+argparser.add_argument("-a", "--a", default = None, type = float, nargs="?",
+    help = "lattice constant a")
+argparser.add_argument("-b", "--b", default = None, type = float, nargs="?",
+    help = "lattice constant b")
+argparser.add_argument("-c", "--c", default = None, type = float, nargs="?",
+    help = "lattice constant c")
+argparser.add_argument("--alpha", default = 90., type = float, nargs="?",
+    help = "lattice angle alpha")
+argparser.add_argument("--beta", default = 90., type = float, nargs="?",
+    help = "lattice angle beta")
+argparser.add_argument("--gamma", default = 90., type = float, nargs="?",
+    help = "lattice angle gamma")
+argparser.add_argument("--ax", default = None, type = float, nargs="?",
+    help = "x component of first orientation vector")
+argparser.add_argument("--ay", default = None, type = float, nargs="?",
+    help = "y component of first orientation vector")
+argparser.add_argument("--az", default = None, type = float, nargs="?",
+    help = "z component of first orientation vector")
+argparser.add_argument("--bx", default = None, type = float, nargs="?",
+    help = "x component of second orientation vector")
+argparser.add_argument("--by", default = None, type = float, nargs="?",
+    help = "y component of second orientation vector")
+argparser.add_argument("--bz", default = None, type = float, nargs="?",
+    help = "z component of second orientation vector")
 argparser.add_argument("--pos_y", default = None, type = float,
     help = "sample y position")
 argparser.add_argument("--pos_z", default = None, type = float,
@@ -267,6 +291,15 @@ elif parsedargs.twotheta != None:
     params["Q"] = tas.get_Q(params["ki"], params["kf"], params["twotheta"])
 #else:
 #    params["twotheta"] = tas.get_scattering_angle(params["ki"], params["kf"], params["Q"])
+
+if parsedargs.ax != None and parsedargs.ay != None and parsedargs.az != None:
+    params["sample_plane_1"] = np.array([ parsedargs.ax, parsedargs.ay, parsedargs.az ])
+if parsedargs.bx != None and parsedargs.by != None and parsedargs.bz != None:
+    params["sample_plane_2"] = np.array([ parsedargs.bx, parsedargs.by, parsedargs.bz ])
+if parsedargs.a != None and parsedargs.b != None and parsedargs.c != None:
+    params["sample_lattice"] = np.array([ parsedargs.a, parsedargs.b, parsedargs.c ])
+if parsedargs.alpha != None and parsedargs.beta != None and parsedargs.gamma != None:
+    params["sample_angles"] = np.array([ parsedargs.alpha, parsedargs.beta, parsedargs.gamma ]) * helpers.deg2rad
 
 if parsedargs.pos_x != None:
     params["pos_x"] = parsedargs.pos_x * helpers.cm2A
@@ -341,6 +374,12 @@ def log(msg):
 
 # is Q given as (hkl) vector?
 if isinstance(params["Q"], type([])) or isinstance(params["Q"], type(np.array([]))):
+    log("Sample lattice: a = %g A, b = %g A, c = %g A, alpha = %g deg, beta = %g deg, gamma = %g deg." %
+        (params["sample_lattice"][0], params["sample_lattice"][1], params["sample_lattice"][2],
+         params["sample_angles"][0] * helpers.rad2deg,
+         params["sample_angles"][1] * helpers.rad2deg,
+         params["sample_angles"][2] * helpers.rad2deg))
+    log("Scattering plane: orient1: %s rlu, orient2 %s rlu." % (params["sample_plane_1"], params["sample_plane_2"]))
     log("ki = %g / A, kf = %g / A, E = %g meV, Q = %s rlu." %
         (params["ki"], params["kf"], params["E"], params["Q"]))
 else:
