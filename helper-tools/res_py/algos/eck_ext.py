@@ -345,7 +345,7 @@ def calc(param):
 
     # --------------------------------------------------------------------------
     # integrate last 2 vars -> equs. 57 & 58 in [eck14]
-
+    # --------------------------------------------------------------------------
     U2 = reso.quadric_proj(U1, 5)
     # careful: factor -0.5*... missing in U matrix compared to normal gaussian!
     U = 2. * reso.quadric_proj(U2, 4)
@@ -370,7 +370,8 @@ def calc(param):
 
 
     # --------------------------------------------------------------------------
-    # include sample mosaic, see cn.cpp
+    # include sample mosaic, see also cn.cpp
+    # --------------------------------------------------------------------------
     mos_Q_sq = (param["sample_mosaic"] * Q)**2.
     mos_v_Q_sq = (param["sample_mosaic_v"] * Q)**2.
 
@@ -414,45 +415,57 @@ def calc(param):
 
 
     # --------------------------------------------------------------------------
+    # integrate over sample shape
+    # --------------------------------------------------------------------------
     sample_dims = np.array([ param["sample_d"], param["sample_w"], param["sample_h"] ])
 
-    # TODO: check this
-    # trafo for sample rotation, equ. 5.2 and below in [end25]
-    basis_ki = param["sample_orient"].T
+    if param["sample_int"] == "gaussian":
+        # TODO: check this
+        # trafo for sample rotation, equ. 5.2 and below in [end25]
+        basis_ki = param["sample_orient"].T
 
-    # TODO: principal axes of sample
-    sample_axes = np.array([
-        [1., 0., 0.],
-        [0., 1., 0.],
-        [0., 0., 1.]])
+        # TODO: principal axes of sample
+        sample_axes = np.array([
+            [1., 0., 0.],
+            [0., 1., 0.],
+            [0., 0., 1.]])
 
-    T_E = np.dot(Dtheta, np.dot(basis_ki, sample_axes))
+        T_E = np.dot(Dtheta, np.dot(basis_ki, sample_axes))
 
-    if param["sample_shape"] == "ellipsoid":
-        # ellipsoid sample integration, equ. 4.4 and below in [end25]
-        matN = matK + 0.5 * (288. * np.pi)**(1./3.) * np.dot(
-            T_E, np.dot(np.diag(1. / sample_dims**2.), np.transpose(T_E)))
-    elif param["sample_shape"] == "cylindrical":
-        # cylindrical sample integration, equ. 6.3 in [end25]
-        matN = matK + np.dot(T_E, np.dot(np.diag(
-            [4./sample_dims[0]**2., 4./sample_dims[1]**2., np.pi/sample_dims[2]**2.]), np.transpose(T_E)))
-    elif param["sample_shape"] == "cuboid":
-        # cuboid sample integration, equ. 6.6 in [end25]
-        matN = matK + np.pi * np.dot(T_E, np.dot(np.diag(1. / sample_dims**2.), np.transpose(T_E)))
+        if param["sample_shape"] == "ellipsoid":
+            # ellipsoid sample integration, equ. 4.4 and below in [end25]
+            matN = matK + 0.5 * (288. * np.pi)**(1./3.) * np.dot(
+                T_E, np.dot(np.diag(1. / sample_dims**2.), np.transpose(T_E)))
+        elif param["sample_shape"] == "cylindrical":
+            # cylindrical sample integration, equ. 6.3 in [end25]
+            matN = matK + np.dot(T_E, np.dot(np.diag(
+                [4./sample_dims[0]**2., 4./sample_dims[1]**2., np.pi/sample_dims[2]**2.]), np.transpose(T_E)))
+        elif param["sample_shape"] == "cuboid":
+            # cuboid sample integration, equ. 6.6 in [end25]
+            matN = matK + np.pi * np.dot(T_E, np.dot(np.diag(1. / sample_dims**2.), np.transpose(T_E)))
+        else:
+            raise ValueError("ResPy: No valid sample shape given.")
+
+        detN = la.det(matN)
+        Nadj = helpers.adjugate(matN)
+
+        # page 9 and equs. 7.11, 7.12 and 7.13 in [end25]
+        U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
+        matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
+        matK -= 1. / detN * np.dot(matK, np.dot(Nadj, matK))
+
+        # page 9 in [end25]
+        R0 *= np.pi**3. / detN
+
+    elif param["sample_int"] == "analytical" and param["sample_shape"] == "cylindrical" and not param["kf_vert"]:
+        # equ. 8.2 in [end25]
+        matK_plane = matK[0:2, 0:2]
+        matK_plane_adj = helpers.adjugate(matK_plane)
+
     else:
-        raise ValueError("ResPy: No valid sample shape given.")
+        raise ValueError("ResPy: No valid sample integration method given.")
 
-    detN = la.det(matN)
-    Nadj = helpers.adjugate(matN)
-
-    # page 9 and equs. 7.11, 7.12 and 7.13 in [end25]
-    U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
-    matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
-    matK -= 1. / detN * np.dot(matK, np.dot(Nadj, matK))
-
-    # page 9 in [end25]
-    R0 *= np.pi**3. / detN
-
+    # normalise R0
     if param["sample_shape"] == "cuboid":
         V_sample = sample_dims[0] * sample_dims[1] * sample_dims[2]
     elif param["sample_shape"] == "cylindrical":
@@ -464,6 +477,7 @@ def calc(param):
     # --------------------------------------------------------------------------
 
 
+    # --------------------------------------------------------------------------
     # quadratic part of quadric (matrix U)
     R = U
     # linear and constant part of quadric (V and W in [eck14], equ. 2.2 in [end25])

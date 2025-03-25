@@ -150,14 +150,17 @@ params = {
     "dmono_refl" : 1.,
     "dana_effic" : 1.,
 
-    # off-center scattering
+    # off-center scattering (for eck and eck_ext)
     # WARNING: while this is calculated, it is not yet considered in the ellipse plots
     "pos_x" : 0. * helpers.cm2A,
     "pos_y" : 0. * helpers.cm2A,
     "pos_z" : 0. * helpers.cm2A,
 
-    # vertical scattering in kf, keep "False" for normal TAS
+    # vertical scattering in kf (for eck and eck_ext), keep "False" for normal TAS
     "kf_vert" : False,
+
+    # sample integration method (for eck_ext): "gaussian" or "analytical"
+    "sample_int" : "gaussian",
 }
 # -----------------------------------------------------------------------------
 

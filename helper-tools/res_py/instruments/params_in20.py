@@ -205,6 +205,9 @@ params = {
 
     # vertical scattering in kf, keep "False" for normal TAS
     "kf_vert" : False,
+
+    # sample integration method (for eck_ext): "gaussian" or "analytical"
+    "sample_int" : "gaussian",
 }
 
 
@@ -320,4 +323,7 @@ params_fc = {
 
     # vertical scattering in kf, keep "False" for normal TAS
     "kf_vert" : True,
+
+    # sample integration method (for eck_ext): "gaussian" or "analytical"
+    "sample_int" : "gaussian",
 }
