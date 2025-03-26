@@ -422,7 +422,7 @@ def calc(param):
     if param["sample_int"] == "gaussian":
         # TODO: check this
         # trafo for sample rotation, equ. 5.2 and below in [end25]
-        basis_ki = param["sample_orient"].T
+        basis_ki = np.transpose(param["sample_orient"])
 
         # TODO: principal axes of sample
         sample_axes = np.array([
@@ -458,9 +458,26 @@ def calc(param):
         R0 *= np.pi**3. / detN
 
     elif param["sample_int"] == "analytical" and param["sample_shape"] == "cylindrical" and not param["kf_vert"]:
+        # TODO: check if this requires or excludes the sample mosaic calculations above
+
         # equ. 8.2 in [end25]
         matK_plane = matK[0:2, 0:2]
         matK_plane_adj = helpers.adjugate(matK_plane)
+
+        # gives the same as equ. 8.3 in [end25]
+        [ evals, T_matK_plane ] = la.eig(matK_plane)
+
+        # equs. 8.9 - 8.11 in [end25]
+        for i in [ 0, 1, 3 ]:
+            for j in [ 0, 1, 3 ]:
+                s = np.dot(matP[i, 0:2], np.dot(matK_plane_adj, matP[j, 0:2]))
+                U[i, j] -= 0.25*s / la.det(matK_plane)
+        U[2, 2] -= 0.25*matP[2, 2]**2. / matK[2, 2]
+        U[0:2, 2] = U[2, 0:2] = U[3, 2] = U[2, 3] = 0.
+
+        # equs. 8.7 and 8.8 in [end25]
+        R0 /= la.det(matK)
+        # TODO: rest of R0 and vector reso_v
 
     else:
         raise ValueError("ResPy: No valid sample integration method given.")
