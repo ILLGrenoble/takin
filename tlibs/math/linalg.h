@@ -733,13 +733,13 @@ matrix_type submatrix(const matrix_type& mat, std::size_t iRow, std::size_t iCol
  */
 template<class matrix_type>
 matrix_type submatrix_wnd(const matrix_type& mat, std::size_t iSubRows, std::size_t iSubCols,
-	std::size_t iBeginRow=0, std::size_t iBeginCol=0)
+	std::size_t iBeginRow = 0, std::size_t iBeginCol = 0)
 {
 	matrix_type matret(iSubRows, iSubCols);
 
-	for(std::size_t i=0; i<iSubRows; ++i)
-		for(std::size_t j=0; j<iSubCols; ++j)
-			matret(i, j) = mat(i+iBeginRow, j+iBeginCol);
+	for(std::size_t i = 0; i < iSubRows; ++i)
+		for(std::size_t j = 0; j < iSubCols; ++j)
+			matret(i, j) = mat(i + iBeginRow, j + iBeginCol);
 
 	return matret;
 }
@@ -808,17 +808,17 @@ template<class matrix_type>
 void submatrix_copy(matrix_type& mat, const matrix_type& sub,
 	std::size_t iRowBegin, std::size_t iColBegin)
 {
-	for(std::size_t i=0; i<sub.size1(); ++i)
-		for(std::size_t j=0; j<sub.size2(); ++j)
-			mat(iRowBegin+i, iColBegin+j) = sub(i,j);
+	for(std::size_t i = 0; i < sub.size1(); ++i)
+		for(std::size_t j = 0; j < sub.size2(); ++j)
+			mat(iRowBegin + i, iColBegin + j) = sub(i, j);
 }
 
 
 template<class vec_type>
 void subvector_copy(vec_type& vec, const vec_type& sub, std::size_t iRowBegin)
 {
-	for(std::size_t i=0; i<sub.size(); ++i)
-		vec[iRowBegin+i] = sub[i];
+	for(std::size_t i = 0; i < sub.size(); ++i)
+		vec[iRowBegin + i] = sub[i];
 }
 
 
