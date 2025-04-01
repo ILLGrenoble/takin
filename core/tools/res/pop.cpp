@@ -239,8 +239,8 @@ ResoResults calc_pop(const PopParams& pop)
 	A_div_kikf_trafo(POP_KF_Y, POP_POSTSAMPLE_H) = pop.kf * angs;
 	A_div_kikf_trafo(POP_KF_Z, POP_POSTSAMPLE_V) = sign_z * pop.kf * angs;
 
-
 	// covariance matrix of component geometries, S, [pop75], Appendices 2 and 3
+	// uniform distribution variance = 1/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
 	t_real dMultSrc = pop.bSrcRect ? 1./12. : 1./16.;
 	t_real dMultSample = pop.bSampleCub ? 1./12. : 1./16.;
 	t_real dMultDet = pop.bDetRect ? 1./12. : 1./16.;
@@ -535,6 +535,7 @@ ResoResults calc_pop(const PopParams& pop)
 	// this just corrects the resolution volume, which is already normalised in the MC step
 	//res.dR0 /= std::sqrt(std::abs(tl::determinant(cov) / tl::determinant(cov_nomosaic)));
 
+
 	// --------------------------------------------------------------------
 	// mono parts of the matrices, see: [zhe07], p. 10
 	// mono - monitor distance and monitor dimensions
@@ -559,13 +560,18 @@ ResoResults calc_pop(const PopParams& pop)
 	//t_mat SI_mono_geo = SI_geo;
 	//SI_mono_geo.resize(POP_MONO_Z+1, POP_MONO_Z+1, true);
 
-	t_mat SI_mono_geo = tl::zero_matrix(POP_MONO_Z+1, POP_MONO_Z+1);
+	t_mat SI_mono_geo = tl::zero_matrix(POP_SAMPLE_Y+1, POP_SAMPLE_Y+1);
 	SI_mono_geo(POP_SRC_Y, POP_SRC_Y) = dMultSrc * pop.src_w*pop.src_w /cm/cm;
 	SI_mono_geo(POP_SRC_Z, POP_SRC_Z) = dMultSrc * pop.src_h*pop.src_h /cm/cm;
 
 	SI_mono_geo(POP_MONO_X, POP_MONO_X) = t_real(1./12.) * pop.mono_thick*pop.mono_thick /cm/cm;
-	SI_mono_geo(POP_MONO_Y, POP_MONO_Y) = t_real(1./12.) * monitor_w*monitor_w /cm/cm;
-	SI_mono_geo(POP_MONO_Z, POP_MONO_Z) = t_real(1./12.) * monitor_h*monitor_h /cm/cm;
+	SI_mono_geo(POP_MONO_Y, POP_MONO_Y) = t_real(1./12.) * pop.mono_w*pop.mono_w /cm/cm;
+	SI_mono_geo(POP_MONO_Z, POP_MONO_Z) = t_real(1./12.) * pop.mono_h*pop.mono_h /cm/cm;
+
+	// monitor in sample position of calculation
+	SI_mono_geo(POP_SAMPLE_X, POP_SAMPLE_X) = t_real(1./12.) * monitor_w*monitor_w /cm/cm;;
+	SI_mono_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = t_real(1./12.) * monitor_h*monitor_h /cm/cm;
+	//SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = t_real(1./12.) * monitor_d*monitor_d /cm/cm;
 
 	SI_mono_geo *= sig2fwhm*sig2fwhm;  // convert to sigmas
 
@@ -577,35 +583,42 @@ ResoResults calc_pop(const PopParams& pop)
 		return res;
 	}
 
+	t_real sign_z_mon = sign_z;
 	//t_mat T_mono_mosaic_trafo = T_mosaic_trafo;
 	//T_mono_mosaic_trafo.resize(POP_MONO_V+1, POP_MONO_Z+1, true);
-	t_mat T_mono_mosaic_trafo = ublas::zero_matrix<t_real>(POP_MONO_V+1, POP_MONO_Z+1);
+	t_mat T_mono_mosaic_trafo = ublas::zero_matrix<t_real>(POP_MONO_V+1, POP_SAMPLE_Y+1);
 	auto mon_mosaic_trafo = get_mosaic_trafo(
 		pop.dist_vsrc_mono/cm, pop.dist_hsrc_mono/cm,
-		pop.dist_mono_sample/cm,
-		s_th_m, c_th_m, s_th_s, c_th_s,
+		dist_mono_monitor/cm,  // monitor in sample position of calculation
+		s_th_m, c_th_m, 0., 1.,
 		inv_mono_curvh*cm, inv_mono_curvv*cm);
 	T_mono_mosaic_trafo(POP_MONO_H, POP_SRC_Y) = mon_mosaic_trafo[POP_SRC_Y]; // sign forgotten in paper
 	T_mono_mosaic_trafo(POP_MONO_H, POP_MONO_X) = mon_mosaic_trafo[POP_MONO_X];
 	T_mono_mosaic_trafo(POP_MONO_H, POP_MONO_Y) = mon_mosaic_trafo[POP_MONO_Y];
-	T_mono_mosaic_trafo(POP_MONO_V, POP_SRC_Z) = mon_mosaic_trafo[POP_SRC_Z];
-	T_mono_mosaic_trafo(POP_MONO_V, POP_MONO_Z) = mon_mosaic_trafo[POP_MONO_Z];
+	T_mono_mosaic_trafo(POP_MONO_H, POP_SAMPLE_X) = mon_mosaic_trafo[POP_SAMPLE_X];
+	T_mono_mosaic_trafo(POP_MONO_H, POP_SAMPLE_Y) = mon_mosaic_trafo[POP_SAMPLE_Y];
+	T_mono_mosaic_trafo(POP_MONO_V, POP_SRC_Z) = sign_z_mon*mon_mosaic_trafo[POP_SRC_Z];
+	T_mono_mosaic_trafo(POP_MONO_V, POP_MONO_Z) = sign_z_mon*mon_mosaic_trafo[POP_MONO_Z];
+	//T_mono_mosaic_trafo(POP_MONO_V, POP_SAMPLE_Z) = sign_z_mon*mon_mosaic_trafo[POP_SAMPLE_Z];
 
 	//t_mat D_mono_geo_div_trafo = D_geo_div_trafo;
 	//D_mono_geo_div_trafo.resize(POP_PRESAMPLE_V+1, POP_MONO_Z+1, true);
-	t_mat D_mono_geo_div_trafo = ublas::zero_matrix<t_real>(POP_PRESAMPLE_V+1, POP_MONO_Z+1);
+	t_mat D_mono_geo_div_trafo = ublas::zero_matrix<t_real>(POP_PRESAMPLE_V+1, POP_SAMPLE_Y+1);
 	auto mon_geo_trafo = get_geo_trafo(
 		pop.dist_vsrc_mono/cm, pop.dist_hsrc_mono/cm,
-		dist_mono_monitor/cm,
-		s_th_m, c_th_m, s_th_s, c_th_s);
+		dist_mono_monitor/cm,  // monitor in sample position of calculation with "scattering" angle 0
+		s_th_m, c_th_m, 0., 1.);
 	D_mono_geo_div_trafo(POP_PREMONO_H, POP_SRC_Y) = mon_geo_trafo[0];
 	D_mono_geo_div_trafo(POP_PREMONO_H, POP_MONO_X) = mon_geo_trafo[1];
 	D_mono_geo_div_trafo(POP_PREMONO_H, POP_MONO_Y) = mon_geo_trafo[2];
 	D_mono_geo_div_trafo(POP_PRESAMPLE_H, POP_MONO_X) = mon_geo_trafo[3];
 	D_mono_geo_div_trafo(POP_PRESAMPLE_H, POP_MONO_Y) = mon_geo_trafo[4];
-	D_mono_geo_div_trafo(POP_PREMONO_V, POP_SRC_Z) = mon_geo_trafo[7];
-	D_mono_geo_div_trafo(POP_PREMONO_V, POP_MONO_Z) = mon_geo_trafo[8];
-	D_mono_geo_div_trafo(POP_PRESAMPLE_V, POP_MONO_Z) = mon_geo_trafo[9];
+	D_mono_geo_div_trafo(POP_PRESAMPLE_H, POP_SAMPLE_X) = mon_geo_trafo[5];
+	D_mono_geo_div_trafo(POP_PRESAMPLE_H, POP_SAMPLE_Y) = mon_geo_trafo[6];
+	D_mono_geo_div_trafo(POP_PREMONO_V, POP_SRC_Z) = sign_z_mon*mon_geo_trafo[7];
+	D_mono_geo_div_trafo(POP_PREMONO_V, POP_MONO_Z) = sign_z_mon*mon_geo_trafo[8];
+	D_mono_geo_div_trafo(POP_PRESAMPLE_V, POP_MONO_Z) = sign_z_mon*mon_geo_trafo[9];
+	//D_mono_geo_div_trafo(POP_PRESAMPLE_V, POP_SAMPLE_Z) = sign_z_mon*mon_geo_trafo[10];
 
 	t_mat K_mono_geo = S_mono_geo + tl::transform(F_mono_mosaics, T_mono_mosaic_trafo, true);
 	t_mat Ki_mono_geo;
@@ -643,7 +656,7 @@ ResoResults calc_pop(const PopParams& pop)
 			HG_mono_div += G_mono_collis;
 
 			// mono part, [zhe07], p. 10, equ. 10
-			res.dR0 /= std::sqrt(tl::determinant(F_mono_mosaics) / tl::determinant(HG_mono_div));
+			res.dR0 /= std::sqrt(std::abs(tl::determinant(F_mono_mosaics) / tl::determinant(HG_mono_div)));
 			res.dR0 *= t_real(2.)/pi * s_th_m / dmono_refl;
 		}
 	}
@@ -688,7 +701,7 @@ ResoResults calc_pop(const PopParams& pop)
 			t_real dDetK_mono = tl::determinant(K_mono_geo);
 			t_real dDetDSiDti_mono = tl::determinant(DSiDti_mono);
 
-			res.dR0 /= std::sqrt(dDetS_mono*dDetF_mono / (dDetK_mono*dDetDSiDti_mono));
+			res.dR0 /= std::sqrt(std::abs(dDetS_mono*dDetF_mono / (dDetK_mono*dDetDSiDti_mono)));
 			res.dR0 *= t_real(2.)/pi * s_th_m / dmono_refl;
 		}
 	}
