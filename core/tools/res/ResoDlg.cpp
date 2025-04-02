@@ -104,7 +104,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinDistMonoSample, spinDistSampleAna, spinDistAnaDet,
 		spinDistVSrcMono, spinDistHSrcMono,
 
-		spinMonitorW, spinMonitorH, spinDistMonoMonitor,
+		spinMonitorW, spinMonitorH, spinMonitorThick,
+		spinDistMonoMonitor,
 		spinScatterKfAngle,
 
 		spinMonoMosaicV, spinSampleMosaicV, spinAnaMosaicV,
@@ -137,7 +138,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det",
 		"reso/pop_dist_vsrc_mono", "reso/pop_dist_hsrc_mono",
 
-		"reso/pop_monitor_w", "reso/pop_monitor_h", "reso/pop_dist_mono_monitor",
+		"reso/pop_monitor_w", "reso/pop_monitor_h", "reso/pop_monitor_thick",
+		"reso/pop_dist_mono_monitor",
 		"reso/scatter_kf_angle",
 
 		"reso/eck_mono_mosaic_v", "reso/eck_sample_mosaic_v", "reso/eck_ana_mosaic_v",
@@ -484,6 +486,7 @@ void ResoDlg::Calc()
 
 		cn.monitor_w = t_real_reso(spinMonitorW->value()) * cm;
 		cn.monitor_h = t_real_reso(spinMonitorH->value()) * cm;
+		cn.monitor_thick = t_real_reso(spinMonitorThick->value()) * cm;
 		cn.dist_mono_monitor = t_real_reso(spinDistMonoMonitor->value()) * cm;
 
 

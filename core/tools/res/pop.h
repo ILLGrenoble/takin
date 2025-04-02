@@ -85,6 +85,7 @@ struct PopParams : public CNParams
 
 	tl::t_length_si<t_real_reso> monitor_w;
 	tl::t_length_si<t_real_reso> monitor_h;
+	tl::t_length_si<t_real_reso> monitor_thick;
 	tl::t_length_si<t_real_reso> dist_mono_monitor;
 };
 

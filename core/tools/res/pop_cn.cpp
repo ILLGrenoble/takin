@@ -298,8 +298,10 @@ ResoResults calc_pop_cn(const CNParams& pop)
 	// this just corrects the resolution volume, which is already normalised in the MC step
 	//res.dR0 /= std::sqrt(std::abs(tl::determinant(cov) / tl::determinant(cov_nomosaic)));
 
+
 	// --------------------------------------------------------------------
 	// mono parts of the matrices, see: [zhe07], p. 10
+	// --------------------------------------------------------------------
 	t_mat G_mono_collis = G_collis;
 	G_mono_collis.resize(POP_PRESAMPLE_V+1, POP_PRESAMPLE_V+1, true);
 
@@ -313,6 +315,7 @@ ResoResults calc_pop_cn(const CNParams& pop)
 	//t_mat H_mono = H;
 	//H_mono.resize(POP_PRESAMPLE_V+1, POP_PRESAMPLE_V+1, true);
 	// --------------------------------------------------------------------
+
 
 	const t_real pi = tl::get_pi<t_real>();
 

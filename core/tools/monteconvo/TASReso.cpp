@@ -317,6 +317,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 
 	m_reso.monitor_w = xml.Query<t_real>((strXmlRoot + "reso/pop_monitor_w").c_str(), 0.)*cm;
 	m_reso.monitor_h = xml.Query<t_real>((strXmlRoot + "reso/pop_monitor_h").c_str(), 0.)*cm;
+	m_reso.monitor_thick = xml.Query<t_real>((strXmlRoot + "reso/pop_monitor_thick").c_str(), 0.)*cm;
 	m_reso.dist_mono_monitor = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_mono_monitor").c_str(), 0.)*cm;
 
 
