@@ -170,17 +170,14 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/use_kfki", "reso/use_monki", "reso/use_mon"};
 
 
-	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus,
-		radioSampleScatterPlus,
-		radioSampleCub, radioSrcRect, radioDetRect,
+	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus, radioSampleScatterPlus,
+		radioSampleCub, radioSrcRect, radioDetRect, radioMonitorRect,
 		radioTofDetSph};
-	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus,
-		radioSampleScatterMinus, radioSampleCyl,
-		radioSrcCirc, radioDetCirc,
+	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus, radioSampleScatterMinus,
+		radioSampleCyl, radioSrcCirc, radioDetCirc, radioMonitorCirc,
 		radioTofDetCyl};
-	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense",
-		"reso/sample_scatter_sense", "reso/pop_sample_cuboid",
-		"reso/pop_source_rect", "reso/pop_det_rect",
+	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense", "reso/sample_scatter_sense",
+		"reso/pop_sample_cuboid", "reso/pop_source_rect", "reso/pop_det_rect", "reso/pop_monitor_rect"
 		"reso/viol_det_sph"};
 
 	m_vecComboBoxes = {/*comboAlgo,*/
@@ -484,6 +481,7 @@ void ResoDlg::Calc()
 		cn.dist_vsrc_mono = t_real_reso(spinDistVSrcMono->value()) * cm;
 		cn.dist_hsrc_mono = t_real_reso(spinDistHSrcMono->value()) * cm;
 
+		cn.bMonitorRect = radioMonitorRect->isChecked();
 		cn.monitor_w = t_real_reso(spinMonitorW->value()) * cm;
 		cn.monitor_h = t_real_reso(spinMonitorH->value()) * cm;
 		cn.monitor_thick = t_real_reso(spinMonitorThick->value()) * cm;

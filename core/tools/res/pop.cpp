@@ -247,6 +247,7 @@ ResoResults calc_pop(const PopParams& pop)
 	t_real dMultSrc = pop.bSrcRect ? var_uniform : var_circular;
 	t_real dMultSample = pop.bSampleCub ? var_uniform : var_circular;
 	t_real dMultDet = pop.bDetRect ? var_uniform : var_circular;
+	t_real dMultMonitor = pop.bMonitorRect ? var_uniform : var_circular;
 
 	t_mat SI_geo = tl::zero_matrix(POP_NUM_POS, POP_NUM_POS);
 	SI_geo(POP_SRC_Y, POP_SRC_Y) = dMultSrc * pop.src_w*pop.src_w /cm/cm;
@@ -576,8 +577,8 @@ ResoResults calc_pop(const PopParams& pop)
 
 	// monitor in sample position of calculation
 	SI_mono_geo(POP_SAMPLE_X, POP_SAMPLE_X) = var_uniform * monitor_thick*monitor_thick /cm/cm;;
-	SI_mono_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = var_uniform * monitor_w*monitor_w /cm/cm;
-	SI_mono_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = var_uniform * monitor_h*monitor_h /cm/cm;
+	SI_mono_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = dMultMonitor * monitor_w*monitor_w /cm/cm;
+	SI_mono_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = dMultMonitor * monitor_h*monitor_h /cm/cm;
 
 	SI_mono_geo *= sig2fwhm*sig2fwhm;  // convert to sigmas
 

@@ -83,6 +83,7 @@ struct PopParams : public CNParams
 	tl::t_length_si<t_real_reso> dist_vsrc_mono; // vertical virtual source
 	tl::t_length_si<t_real_reso> dist_hsrc_mono; // horizontal virtual source
 
+	bool bMonitorRect = true;
 	tl::t_length_si<t_real_reso> monitor_w;
 	tl::t_length_si<t_real_reso> monitor_h;
 	tl::t_length_si<t_real_reso> monitor_thick;
