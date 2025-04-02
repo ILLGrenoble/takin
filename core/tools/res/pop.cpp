@@ -242,7 +242,7 @@ ResoResults calc_pop(const PopParams& pop)
 	// covariance matrix of component geometries, S, [pop75], Appendices 2 and 3
 	// uniform distribution variance = 1/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
 	t_real var_uniform = t_real(1. / 12.);
-	t_real var_circular = t_real(1. / 12.);
+	t_real var_circular = t_real(1. / 16.);
 	t_real dMultSrc = pop.bSrcRect ? var_uniform : var_circular;
 	t_real dMultSample = pop.bSampleCub ? var_uniform : var_circular;
 	t_real dMultDet = pop.bDetRect ? var_uniform : var_circular;
