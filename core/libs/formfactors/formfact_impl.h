@@ -60,7 +60,6 @@ PeriodicSystem<T>::PeriodicSystem(const std::string& strFile, const std::string&
 		return;
 	}
 
-	bool bIonStart = 0;
 	for(std::size_t iElem=0; iElem<iNumDat; ++iElem)
 	{
 		elem_type elem;
@@ -160,7 +159,7 @@ FormfactList<T>::FormfactList(const std::string& strFile, const std::string& str
 		return;
 	}
 
-	bool bIonStart = 0;
+	bool bIonStart = false;
 	for(std::size_t iSf=0; iSf<iNumDat; ++iSf)
 	{
 		elem_type ffact;
@@ -174,7 +173,7 @@ FormfactList<T>::FormfactList(const std::string& strFile, const std::string& str
 		ffact.c = xml.Query<value_type>(strXmlRoot + "/" + strAtom + "/c", 0.);
 
 		if(!bIonStart && ffact.strAtom.find_first_of("+-") != std::string::npos)
-			bIonStart = 1;
+			bIonStart = true;
 
 		if(!bIonStart)
 			s_vecAtoms.push_back(std::move(ffact));

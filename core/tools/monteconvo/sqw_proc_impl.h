@@ -611,7 +611,7 @@ SqwProc<t_sqw>::disp(t_real dh, t_real dk, t_real dl) const
 
 		t_sh_str *pPars = static_cast<t_sh_str*>(m_pSharedPars[iChild]);
 
-		ProcMsg msgDisp = msg_recv(*m_pmsgIn[iChild]);
+		/*ProcMsg msgDisp = */msg_recv(*m_pmsgIn[iChild]);
 		return str_to_disp(*pPars);
 	};
 
@@ -753,7 +753,7 @@ std::vector<SqwBase::t_var> SqwProc<t_sqw>::GetVars() const
 
 	t_sh_str *pPars = static_cast<t_sh_str*>(m_pSharedPars[0]);
 
-	ProcMsg msgRet = msg_recv(*m_pmsgIn[0]);
+	/*ProcMsg msgRet = */msg_recv(*m_pmsgIn[0]);
 	return str_to_pars(*pPars);
 }
 

@@ -200,7 +200,6 @@ void ScanViewerDlg::FitParabola()
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
 	{
-		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
 		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
 
 		dX0 = m_vecX[minmaxY.second - m_vecY.begin()];

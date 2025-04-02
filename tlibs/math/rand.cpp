@@ -116,4 +116,14 @@ unsigned int simple_rand(unsigned int iMax)
 	return rand() % iMax;
 }
 
+
+template<>
+bool rand_minmax(bool tMin, bool tMax)
+{
+	using t_rand = tl::_rand_int<unsigned char>;
+
+	t_rand rand;
+	return rand(tMin, tMax) == 1;
+}
+
 }

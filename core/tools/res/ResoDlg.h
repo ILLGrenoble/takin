@@ -88,26 +88,26 @@ private:
 
 protected:
 	std::vector<QDoubleSpinBox*> m_vecSpinBoxes;
-	std::vector<std::string> m_vecSpinNames;
+	std::vector<QString> m_vecSpinNames;
 
 	std::vector<QSpinBox*> m_vecIntSpinBoxes;
-	std::vector<std::string> m_vecIntSpinNames;
+	std::vector<QString> m_vecIntSpinNames;
 
 	std::vector<QCheckBox*> m_vecCheckBoxes;
-	std::vector<std::string> m_vecCheckNames;
+	std::vector<QString> m_vecCheckNames;
 
 	std::vector<QLineEdit*> m_vecPosEditBoxes;
-	std::vector<std::string> m_vecPosEditNames;
+	std::vector<QString> m_vecPosEditNames;
 
 	std::vector<QLineEdit*> m_vecEditBoxes;
-	std::vector<std::string> m_vecEditNames;
+	std::vector<QString> m_vecEditNames;
 
 	std::vector<QRadioButton*> m_vecRadioPlus;
 	std::vector<QRadioButton*> m_vecRadioMinus;
-	std::vector<std::string> m_vecRadioNames;
+	std::vector<QString> m_vecRadioNames;
 
 	std::vector<QComboBox*> m_vecComboBoxes;
-	std::vector<std::string> m_vecComboNames;
+	std::vector<QString> m_vecComboNames;
 
 	void WriteLastConfig();
 	void ReadLastConfig();

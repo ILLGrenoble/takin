@@ -228,7 +228,7 @@ t_real SqwUniformGrid::operator()(t_real dh, t_real dk, t_real dl, t_real dE) co
 	std::vector<t_real> vecE, vecW;
 	std::tie(vecE, vecW) = disp(dh, dk, dl);
 
-	t_real dInc=0, dS_p=0, dS_m=0;
+	t_real dInc = 0;
 	if(!tl::float_equal(m_dIncAmp, t_real(0)))
 		dInc = tl::gauss_model(dE, t_real(0), m_dIncSigma, m_dIncAmp, t_real(0));
 

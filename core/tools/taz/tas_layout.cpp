@@ -571,12 +571,11 @@ void TasLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	const QLineF* pLines1[] = {&lineSrcMono, &lineKi, &lineKf, &lineRot[2]};
 	const QLineF* pLines2[] = {&lineKi, &lineKf, &lineAnaDet, &lineKi};
 	const QPointF* pPoints[] = {&ptMono, &ptSample, &ptAna, &ptSample};
-	const QPointF* pPoints_ext[] = {&ptSrc, &ptMono, &ptSample, &ptThP[2]};
 	const t_real dAngles[] = {m_dMonoTwoTheta, m_dTwoTheta, m_dAnaTwoTheta, -m_dTheta};
 	const t_real dAngleOffs[] = {0., 0., 0., 180.};
 
 	QPen* arcPens[] = {&penBlue, &penBlue, &penBlue, &penRed};
-	const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
+	const std::wstring strDEG = tl::get_spec_char_utf16("deg");
 
 	for(std::size_t i=0; i<sizeof(pPoints)/sizeof(*pPoints); ++i)
 	{

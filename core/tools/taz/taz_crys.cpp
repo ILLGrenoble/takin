@@ -277,9 +277,9 @@ void TazDlg::CalcPeaks()
 			editGammaRecip->setText(dtoqstr(tl::r2d(recip.GetGamma()), g_iPrec));
 		}
 
-		const std::wstring& strAA = tl::get_spec_char_utf16("AA");
-		const std::wstring& strMinus = tl::get_spec_char_utf16("sup-");
-		const std::wstring& strThree = tl::get_spec_char_utf16("sup3");
+		const std::wstring strAA = tl::get_spec_char_utf16("AA");
+		const std::wstring strMinus = tl::get_spec_char_utf16("sup-");
+		const std::wstring strThree = tl::get_spec_char_utf16("sup3");
 
 		t_real dVol = lattice.GetVol();
 		t_real dVol_recip = recip.GetVol() /*/ (2.*M_PI*2.*M_PI*2.*M_PI)*/;
@@ -664,7 +664,7 @@ void TazDlg::spurionInfo(const tl::ElasticSpurion& spuri,
 			ostrMsg << " ";
 	}
 
-	const std::string& strDelta = tl::get_spec_char_utf8("Delta");
+	const std::string strDelta = tl::get_spec_char_utf8("Delta");
 
 	if(vecInelCKI.size())
 	{

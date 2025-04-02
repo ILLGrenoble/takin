@@ -535,7 +535,7 @@ template<class t_real>
 std::array<t_real, 5> FileH5<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
 	using t_map = typename FileInstrBase<t_real>::t_mapParams;
-	const t_map& params = GetAllParams();
+	//const t_map& params = GetAllParams();
 
 	return FileInstrBase<t_real>::GetScanHKLKiKf("QH", "QK", "QL", "EN", i);
 }

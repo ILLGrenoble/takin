@@ -67,8 +67,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	: QDialog(pParent), m_bDontCalc(true), m_pSettings(pSettings)
 {
 	setupUi(this);
-	spinMCSample->setEnabled(0);		// TODO
-	spinMCSampleLive->setEnabled(0);	// TODO
+	spinMCSample->setEnabled(false);      // TODO
+	spinMCSampleLive->setEnabled(false);  // TODO
 
 	if(m_pSettings)
 	{
@@ -124,9 +124,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
 		"reso/ana_mosaic", "reso/sample_mosaic",
 		"reso/h_coll_mono", "reso/h_coll_before_sample",
-		"reso/h_coll_after_sample", "reso/h_coll_ana",
-		"reso/v_coll_mono", "reso/v_coll_before_sample",
-		"reso/v_coll_after_sample", "reso/v_coll_ana",
+		"reso/h_coll_after_sample", "reso/h_coll_ana", "reso/v_coll_mono",
+		"reso/v_coll_before_sample", "reso/v_coll_after_sample", "reso/v_coll_ana",
 		"reso/mono_refl", "reso/ana_effic",
 
 		"reso/pop_mono_w", "reso/pop_mono_h", "reso/pop_mono_thick", "reso/pop_mono_curvh", "reso/pop_mono_curvv",
@@ -177,7 +176,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		radioSampleCyl, radioSrcCirc, radioDetCirc, radioMonitorCirc,
 		radioTofDetCyl};
 	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense", "reso/sample_scatter_sense",
-		"reso/pop_sample_cuboid", "reso/pop_source_rect", "reso/pop_det_rect", "reso/pop_monitor_rect"
+		"reso/pop_sample_cuboid", "reso/pop_source_rect", "reso/pop_det_rect", "reso/pop_monitor_rect",
 		"reso/viol_det_sph"};
 
 	m_vecComboBoxes = {/*comboAlgo,*/
@@ -204,6 +203,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		connect(pCheck, &QCheckBox::toggled, this, &ResoDlg::Calc);
 	for(QComboBox* pCombo : m_vecComboBoxes)
 		connect(pCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ResoDlg::Calc);
+
 	connect(comboAlgo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ResoDlg::Calc);
 
 	connect(groupGuide, &QGroupBox::toggled, this, &ResoDlg::Calc);
@@ -224,7 +224,8 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 
 
-ResoDlg::~ResoDlg() {}
+ResoDlg::~ResoDlg()
+{ }
 
 
 
@@ -574,10 +575,10 @@ void ResoDlg::Calc()
 
 		if(res.bOk)
 		{
-			const std::string& strAA_1 = tl::get_spec_char_utf8("AA")
+			const std::string strAA_1 = tl::get_spec_char_utf8("AA")
 				+ tl::get_spec_char_utf8("sup-")
 				+ tl::get_spec_char_utf8("sup1");
-			const std::string& strAA_3 = tl::get_spec_char_utf8("AA")
+			const std::string strAA_3 = tl::get_spec_char_utf8("AA")
 				+ tl::get_spec_char_utf8("sup-")
 				+ tl::get_spec_char_utf8("sup3");
 

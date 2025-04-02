@@ -103,7 +103,7 @@ t_str get_h5_attr(H5::H5File& file, const t_str& path, const t_str& attr_name, b
 	{
 		H5::Attribute attr = obj->openAttribute(attr_name);
 
-		hsize_t len = attr.getStorageSize();
+		//hsize_t len = attr.getStorageSize();
 		attr.read(attr.getStrType(), attr_val);
 		attr.close();
 	}

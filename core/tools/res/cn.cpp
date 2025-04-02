@@ -193,9 +193,6 @@ ResoResults calc_cn(const CNParams& cn)
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = cn.E / meV;
 
-	angle coll_h_pre_mono = cn.coll_h_pre_mono;
-	angle coll_v_pre_mono = cn.coll_v_pre_mono;
-
 	// if the user moved the scattering angle to the other
 	// side of the scattering sense indicated by the flag
 	t_real manually_changed_sense = t_real(1);

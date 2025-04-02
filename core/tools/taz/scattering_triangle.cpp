@@ -460,7 +460,7 @@ void ScatteringTriangle::paint(QPainter *pPainter, const QStyleOptionGraphicsIte
 	const t_real dG = lineG.length()/m_dScaleFactor/m_dZoom;
 
 	const std::wstring strAA = tl::get_spec_char_utf16("AA") + tl::get_spec_char_utf16("sup-") + tl::get_spec_char_utf16("sup1");
-	const std::wstring& strDelta = tl::get_spec_char_utf16("Delta");
+	const std::wstring strDelta = tl::get_spec_char_utf16("Delta");
 
 	std::wostringstream ostrQ, ostrKi, ostrKf, ostrE, ostrq, ostrG;
 	ostrQ.precision(g_iPrecGfx); ostrE.precision(g_iPrecGfx);
@@ -619,7 +619,7 @@ void ScatteringTriangle::paint(QPainter *pPainter, const QStyleOptionGraphicsIte
 	}
 
 
-	const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
+	const std::wstring strDEG = tl::get_spec_char_utf16("deg");
 
 	for(std::size_t i=0; i<vecDrawAngles.size(); ++i)
 	{

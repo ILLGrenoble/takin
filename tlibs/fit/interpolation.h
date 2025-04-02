@@ -63,7 +63,8 @@ template<typename T> T bernstein(int i, int n, T t)
 template<typename T>
 ublas::vector<T> bezier(const ublas::vector<T>* P, std::size_t N, T t)
 {
-	if(N==0) return ublas::vector<T>(0);
+	if(N==0)
+		return ublas::vector<T>(0);
 	const int n = N-1;
 
 	ublas::vector<T> vec(P[0].size());
@@ -108,7 +109,8 @@ T bspline_base(int i, int j, T t, const std::vector<T>& knots)
 template<typename T>
 ublas::vector<T> bspline(const ublas::vector<T>* P, std::size_t N, T t, const std::vector<T>& knots)
 {
-	if(N==0) return ublas::vector<T>(0);
+	if(N==0)
+		return ublas::vector<T>(0);
 	const int n = N-1;
 	const int m = knots.size()-1;
 	const int degree = m-n-1;
@@ -130,33 +132,33 @@ ublas::vector<T> bspline(const ublas::vector<T>* P, std::size_t N, T t, const st
 template<typename T=double>
 class Bezier : public FunctionModel_param<ublas::vector<T>>
 {
-	protected:
-		std::unique_ptr<ublas::vector<T>[]> m_pvecs;
-		std::size_t m_iN;
+protected:
+	std::unique_ptr<ublas::vector<T>[]> m_pvecs;
+	std::size_t m_iN;
 
-	public:
-		Bezier(std::size_t N, const T *px, const T *py);
-		virtual ~Bezier() = default;
+public:
+	Bezier(std::size_t N, const T *px, const T *py);
+	virtual ~Bezier() = default;
 
-		virtual ublas::vector<T> operator()(T t) const override;
-		virtual const char* GetModelName() const override { return "bezier"; };
+	virtual ublas::vector<T> operator()(T t) const override;
+	virtual const char* GetModelName() const override { return "bezier"; };
 };
 
 
 template<typename T=double>
 class BSpline : public FunctionModel_param<ublas::vector<T>>
 {
-	protected:
-		std::unique_ptr<ublas::vector<T>[]> m_pvecs;
-		std::size_t m_iN, m_iDegree;
-		std::vector<T> m_vecKnots;
+protected:
+	std::unique_ptr<ublas::vector<T>[]> m_pvecs;
+	std::size_t m_iN, m_iDegree;
+	std::vector<T> m_vecKnots;
 
-	public:
-		BSpline(std::size_t N, const T *px, const T *py, unsigned int iDegree=3);
-		virtual ~BSpline() = default;
+public:
+	BSpline(std::size_t N, const T *px, const T *py, unsigned int iDegree=3);
+	virtual ~BSpline() = default;
 
-		virtual ublas::vector<T> operator()(T t) const override;
-		virtual const char* GetModelName() const override { return "bspline"; };
+	virtual ublas::vector<T> operator()(T t) const override;
+	virtual const char* GetModelName() const override { return "bspline"; };
 };
 
 
@@ -401,13 +403,12 @@ void find_peaks(std::size_t iLen, const T* _px, const T* _py, unsigned int iOrde
 	std::reverse(vecMaximaX.begin(), vecMaximaX.end());
 
 
-
 	std::ostringstream ostrDbg;
 	ostrDbg << "Prefitter found peaks at: ";
 	for(std::size_t i=0; i<vecMaximaX.size(); ++i)
 	{
-		ostrDbg << vecMaximaX[i] 
-			<< " (int: " << vecMaximaSize[i] 
+		ostrDbg << vecMaximaX[i]
+			<< " (int: " << vecMaximaSize[i]
 			<< ", width: " << vecMaximaWidth[i] << "), ";
 	}
 	log_debug(ostrDbg.str());

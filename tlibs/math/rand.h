@@ -149,14 +149,7 @@ static T rand_minmax(T tMin, T tMax)
 /**
  * specialisation for 'bool'
  */
-template<>
-bool rand_minmax(bool tMin, bool tMax)
-{
-	using t_rand = _rand_int<unsigned char>;
-
-	t_rand rand;
-	return rand(tMin, tMax)==1;
-}
+template<> bool rand_minmax(bool tMin, bool tMax);
 
 
 // ----------------------------------------------------------------------------

@@ -356,12 +356,11 @@ void TofLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	const QLineF* pLines1[] = { &lineKi, &lineRot };
 	const QLineF* pLines2[] = { &lineKf, &lineKi };
 	const QPointF* pPoints[] = { &ptSample, &ptSample };
-	const QPointF* pPoints_ext[] = { &ptSrc, &ptThP };
 	const t_real dAngles[] = { m_dTwoTheta, -m_dTheta };
 	const t_real dAngleOffs[] = { 0., 180. };
 
 	QPen* arcPens[] = {&penBlue, &penRed};
-	const std::wstring& strDEG = tl::get_spec_char_utf16("deg");
+	const std::wstring strDEG = tl::get_spec_char_utf16("deg");
 
 	for(std::size_t i=0; i<sizeof(pPoints)/sizeof(*pPoints); ++i)
 	{

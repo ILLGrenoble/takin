@@ -462,7 +462,7 @@ void ScanViewerDlg::FileSelected()
 	const std::wstring strPM = tl::get_spec_char_utf16("pm");  // +-
 
 	m_bDoUpdate = false;
-	int iIdxX=-1, iIdxY=-1, iIdxMon=-1, iCurIdx=0;
+	int iIdxX = -1, iIdxY = -1, iIdxMon = -1, iCurIdx = 0;
 	int iAlternateX = -1;
 	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_pInstr->GetColNames();
 	for(const tl::FileInstrBase<t_real>::t_vecColNames::value_type& strCol : vecColNames)
@@ -542,7 +542,7 @@ void ScanViewerDlg::SearchProps(const QString& qstr)
 
 void ScanViewerDlg::PlotScan()
 {
-	if(m_pInstr==nullptr || !m_bDoUpdate)
+	if(m_pInstr == nullptr || !m_bDoUpdate)
 		return;
 
 	bool bNormalise = checkNorm->isChecked();
@@ -557,15 +557,18 @@ void ScanViewerDlg::PlotScan()
 	const std::string strTitle = m_pInstr->GetTitle();
 	m_strCmd = m_pInstr->GetScanCommand();
 
+	// get data vectors
 	m_vecX = m_pInstr->GetCol(m_strX.c_str());
 	m_vecY = m_pInstr->GetCol(m_strY.c_str());
 	std::vector<t_real> vecMon = m_pInstr->GetCol(m_strMon.c_str());
+
+	// TODO: sort data vectors
+	//tl::sort_3(m_vecX.begin(), m_vecX.end(), m_vecY.begin(), vecMon.begin());
 
 	bool bYIsACountVar = (m_strY == m_pInstr->GetCountVar() || m_strY == m_pInstr->GetMonVar());
 	m_plotwrap->GetCurve(1)->SetShowErrors(bYIsACountVar);
 
 	// see if there's a corresponding error column for the selected counter or monitor
-	bool has_ctr_err = false, has_mon_err = false;
 	std::string ctr_err_col, mon_err_col;
 
 	// get counter error if defined
@@ -578,7 +581,6 @@ void ScanViewerDlg::PlotScan()
 	{
 		// use given error column
 		m_vecYErr = m_pInstr->GetCol(ctr_err_col);
-		has_ctr_err = true;
 	}
 	else
 	{
@@ -604,7 +606,6 @@ void ScanViewerDlg::PlotScan()
 	{
 		// use given error column
 		vecMonErr = m_pInstr->GetCol(mon_err_col);
-		has_mon_err = true;
 	}
 	else
 	{

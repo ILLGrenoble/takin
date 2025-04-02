@@ -813,7 +813,6 @@ bool TazDlg::ImportCIF()
 	if(!m_settings.value("main/native_dialogs", 1).toBool())
 		fileopt = QFileDialog::DontUseNativeDialog;
 
-	const bool bShowPreview = m_settings.value("main/dlg_previews", true).toBool();
 	QString strDirLast = m_settings.value("main/last_import_cif_dir", "~").toString();
 
 	std::unique_ptr<QFileDialog> pdlg{new QFileDialog(this, "Import CIF...")};
