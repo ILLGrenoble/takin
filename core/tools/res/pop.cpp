@@ -240,7 +240,8 @@ ResoResults calc_pop(const PopParams& pop)
 	A_div_kikf_trafo(POP_KF_Z, POP_POSTSAMPLE_V) = sign_z * pop.kf * angs;
 
 	// covariance matrix of component geometries, S, [pop75], Appendices 2 and 3
-	// uniform distribution variance = 1/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
+	// uniform distribution variance = L^2/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
+	// circular distribution variance = R^2/4 = D^2/16, see: https://en.wikipedia.org/wiki/Wigner_semicircle_distribution
 	t_real var_uniform = t_real(1. / 12.);
 	t_real var_circular = t_real(1. / 16.);
 	t_real dMultSrc = pop.bSrcRect ? var_uniform : var_circular;
