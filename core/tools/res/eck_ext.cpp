@@ -525,24 +525,14 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	bool use_monitor = (eck.flags & CALC_MON) != 0;
 
-	if(eck.flags & CALC_GENERAL_R0)
-	{
-		// alternate R0 normalisation factor, see [mit84], equ. A.57
-		res.dR0 = mitch_R0<t_real>(use_monitor, dReflM, dReflA,
-			tl::get_ellipsoid_volume(Arot), tl::get_ellipsoid_volume(Erot),
-			res.dResVol, false);
-	}
-	else
-	{
-		res.dR0 = Z;
-		if(use_monitor)
-			res.dR0 /= dReflM;
+	res.dR0 = Z;
+	if(use_monitor)
+		res.dR0 /= dReflM;
 
-		// missing volume prefactor to normalise gaussian,
-		// cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
-		//res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
-		res.dR0 *= res.dResVol * pi * t_real(3.);  // TODO: check
-	}
+	// missing volume prefactor to normalise gaussian,
+	// cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
+	//res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
+	//res.dR0 *= res.dResVol * pi * t_real(3.);  // TODO: check
 
 	res.dR0 *= std::exp(-res.reso_s);
 	res.dR0 *= dxsec * dmonitor;

@@ -61,26 +61,22 @@ template<class t_str = std::string> const t_str/*&*/ get_trim_chars();
 
 template<> inline const std::string/*&*/ get_dir_seps()
 {
-	static const std::string strSeps("\\/");
-	return strSeps;
+	return std::string("\\/");
 }
 
 template<> inline const std::wstring/*&*/ get_dir_seps()
 {
-	static const std::wstring strSeps(L"\\/");
-	return strSeps;
+	return std::wstring(L"\\/");
 }
 
 template<> inline const std::string/*&*/ get_trim_chars()
 {
-	static const std::string strC(" \t\r");
-	return strC;
+	return std::string(" \t\r");
 }
 
 template<> inline const std::wstring/*&*/ get_trim_chars()
 {
-	static const std::wstring strC(L" \t\r");
-	return strC;
+	return std::wstring(L" \t\r");
 }
 
 
@@ -324,10 +320,13 @@ void trim(t_str& str)
 
 #ifndef NO_BOOST
 
+	//std::cout << "\"" << get_trim_chars<t_str>() << "\"" << std::endl;
+	//std::cout << "before: \"" << str << "\"" << std::endl;
 	boost::trim_if(str, [](t_char c) -> bool
 	{
 		return get_trim_chars<t_str>().find(c) != t_str::npos;
 	});
+	//std::cout << "after: \"" << str << "\"" << std::endl;
 
 #else
 
@@ -337,14 +336,14 @@ void trim(t_str& str)
 	else
 		++posLast;
 
-	str.erase(str.begin()+posLast, str.end());
+	str.erase(str.begin() + posLast, str.end());
 
 
 	std::size_t posFirst = str.find_first_not_of(get_trim_chars<t_str>());
 	if(posFirst == t_str::npos)
 		posFirst = str.length();
 
-	str.erase(str.begin(), str.begin()+posFirst);
+	str.erase(str.begin(), str.begin() + posFirst);
 
 #endif
 }
@@ -603,7 +602,8 @@ t_str str_between(const t_str& str, const t_str& strSep1, const t_str& strSep2,
 {
 	t_str str1, str2;
 	std::tie(str1, str2) = split_first<t_str>(str, strSep1, bTrim, bSeq);
-	if(str2 == "") return t_str("");
+	if(str2 == "")
+		return t_str("");
 
 	std::tie(str1, str2) = split_first<t_str>(str2, strSep2, bTrim, bSeq);
 	return str1;
@@ -662,7 +662,7 @@ void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 	boost::char_separator<t_char> delim(strDelim.c_str());
 	t_tokeniser tok(str, delim);
 
-	for(t_tokiter iter=tok.begin(); iter!=tok.end(); ++iter)
+	for(t_tokiter iter = tok.begin(); iter != tok.end(); ++iter)
 	{
 		vecRet.push_back(
 			_str_to_var_impl<T, t_str,
@@ -675,7 +675,7 @@ void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
  * Tokenises string on strDelim
  */
 template<class T, class t_str = std::string, template<class...> class t_cont=std::vector>
-void get_tokens_seq(const t_str& str, const t_str& strDelim, t_cont<T>& vecRet, bool bCase=1)
+void get_tokens_seq(const t_str& str, const t_str& strDelim, t_cont<T>& vecRet, bool bCase = true)
 {
 	using t_char = typename t_str::value_type;
 
@@ -715,12 +715,13 @@ bool parse_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 	std::vector<t_str> vecStrs;
 	get_tokens<t_str, t_str, std::vector<t_str>>(str, strDelim, vecStrs);
 
-	bool bOk = 1;
+	bool bOk = true;
 	for(const t_str& str : vecStrs)
 	{
 		std::pair<bool, T> pairResult = eval_expr<t_str, T>(str);
 		vecRet.push_back(pairResult.second);
-		if(!pairResult.first) bOk = 0;
+		if(!pairResult.first)
+			bOk = false;
 	}
 
 	return bOk;
@@ -744,7 +745,7 @@ template<class T, class t_str = std::string, class t_cont=std::vector<T>>
 bool parse_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 {
 	get_tokens<T, t_str, t_cont>(str, strDelim, vecRet);
-	return 1;
+	return true;
 }
 
 

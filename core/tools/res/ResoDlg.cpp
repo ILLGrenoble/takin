@@ -1199,15 +1199,15 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(3,0);
 			tabWidget->setTabEnabled(4,0);
 
-			strAlgo = "<b>M. J. Cooper and <br>R. Nathans</b><br>\n";
+			strAlgo = "<b>M. J. Cooper and <br>R. Nathans</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1107/S0365110X67002816>"
-				"Acta Cryst. 23, <br>pp. 357-367</a><br>\n";
-			strAlgo += "1967";
+				"Acta Cryst. 23, <br>pp. 357-367</a>,<br>\n";
+			strAlgo += "1967.";
 
-			strAlgo += "<br><b>P. W. Mitchell <i>et al.</i></b><br>\n";
+			strAlgo += "<br><br><b>P. W. Mitchell <i>et al.</i></b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1107/S0108767384000325>"
-				"Acta Cryst. A 40(2), <br>pp. 152-160</a><br>\n";
-			strAlgo += "1984";
+				"Acta Cryst. A 40(2), <br>pp. 152-160</a>,<br>\n";
+			strAlgo += "1984.";
 			break;
 		}
 		case ResoAlgo::POP:
@@ -1218,10 +1218,10 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(3,0);
 			tabWidget->setTabEnabled(4,0);
 
-			strAlgo = "<b>M. Popovici</b><br>\n";
+			strAlgo = "<b>M. Popovici</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1107/S0567739475001088>"
-				"Acta Cryst. A 31, <br>pp. 507-513</a><br>\n";
-			strAlgo += "1975";
+				"Acta Cryst. A 31, <br>pp. 507-513</a>,<br>\n";
+			strAlgo += "1975.";
 			break;
 		}
 		case ResoAlgo::ECK:
@@ -1232,10 +1232,14 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(3,0);
 			tabWidget->setTabEnabled(4,0);
 
-			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b><br>\n";
+			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2014.03.019>"
-				"NIM A 752, <br>pp. 54-64</a><br>\n";
-			strAlgo += "2014";
+				"NIM A 752, <br>pp. 54-64</a>,<br>\n";
+			strAlgo += "2014.";
+
+			strAlgo += "<br><br><b>G. Eckold</b><br>\n";
+			strAlgo += "personal communication,<br>\n";
+			strAlgo += "2020.";
 			break;
 		}
 		case ResoAlgo::ECK_EXT:
@@ -1246,10 +1250,18 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(3,0);
 			tabWidget->setTabEnabled(4,0);
 
-			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b><br>\n";
+			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2014.03.019>"
-				"NIM A 752, <br>pp. 54-64</a><br>\n";
-			strAlgo += "2014";
+				"NIM A 752, <br>pp. 54-64</a>,<br>\n";
+			strAlgo += "2014.";
+
+			strAlgo += "<br><br><b>G. Eckold</b>,<br>\n";
+			strAlgo += "personal communication,<br>\n";
+			strAlgo += "2020.";
+
+			strAlgo += "<br><br><b>M. Enderle</b>,<br>\n";
+			strAlgo += "personal communication,<br>\n";
+			strAlgo += "2025.";
 			break;
 		}
 		case ResoAlgo::VIO:
@@ -1260,10 +1272,10 @@ void ResoDlg::AlgoChanged()
 			tabWidget->setTabEnabled(3,1);
 			tabWidget->setTabEnabled(4,0);
 
-			strAlgo = "<b>N. Violini <i>et al.</i></b><br>\n";
+			strAlgo = "<b>N. Violini <i>et al.</i></b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2013.10.042>"
-				"NIM A 736, <br>pp. 31-39</a><br>\n";
-			strAlgo += "2014";
+				"NIM A 736, <br>pp. 31-39</a>,<br>\n";
+			strAlgo += "2014.";
 			break;
 		}
 		case ResoAlgo::SIMPLE:
