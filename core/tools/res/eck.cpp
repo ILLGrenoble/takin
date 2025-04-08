@@ -57,8 +57,6 @@ using inv_length = tl::t_length_inverse_si<t_real>;
 static const auto angs = tl::get_one_angstrom<t_real>();
 static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
-static const auto cm = tl::get_one_centimeter<t_real>();
-static const auto secs = tl::get_one_second<t_real>();
 static const t_real pi = tl::get_pi<t_real>();
 static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
 
@@ -267,8 +265,8 @@ ResoResults calc_eck(const EckParams& eck)
 	//mono_curvh *= eck.dmono_sense; mono_curvv *= eck.dmono_sense;
 	//ana_curvh *= eck.dana_sense; ana_curvv *= eck.dana_sense;
 
-	inv_length inv_mono_curvh = t_real(0)/cm, inv_mono_curvv = t_real(0)/cm;
-	inv_length inv_ana_curvh = t_real(0)/cm, inv_ana_curvv = t_real(0)/cm;
+	inv_length inv_mono_curvh = t_real(0)/angs, inv_mono_curvv = t_real(0)/angs;
+	inv_length inv_ana_curvh = t_real(0)/angs, inv_ana_curvv = t_real(0)/angs;
 
 	if(eck.bMonoIsCurvedH) inv_mono_curvh = t_real(1)/mono_curvh;
 	if(eck.bMonoIsCurvedV) inv_mono_curvv = t_real(1)/mono_curvv;

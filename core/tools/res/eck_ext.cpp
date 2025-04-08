@@ -54,13 +54,12 @@ using angle = tl::t_angle_si<t_real>;
 using wavenumber = tl::t_wavenumber_si<t_real>;
 using energy = tl::t_energy_si<t_real>;
 using length = tl::t_length_si<t_real>;
+using volume = tl::t_volume_si<t_real>;
 using inv_length = tl::t_length_inverse_si<t_real>;
 
 static const auto angs = tl::get_one_angstrom<t_real>();
 static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
-static const auto cm = tl::get_one_centimeter<t_real>();
-static const auto secs = tl::get_one_second<t_real>();
 static const t_real pi = tl::get_pi<t_real>();
 static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
 
@@ -107,27 +106,27 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 		A(0, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) * t_th_m*t_th_m *
 		(
-/*a*/		+ units::pow<2>(t_real(2)/coll_h_pre_mono) *rads*rads
-/*b*/		+ units::pow<2>(t_real(2)*dist_hsrc_mono/src_w)
-/*c*/		+ A_t0*A_t0 * rads*rads
+/*a*/			+ units::pow<2>(t_real(2)/coll_h_pre_mono) *rads*rads
+/*b*/			+ units::pow<2>(t_real(2)*dist_hsrc_mono/src_w)
+/*c*/			+ A_t0*A_t0 * rads*rads
 		);
 		A(0, 1) = A(1, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) * t_th_m *
 		(
-/*w*/		+ t_real(2)*tl::my_units_pow2(t_real(1)/coll_h_pre_mono) *rads*rads
-/*x*/		+ t_real(2)*dist_hsrc_mono*(dist_hsrc_mono-dist_mono_sample)/(src_w*src_w)
-/*y*/		+ A_t0*A_t0 * rads*rads
-/*z*/		- A_t0*A_t1 * rads*rads
+/*w*/			+ t_real(2)*tl::my_units_pow2(t_real(1)/coll_h_pre_mono) *rads*rads
+/*x*/			+ t_real(2)*dist_hsrc_mono*(dist_hsrc_mono-dist_mono_sample)/(src_w*src_w)
+/*y*/			+ A_t0*A_t0 * rads*rads
+/*z*/			- A_t0*A_t1 * rads*rads
 		);
 		A(1, 1) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
 		(
-/*1*/		+ units::pow<2>(t_real(1)/coll_h_pre_mono) *rads*rads
-/*2*/		+ units::pow<2>(t_real(1)/coll_h_pre_sample) *rads*rads
-/*3*/		+ units::pow<2>((dist_hsrc_mono-dist_mono_sample)/src_w)
-/*4*/		+ units::pow<2>(dist_mono_sample/(mono_w*s_th_m))
+/*1*/			+ units::pow<2>(t_real(1)/coll_h_pre_mono) *rads*rads
+/*2*/			+ units::pow<2>(t_real(1)/coll_h_pre_sample) *rads*rads
+/*3*/			+ units::pow<2>((dist_hsrc_mono-dist_mono_sample)/src_w)
+/*4*/			+ units::pow<2>(dist_mono_sample/(mono_w*s_th_m))
 
-/*5*/		+ A_t0*A_t0 * rads*rads
-/*6*/		- t_real(2)*A_t0*A_t1 * rads*rads
-/*7*/		+ A_t1*A_t1 * rads*rads
+/*5*/			+ A_t0*A_t0 * rads*rads
+/*6*/			- t_real(2)*A_t0*A_t1 * rads*rads
+/*7*/			+ A_t1*A_t1 * rads*rads
 		);
 	}
 
@@ -142,27 +141,27 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 		Av(0, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
 		(
-/*1*/	//	+ units::pow<2>(t_real(1) / coll_v_pre_mono) *rads*rads	// missing in paper?
-/*2*/		+ units::pow<2>(t_real(1) / coll_v_pre_sample) *rads*rads
-/*~3*/		+ units::pow<2>(dist_mono_sample / src_h)
-/*4*/		+ units::pow<2>(dist_mono_sample / mono_h)
+/*1*/		//	+ units::pow<2>(t_real(1) / coll_v_pre_mono) *rads*rads	// missing in paper?
+/*2*/			+ units::pow<2>(t_real(1) / coll_v_pre_sample) *rads*rads
+/*~3*/			+ units::pow<2>(dist_mono_sample / src_h)
+/*4*/			+ units::pow<2>(dist_mono_sample / mono_h)
 
-/*5*/		+ Av_t0*Av_t0 * rads*rads
-/*6*/		- t_real(2)*Av_t0*Av_t1 * rads*rads     // typo in paper?
-/*7*/		+ Av_t1*Av_t1 * rads*rads               // missing in paper?
+/*5*/			+ Av_t0*Av_t0 * rads*rads
+/*6*/			- t_real(2)*Av_t0*Av_t1 * rads*rads     // typo in paper?
+/*7*/			+ Av_t1*Av_t1 * rads*rads               // missing in paper?
 		);
 		Av(0, 1) = Av(1, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
 		(
-/*w*/	//	- units::pow<2>(1./coll_v_pre_mono) *rads*rads   // missing in paper?
-/*~x*/		+ dist_vsrc_mono*dist_mono_sample/(src_h*src_h)
-/*y*/		- Av_t0*Av_t0 * rads*rads
-/*z*/		+ Av_t0*Av_t1 * rads*rads
+/*w*/		//	- units::pow<2>(1./coll_v_pre_mono) *rads*rads   // missing in paper?
+/*~x*/			+ dist_vsrc_mono*dist_mono_sample/(src_h*src_h)
+/*y*/			- Av_t0*Av_t0 * rads*rads
+/*z*/			+ Av_t0*Av_t1 * rads*rads
 		);
 		Av(1, 1) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
 		(
-/*a*/		+ units::pow<2>(t_real(1)/coll_v_pre_mono) *rads*rads
-/*b*/		+ units::pow<2>(dist_vsrc_mono/src_h)
-/*c*/		+ Av_t0*Av_t0 *rads*rads
+/*a*/			+ units::pow<2>(t_real(1)/coll_v_pre_mono) *rads*rads
+/*b*/			+ units::pow<2>(dist_vsrc_mono/src_h)
+/*c*/			+ Av_t0*Av_t0 *rads*rads
 		);
 	}
 
@@ -173,15 +172,15 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 		B(0, 1) = sig2fwhm*sig2fwhm / ki * t_th_m *
 		(
-/*i*/		+ t_real(2)*dist_hsrc_mono / (src_w*src_w)
-/*j*/		+ B_t0 *rads*rads
+/*i*/			+ t_real(2)*dist_hsrc_mono / (src_w*src_w)
+/*j*/			+ B_t0 *rads*rads
 		);
 		B(1, 1) = sig2fwhm*sig2fwhm / ki *
 		(
-/*r*/		- dist_mono_sample / (units::pow<2>(mono_w*s_th_m))
-/*s*/		+ B_t0 * rads*rads
-/*t*/		- B_t0 * rads*rads * inv_mono_curvh*dist_mono_sample / s_th_m
-/*u*/		+ (dist_hsrc_mono-dist_mono_sample) / (src_w*src_w)
+/*r*/			- dist_mono_sample / (units::pow<2>(mono_w*s_th_m))
+/*s*/			+ B_t0 * rads*rads
+/*t*/			- B_t0 * rads*rads * inv_mono_curvh*dist_mono_sample / s_th_m
+/*u*/			+ (dist_hsrc_mono-dist_mono_sample) / (src_w*src_w)
 		);
 	}
 
@@ -192,15 +191,15 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 		Bv(0) = sig2fwhm*sig2fwhm / ki * t_real(-1.) *
 		(
-/*r*/		+ dist_mono_sample / (mono_h*mono_h)    // typo in paper?
-/*~s*/		- t_real(0.5)*Bv_t0 *rads*rads / s_th_m
-/*~t*/		+ Bv_t0 * rads*rads * inv_mono_curvv*dist_mono_sample
-/*~u*/		+ dist_mono_sample / (src_h*src_h)      // typo in paper?
+/*r*/			+ dist_mono_sample / (mono_h*mono_h)    // typo in paper?
+/*~s*/			- t_real(0.5)*Bv_t0 *rads*rads / s_th_m
+/*~t*/			+ Bv_t0 * rads*rads * inv_mono_curvv*dist_mono_sample
+/*~u*/			+ dist_mono_sample / (src_h*src_h)      // typo in paper?
 		);
 		Bv(1) = sig2fwhm*sig2fwhm / ki * t_real(-1.) *
 		(
-/*i*/		+ dist_vsrc_mono / (src_h*src_h)        // typo in paper?
-/*j*/		+ t_real(0.5)*Bv_t0/s_th_m * rads*rads
+/*i*/			+ dist_vsrc_mono / (src_h*src_h)        // typo in paper?
+/*j*/			+ t_real(0.5)*Bv_t0/s_th_m * rads*rads
 		);
 	}
 
@@ -255,6 +254,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	// --------------------------------------------------------------------
 	// mono/ana focus
+	// --------------------------------------------------------------------
 	length mono_curvh = eck.mono_curvh, mono_curvv = eck.mono_curvv;
 	length ana_curvh = eck.ana_curvh, ana_curvv = eck.ana_curvv;
 
@@ -270,13 +270,17 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	//mono_curvh *= eck.dmono_sense; mono_curvv *= eck.dmono_sense;
 	//ana_curvh *= eck.dana_sense; ana_curvv *= eck.dana_sense;
 
-	inv_length inv_mono_curvh = t_real(0)/cm, inv_mono_curvv = t_real(0)/cm;
-	inv_length inv_ana_curvh = t_real(0)/cm, inv_ana_curvv = t_real(0)/cm;
+	inv_length inv_mono_curvh = t_real(0)/angs, inv_mono_curvv = t_real(0)/angs;
+	inv_length inv_ana_curvh = t_real(0)/angs, inv_ana_curvv = t_real(0)/angs;
 
-	if(eck.bMonoIsCurvedH) inv_mono_curvh = t_real(1)/mono_curvh;
-	if(eck.bMonoIsCurvedV) inv_mono_curvv = t_real(1)/mono_curvv;
-	if(eck.bAnaIsCurvedH) inv_ana_curvh = t_real(1)/ana_curvh;
-	if(eck.bAnaIsCurvedV) inv_ana_curvv = t_real(1)/ana_curvv;
+	if(eck.bMonoIsCurvedH)
+		inv_mono_curvh = t_real(1)/mono_curvh;
+	if(eck.bMonoIsCurvedV)
+		inv_mono_curvv = t_real(1)/mono_curvv;
+	if(eck.bAnaIsCurvedH)
+		inv_ana_curvh = t_real(1)/ana_curvh;
+	if(eck.bAnaIsCurvedV)
+		inv_ana_curvv = t_real(1)/ana_curvv;
 	// --------------------------------------------------------------------
 
 
@@ -301,8 +305,10 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	t_real dmono_refl = eck.dmono_refl * std::get<0>(tupScFact);
 	t_real dana_effic = eck.dana_effic * std::get<1>(tupScFact);
-	if(eck.mono_refl_curve) dmono_refl *= (*eck.mono_refl_curve)(eck.ki);
-	if(eck.ana_effic_curve) dana_effic *= (*eck.ana_effic_curve)(eck.kf);
+	if(eck.mono_refl_curve)
+		dmono_refl *= (*eck.mono_refl_curve)(eck.ki);
+	if(eck.ana_effic_curve)
+		dana_effic *= (*eck.ana_effic_curve)(eck.kf);
 	t_real dxsec = std::get<2>(tupScFact);
 	t_real dmonitor = std::get<3>(tupScFact);
 
@@ -328,6 +334,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	//--------------------------------------------------------------------------
 	// mono & ana calculations, equ. 43 in [eck14]
+	//--------------------------------------------------------------------------
 	std::launch lpol = std::launch::async;
 	std::future<std::tuple<t_mat, t_mat, t_mat, t_real>> futMono
 		= std::async(lpol, get_mono_vals,
@@ -511,6 +518,47 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		// gives the same as equs. 3.6 and 7.9 in [end25]
 		U -= sig2fwhm*sig2fwhm * ublas::outer_prod(Uvec, Uvec) / Mnorm;
 	}
+	//--------------------------------------------------------------------------
+
+
+	//--------------------------------------------------------------------------
+	// integrate over sample shape
+	//--------------------------------------------------------------------------
+	// TODO
+	t_mat T_E = ublas::identity_matrix<t_real>(3);
+
+	// cuboid sample integration, equ. 6.6 in [end25]
+	t_real sample_var[3] = { pi, pi, pi };
+	volume V_sample = eck.sample_w_perpq * eck.sample_w_q * eck.sample_h;
+	if(!eck.bSampleCub)
+	{
+		// cylindrical sample integration, equ. 6.3 in [end25]
+		sample_var[0] = sample_var[1] = 4.;
+		V_sample = pi * 0.5*eck.sample_w_perpq * 0.5*eck.sample_w_q * eck.sample_h;
+	}
+
+	// equs. 4.4, 6.3, and 6.6 in [end25]
+	t_mat matN = matK;
+	matN += tl::transform<t_mat>(tl::diag_matrix<t_mat>({
+		sample_var[0]/(eck.sample_w_perpq*eck.sample_w_perpq /angs/angs),
+		sample_var[1]/(eck.sample_w_q*eck.sample_w_q /angs/angs),
+		sample_var[2]/(eck.sample_h*eck.sample_h /angs/angs) }),
+		ublas::trans(T_E), true);
+
+	t_real detN = tl::determinant(matN);
+	t_mat Nadj = tl::adjugate(matN, true);
+
+	// page 9 and equs. 7.11, 7.12 and 7.13 in [end25]
+	U -= 0.25 / detN * tl::transform<t_mat>(Nadj, ublas::trans(matP), true);
+	t_mat NadjK = ublas::prod(Nadj, matK);
+	matP -= 1. / detN * ublas::prod(matP, NadjK);
+	matK -= 1. / detN * ublas::prod(matK, NadjK);
+
+	// page 9 in [end25]
+	Z *= pi*pi*pi / detN;
+
+	// normalise R0 to sample volume
+	Z /= V_sample*V_sample / units::pow<6>(angs);
 	//--------------------------------------------------------------------------
 
 

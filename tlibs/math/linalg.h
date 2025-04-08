@@ -1934,7 +1934,7 @@ typename t_mat::value_type cofactor(const t_mat& mat, std::size_t iRow, std::siz
  * @see e.g.: https://en.wikipedia.org/wiki/Adjugate_matrix
  */
 template<class t_mat = ublas::matrix<double>>
-t_mat adjugate(const t_mat& mat, bool bTranspose=1)
+t_mat adjugate(const t_mat& mat, bool bTranspose = true)
 {
 	using T = typename t_mat::value_type;
 

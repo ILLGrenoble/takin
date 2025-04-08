@@ -122,6 +122,7 @@ template<class Sys, class T = double> using t_temp = t_temperature<Sys, T>;
 // si quantities -- partial specialisations
 template<class T = double> using t_length_si = t_length<units::si::system, T>;
 template<class T = double> using t_length_inverse_si = t_length_inverse<units::si::system, T>;
+template<class T = double> using t_volume_si = t_volume<units::si::system, T>;
 template<class T = double> using t_momentum_si = t_momentum<units::si::system, T>;
 template<class T = double> using t_wavenumber_si = t_wavenumber<units::si::system, T>;
 template<class T = double> using t_velocity_si = t_velocity<units::si::system, T>;
