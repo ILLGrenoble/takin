@@ -638,9 +638,8 @@ ResoResults calc_pop(const PopParams& pop)
 
 	if(pop.flags & CALC_GENERAL_R0)
 	{
-		t_real dDetHG = tl::determinant(H_G_div);
-
 		// alternate, more general calculation from [zhe07], p. 10, equ. 8
+		t_real dDetHG = tl::determinant(H_G_div);
 		res.dR0 *= 4.*pi*pi * std::sqrt(dDetF / dDetHG);
 		res.dR0 /= t_real(16.) * s_th_m * s_th_a;
 
@@ -709,11 +708,14 @@ ResoResults calc_pop(const PopParams& pop)
 
 	res.dR0 = std::abs(res.dR0);
 
-	// normalise R0 to sample volume
-	volume V_sample = pop.bSampleCub
-		? pop.sample_w_perpq * pop.sample_w_q * pop.sample_h
-		: pi * 0.5*pop.sample_w_perpq * 0.5*pop.sample_w_q * pop.sample_h;
-	res.dR0 /= V_sample*V_sample / units::pow<6>(cm);
+	if(pop.flags & NORM_TO_SAMPLE)
+	{
+		// normalise R0 to sample volume
+		volume V_sample = pop.bSampleCub
+			? pop.sample_w_perpq * pop.sample_w_q * pop.sample_h
+			: pi * 0.5*pop.sample_w_perpq * 0.5*pop.sample_w_q * pop.sample_h;
+		res.dR0 /= V_sample*V_sample / units::pow<6>(cm);
+	}
 
 
 	// rest of the prefactors, equ. 1 in [pop75], together with the mono and and ana reflectivities

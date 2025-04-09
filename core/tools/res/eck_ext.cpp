@@ -558,7 +558,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	Z *= pi*pi*pi / detN;
 
 	// normalise R0 to sample volume
-	Z /= V_sample*V_sample / units::pow<6>(angs);
+	if(eck.flags & NORM_TO_SAMPLE)
+		Z /= V_sample*V_sample / units::pow<6>(angs);
 	//--------------------------------------------------------------------------
 
 

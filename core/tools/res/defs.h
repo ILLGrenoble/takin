@@ -42,16 +42,21 @@ namespace ublas = boost::numeric::ublas;
 using t_real_reso = ::t_real_glob;
 
 
+/**
+ * flags for resolution calculation
+ */
 enum ResoFlags : std::size_t
 {
-	CALC_KI3        = 1<<0,
-	CALC_KF3        = 1<<1,
+	CALC_KI3        = 1<<0,  // mono efficiency factor
+	CALC_KF3        = 1<<1,  // ana efficiency factor
 
-	CALC_KFKI       = 1<<2,
-	CALC_MONKI      = 1<<3,
-	CALC_MON        = 1<<4,
+	CALC_KFKI       = 1<<2,  // kf/ki factor
+	CALC_MONKI      = 1<<3,  // monitor 1/ki factor
+	CALC_MON        = 1<<4,  // monitor in ki axis
 
-	CALC_GENERAL_R0	= 1<<5,
+	CALC_GENERAL_R0	= 1<<5,  // alternative R0 normalisation
+
+	NORM_TO_SAMPLE  = 1<<6,  // normalise by sample volume
 };
 
 
@@ -72,16 +77,21 @@ struct ResoResults
 };
 
 
-// all algos
+/**
+ * all resolution calculation methods
+ */
 enum class ResoAlgo
 {
 	CN         = 1,
 	POP_CN     = 2,
+
 	POP        = 3,
 	ECK        = 4,
 	ECK_EXT    = 5,
+
 	VIO        = 6,
 	SIMPLE     = 100,
+
 	UNKNOWN    = -1,
 };
 

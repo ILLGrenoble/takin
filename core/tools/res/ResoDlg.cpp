@@ -164,10 +164,9 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
 	m_vecCheckBoxes = {checkUseGeneralR0, checkUseKi3, checkUseKf3,
-		checkUseKfKi, checkUseKi, checkUseMonitor};
+		checkUseKfKi, checkUseKi, checkUseMonitor, checkUseSampleVol};
 	m_vecCheckNames = {"reso/use_general_R0", "reso/use_ki3", "reso/use_kf3",
-		"reso/use_kfki", "reso/use_monki", "reso/use_mon"};
-
+		"reso/use_kfki", "reso/use_monki", "reso/use_mon", "reso/use_samplevol"};
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus, radioSampleScatterPlus,
 		radioSampleCub, radioSrcRect, radioDetRect, radioMonitorRect,
@@ -332,174 +331,178 @@ void ResoDlg::Calc()
 		if(m_bDontCalc)
 			return;
 
-		EckParams &cn = m_tasparams;
+		EckParams &tas = m_tasparams;
 		VioParams &tof = m_tofparams;
 		SimpleResoParams &simple = m_simpleparams;
 
 		ResoResults &res = m_res;
 
 		// cn parameters
-		cn.mono_d = t_real_reso(spinMonod->value()) * angs;
-		cn.ana_d = t_real_reso(spinAnad->value()) * angs;
-		cn.mono_mosaic = t_real_reso(tl::m2r(spinMonoMosaic->value())) * rads;
-		cn.sample_mosaic = t_real_reso(tl::m2r(spinSampleMosaic->value())) * rads;
-		cn.ana_mosaic = t_real_reso(tl::m2r(spinAnaMosaic->value())) * rads;
-		cn.mono_mosaic_v = t_real_reso(tl::m2r(spinMonoMosaicV->value())) * rads;
-		cn.sample_mosaic_v = t_real_reso(tl::m2r(spinSampleMosaicV->value())) * rads;
-		cn.ana_mosaic_v = t_real_reso(tl::m2r(spinAnaMosaicV->value())) * rads;
+		tas.mono_d = t_real_reso(spinMonod->value()) * angs;
+		tas.ana_d = t_real_reso(spinAnad->value()) * angs;
+		tas.mono_mosaic = t_real_reso(tl::m2r(spinMonoMosaic->value())) * rads;
+		tas.sample_mosaic = t_real_reso(tl::m2r(spinSampleMosaic->value())) * rads;
+		tas.ana_mosaic = t_real_reso(tl::m2r(spinAnaMosaic->value())) * rads;
+		tas.mono_mosaic_v = t_real_reso(tl::m2r(spinMonoMosaicV->value())) * rads;
+		tas.sample_mosaic_v = t_real_reso(tl::m2r(spinSampleMosaicV->value())) * rads;
+		tas.ana_mosaic_v = t_real_reso(tl::m2r(spinAnaMosaicV->value())) * rads;
 
-		cn.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
-		cn.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
-		cn.dsample_sense = (radioSampleScatterPlus->isChecked() ? +1. : -1.);
+		tas.dmono_sense = (radioMonoScatterPlus->isChecked() ? +1. : -1.);
+		tas.dana_sense = (radioAnaScatterPlus->isChecked() ? +1. : -1.);
+		tas.dsample_sense = (radioSampleScatterPlus->isChecked() ? +1. : -1.);
 		//if(spinQ->value() < 0.)
-		//	cn.dsample_sense = -cn.dsample_sense;
+		//	tas.dsample_sense = -tas.dsample_sense;
 
-		cn.coll_h_pre_mono = t_real_reso(tl::m2r(spinHCollMono->value())) * rads;
-		cn.coll_h_pre_sample = t_real_reso(tl::m2r(spinHCollBSample->value())) * rads;
-		cn.coll_h_post_sample = t_real_reso(tl::m2r(spinHCollASample->value())) * rads;
-		cn.coll_h_post_ana = t_real_reso(tl::m2r(spinHCollAna->value())) * rads;
+		tas.coll_h_pre_mono = t_real_reso(tl::m2r(spinHCollMono->value())) * rads;
+		tas.coll_h_pre_sample = t_real_reso(tl::m2r(spinHCollBSample->value())) * rads;
+		tas.coll_h_post_sample = t_real_reso(tl::m2r(spinHCollASample->value())) * rads;
+		tas.coll_h_post_ana = t_real_reso(tl::m2r(spinHCollAna->value())) * rads;
 
-		cn.coll_v_pre_mono = t_real_reso(tl::m2r(spinVCollMono->value())) * rads;
-		cn.coll_v_pre_sample = t_real_reso(tl::m2r(spinVCollBSample->value())) * rads;
-		cn.coll_v_post_sample = t_real_reso(tl::m2r(spinVCollASample->value())) * rads;
-		cn.coll_v_post_ana = t_real_reso(tl::m2r(spinVCollAna->value())) * rads;
+		tas.coll_v_pre_mono = t_real_reso(tl::m2r(spinVCollMono->value())) * rads;
+		tas.coll_v_pre_sample = t_real_reso(tl::m2r(spinVCollBSample->value())) * rads;
+		tas.coll_v_post_sample = t_real_reso(tl::m2r(spinVCollASample->value())) * rads;
+		tas.coll_v_post_ana = t_real_reso(tl::m2r(spinVCollAna->value())) * rads;
 
-		cn.dmono_refl = spinMonoRefl->value();
-		cn.dana_effic = spinAnaEffic->value();
+		tas.dmono_refl = spinMonoRefl->value();
+		tas.dana_effic = spinAnaEffic->value();
 		std::string strMonoRefl = editMonoRefl->text().toStdString();
 		std::string strAnaEffic = editAnaEffic->text().toStdString();
 		if(strMonoRefl != "")
 		{
-			cn.mono_refl_curve = load_cache_refl(strMonoRefl);
-			if(!cn.mono_refl_curve)
+			tas.mono_refl_curve = load_cache_refl(strMonoRefl);
+			if(!tas.mono_refl_curve)
 				tl::log_err("Cannot load mono reflectivity file \"", strMonoRefl, "\".");
 		}
 		if(strAnaEffic != "")
 		{
-			cn.ana_effic_curve = load_cache_refl(strAnaEffic);
-			if(!cn.ana_effic_curve)
+			tas.ana_effic_curve = load_cache_refl(strAnaEffic);
+			if(!tas.ana_effic_curve)
 				tl::log_err("Cannot load ana reflectivity file \"", strAnaEffic, "\".");
 		}
 
 
 		if(checkUseGeneralR0->isChecked())
-			cn.flags |= CALC_GENERAL_R0;
+			tas.flags |= CALC_GENERAL_R0;
 		else
-			cn.flags &= ~CALC_GENERAL_R0;
+			tas.flags &= ~CALC_GENERAL_R0;
 		if(checkUseKi3->isChecked())
-			cn.flags |= CALC_KI3;
+			tas.flags |= CALC_KI3;
 		else
-			cn.flags &= ~CALC_KI3;
+			tas.flags &= ~CALC_KI3;
 		if(checkUseKf3->isChecked())
-			cn.flags |= CALC_KF3;
+			tas.flags |= CALC_KF3;
 		else
-			cn.flags &= ~CALC_KF3;
+			tas.flags &= ~CALC_KF3;
 		if(checkUseKfKi->isChecked())
-			cn.flags |= CALC_KFKI;
+			tas.flags |= CALC_KFKI;
 		else
-			cn.flags &= ~CALC_KFKI;
+			tas.flags &= ~CALC_KFKI;
 		if(checkUseKi->isChecked())
-			cn.flags |= CALC_MONKI;
+			tas.flags |= CALC_MONKI;
 		else
-			cn.flags &= ~CALC_MONKI;
+			tas.flags &= ~CALC_MONKI;
 		if(checkUseMonitor->isChecked())
-			cn.flags |= CALC_MON;
+			tas.flags |= CALC_MON;
 		else
-			cn.flags &= ~CALC_MON;
+			tas.flags &= ~CALC_MON;
+		if(checkUseSampleVol->isChecked())
+			tas.flags |= NORM_TO_SAMPLE;
+		else
+			tas.flags &= ~NORM_TO_SAMPLE;
 
 
 		// Position
-		/*cn.ki = t_real_reso(editKi->text().toDouble()) / angs;
-		cn.kf = t_real_reso(editKf->text().toDouble()) / angs;
-		cn.Q = t_real_reso(editQ->text().toDouble()) / angs;
-		cn.E = t_real_reso(editE->text().toDouble()) * meV;
-		//cn.E = tl::get_energy_transfer(cn.ki, cn.kf);*/
+		/*tas.ki = t_real_reso(editKi->text().toDouble()) / angs;
+		tas.kf = t_real_reso(editKf->text().toDouble()) / angs;
+		tas.Q = t_real_reso(editQ->text().toDouble()) / angs;
+		tas.E = t_real_reso(editE->text().toDouble()) * meV;
+		//tas.E = tl::get_energy_transfer(tas.ki, tas.kf);*/
 
 
 		// pop parameters
-		cn.mono_w = t_real_reso(spinMonoW->value()) * cm;
-		cn.mono_h = t_real_reso(spinMonoH->value()) * cm;
-		cn.mono_thick = t_real_reso(spinMonoThick->value()) * cm;
-		cn.mono_curvh = t_real_reso(spinMonoCurvH->value()) * cm;
-		cn.mono_curvv = t_real_reso(spinMonoCurvV->value()) * cm;
-		cn.bMonoIsCurvedH = cn.bMonoIsCurvedV = false;
-		cn.bMonoIsOptimallyCurvedH = cn.bMonoIsOptimallyCurvedV = false;
+		tas.mono_w = t_real_reso(spinMonoW->value()) * cm;
+		tas.mono_h = t_real_reso(spinMonoH->value()) * cm;
+		tas.mono_thick = t_real_reso(spinMonoThick->value()) * cm;
+		tas.mono_curvh = t_real_reso(spinMonoCurvH->value()) * cm;
+		tas.mono_curvv = t_real_reso(spinMonoCurvV->value()) * cm;
+		tas.bMonoIsCurvedH = tas.bMonoIsCurvedV = false;
+		tas.bMonoIsOptimallyCurvedH = tas.bMonoIsOptimallyCurvedV = false;
 
 		spinMonoCurvH->setEnabled(comboMonoHori->currentIndex() == 2);
 		spinMonoCurvV->setEnabled(comboMonoVert->currentIndex() == 2);
 
 		if(comboMonoHori->currentIndex() == 2)
-			cn.bMonoIsCurvedH = 1;
+			tas.bMonoIsCurvedH = 1;
 		else if(comboMonoHori->currentIndex() == 1)
-			cn.bMonoIsCurvedH = cn.bMonoIsOptimallyCurvedH = 1;
+			tas.bMonoIsCurvedH = tas.bMonoIsOptimallyCurvedH = 1;
 
 		if(comboMonoVert->currentIndex() == 2)
-			cn.bMonoIsCurvedV = 1;
+			tas.bMonoIsCurvedV = 1;
 		else if(comboMonoVert->currentIndex() == 1)
-			cn.bMonoIsCurvedV = cn.bMonoIsOptimallyCurvedV = 1;
+			tas.bMonoIsCurvedV = tas.bMonoIsOptimallyCurvedV = 1;
 
-		cn.ana_w = t_real_reso(spinAnaW->value()) *cm;
-		cn.ana_h = t_real_reso(spinAnaH->value()) * cm;
-		cn.ana_thick = t_real_reso(spinAnaThick->value()) * cm;
-		cn.ana_curvh = t_real_reso(spinAnaCurvH->value()) * cm;
-		cn.ana_curvv = t_real_reso(spinAnaCurvV->value()) * cm;
-		cn.bAnaIsCurvedH = cn.bAnaIsCurvedV = 0;
-		cn.bAnaIsOptimallyCurvedH = cn.bAnaIsOptimallyCurvedV = 0;
+		tas.ana_w = t_real_reso(spinAnaW->value()) *cm;
+		tas.ana_h = t_real_reso(spinAnaH->value()) * cm;
+		tas.ana_thick = t_real_reso(spinAnaThick->value()) * cm;
+		tas.ana_curvh = t_real_reso(spinAnaCurvH->value()) * cm;
+		tas.ana_curvv = t_real_reso(spinAnaCurvV->value()) * cm;
+		tas.bAnaIsCurvedH = tas.bAnaIsCurvedV = 0;
+		tas.bAnaIsOptimallyCurvedH = tas.bAnaIsOptimallyCurvedV = 0;
 
 		spinAnaCurvH->setEnabled(comboAnaHori->currentIndex() == 2);
 		spinAnaCurvV->setEnabled(comboAnaVert->currentIndex() == 2);
 
 		if(comboAnaHori->currentIndex() == 2)
-			cn.bAnaIsCurvedH = 1;
+			tas.bAnaIsCurvedH = 1;
 		else if(comboAnaHori->currentIndex()==1)
-			cn.bAnaIsCurvedH = cn.bAnaIsOptimallyCurvedH = 1;
+			tas.bAnaIsCurvedH = tas.bAnaIsOptimallyCurvedH = 1;
 
 		if(comboAnaVert->currentIndex() == 2)
-			cn.bAnaIsCurvedV = 1;
+			tas.bAnaIsCurvedV = 1;
 		else if(comboAnaVert->currentIndex()==1)
-			cn.bAnaIsCurvedV = cn.bAnaIsOptimallyCurvedV = 1;
+			tas.bAnaIsCurvedV = tas.bAnaIsOptimallyCurvedV = 1;
 
-		cn.bSampleCub = radioSampleCub->isChecked();
-		cn.sample_w_q = t_real_reso(spinSampleW_Q->value()) * cm;
-		cn.sample_w_perpq = t_real_reso(spinSampleW_perpQ->value()) * cm;
-		cn.sample_h = t_real_reso(spinSampleH->value()) * cm;
+		tas.bSampleCub = radioSampleCub->isChecked();
+		tas.sample_w_q = t_real_reso(spinSampleW_Q->value()) * cm;
+		tas.sample_w_perpq = t_real_reso(spinSampleW_perpQ->value()) * cm;
+		tas.sample_h = t_real_reso(spinSampleH->value()) * cm;
 
-		cn.bSrcRect = radioSrcRect->isChecked();
-		cn.src_w = t_real_reso(spinSrcW->value()) * cm;
-		cn.src_h = t_real_reso(spinSrcH->value()) * cm;
+		tas.bSrcRect = radioSrcRect->isChecked();
+		tas.src_w = t_real_reso(spinSrcW->value()) * cm;
+		tas.src_h = t_real_reso(spinSrcH->value()) * cm;
 
-		cn.bDetRect = radioDetRect->isChecked();
-		cn.det_w = t_real_reso(spinDetW->value()) * cm;
-		cn.det_h = t_real_reso(spinDetH->value()) * cm;
+		tas.bDetRect = radioDetRect->isChecked();
+		tas.det_w = t_real_reso(spinDetW->value()) * cm;
+		tas.det_h = t_real_reso(spinDetH->value()) * cm;
 
-		cn.bGuide = groupGuide->isChecked();
-		cn.guide_div_h = t_real_reso(tl::m2r(spinGuideDivH->value())) * rads;
-		cn.guide_div_v = t_real_reso(tl::m2r(spinGuideDivV->value())) * rads;
+		tas.bGuide = groupGuide->isChecked();
+		tas.guide_div_h = t_real_reso(tl::m2r(spinGuideDivH->value())) * rads;
+		tas.guide_div_v = t_real_reso(tl::m2r(spinGuideDivV->value())) * rads;
 
-		cn.dist_mono_sample = t_real_reso(spinDistMonoSample->value()) * cm;
-		cn.dist_sample_ana = t_real_reso(spinDistSampleAna->value()) * cm;
-		cn.dist_ana_det = t_real_reso(spinDistAnaDet->value()) * cm;
-		cn.dist_vsrc_mono = t_real_reso(spinDistVSrcMono->value()) * cm;
-		cn.dist_hsrc_mono = t_real_reso(spinDistHSrcMono->value()) * cm;
+		tas.dist_mono_sample = t_real_reso(spinDistMonoSample->value()) * cm;
+		tas.dist_sample_ana = t_real_reso(spinDistSampleAna->value()) * cm;
+		tas.dist_ana_det = t_real_reso(spinDistAnaDet->value()) * cm;
+		tas.dist_vsrc_mono = t_real_reso(spinDistVSrcMono->value()) * cm;
+		tas.dist_hsrc_mono = t_real_reso(spinDistHSrcMono->value()) * cm;
 
-		cn.bMonitorRect = radioMonitorRect->isChecked();
-		cn.monitor_w = t_real_reso(spinMonitorW->value()) * cm;
-		cn.monitor_h = t_real_reso(spinMonitorH->value()) * cm;
-		cn.monitor_thick = t_real_reso(spinMonitorThick->value()) * cm;
-		cn.dist_mono_monitor = t_real_reso(spinDistMonoMonitor->value()) * cm;
+		tas.bMonitorRect = radioMonitorRect->isChecked();
+		tas.monitor_w = t_real_reso(spinMonitorW->value()) * cm;
+		tas.monitor_h = t_real_reso(spinMonitorH->value()) * cm;
+		tas.monitor_thick = t_real_reso(spinMonitorThick->value()) * cm;
+		tas.dist_mono_monitor = t_real_reso(spinDistMonoMonitor->value()) * cm;
 
 
 		// eck parameters
-		cn.pos_x = t_real_reso(spinSamplePosX->value()) * cm;
-		cn.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
-		cn.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
-		cn.angle_kf = tl::d2r(t_real_reso(spinScatterKfAngle->value())) * rads;
+		tas.pos_x = t_real_reso(spinSamplePosX->value()) * cm;
+		tas.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
+		tas.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
+		tas.angle_kf = tl::d2r(t_real_reso(spinScatterKfAngle->value())) * rads;
 
 		// TODO
-		cn.mono_numtiles_h = 1;
-		cn.mono_numtiles_v = 1;
-		cn.ana_numtiles_h = 1;
-		cn.ana_numtiles_v = 1;
+		tas.mono_numtiles_h = 1;
+		tas.mono_numtiles_v = 1;
+		tas.ana_numtiles_h = 1;
+		tas.ana_numtiles_v = 1;
 
 
 		// TOF parameters
@@ -538,13 +541,13 @@ void ResoDlg::Calc()
 
 		// pre-calculate optimal curvature parameters to show in the gui
 		tl::t_length_si<t_real_reso> mono_curvh =
-			tl::foc_curv(cn.dist_hsrc_mono, cn.dist_mono_sample, cn.ki, cn.mono_d, false);
+			tl::foc_curv(tas.dist_hsrc_mono, tas.dist_mono_sample, tas.ki, tas.mono_d, false);
 		tl::t_length_si<t_real_reso> mono_curvv =
-			tl::foc_curv(cn.dist_vsrc_mono, cn.dist_mono_sample, cn.ki, cn.mono_d, true);
+			tl::foc_curv(tas.dist_vsrc_mono, tas.dist_mono_sample, tas.ki, tas.mono_d, true);
 		tl::t_length_si<t_real_reso> ana_curvh =
-			tl::foc_curv(cn.dist_sample_ana, cn.dist_ana_det, cn.kf, cn.ana_d, false);
+			tl::foc_curv(tas.dist_sample_ana, tas.dist_ana_det, tas.kf, tas.ana_d, false);
 		tl::t_length_si<t_real_reso> ana_curvv =
-			tl::foc_curv(cn.dist_sample_ana, cn.dist_ana_det, cn.kf, cn.ana_d, true);
+			tl::foc_curv(tas.dist_sample_ana, tas.dist_ana_det, tas.kf, tas.ana_d, true);
 
 		std::stringstream ostrCurv;
 		ostrCurv.precision(g_iPrecGfx);
@@ -559,19 +562,19 @@ void ResoDlg::Calc()
 		// calculation
 		switch(ResoDlg::GetSelectedAlgo())
 		{
-			case ResoAlgo::CN: res = calc_cn(cn); break;
-			case ResoAlgo::POP_CN: res = calc_pop_cn(cn); break;
-			case ResoAlgo::POP: res = calc_pop(cn); break;
-			case ResoAlgo::ECK: res = calc_eck(cn); break;
-			case ResoAlgo::ECK_EXT: res = calc_eck_ext(cn); break;
+			case ResoAlgo::CN: res = calc_cn(tas); break;
+			case ResoAlgo::POP_CN: res = calc_pop_cn(tas); break;
+			case ResoAlgo::POP: res = calc_pop(tas); break;
+			case ResoAlgo::ECK: res = calc_eck(tas); break;
+			case ResoAlgo::ECK_EXT: res = calc_eck_ext(tas); break;
 			case ResoAlgo::VIO: res = calc_vio(tof); break;
 			case ResoAlgo::SIMPLE: res = calc_simplereso(simple); break;
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
 		}
 
-		editE->setText(tl::var_to_str(t_real_reso(cn.E/meV), g_iPrec).c_str());
-		//if(m_pInstDlg) m_pInstDlg->SetParams(cn, res);
-		//if(m_pScatterDlg) m_pScatterDlg->SetParams(cn, res);
+		editE->setText(tl::var_to_str(t_real_reso(tas.E/meV), g_iPrec).c_str());
+		//if(m_pInstDlg) m_pInstDlg->SetParams(tas, res);
+		//if(m_pScatterDlg) m_pScatterDlg->SetParams(tas, res);
 
 		if(res.bOk)
 		{
@@ -585,14 +588,14 @@ void ResoDlg::Calc()
 #ifndef NDEBUG
 			// check against ELASTIC approximation for perp. slope from (Shirane 2002), p. 268
 			// valid for small mosaicities
-			t_real_reso dEoverQperp = tl::co::hbar*tl::co::hbar*cn.ki / tl::co::m_n
-				* units::cos(cn.twotheta/2.)
-				* (1. + units::tan(units::abs(cn.twotheta/2.))
-				* units::tan(units::abs(cn.twotheta/2.) - units::abs(cn.thetam)))
+			t_real_reso dEoverQperp = tl::co::hbar*tl::co::hbar*tas.ki / tl::co::m_n
+				* units::cos(tas.twotheta/2.)
+				* (1. + units::tan(units::abs(tas.twotheta/2.))
+				* units::tan(units::abs(tas.twotheta/2.) - units::abs(tas.thetam)))
 					/ meV / angs;
 
 			tl::log_info("E/Q_perp (approximation for ki=kf) = ", dEoverQperp, " meV*A");
-			tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", t_real_reso(4.*cn.ki * angs), " meV*A");
+			tl::log_info("E/Q_perp (2nd approximation for ki=kf) = ", t_real_reso(4.*tas.ki * angs), " meV*A");
 #endif
 
 			if(checkElli4dAutoCalc->isChecked())
@@ -1169,7 +1172,7 @@ void ResoDlg::MCGenerate()
 
 	for(const t_vec& vecNeutron : vecNeutrons)
 	{
-		for(unsigned i=0; i<4; ++i)
+		for(unsigned i = 0; i < 4; ++i)
 			ofstr << std::setw(g_iPrec*2) << vecNeutron[i] << " ";
 		ofstr << "\n";
 	}
@@ -1237,7 +1240,7 @@ void ResoDlg::AlgoChanged()
 				"NIM A 752, <br>pp. 54-64</a>,<br>\n";
 			strAlgo += "2014.";
 
-			strAlgo += "<br><br><b>G. Eckold</b><br>\n";
+			strAlgo += "<br><br><b>G. Eckold</b>,<br>\n";
 			strAlgo += "personal communication,<br>\n";
 			strAlgo += "2020.";
 			break;
