@@ -34,19 +34,19 @@ except TypeError:
 
 options = {
     "verbose" : True,        # console outputs
-    "plot_results" : True,        # show plot window
-    "plot_neutrons" : True,        # also plot neutron events
-    "centre_on_Q" : False,        # centre plots on Q or zero?
-    "ellipse_points" : 128,        # number of points to draw ellipses
+    "plot_results" : True,   # show plot window
+    "plot_neutrons" : True,  # also plot neutron events
+    "centre_on_Q" : False,   # centre plots on Q or zero?
+    "ellipse_points" : 128,  # number of points to draw ellipses
     "symsize" : 32.,
     "dpi" : 600,
     "use_tex" : False,
 
     # column indices in ki,kf files
-    "ki_start_idx" : 0,        # start index of ki 3-vector
-    "kf_start_idx" : 3,        # start index of kf 3-vector
+    "ki_start_idx" : 0,      # start index of ki 3-vector
+    "kf_start_idx" : 3,      # start index of kf 3-vector
     "wi_idx" : 9,            # start index of ki weight factor
-    "wf_idx" : 10,            # start index of kf weight factor
+    "wf_idx" : 10,           # start index of kf weight factor
 
     # column indices in Q,E files
     "Q_start_idx" : 0,
@@ -91,8 +91,8 @@ def filter_events(Q, E, w):
 #
 def load_events_kikf(filename):
     dat = np.loadtxt(filename)
-    ki = dat[:, options["ki_start_idx"]:options["ki_start_idx"]+3]
-    kf = dat[:, options["kf_start_idx"]:options["kf_start_idx"]+3]
+    ki = dat[:, options["ki_start_idx"]:options["ki_start_idx"] + 3]
+    kf = dat[:, options["kf_start_idx"]:options["kf_start_idx"] + 3]
     wi = dat[:, options["wi_idx"]]
     wf = dat[:, options["wf_idx"]]
 
@@ -110,7 +110,7 @@ def load_events_kikf(filename):
 def load_events_QE(filename):
     dat = np.loadtxt(filename)
 
-    Q = dat[:, options["Q_start_idx"]:options["Q_start_idx"]+3]
+    Q = dat[:, options["Q_start_idx"]:options["Q_start_idx"] + 3]
     E = dat[:, options["E_idx"]]
     w = dat[:, options["w_idx"]]
 
@@ -123,10 +123,10 @@ def load_events_QE(filename):
 #
 def calc_covar(Q, E, w, Qpara, Qperp):
     # make a [Q, E] 4-vector
-    Q4 = np.insert(Q, 3, E, axis=1)
+    Q4 = np.insert(Q, 3, E, axis = 1)
 
     # calculate the mean Q 4-vector
-    Qmean = [ np.average(Q4[:,i], weights = w) for i in range(4) ]
+    Qmean = np.array([ np.average(Q4[:, i], weights = w) for i in range(4) ])
     if options["verbose"]:
         print("Mean (Q, E) vector in lab system:\n%s\n" % Qmean)
 
@@ -149,7 +149,7 @@ def calc_covar(Q, E, w, Qpara, Qperp):
         Qup = np.cross(Qnorm, Qside)
     else:
         Qnorm = Qmean[0:3] / la.norm(Qmean[0:3])
-        Qup = np.array([0, 1, 0])
+        Qup = np.array([ 0., 1., 0. ])
         Qside = np.cross(Qup, Qnorm)
 
     if options["verbose"]:
@@ -160,7 +160,7 @@ def calc_covar(Q, E, w, Qpara, Qperp):
         np.insert(Qnorm, 3, 0),
         np.insert(Qside, 3, 0),
         np.insert(Qup, 3, 0),
-        [0, 0, 0, 1] ]))
+        [0., 0., 0., 1.] ]))
 
     if options["verbose"]:
         print("Transformation into (Qpara, Qperp, Qup, E) system:\n%s\n" % T)
@@ -184,7 +184,7 @@ def calc_covar(Q, E, w, Qpara, Qperp):
     #print("Ellipsoid fwhm radii:\n%s\n" % (np.sqrt(np.abs(evals)) * helpers.sig2fwhm))
 
     # transform all neutron events
-    Q4_Q = np.array([])
+    Q4_Q = np.array([ ])
     if options["plot_neutrons"]:
         Q4_Q = np.dot(Q4, T)
         if not options["centre_on_Q"]:
@@ -302,6 +302,8 @@ def run_cov():
     except NameError:
         print("Error processing input file %s." % infile)
         exit(-1)
+
+    print("Loaded %d neutron events." % len(Q))
 
 
     if avec[0] != None and avec[1] != None and avec[2] != None and bvec[0] != None and bvec[1] != None and bvec[2] != None:
