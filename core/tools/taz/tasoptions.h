@@ -143,10 +143,8 @@ struct CrystalOptions
 
 		strSpacegroup = strSampleName = "";
 
-		for(char i=0; i<3; ++i)
-		{
+		for(int i = 0; i < 3; ++i)
 			dLattice[i] = dLatticeAngles[i] = dPlane1[i] = dPlane2[i] = t_real_glob(0);
-		}
 	}
 };
 

@@ -79,7 +79,7 @@ get_neighbours(const t_cont<t_vec>& vecAtoms, const t_vec& vecCentre,
 
 
 	// sort by lengths
-	auto fktSort = [&vecAtoms, &vecLens](t_real len0, t_real len1) -> bool
+	auto fktSort = [](t_real len0, t_real len1) -> bool
 	{
 		return len0 < len1;
 	};

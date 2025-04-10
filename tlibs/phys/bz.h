@@ -242,7 +242,7 @@ class Brillouin3D
 			}
 			poolIntersections.Start();
 
-			std::size_t iVertsRemoved = 0;
+			//std::size_t iVertsRemoved = 0;
 			Rt<T, 3, 8, 0> rt;
 			for(auto& fut : poolIntersections.GetResults())
 			{
@@ -260,10 +260,10 @@ class Brillouin3D
 							false);
 						m_vecVertices.emplace_back(std::move(vecVertex));
 					}
-					else
+					/*else
 					{
 						++iVertsRemoved;
-					}
+					}*/
 				}
 			}
 

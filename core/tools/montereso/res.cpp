@@ -112,8 +112,8 @@ Resolution calc_res(const std::vector<vector<t_real>>& Q_vec, const std::vector<
 	reso.Q_avg = prod(trans(trafo), Q_avg);
 	tl::log_info("Transformed average Q vector: ", reso.Q_avg);
 
-	reso.res.resize(4,4,0);
-	reso.cov.resize(4,4,0);
+	reso.res.resize(4, 4, 0);
+	reso.cov.resize(4, 4, 0);
 
 	std::tie(reso.cov, std::ignore) = tl::covariance(Q_vec, pp_vec);
 	tl::log_info("Covariance matrix (untransformed): ", reso.cov);

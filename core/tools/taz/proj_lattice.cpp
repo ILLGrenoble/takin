@@ -337,13 +337,12 @@ void ProjLatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 	// node dragging
 	if(m_bMousePressed)
 	{
-		QGraphicsItem* pCurItem = mouseGrabberItem();
+		/*QGraphicsItem* pCurItem = mouseGrabberItem();
 		if(pCurItem)
 		{
 			const int iNodeType = pCurItem->data(PROJ_LATTICE_NODE_TYPE_KEY).toInt();
-
 			// nothing there yet...
-		}
+		}*/
 	}
 
 	if(!bHandled && bAllowed)

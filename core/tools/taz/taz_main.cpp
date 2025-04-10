@@ -39,6 +39,7 @@
 #include "tools/monteconvo/ConvoDlg.h"
 #include "tools/monteconvo/monteconvo_cli.h"
 #include "tools/convofit/convofit_cli.h"
+#include "tools/montereso/montereso.h"
 #include "tools/scanviewer/scanviewer.h"
 
 #include "tlibs/version.h"
@@ -273,14 +274,20 @@ int main(int argc, char** argv)
 		// get program options
 		std::vector<std::string> vecTazFiles;
 		std::string connectTo;
-		bool bShowHelp = false;
+
+		// tool to start
 		bool bStartScanviewer = false;
 		bool bStartMonteconvo = false;
 		bool bStartMonteconvoCLI = false;
 		bool bStartConvofit = false;
 		bool bStartConvoseries = false;
 		bool bStartRes = false;
-		bool bStartTakinMain = true, bStartGui = true;
+		bool bStartMontereso = false;
+		bool bStartTakinMain = true;
+
+		bool bShowHelp = false;  // show program options
+		bool bStartGUI = true;   // choose between QApplication or QCoreApplication
+		bool bOwnApp = false;    // don't set up any QApplication at all here
 
 		opts::options_description args("Takin options");
 		args.add(boost::shared_ptr<opts::option_description>(
@@ -319,6 +326,10 @@ int main(int argc, char** argv)
 			new opts::option_description("convoseries",
 			opts::bool_switch(&bStartConvoseries),
 			"runs the convolution series command-line tool")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("montereso",
+			opts::bool_switch(&bStartMontereso),
+			"runs the mc resolution command-line tool")));
 
 		// positional args
 		opts::positional_options_description args_pos;
@@ -335,10 +346,13 @@ int main(int argc, char** argv)
 		opts::store(parsedopts, opts_map);
 		opts::notify(opts_map);
 
-		if(bStartMonteconvo || bStartScanviewer || bStartMonteconvoCLI || bStartConvofit || bStartConvoseries || bStartRes)
+		if(bStartMonteconvo || bStartScanviewer || bStartMonteconvoCLI ||
+			bStartConvofit || bStartConvoseries || bStartRes || bStartMontereso)
 			bStartTakinMain = false;
-		if(bStartMonteconvoCLI || bStartConvofit || bStartConvoseries)
-			bStartGui = false;
+		if(bStartMonteconvoCLI || bStartConvofit || bStartConvoseries || bStartMontereso)
+			bStartGUI = false;
+		if(bStartMontereso)
+			bOwnApp = true;
 
 		if(bShowHelp)
 		{
@@ -367,7 +381,7 @@ int main(int argc, char** argv)
 		std::unique_ptr<QCoreApplication> app;
 		TakAppl *app_gui = nullptr;
 
-		if(bStartGui)
+		if(bStartGUI)
 		{
 #if !defined NO_3D
 			//QCoreApplication::setAttribute(Qt::AA_X11InitThreads, true);
@@ -383,47 +397,50 @@ int main(int argc, char** argv)
 
 			app.reset(app_gui = new TakAppl(argc, argv));
 		}
-		else
+		else if(!bOwnApp)
 		{
 			app.reset(new QCoreApplication(argc, argv));
 		}
 
-		app->setApplicationName("Takin");
-		app->setApplicationVersion(TAKIN_VER);
+		if(app)
+		{
+			app->setApplicationName("Takin");
+			app->setApplicationVersion(TAKIN_VER);
 
 
-		// qt needs to be able to copy these structs when emitting signals from a different thread
-		qRegisterMetaType<TriangleOptions>("TriangleOptions");
-		qRegisterMetaType<CrystalOptions>("CrystalOptions");
-		qRegisterMetaType<std::string>("std::string");
-		qRegisterMetaType<CacheVal>("CacheVal");
-		qRegisterMetaType<QTextCursor>("QTextCursor");
+			// qt needs to be able to copy these structs when emitting signals from a different thread
+			qRegisterMetaType<TriangleOptions>("TriangleOptions");
+			qRegisterMetaType<CrystalOptions>("CrystalOptions");
+			qRegisterMetaType<std::string>("std::string");
+			qRegisterMetaType<CacheVal>("CacheVal");
+			qRegisterMetaType<QTextCursor>("QTextCursor");
 
 
-		// locale
-		std::setlocale(LC_ALL, "C");
-		std::locale::global(std::locale::classic());
-		QLocale::setDefault(QLocale::English);
+			// locale
+			std::setlocale(LC_ALL, "C");
+			std::locale::global(std::locale::classic());
+			QLocale::setDefault(QLocale::English);
 
 
-		tl::init_rand();
+			tl::init_rand();
 
-		g_strHome = QDir::homePath().toStdString() + "/.takin";
-		g_strApp = QCoreApplication::applicationDirPath().toStdString();
-		tl::log_info("Program path: ", g_strApp);
-		tl::log_info("Home path: ", g_strHome);
+			g_strHome = QDir::homePath().toStdString() + "/.takin";
+			g_strApp = QCoreApplication::applicationDirPath().toStdString();
+			tl::log_info("Program path: ", g_strApp);
+			tl::log_info("Home path: ", g_strHome);
 
-		add_resource_path(g_strHome, 0);
-		add_resource_path(g_strApp);
-		add_resource_path(g_strApp + "/..");
-		add_resource_path(g_strApp + "/resources");
-		add_resource_path(g_strApp + "/Resources");
-		add_resource_path(g_strApp + "/../resources");
-		add_resource_path(g_strApp + "/../lib");
-		add_resource_path(g_strApp + "/lib");
+			add_resource_path(g_strHome, 0);
+			add_resource_path(g_strApp);
+			add_resource_path(g_strApp + "/..");
+			add_resource_path(g_strApp + "/resources");
+			add_resource_path(g_strApp + "/Resources");
+			add_resource_path(g_strApp + "/../resources");
+			add_resource_path(g_strApp + "/../lib");
+			add_resource_path(g_strApp + "/lib");
 
-		QCoreApplication::addLibraryPath((g_strApp + "/../lib/plugins").c_str());
-		QCoreApplication::addLibraryPath((g_strApp + "/lib/plugins").c_str());
+			QCoreApplication::addLibraryPath((g_strApp + "/../lib/plugins").c_str());
+			QCoreApplication::addLibraryPath((g_strApp + "/lib/plugins").c_str());
+		}
 
 
 		// run command-line tools
@@ -435,6 +452,8 @@ int main(int argc, char** argv)
 			return convoseries_main(argc, argv);
 		else if(bStartRes)
 			return res_main(argc, argv);
+		else if(bStartMontereso)
+			return montereso_main(argc, argv);
 
 
 		// ------------------------------------------------------------

@@ -92,6 +92,8 @@ enum class ResoAlgo
 	VIO        = 6,
 	SIMPLE     = 100,
 
+	MC         = 500,
+
 	UNKNOWN    = -1,
 };
 

@@ -118,6 +118,7 @@ EllipseDlg::EllipseDlg(QWidget* pParent, QSettings* pSett, Qt::WindowFlags fl)
 
 EllipseDlg::~EllipseDlg()
 {
+	m_bReady = false;
 	m_vecplotwrap.clear();
 }
 
@@ -145,7 +146,8 @@ void EllipseDlg::cursorMoved(const QPointF& pt)
 
 void EllipseDlg::Calc()
 {
-	if(!m_bReady) return;
+	if(!m_bReady)
+		return;
 	const EllipseCoordSys coord = static_cast<EllipseCoordSys>(comboCoord->currentIndex());
 
 	const ublas::matrix<t_real_reso> *pReso = nullptr;
@@ -359,6 +361,7 @@ void EllipseDlg::Calc()
 				case ResoAlgo::ECK_EXT: SetTitle("Extended Eckold-Sobolev Algorithm (TAS)"); break;
 				case ResoAlgo::VIO: SetTitle("Violini Algorithm (TOF)"); break;
 				case ResoAlgo::SIMPLE: SetTitle("Simple Algorithm"); break;
+				case ResoAlgo::MC: SetTitle("MC"); break;
 				default: SetTitle("Unknown Resolution Algorithm"); break;
 			}
 		}
@@ -382,22 +385,19 @@ void EllipseDlg::SetParams(const EllipseDlgParams& params)
 {
 	m_params = params;
 
-	static const ublas::matrix<t_real_reso> mat0 = ublas::zero_matrix<t_real_reso>(4,4);
+	static const ublas::matrix<t_real_reso> mat0 = ublas::zero_matrix<t_real_reso>(4, 4);
 	static const ublas::vector<t_real_reso> vec0 = ublas::zero_vector<t_real_reso>(4);
 
-	if(params.reso) m_reso = *params.reso; else m_reso = mat0;
-	if(params.reso_v) m_reso_v = *params.reso_v; else m_reso_v = vec0;
+	m_reso = params.reso ? *params.reso : mat0;
+	m_reso_v = params.reso_v ? *params.reso_v : vec0;
 	m_reso_s = params.reso_s;
-	if(params.Q_avg) m_Q_avg = *params.Q_avg; else m_Q_avg = vec0;
-
-	if(params.resoHKL) m_resoHKL = *params.resoHKL; else m_resoHKL = mat0;
-	if(params.reso_vHKL) m_reso_vHKL = *params.reso_vHKL; else m_reso_vHKL = vec0;
-	if(params.Q_avgHKL) m_Q_avgHKL = *params.Q_avgHKL; else m_Q_avgHKL = vec0;
-
-	if(params.resoOrient) m_resoOrient = *params.resoOrient; else m_resoOrient = mat0;
-	if(params.reso_vOrient) m_reso_vOrient = *params.reso_vOrient; else m_reso_vOrient = vec0;
-	if(params.Q_avgOrient) m_Q_avgOrient = *params.Q_avgOrient; else m_Q_avgOrient = vec0;
-
+	m_Q_avg = params.Q_avg ? *params.Q_avg : vec0;
+	m_resoHKL = params.resoHKL ? *params.resoHKL : mat0;
+	m_reso_vHKL = params.reso_vHKL ? *params.reso_vHKL : vec0;
+	m_Q_avgHKL = params.Q_avgHKL ? *params.Q_avgHKL : vec0;
+	m_resoOrient = params.resoOrient ? *params.resoOrient : mat0;
+	m_reso_vOrient = params.reso_vOrient ? *params.reso_vOrient : vec0;
+	m_Q_avgOrient = params.Q_avgOrient ? *params.Q_avgOrient : vec0;
 	m_algo = params.algo;
 
 	Calc();

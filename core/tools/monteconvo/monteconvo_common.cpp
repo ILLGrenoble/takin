@@ -34,14 +34,22 @@
 ResoFocus get_reso_focus(int iFocMono, int iFocAna)
 {
 	unsigned ifocMode = unsigned(ResoFocus::FOC_UNCHANGED);
-	if(iFocMono == 1) ifocMode |= unsigned(ResoFocus::FOC_MONO_FLAT);	// flat
-	else if(iFocMono == 2) ifocMode |= unsigned(ResoFocus::FOC_MONO_H);	// horizontal
-	else if(iFocMono == 3) ifocMode |= unsigned(ResoFocus::FOC_MONO_V);	// vertical
-	else if(iFocMono == 4) ifocMode |= unsigned(ResoFocus::FOC_MONO_V)|unsigned(ResoFocus::FOC_MONO_H);		// both
-	if(iFocAna == 1) ifocMode |= unsigned(ResoFocus::FOC_ANA_FLAT);		// flat
-	else if(iFocAna == 2) ifocMode |= unsigned(ResoFocus::FOC_ANA_H);	// horizontal
-	else if(iFocAna == 3) ifocMode |= unsigned(ResoFocus::FOC_ANA_V);	// vertical
-	else if(iFocAna == 4) ifocMode |= unsigned(ResoFocus::FOC_ANA_V)|unsigned(ResoFocus::FOC_ANA_H);		// both
+	if(iFocMono == 1)
+		ifocMode |= unsigned(ResoFocus::FOC_MONO_FLAT); // flat
+	else if(iFocMono == 2)
+		ifocMode |= unsigned(ResoFocus::FOC_MONO_H);    // horizontal
+	else if(iFocMono == 3)
+		ifocMode |= unsigned(ResoFocus::FOC_MONO_V);    // vertical
+	else if(iFocMono == 4)
+		ifocMode |= unsigned(ResoFocus::FOC_MONO_V)|unsigned(ResoFocus::FOC_MONO_H);  // both
+	if(iFocAna == 1)
+		ifocMode |= unsigned(ResoFocus::FOC_ANA_FLAT);  // flat
+	else if(iFocAna == 2)
+		ifocMode |= unsigned(ResoFocus::FOC_ANA_H);     // horizontal
+	else if(iFocAna == 3)
+		ifocMode |= unsigned(ResoFocus::FOC_ANA_V);     // vertical
+	else if(iFocAna == 4)
+		ifocMode |= unsigned(ResoFocus::FOC_ANA_V)|unsigned(ResoFocus::FOC_ANA_H);    // both
 
 	return ResoFocus(ifocMode);
 }

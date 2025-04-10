@@ -221,7 +221,7 @@ generate_all_atoms(const t_cont<t_mat>& trafos,
 				(trafos, vecAtom, eps, &matA, pmatB);
 
 
-		std::size_t iGeneratedAtoms = 0;
+		//std::size_t iGeneratedAtoms = 0;
 		for(t_vec vecThisAtom : vecSymPos)
 		{
 			// is the atom position in the unit cell still free?
@@ -241,7 +241,7 @@ generate_all_atoms(const t_cont<t_mat>& trafos,
 				vecAllNames.push_back(strElem);
 				vecAllAtomTypes.push_back(iAtom);
 
-				++iGeneratedAtoms;
+				//++iGeneratedAtoms;
 			}
 			else
 			{

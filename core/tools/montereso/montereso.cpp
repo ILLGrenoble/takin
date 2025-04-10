@@ -26,9 +26,13 @@
  * ----------------------------------------------------------------------------
  */
 
+#include "montereso.h"
 #include "res.h"
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
+#include "tlibs/math/rand.h"
+#include "libs/qt/qthelper.h"
+#include "libs/version.h"
 #include "dialogs/EllipseDlg.h"
 #include "../res/ellipse.h"
 
@@ -87,7 +91,7 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 	if(!ifstr.is_open())
 	{
 		tl::log_err("Cannot open \"", pcFile, "\".");
-		return 0;
+		return false;
 	}
 
 	matrix<t_real>& res = reso.res;
@@ -118,7 +122,6 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 
 	if(reso.bHasRes)
 	{
-		std::vector<t_real>& dQ = reso.dQ;
 		reso.dQ = calc_bragg_fwhms(reso.res);
 		reso.dEinc = calc_vanadium_fwhms(reso.res)[3];
 
@@ -139,7 +142,8 @@ static bool load_mat(const char* pcFile, Resolution& reso, FileType ft)
 
 static bool load_mc_list(const char* pcFile, Resolution& res,
 	const ublas::vector<t_real> *qPara = nullptr,
-	const ublas::vector<t_real> *qPerp = nullptr)
+	const ublas::vector<t_real> *qPerp = nullptr,
+	bool bSwapYZ = false)
 {
 	FileType ft = FileType::NEUTRON_Q_LIST;
 
@@ -147,7 +151,7 @@ static bool load_mc_list(const char* pcFile, Resolution& res,
 	if(!ifstr.is_open())
 	{
 		tl::log_err("Cannot open \"", pcFile, "\".");
-		return 0;
+		return false;
 	}
 
 	// neutron Q,E list
@@ -155,20 +159,20 @@ static bool load_mc_list(const char* pcFile, Resolution& res,
 	std::vector<t_real> vecP;
 
 	// neutron ki, kf list
-	std::vector<vector<t_real>> vecKi, vecKf, vecPos;
+	std::vector<vector<t_real>> vecKi, vecKf;
 	std::vector<t_real> vecPi, vecPf;
 	std::string strLine;
 
 	std::unordered_map<std::string, std::string> mapParams;
-	bool bEndOfHeader = 0;
+	bool bEndOfHeader = false;
 
 	std::size_t uiNumNeutr = 0;
 	while(std::getline(ifstr, strLine))
 	{
 		tl::trim(strLine);
-		if(strLine.length()==0)
+		if(strLine.length() == 0)
 			continue;
-		else if(strLine[0]=='#')
+		else if(strLine[0] == '#')
 		{
 			add_param(mapParams, strLine);
 			continue;
@@ -176,11 +180,12 @@ static bool load_mc_list(const char* pcFile, Resolution& res,
 
 		if(!bEndOfHeader)
 		{
-			bEndOfHeader = 1;
+			bEndOfHeader = true;
 
 			try
 			{
-				if(mapParams.at("variables") == "ki_x ki_y ki_z kf_x kf_y kf_z x y z p_i p_f")
+				if(mapParams.at("variables") == "ki_x ki_y ki_z kf_x kf_y kf_z x y z p_i p_f" ||
+					mapParams.at("variables") == "ki_x ki_y ki_z kf_x kf_y kf_z x y z p_i p_f n")
 				{
 					tl::log_info("File is a ki, kf list.");
 					ft = FileType::NEUTRON_KIKF_LIST;
@@ -198,13 +203,17 @@ static bool load_mc_list(const char* pcFile, Resolution& res,
 		if(ft == FileType::NEUTRON_Q_LIST)
 		{
 			t_real dQh=0., dQk=0., dQl=0., dE=0., dP=1.;
-			istr >> dQh >> dQk >> dQl >> dE;
-			istr >> dP;
+			istr >> dQh >> dQk >> dQl >> dE >> dP;
 
-			//if(dP < 0.5) continue;
+			if(bSwapYZ)
+			{
+				std::swap(dQk, dQl);
+				dQh = -dQh;
+			}
+
 			if(!tl::float_equal(dP, t_real{0.}))
 			{
-				vector<t_real> _vec = tl::make_vec<vector<t_real>>({dQh, dQk, dQl, dE});
+				vector<t_real> _vec = tl::make_vec<vector<t_real>>({ dQh, dQk, dQl, dE });
 
 				vecQ.push_back(std::move(_vec));
 				vecP.push_back(dP);
@@ -214,19 +223,21 @@ static bool load_mc_list(const char* pcFile, Resolution& res,
 		{
 			t_real dKi[3], dKf[3], dPos[3], dPi=0., dPf=0.;
 
-			istr >> dKi[0] >> dKi[2] >> dKi[1];
-			istr >> dKf[0] >> dKf[2] >> dKf[1];
-			istr >> dPos[0] >> dPos[2] >> dPos[1];
+			istr >> dKi[0] >> dKi[1] >> dKi[2];
+			istr >> dKf[0] >> dKf[1] >> dKf[2];
+			istr >> dPos[0] >> dPos[1] >> dPos[2];
 			istr >> dPi >> dPf;
 
-			dKi[0] = -dKi[0];
-			dKf[0] = -dKf[0];
-			dPos[0] = -dPos[0];
+			if(bSwapYZ)
+			{
+				std::swap(dKi[1], dKi[2]);
+				std::swap(dKf[1], dKf[2]);
+				dKi[0] = -dKi[0];
+				dKf[0] = -dKf[0];
+			}
 
-			vecKi.emplace_back(tl::make_vec<vector<t_real>>({dKi[0], dKi[1], dKi[2]}));
-			vecKf.emplace_back(tl::make_vec<vector<t_real>>({dKf[0], dKf[1], dKf[2]}));
-			vecPos.emplace_back(tl::make_vec<vector<t_real>>({dPos[0], dPos[1], dPos[2]}));
-
+			vecKi.emplace_back(tl::make_vec<vector<t_real>>({ dKi[0], dKi[1], dKi[2] }));
+			vecKf.emplace_back(tl::make_vec<vector<t_real>>({ dKf[0], dKf[1], dKf[2] }));
 			vecPi.push_back(dPi);
 			vecPf.push_back(dPf);
 		}
@@ -252,33 +263,33 @@ static bool load_mc_list(const char* pcFile, Resolution& res,
 	if(!res.bHasRes)
 	{
 		tl::log_err("Cannot calculate resolution matrix.");
-		return 0;
+		return false;
 	}
 
-	return 1;
+	return true;
 }
 
 
-static EllipseDlg* show_ellipses(const Resolution& res)
+static std::unique_ptr<EllipseDlg> show_ellipses(const Resolution& res)
 {
-	EllipseDlg* pdlg = new EllipseDlg(0, 0, Qt::Window);
-	pdlg->show();
+	std::unique_ptr<EllipseDlg> ellidlg =
+		std::make_unique<EllipseDlg>(nullptr, nullptr, Qt::Window);
 
-	matrix<t_real> matDummy;
-	vector<t_real> vecDummy;
-	vector<t_real> vecZero = zero_vector<t_real>(4);
-
-	EllipseDlgParams params;
+	EllipseDlgParams params{};
+	params.algo = ResoAlgo::MC;
 	params.reso = &res.res;
 	params.vecMC_direct = &res.vecQ;
-	pdlg->SetParams(params);
+	ellidlg->SetParams(params);
 
-	return pdlg;
+	focus_dlg(ellidlg.get());
+	return ellidlg;
 }
 
 
-int main(int argc, char **argv)
+int montereso_main(int argc, char **argv)
 {
+	tl::init_rand();
+
 	std::ios_base::sync_with_stdio(0);
 	std::setlocale(LC_ALL, "C");
 
@@ -288,8 +299,15 @@ int main(int argc, char **argv)
 		vecQPerp= tl::zero_v<ublas::vector<t_real>>(3);
 	std::string strOrient1, strOrient2;
 	std::string strFile;
-	bool bReso = 0;
-	bool bCovar = 0;
+	bool bReso = false;
+	bool bCovar = false;
+	bool bSwapYZ = false;
+
+
+	// skip dummy argument when starting from takin
+	int start_arg = 0;
+	if(argc > 1 && std::string(argv[1]) == "--montereso")
+		++start_arg;
 
 	opts::options_description args("program options");
 	args.add(boost::shared_ptr<opts::option_description>(
@@ -304,11 +322,26 @@ int main(int argc, char **argv)
 		opts::bool_switch(&bCovar),
 		"file contains the covariance matrix")));
 	args.add(boost::shared_ptr<opts::option_description>(
+		new opts::option_description("swapYZ",
+		opts::bool_switch(&bSwapYZ),
+		"swap event y and z coordinate components")));
+	args.add(boost::shared_ptr<opts::option_description>(
 		new opts::option_description("orient1",
-		opts::value<decltype(strOrient1)>(&strOrient1), "first orientation vector")));
+		opts::value<decltype(strOrient1)>(&strOrient1),
+		"first orientation vector")));
 	args.add(boost::shared_ptr<opts::option_description>(
 		new opts::option_description("orient2",
-		opts::value<decltype(strOrient2)>(&strOrient2), "second orientation vector")));
+		opts::value<decltype(strOrient2)>(&strOrient2),
+		"second orientation vector")));
+
+	// dummy arg if launched from takin executable
+	bool bStartedFromTakin = false;
+#ifndef MONTERESO_STANDALONE
+	args.add(boost::shared_ptr<opts::option_description>(
+		new opts::option_description("montereso",
+		opts::bool_switch(&bStartedFromTakin),
+		"launch montereso from takin")));
+#endif
 
 	opts::positional_options_description args_pos;
 	args_pos.add("in-file", -1);
@@ -335,7 +368,7 @@ int main(int argc, char **argv)
 		vecQPerp[i] = _vecOrient2[i];
 
 
-	if(argc < 2)
+	if(argc < 2 + start_arg)
 	{
 		std::cerr << args << std::endl;
 		return -1;
@@ -351,7 +384,7 @@ int main(int argc, char **argv)
 
 	Resolution res;
 
-	if(ft==FileType::RESOLUTION_MATRIX || ft==FileType::COVARIANCE_MATRIX)
+	if(ft == FileType::RESOLUTION_MATRIX || ft == FileType::COVARIANCE_MATRIX)
 	{
 		tl::log_info("Loading covariance/resolution matrix from \"", strFile, "\".");
 		if(!load_mat(strFile.c_str(), res, ft))
@@ -361,17 +394,20 @@ int main(int argc, char **argv)
 	{
 		tl::log_info("Loading neutron list from \"", strFile, "\".");
 		if(!load_mc_list(strFile.c_str(), res,
-			_vecOrient1.size() ? &vecQPara : 0, _vecOrient2.size() ? &vecQPerp : 0))
+			_vecOrient1.size() ? &vecQPara : nullptr,
+			_vecOrient2.size() ? &vecQPerp : nullptr,
+			bSwapYZ))
 			return -1;
 	}
 
 
-	QLocale::setDefault(QLocale::English);
 	QApplication app(argc, argv);
-	app.setQuitOnLastWindowClosed(1);
+	app.setApplicationName("Takin/Montereso");
+	app.setApplicationVersion(TAKIN_VER);
+	app.setQuitOnLastWindowClosed(true);
 
-	std::unique_ptr<EllipseDlg> pElliDlg(show_ellipses(res));
-	int iRet = app.exec();
+	QLocale::setDefault(QLocale::English);
 
-	return iRet;
+	std::unique_ptr<EllipseDlg> ellidlg{show_ellipses(res)};
+	return app.exec();
 }

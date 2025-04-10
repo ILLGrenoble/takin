@@ -1,12 +1,12 @@
 /**
- * Scan viewer
+ * Montereso
  * @author Tobias Weber <tobias.weber@tum.de>
- * @date mar-2015
+ * @date 2012, 22-sep-2014
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -26,30 +26,11 @@
  * ----------------------------------------------------------------------------
  */
 
-#include <clocale>
-#include <QLocale>
-#include <QApplication>
-
-#include "scanviewer.h"
-#include "tlibs/math/rand.h"
-#include "libs/version.h"
+#ifndef __MONTERESO_CLI_H__
+#define __MONTERESO_CLI_H__
 
 
-int main(int argc, char** argv)
-{
-	tl::init_rand();
+extern int montereso_main(int argc, char **argv);
 
-	QApplication app(argc, argv);
 
-	app.setApplicationName("Takin/Scanviewer");
-	app.setApplicationVersion(TAKIN_VER);
-
-	std::setlocale(LC_ALL, "C");
-	QLocale::setDefault(QLocale::English);
-
-	ScanViewerDlg dlg(0);
-	dlg.setWindowFlags(Qt::Window);
-	dlg.show();
-
-	return app.exec();
-}
+#endif

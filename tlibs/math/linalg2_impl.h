@@ -556,7 +556,7 @@ bool eigenvecsel_herm(const ublas::matrix<std::complex<T>>& mat,
 
 	evecs.resize(iNumFound);
 	evals.resize(iNumFound);
-	for(std::size_t i=0; i<iNumFound; ++i)
+	for(int i = 0; i < iNumFound; ++i)
 	{
 		for(std::size_t j=0; j<iOrder; ++j)
 			evecs[i][j] = /*pMatrix*/pEVsOrtho[j*iOrder + i];

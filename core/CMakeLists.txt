@@ -479,6 +479,10 @@ add_executable(takin
 	tools/convofit/model.cpp tools/convofit/scan.cpp
 	tools/convofit/convofit_cli.cpp tools/convofit/scanseries.cpp
 
+	# montereso
+	tools/montereso/res.cpp tools/montereso/res.h
+	tools/montereso/montereso.cpp tools/montereso/montereso.h
+
 	# scanviewer
 	tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer_fit.cpp
 	tools/scanviewer/scanviewer_pol.cpp
