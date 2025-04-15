@@ -115,7 +115,9 @@ class H5Loader:
 		self.mono_k = self.get_dat(instr, "Monochromator/ki")
 		self.mono_sense = self.get_dat(instr, "Monochromator/sens")
 		self.mono_mosaic = self.get_dat(instr, "Monochromator/mosaic")
-		if instr["Monochromator/automatic_curvature"]:
+		self.reactor = self.get_dat(instr, "source/power")
+
+		if self.get_dat(instr, "Monochromator/automatic_curvature"):
 			self.mono_autocurve = "auto"
 		else:
 			self.mono_autocurve = "manu"
@@ -123,7 +125,7 @@ class H5Loader:
 		self.ana_k = self.get_dat(instr, "Analyser/kf")
 		self.ana_sense = self.get_dat(instr, "Analyser/sens")
 		self.ana_mosaic = self.get_dat(instr, "Analyser/mosaic")
-		if instr["Analyser/automatic_curvature"]:
+		if self.get_dat(instr, "Analyser/automatic_curvature"):
 			self.ana_autocurve = "auto"
 		else:
 			self.ana_autocurve = "manu"
@@ -167,6 +169,7 @@ class H5Loader:
 
 		# get sample infos
 		sample = entry["sample"]
+		self.gonio = self.get_dat(sample, "automatic_gonio")
 		self.posqe = (
 			self.get_dat(sample, "qh"),
 			self.get_dat(sample, "qk"),
@@ -190,6 +193,10 @@ class H5Loader:
 			self.kfix = self.ana_k
 		else:
 			self.kfix = self.mono_k
+
+		self.temp_t = self.get_dat(sample, "temperature")
+		self.temp_r = self.get_dat(sample, "regulation_temperature")
+		self.mag_field = self.get_dat(sample, "additional_environment/MagneticField/field")
 
 
 	#
@@ -228,6 +235,7 @@ class H5Loader:
 		print("COMND: %s" % self.commandline)
 		print("POSQE: QH = %.4f, QK = %.4f, QL = %.4f, EN = %.4f, UN=meV" % self.posqe)
 		print("CURVE: MONO = %s, ANA = %s" % (self.mono_autocurve, self.ana_autocurve))
+		print("PARAM: GONIO = %s" % self.gonio)
 		print("PARAM: DM = %.5f, DA = %.5f, KFIX = %.5f" % (self.mono_d, self.ana_d, self.kfix))
 		print("PARAM: SM = %d, SS = %d, SA = %d, FX = %d" % (self.mono_sense, self.sample_sense, self.ana_sense, self.kfix_which))
 		if self.colli_h[0] != None:
@@ -239,6 +247,8 @@ class H5Loader:
 		print("PARAM: AA = %.5f, BB = %.5f, CC = %.5f" % self.angles)
 		print("PARAM: AX = %.3f, AY = %.3f, AZ = %.3f" % self.plane0)
 		print("PARAM: BX = %.3f, BY = %.3f, BZ = %.3f" % self.plane1)
+		print("PARAM: TT = %.4f, RT = %.4f, MAG = %.6f" % (self.temp_t, self.temp_r, self.mag_field))
+		print("PARAM: REACTOR = %s" % self.reactor)
 		print_var(self.varias, "VARIA")
 		print_var(self.zeros, "ZEROS")
 		print_var(self.targets, "TARGET")
