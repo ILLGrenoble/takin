@@ -10,7 +10,7 @@ import h5py
 import numpy as np
 import tabulate as tab
 import re
-
+import os
 
 print_retro = True
 print_statistics = False
@@ -321,7 +321,20 @@ def main(argv):
 	total_scan_duration = None
 	total_count_time = 0.
 	total_move_time = 0.
-	files = argv[1:]
+	args = argv[1:]
+	files = []
+
+
+	for argname in args:
+		nxs_file = re.compile(".*\.nxs$")
+		if os.path.isdir(argname):
+			for file_name in os.listdir(argname):
+				if nxs_file.match(file_name):
+					files.append(os.path.join(argname, file_name))
+		else:
+			if nxs_file.match(argname):
+				files.append(argname)
+		
 
 	for filename in files:
 		try:
