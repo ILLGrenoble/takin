@@ -74,8 +74,8 @@ class H5Loader:
 			self.columns = np.append(self.columns, "PNT")
 			self.selected_columns.insert(0, "PNT")
 
-		# add detector and monitor columns
-		re_det = re.compile("([A-Za-z0-9]*)(Detector|Monitor)([A-Za-z0-9]*)")
+		# add detector, monitor, tim, TT and TRT columns
+		re_det = re.compile("([A-Za-z0-9]*)(Detector|Monitor)([A-Za-z0-9]*)|^Time$|^TT$|^TRT$")
 		for col_name in self.columns:
 			if col_name in self.selected_columns:
 				continue
@@ -167,6 +167,14 @@ class H5Loader:
 		self.endtime = self.get_str(entry, "end_time")
 		self.numor = self.get_dat(entry, "run_number")
 
+		# get and calculate steps infos
+		qh = entry["data_scan/scanned_variables/data"][0]
+		qh_st = len(qh) -1
+		self.qh_step = (qh[qh_st] - qh[0]) / qh_st
+		qk = entry["data_scan/scanned_variables/data"][1]
+		qk_st = len(qk) -1
+		self.qk_step = (qk[qk_st] - qk[0]) / qk_st
+
 		# get sample infos
 		sample = entry["sample"]
 		self.gonio = self.get_dat(sample, "automatic_gonio")
@@ -235,6 +243,7 @@ class H5Loader:
 		print("COMND: %s" % self.commandline)
 		print("POSQE: QH = %.4f, QK = %.4f, QL = %.4f, EN = %.4f, UN=meV" % self.posqe)
 		print("CURVE: MONO = %s, ANA = %s" % (self.mono_autocurve, self.ana_autocurve))
+		print("STEPS: QH = %.4f, QK = %.4f" % (self.qh_step, self.qk_step))
 		print("PARAM: GONIO = %s" % self.gonio)
 		print("PARAM: DM = %.5f, DA = %.5f, KFIX = %.5f" % (self.mono_d, self.ana_d, self.kfix))
 		print("PARAM: SM = %d, SS = %d, SA = %d, FX = %d" % (self.mono_sense, self.sample_sense, self.ana_sense, self.kfix_which))
