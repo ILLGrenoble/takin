@@ -6,7 +6,7 @@
 # @date jan-2025
 # @license see 'LICENSE' file
 #
-# @desc for extended algorithm: [end25] M. Enderle, personal communication (17/feb/2025)
+# @desc for extended algorithm: [end25] M. Enderle, personal communication (7/apr/2025)
 # @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
 # @desc for vertical scattering modification: [eck20] G. Eckold, personal communication, 2020.
 # @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
@@ -454,26 +454,35 @@ def calc(param):
         R0 *= np.pi**3. / detN
 
     elif param["sample_int"] == "analytical" and param["sample_shape"] == "cylindrical" and not param["kf_vert"]:
-        # TODO: check if this requires or excludes the sample mosaic calculations above
-
+        # this doesn't work because the error function depends on Q.
         # equ. 8.2 in [end25]
-        matK_plane = matK[0:2, 0:2]
-        matK_plane_adj = helpers.adjugate(matK_plane)
+        #matK_plane = matK[0:2, 0:2]
+        #matK_plane_adj = helpers.adjugate(matK_plane)
 
         # gives the same as equ. 8.3 in [end25]
-        [ evals, T_matK_plane ] = la.eig(matK_plane)
+        #[ evals, T_matK_plane ] = la.eig(matK_plane)
 
         # equs. 8.9 - 8.11 in [end25]
-        for i in [ 0, 1, 3 ]:
-            for j in [ 0, 1, 3 ]:
-                s = np.dot(matP[i, 0:2], np.dot(matK_plane_adj, matP[j, 0:2]))
-                U[i, j] -= 0.25*s / la.det(matK_plane)
-        U[2, 2] -= 0.25*matP[2, 2]**2. / matK[2, 2]
-        U[0:2, 2] = U[2, 0:2] = U[3, 2] = U[2, 3] = 0.
+        #for i in [ 0, 1, 3 ]:
+        #    for j in [ 0, 1, 3 ]:
+        #        s = np.dot(matP[i, 0:2], np.dot(matK_plane_adj, matP[j, 0:2]))
+        #        U[i, j] -= 0.25*s / la.det(matK_plane)
+        #U[2, 2] -= 0.25*matP[2, 2]**2. / matK[2, 2]
+        #U[0:2, 2] = U[2, 0:2] = U[3, 2] = U[2, 3] = 0.
 
-        # equs. 8.7 and 8.8 in [end25]
-        R0 /= la.det(matK)
-        # TODO: rest of R0 and vector reso_v
+        # equs. 8.16, 8.17 in [end25]
+        matN = matK + np.diag([ 24./(np.pi*sample_dims[0]**2.), 24./(np.pi*sample_dims[1]**2.), 6./sample_dims[2]**2. ])
+
+        detN = la.det(matN)
+        Nadj = helpers.adjugate(matN)
+
+        # page 9 and equs. 8.20, 8.21 and 8.22 in [end25]
+        U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
+        matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
+        matK -= 1. / detN * np.dot(Nadj, np.dot(matK, matK))
+
+        # equs. 8.24 in [end25]
+        R0 *= 216 / la.det(matN)
 
     else:
         raise ValueError("ResPy: No valid sample integration method given.")
