@@ -6,7 +6,7 @@
  * @date mar-2025
  * @license GPLv2
  *
- * @desc for extended algorithm: [end25] M. Enderle, personal communication (17/feb/2025)
+ * @desc for extended algorithm: [end25] M. Enderle, personal communication (7/apr/2025)
  * @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
  * @desc for vertical scattering modification: [eck20] G. Eckold, personal communication, 2020.
  * @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
@@ -524,7 +524,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	//--------------------------------------------------------------------------
 	// integrate over sample shape
 	//--------------------------------------------------------------------------
-	// TODO
+	// TODO: sample rotation
 	t_mat T_E = ublas::identity_matrix<t_real>(3);
 
 	// cuboid sample integration, equ. 6.6 in [end25]

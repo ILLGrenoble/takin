@@ -453,7 +453,7 @@ def calc(param):
         # page 9 in [end25]
         R0 *= np.pi**3. / detN
 
-    elif param["sample_int"] == "analytical" and param["sample_shape"] == "cylindrical" and not param["kf_vert"]:
+    elif param["sample_int"] == "analytical" and not param["kf_vert"]:
         # this doesn't work because the error function depends on Q.
         # equ. 8.2 in [end25]
         #matK_plane = matK[0:2, 0:2]
@@ -470,8 +470,17 @@ def calc(param):
         #U[2, 2] -= 0.25*matP[2, 2]**2. / matK[2, 2]
         #U[0:2, 2] = U[2, 0:2] = U[3, 2] = U[2, 3] = 0.
 
-        # equs. 8.16, 8.17 in [end25]
-        matN = matK + np.diag([ 24./(np.pi*sample_dims[0]**2.), 24./(np.pi*sample_dims[1]**2.), 6./sample_dims[2]**2. ])
+        if param["sample_shape"] == "cylindrical":
+            # equs. 8.16 and 8.17 in [end25]
+            matN = matK + np.diag([
+                24./(np.pi*sample_dims[0]**2.),
+                24./(np.pi*sample_dims[1]**2.),
+                6./sample_dims[2]**2. ])
+        elif param["sample_shape"] == "spherical":
+            # equs. 8.16 and 8.18 in [end25]
+            matN = matK + 24. * (3./(4.*np.pi))**(2./3.) / (np.pi*sample_dims**2.)
+        else:
+            raise ValueError("ResPy: No valid sample shape given.")
 
         detN = la.det(matN)
         Nadj = helpers.adjugate(matN)
@@ -482,7 +491,7 @@ def calc(param):
         matK -= 1. / detN * np.dot(Nadj, np.dot(matK, matK))
 
         # equs. 8.24 in [end25]
-        R0 *= 216 / la.det(matN)
+        R0 *= 6.**3. / detN
 
     else:
         raise ValueError("ResPy: No valid sample integration method given.")
