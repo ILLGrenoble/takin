@@ -409,6 +409,10 @@ void ResoDlg::Calc()
 			tas.flags |= NORM_TO_SAMPLE;
 		else
 			tas.flags &= ~NORM_TO_SAMPLE;
+		if(checkUseResVol->isChecked())
+			tas.flags |= NORM_TO_RESVOL;
+		else
+			tas.flags &= ~NORM_TO_RESVOL;
 
 
 		// Position
