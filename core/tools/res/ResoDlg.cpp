@@ -164,9 +164,11 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
 	m_vecCheckBoxes = {checkUseGeneralR0, checkUseKi3, checkUseKf3,
-		checkUseKfKi, checkUseKi, checkUseMonitor, checkUseSampleVol};
+		checkUseKfKi, checkUseKi, checkUseMonitor, checkUseSampleVol,
+		checkUseResVol};
 	m_vecCheckNames = {"reso/use_general_R0", "reso/use_ki3", "reso/use_kf3",
-		"reso/use_kfki", "reso/use_monki", "reso/use_mon", "reso/use_samplevol"};
+		"reso/use_kfki", "reso/use_monki", "reso/use_mon", "reso/use_samplevol",
+		"reso/use_resvol"};
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus, radioSampleScatterPlus,
 		radioSampleCub, radioSrcRect, radioDetRect, radioMonitorRect,
