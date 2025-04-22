@@ -419,7 +419,7 @@ def main(argv):
 
 
 	for argname in input_arg:
-		nxs_file = re.compile(".*\.nxs$")
+		nxs_file = re.compile(".*\\.nxs$")
 		if os.path.isdir(argname):
 			for file_name in os.listdir(argname):
 				if nxs_file.match(file_name):
@@ -433,6 +433,8 @@ def main(argv):
 		if args.output:
 			output_name = filename[0:-3]+"dat"
 			with open(output_name, "w") as f:
+				print(filename + " -> " + output_name)
+				
 				try:
 					h5 = H5Loader(filename)
 
@@ -451,34 +453,34 @@ def main(argv):
 						total_count_time += count_time
 						total_move_time += move_time
 				except FileNotFoundError as err:
-					f.write(err, file = sys.stderr)
+					print(err, file = sys.stderr)
 			f.close
+		else:
+			if print_statistics and len(files) > 1:
+				H5Loader.print_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
+			else:							
+				try:
+					h5 = H5Loader(filename)
+					print(filename)
 
-	if print_statistics and len(files) > 1:
-		H5Loader.print_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
-					
-		try:
-			h5 = H5Loader(filename)
+					if print_retro:
+						#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
+						h5.print_retro()
 
-			if print_retro:
-				#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
-				h5.print_retro()
+					if print_statistics:
+						[scan_duration, count_time, move_time] = h5.get_statistics()
+						h5.print_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time)
 
-			if print_statistics:
-				[scan_duration, count_time, move_time] = h5.get_statistics()
-				h5.print_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time)
+						if total_scan_duration == None:
+							total_scan_duration = scan_duration
+						else:
+							total_scan_duration += scan_duration
+						total_count_time += count_time
+						total_move_time += move_time
+				except FileNotFoundError as err:
+					print(err, file = sys.stderr)
 
-				if total_scan_duration == None:
-					total_scan_duration = scan_duration
-				else:
-					total_scan_duration += scan_duration
-				total_count_time += count_time
-				total_move_time += move_time
-		except FileNotFoundError as err:
-			print(err, file = sys.stderr)
 
-	if print_statistics and len(files) > 1:
-		H5Loader.print_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
 
 
 if __name__ == "__main__":
