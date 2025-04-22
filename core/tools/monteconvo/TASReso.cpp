@@ -261,11 +261,11 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_reso.flags |= NORM_TO_SAMPLE;
 	else
 		m_reso.flags &= ~NORM_TO_SAMPLE;
-	//if(xml.Query<int>((strXmlRoot + "reso/use_resvol").c_str(), 0))
-	//	m_reso.flags |= CALC_RESVOL;
-	//else
-	//	m_reso.flags &= ~CALC_RESVOL;
-	//m_reso.flags &= ~CALC_RESVOL;	// not used anymore
+	if(xml.Query<int>((strXmlRoot + "reso/use_resvol").c_str(), 0))
+		m_reso.flags |= NORM_TO_RESVOL;
+	else
+		m_reso.flags &= ~NORM_TO_RESVOL;
+	//m_reso.flags &= ~NORM_TO_RESVOL;  // not used anymore
 
 	m_R0_scale = xml.Query<t_real>((strXmlRoot + "reso/r0_scale").c_str(), 1.);
 

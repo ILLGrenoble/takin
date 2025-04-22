@@ -59,6 +59,7 @@ static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
 static const auto cm = tl::get_one_centimeter<t_real>();
 static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
+static const t_real pi = tl::get_pi<t_real>();
 
 
 /**
@@ -243,6 +244,7 @@ ResoResults calc_pop(const PopParams& pop)
 	// covariance matrix of component geometries, S, [pop75], Appendices 2 and 3
 	// uniform distribution variance = L^2/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
 	// circular distribution variance = R^2/4 = D^2/16, see: https://en.wikipedia.org/wiki/Wigner_semicircle_distribution
+	// these factors are used to approximate a uniform or circular variance by a gaussian variance
 	t_real var_uniform = t_real(1. / 12.);
 	t_real var_circular = t_real(1. / 16.);
 	t_real dMultSrc = pop.bSrcRect ? var_uniform : var_circular;
@@ -269,7 +271,7 @@ ResoResults calc_pop(const PopParams& pop)
 	SI_geo(POP_DET_Y, POP_DET_Y) = dMultDet * pop.det_w*pop.det_w /cm/cm;
 	SI_geo(POP_DET_Z, POP_DET_Z) = dMultDet * pop.det_h*pop.det_h /cm/cm;
 
-	SI_geo *= sig2fwhm*sig2fwhm;
+	SI_geo *= sig2fwhm*sig2fwhm;  // convert gaussian variance to gaussian fwhm
 
 	t_mat S_geo;
 	if(!tl::inverse_diag(SI_geo, S_geo))
@@ -308,10 +310,13 @@ ResoResults calc_pop(const PopParams& pop)
 
 	const auto tupScFact = get_scatter_factors(pop.flags, pop.thetam, pop.ki, pop.thetaa, pop.kf);
 
-	t_real dmono_refl = pop.dmono_refl * std::get<0>(tupScFact);
-	t_real dana_effic = pop.dana_effic * std::get<1>(tupScFact);
-	if(pop.mono_refl_curve) dmono_refl *= (*pop.mono_refl_curve)(pop.ki);
-	if(pop.ana_effic_curve) dana_effic *= (*pop.ana_effic_curve)(pop.kf);
+	// cf. [zhe07], p. 10, equ. 8
+	t_real dmono_refl = pop.dmono_refl * std::get<0>(tupScFact) * pi / (t_real(2.) * s_th_m);
+	t_real dana_effic = pop.dana_effic * std::get<1>(tupScFact) * pi / (t_real(2.) * s_th_a);
+	if(pop.mono_refl_curve)
+		dmono_refl *= (*pop.mono_refl_curve)(pop.ki);
+	if(pop.ana_effic_curve)
+		dana_effic *= (*pop.ana_effic_curve)(pop.kf);
 	t_real dxsec = std::get<2>(tupScFact);
 	t_real dmonitor = std::get<3>(tupScFact);
 	// --------------------------------------------------------------------
@@ -517,7 +522,7 @@ ResoResults calc_pop(const PopParams& pop)
 	// --------------------------------------------------------------------
 	// r0 intensity scaling factor and resolution volume calculation
 	// --------------------------------------------------------------------
-	res.reso *= sig2fwhm*sig2fwhm;  // convert to sigmas
+	res.reso *= sig2fwhm*sig2fwhm;  // convert back to sigmas
 	res.reso_v = ublas::zero_vector<t_real>(4);
 	res.reso_s = 0.;
 
@@ -564,6 +569,7 @@ ResoResults calc_pop(const PopParams& pop)
 	t_mat F_mono_mosaics = F_mosaics;
 	F_mono_mosaics.resize(POP_MONO_V+1, POP_MONO_V+1, true);
 
+	// these factors are used to approximate a uniform or circular variance by a gaussian variance
 	t_mat SI_mono_geo = tl::zero_matrix(POP_SAMPLE_Z+1, POP_SAMPLE_Z+1);
 	SI_mono_geo(POP_SRC_Y, POP_SRC_Y) = dMultSrc * pop.src_w*pop.src_w /cm/cm;
 	SI_mono_geo(POP_SRC_Z, POP_SRC_Z) = dMultSrc * pop.src_h*pop.src_h /cm/cm;
@@ -577,7 +583,7 @@ ResoResults calc_pop(const PopParams& pop)
 	SI_mono_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = dMultMonitor * monitor_w*monitor_w /cm/cm;
 	SI_mono_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = dMultMonitor * monitor_h*monitor_h /cm/cm;
 
-	SI_mono_geo *= sig2fwhm*sig2fwhm;  // convert to sigmas
+	SI_mono_geo *= sig2fwhm*sig2fwhm;  // convert gaussian variance to gaussian fwhm
 
 	t_mat S_mono_geo;
 	if(!tl::inverse_diag(SI_mono_geo, S_mono_geo))
@@ -634,14 +640,12 @@ ResoResults calc_pop(const PopParams& pop)
 	// R0 calculation methods
 	// --------------------------------------------------------------------
 	t_real dDetF = tl::determinant(F_mosaics);
-	const t_real pi = tl::get_pi<t_real>();
 
 	if(pop.flags & CALC_GENERAL_R0)
 	{
 		// alternate, more general calculation from [zhe07], p. 10, equ. 8
 		t_real dDetHG = tl::determinant(H_G_div);
-		res.dR0 *= 4.*pi*pi * std::sqrt(dDetF / dDetHG);
-		res.dR0 /= t_real(16.) * s_th_m * s_th_a;
+		res.dR0 *= std::sqrt(dDetF / dDetHG);
 
 		if(pop.flags & CALC_MON)
 		{
@@ -657,7 +661,7 @@ ResoResults calc_pop(const PopParams& pop)
 
 			// mono part, [zhe07], p. 10, equ. 10
 			res.dR0 /= std::sqrt(std::abs(tl::determinant(F_mono_mosaics) / tl::determinant(HG_mono_div)));
-			res.dR0 *= t_real(2.)/pi * s_th_m / dmono_refl;
+			res.dR0 /= dmono_refl;  // removes all monochromator intensity factors
 		}
 	}
 	else
@@ -679,9 +683,7 @@ ResoResults calc_pop(const PopParams& pop)
 		t_real dDetDSiDti = tl::determinant(DSiDti);
 
 		// [pop75], equs. 13a & 16
-		res.dR0 *= t_real((2.*pi)*(2.*pi)*(2.*pi)*(2.*pi));
 		res.dR0 *= std::sqrt(dDetS*dDetF / (dDetK*dDetDSiDti));
-		res.dR0 /= t_real(8.*pi*8.*pi) * s_th_m * s_th_a;
 
 		if(pop.flags & CALC_MON)
 		{
@@ -702,7 +704,7 @@ ResoResults calc_pop(const PopParams& pop)
 			t_real dDetDSiDti_mono = tl::determinant(DSiDti_mono);
 
 			res.dR0 /= std::sqrt(std::abs(dDetS_mono*dDetF_mono / (dDetK_mono*dDetDSiDti_mono)));
-			res.dR0 *= t_real(2.)/pi * s_th_m / dmono_refl;
+			res.dR0 /= dmono_refl;  // removes all monochromator intensity factors
 		}
 	}
 
@@ -718,13 +720,16 @@ ResoResults calc_pop(const PopParams& pop)
 	}
 
 
-	// rest of the prefactors, equ. 1 in [pop75], together with the mono and and ana reflectivities
-	// (defining the resolution volume), these give the same correction as in [mit84] equ. A.57
-	// NOTE: these factors are not needed, because the normalisation of the 4d gaussian distribution
-	// is already taken care of in the MC step by the employed std::normal_distribution function
-	//res.dR0 *= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
-	// except for the (unimportant) prefactors this is the same as dividing by the resolution volume
-	//res.dR0 /= res.dResVol * pi * t_real(3.);
+	if(pop.flags & NORM_TO_RESVOL)
+	{
+		// rest of the prefactors, equ. 1 in [pop75], together with the mono and and ana reflectivities
+		// (defining the resolution volume), these give the same correction as in [mit84] equ. A.57
+		// NOTE: these factors are not needed if the normalisation of the 4d gaussian distribution
+		// is already taken care of in the MC step by the employed std::normal_distribution function
+		// res.dR0 *= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
+		// except for the (unimportant) prefactors this is the same as dividing by the resolution volume
+		res.dR0 /= res.dResVol * pi * t_real(3.);
+	}
 	// --------------------------------------------------------------------
 
 	// Bragg widths

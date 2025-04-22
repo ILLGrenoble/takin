@@ -6,7 +6,7 @@
  * @date mar-2025
  * @license GPLv2
  *
- * @desc for extended algorithm: [end25] M. Enderle, personal communication (17/feb/2025)
+ * @desc for extended algorithm: [end25] M. Enderle, personal communication (7/apr/2025)
  * @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
  * @desc for vertical scattering modification: [eck20] G. Eckold, personal communication, 2020.
  * @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
@@ -62,6 +62,7 @@ static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
 static const t_real pi = tl::get_pi<t_real>();
 static const t_real sig2fwhm = tl::get_SIGMA2FWHM<t_real>();
+static const t_real fwhm2sig = tl::get_FWHM2SIGMA<t_real>();
 
 
 enum EckQE : std::size_t
@@ -104,20 +105,20 @@ get_mono_vals(const length& src_w, const length& src_h,
 		const auto A_tx = inv_mono_curvh*dist_mono_sample / s_th_m;
 		const auto A_t1 = A_t0*A_tx;
 
-		A(0, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) * t_th_m*t_th_m *
+		A(0, 0) = t_real(0.5) / (ki*angs*ki*angs) * t_th_m*t_th_m *
 		(
 /*a*/			+ units::pow<2>(t_real(2)/coll_h_pre_mono) *rads*rads
 /*b*/			+ units::pow<2>(t_real(2)*dist_hsrc_mono/src_w)
 /*c*/			+ A_t0*A_t0 * rads*rads
 		);
-		A(0, 1) = A(1, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) * t_th_m *
+		A(0, 1) = A(1, 0) = t_real(0.5) / (ki*angs*ki*angs) * t_th_m *
 		(
 /*w*/			+ t_real(2)*tl::my_units_pow2(t_real(1)/coll_h_pre_mono) *rads*rads
 /*x*/			+ t_real(2)*dist_hsrc_mono*(dist_hsrc_mono-dist_mono_sample)/(src_w*src_w)
 /*y*/			+ A_t0*A_t0 * rads*rads
 /*z*/			- A_t0*A_t1 * rads*rads
 		);
-		A(1, 1) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
+		A(1, 1) = t_real(0.5) / (ki*angs*ki*angs) *
 		(
 /*1*/			+ units::pow<2>(t_real(1)/coll_h_pre_mono) *rads*rads
 /*2*/			+ units::pow<2>(t_real(1)/coll_h_pre_sample) *rads*rads
@@ -139,7 +140,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 		const auto Av_t0 = t_real(0.5) / (mono_mosaic_v*s_th_m);
 		const auto Av_t1 = inv_mono_curvv*dist_mono_sample / mono_mosaic_v;
 
-		Av(0, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
+		Av(0, 0) = t_real(0.5) / (ki*angs*ki*angs) *
 		(
 /*1*/		//	+ units::pow<2>(t_real(1) / coll_v_pre_mono) *rads*rads	// missing in paper?
 /*2*/			+ units::pow<2>(t_real(1) / coll_v_pre_sample) *rads*rads
@@ -150,14 +151,14 @@ get_mono_vals(const length& src_w, const length& src_h,
 /*6*/			- t_real(2)*Av_t0*Av_t1 * rads*rads     // typo in paper?
 /*7*/			+ Av_t1*Av_t1 * rads*rads               // missing in paper?
 		);
-		Av(0, 1) = Av(1, 0) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
+		Av(0, 1) = Av(1, 0) = t_real(0.5) / (ki*angs*ki*angs) *
 		(
 /*w*/		//	- units::pow<2>(1./coll_v_pre_mono) *rads*rads   // missing in paper?
 /*~x*/			+ dist_vsrc_mono*dist_mono_sample/(src_h*src_h)
 /*y*/			- Av_t0*Av_t0 * rads*rads
 /*z*/			+ Av_t0*Av_t1 * rads*rads
 		);
-		Av(1, 1) = t_real(0.5)*sig2fwhm*sig2fwhm / (ki*angs*ki*angs) *
+		Av(1, 1) = t_real(0.5) / (ki*angs*ki*angs) *
 		(
 /*a*/			+ units::pow<2>(t_real(1)/coll_v_pre_mono) *rads*rads
 /*b*/			+ units::pow<2>(dist_vsrc_mono/src_h)
@@ -170,12 +171,12 @@ get_mono_vals(const length& src_w, const length& src_h,
 	{
 		const auto B_t0 = inv_mono_curvh / (mono_mosaic*mono_mosaic*s_th_m);
 
-		B(0, 1) = sig2fwhm*sig2fwhm / ki * t_th_m *
+		B(0, 1) = 1. / ki * t_th_m *
 		(
 /*i*/			+ t_real(2)*dist_hsrc_mono / (src_w*src_w)
 /*j*/			+ B_t0 *rads*rads
 		);
-		B(1, 1) = sig2fwhm*sig2fwhm / ki *
+		B(1, 1) = 1. / ki *
 		(
 /*r*/			- dist_mono_sample / (units::pow<2>(mono_w*s_th_m))
 /*s*/			+ B_t0 * rads*rads
@@ -189,14 +190,14 @@ get_mono_vals(const length& src_w, const length& src_h,
 	{
 		const auto Bv_t0 = inv_mono_curvv / (mono_mosaic_v*mono_mosaic_v);
 
-		Bv(0) = sig2fwhm*sig2fwhm / ki * t_real(-1.) *
+		Bv(0) = 1. / ki * t_real(-1.) *
 		(
 /*r*/			+ dist_mono_sample / (mono_h*mono_h)    // typo in paper?
 /*~s*/			- t_real(0.5)*Bv_t0 *rads*rads / s_th_m
 /*~t*/			+ Bv_t0 * rads*rads * inv_mono_curvv*dist_mono_sample
 /*~u*/			+ dist_mono_sample / (src_h*src_h)      // typo in paper?
 		);
-		Bv(1) = sig2fwhm*sig2fwhm / ki * t_real(-1.) *
+		Bv(1) = 1. / ki * t_real(-1.) *
 		(
 /*i*/			+ dist_vsrc_mono / (src_h*src_h)        // typo in paper?
 /*j*/			+ t_real(0.5)*Bv_t0/s_th_m * rads*rads
@@ -206,7 +207,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 
 	// C matrix from equ. 2.12 in [end25] which corresponds to the C scalar from equ. 28 in [eck14]
 	t_mat C = ublas::zero_matrix<t_real>(3, 3);
-	C(1, 1) = t_real(0.5)*sig2fwhm*sig2fwhm * angs*angs*
+	C(1, 1) = t_real(0.5) * angs*angs*
 	(
 		t_real(1)/(src_w*src_w) +
 		units::pow<2>(t_real(1)/(mono_w*s_th_m)) +
@@ -214,7 +215,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 	);
 
 	// Czz component from equ. 2.14 in [end25] which corresponds to the Cv scalar from equ. 40 in [eck14]
-	t_real Cv = t_real(0.5)*sig2fwhm*sig2fwhm * angs*angs*
+	t_real Cv = t_real(0.5) * angs*angs*
 	(
 		t_real(1)/(src_h*src_h) +
 		t_real(1)/(mono_h*mono_h) +
@@ -338,27 +339,27 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	std::launch lpol = std::launch::async;
 	std::future<std::tuple<t_mat, t_mat, t_mat, t_real>> futMono
 		= std::async(lpol, get_mono_vals,
-			eck.src_w, eck.src_h,
-			eck.mono_w, eck.mono_h,
+			fwhm2sig * eck.src_w, fwhm2sig * eck.src_h,
+			fwhm2sig * eck.mono_w, fwhm2sig * eck.mono_h,
 			eck.dist_vsrc_mono,  eck.dist_hsrc_mono,
 			eck.dist_mono_sample,
 			eck.ki, thetam,
-			coll_h_pre_mono, eck.coll_h_pre_sample,
-			coll_v_pre_mono, eck.coll_v_pre_sample,
-			eck.mono_mosaic, mono_mosaic_v,
+			fwhm2sig * coll_h_pre_mono, fwhm2sig * eck.coll_h_pre_sample,
+			fwhm2sig * coll_v_pre_mono, fwhm2sig * eck.coll_v_pre_sample,
+			fwhm2sig * eck.mono_mosaic, fwhm2sig * mono_mosaic_v,
 			inv_mono_curvh, inv_mono_curvv,
 			dmono_refl);
 
 	std::future<std::tuple<t_mat, t_mat, t_mat, t_real>> futAna
 		= std::async(lpol, get_mono_vals,
-			eck.det_w, eck.det_h,
-			eck.ana_w, eck.ana_h,
+			fwhm2sig * eck.det_w, fwhm2sig * eck.det_h,
+			fwhm2sig * eck.ana_w, fwhm2sig * eck.ana_h,
 			eck.dist_ana_det, eck.dist_ana_det,
 			eck.dist_sample_ana,
 			eck.kf, -thetaa,
-			eck.coll_h_post_ana, eck.coll_h_post_sample,
-			eck.coll_v_post_ana, eck.coll_v_post_sample,
-			eck.ana_mosaic, ana_mosaic_v,
+			fwhm2sig * eck.coll_h_post_ana, fwhm2sig * eck.coll_h_post_sample,
+			fwhm2sig * eck.coll_v_post_ana, fwhm2sig * eck.coll_v_post_sample,
+			fwhm2sig * eck.ana_mosaic, fwhm2sig * ana_mosaic_v,
 			inv_ana_curvh, inv_ana_curvv,
 			dana_effic);
 	//--------------------------------------------------------------------------
@@ -492,31 +493,31 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	//--------------------------------------------------------------------------
 	const t_real mos_Q_sq[2] =
 	{
-		(eck.sample_mosaic/rads * eck.Q*angs) * (eck.sample_mosaic/rads * eck.Q*angs),
-		(sample_mosaic_v/rads * eck.Q*angs) * (sample_mosaic_v/rads * eck.Q*angs)
+		(fwhm2sig*eck.sample_mosaic/rads * eck.Q*angs) * (fwhm2sig*eck.sample_mosaic/rads * eck.Q*angs),
+		(fwhm2sig*sample_mosaic_v/rads * eck.Q*angs) * (fwhm2sig*sample_mosaic_v/rads * eck.Q*angs)
 	};
 
 	// sample mosaic, gives the same as equs. 3.3 and 7.7 in [end25]
 	t_mat mosaic = tl::submatrix_wnd(U, 2, 2, 1, 1);
-	mosaic(0, 0) += sig2fwhm*sig2fwhm / mos_Q_sq[0];  // horizontal
-	mosaic(1, 1) += sig2fwhm*sig2fwhm / mos_Q_sq[1];  // vertical
+	mosaic(0, 0) += 1. / mos_Q_sq[0];  // horizontal
+	mosaic(1, 1) += 1. / mos_Q_sq[1];  // vertical
 
 	// equs. 3.4 and 7.14 in [end25]
 	Z *= pi*pi / std::sqrt(tl::determinant(mosaic));
-	Z *= sig2fwhm / std::sqrt(2. * pi * mos_Q_sq[0] * mos_Q_sq[1]);
+	Z *= fwhm2sig / std::sqrt(2. * pi * mos_Q_sq[0] * mos_Q_sq[1]);
 
 	for(int comp = 0; comp < 2; ++comp)  // horizontal and vertical components
 	{
-		t_vec Pvec = tl::get_row<t_vec>(matP/(sig2fwhm*sig2fwhm), comp + 1);
-		t_vec Uvec = tl::get_column<t_vec>(U/(sig2fwhm*sig2fwhm), comp + 1);
-		t_real Mnorm = 1./mos_Q_sq[comp] + U(comp + 1, comp + 1)/(sig2fwhm*sig2fwhm);
+		t_vec Pvec = tl::get_row<t_vec>(matP, comp + 1);
+		t_vec Uvec = tl::get_column<t_vec>(U, comp + 1);
+		t_real Mnorm = 1./mos_Q_sq[comp] + U(comp + 1, comp + 1);
 
 		// gives the same as equs. 3.5 and 7.8 in [end25]
-		matK -= 0.25 * sig2fwhm*sig2fwhm * ublas::outer_prod(Pvec, Pvec) / Mnorm;
+		matK -= 0.25 * ublas::outer_prod(Pvec, Pvec) / Mnorm;
 		// gives the same as equs. 3.7 and 7.10 in [end25]
-		matP -= sig2fwhm*sig2fwhm * ublas::outer_prod(Uvec, Pvec) / Mnorm;
+		matP -= ublas::outer_prod(Uvec, Pvec) / Mnorm;
 		// gives the same as equs. 3.6 and 7.9 in [end25]
-		U -= sig2fwhm*sig2fwhm * ublas::outer_prod(Uvec, Uvec) / Mnorm;
+		U -= ublas::outer_prod(Uvec, Uvec) / Mnorm;
 	}
 	//--------------------------------------------------------------------------
 
@@ -524,7 +525,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	//--------------------------------------------------------------------------
 	// integrate over sample shape
 	//--------------------------------------------------------------------------
-	// TODO
+	// TODO: sample rotation
 	t_mat T_E = ublas::identity_matrix<t_real>(3);
 
 	// cuboid sample integration, equ. 6.6 in [end25]
@@ -578,10 +579,13 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	if(use_monitor)
 		res.dR0 /= dReflM;
 
-	// missing volume prefactor to normalise gaussian,
-	// cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
-	//res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
-	//res.dR0 *= res.dResVol * pi * t_real(3.);  // TODO: check
+	if(!(eck.flags & NORM_TO_RESVOL))
+	{
+		// missing volume prefactor to normalise gaussian,
+		// cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
+		// res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
+		res.dR0 *= res.dResVol * pi * t_real(3.);  // TODO: check
+	}
 
 	res.dR0 *= std::exp(-res.reso_s);
 	res.dR0 *= dxsec * dmonitor;

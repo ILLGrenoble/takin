@@ -57,6 +57,7 @@ enum ResoFlags : std::size_t
 	CALC_GENERAL_R0	= 1<<5,  // alternative R0 normalisation
 
 	NORM_TO_SAMPLE  = 1<<6,  // normalise by sample volume
+	NORM_TO_RESVOL  = 1<<7,  // normalise r0 by resolution volume
 };
 
 

@@ -42,16 +42,16 @@ int main()
 	constexpr const std::size_t ITERS = 100000;
 	constexpr const std::size_t BINS = 64;
 
-	t_real sigma = 0.25;
-	t_real mu = 0.2;
+	t_real sigma = 2.5;
+	t_real mu = 5.;
 
 	auto histo_axis = std::vector<boost::histogram::axis::regular<t_real>>
 	{
-		{ BINS, mu-4.*sigma /*min*/, mu+4.*sigma /*max*/ }
+		boost::histogram::axis::regular<t_real>{ BINS, mu-4.*sigma /*min*/, mu+4.*sigma /*max*/ }
 	};
 	auto histo = boost::histogram::make_histogram(histo_axis);
 
-	for(std::size_t i=0; i<ITERS; ++i)
+	for(std::size_t i = 0; i < ITERS; ++i)
 	{
 		t_real val = tl::rand_norm<t_real>(mu, sigma);
 		histo(val);
@@ -59,11 +59,19 @@ int main()
 
 	std::ostream& ostr = std::cout;
 	ostr.precision(5);
+
+	ostr << std::left
+		<< std::setw(12) << "# x" << " "
+		<< std::setw(12) << "y_mc" << " "
+		<< std::setw(12) << "y_model" << " "
+		<< std::setw(12) << "y_model/y_mc"
+		<< std::endl;
+
 	for(const auto& val : boost::histogram::indexed(histo))
 	{
 		t_real x = val.bin().lower() + 0.5*(val.bin().upper() - val.bin().lower());
-		t_real yMC = *val/t_real{ITERS}*t_real{BINS}*0.5;
-		t_real yModel = tl::gauss_model<t_real>(x, mu, sigma, 1., 0.);
+		t_real yMC = *val / t_real{ITERS} * t_real{BINS} / M_PI;
+		t_real yModel = tl::gauss_model_amp<t_real>(x, mu, sigma, 1., 0.);
 
 		ostr << std::left << std::setw(12) << x << " " <<
 			std::left << std::setw(12) << yMC << " " <<
