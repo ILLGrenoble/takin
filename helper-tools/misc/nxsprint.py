@@ -10,7 +10,9 @@ import h5py
 import numpy as np
 import tabulate as tab
 import re
-
+import os
+import argparse
+import subprocess
 
 print_retro = True
 print_statistics = False
@@ -74,8 +76,8 @@ class H5Loader:
 			self.columns = np.append(self.columns, "PNT")
 			self.selected_columns.insert(0, "PNT")
 
-		# add detector and monitor columns
-		re_det = re.compile("([A-Za-z0-9]*)(Detector|Monitor)([A-Za-z0-9]*)")
+		# add detector, monitor, tim, TT and TRT columns
+		re_det = re.compile("([A-Za-z0-9]*)(Detector|Monitor)([A-Za-z0-9]*)|^Time$|^TT$|^TRT$")
 		for col_name in self.columns:
 			if col_name in self.selected_columns:
 				continue
@@ -115,7 +117,9 @@ class H5Loader:
 		self.mono_k = self.get_dat(instr, "Monochromator/ki")
 		self.mono_sense = self.get_dat(instr, "Monochromator/sens")
 		self.mono_mosaic = self.get_dat(instr, "Monochromator/mosaic")
-		if instr["Monochromator/automatic_curvature"]:
+		self.reactor = self.get_dat(instr, "source/power")
+
+		if self.get_dat(instr, "Monochromator/automatic_curvature"):
 			self.mono_autocurve = "auto"
 		else:
 			self.mono_autocurve = "manu"
@@ -123,7 +127,7 @@ class H5Loader:
 		self.ana_k = self.get_dat(instr, "Analyser/kf")
 		self.ana_sense = self.get_dat(instr, "Analyser/sens")
 		self.ana_mosaic = self.get_dat(instr, "Analyser/mosaic")
-		if instr["Analyser/automatic_curvature"]:
+		if self.get_dat(instr, "Analyser/automatic_curvature"):
 			self.ana_autocurve = "auto"
 		else:
 			self.ana_autocurve = "manu"
@@ -165,8 +169,17 @@ class H5Loader:
 		self.endtime = self.get_str(entry, "end_time")
 		self.numor = self.get_dat(entry, "run_number")
 
+		# get and calculate steps infos
+		qh = entry["data_scan/scanned_variables/data"][0]
+		qh_st = len(qh) -1
+		self.qh_step = (qh[qh_st] - qh[0]) / qh_st
+		qk = entry["data_scan/scanned_variables/data"][1]
+		qk_st = len(qk) -1
+		self.qk_step = (qk[qk_st] - qk[0]) / qk_st
+
 		# get sample infos
 		sample = entry["sample"]
+		self.gonio = self.get_dat(sample, "automatic_gonio")
 		self.posqe = (
 			self.get_dat(sample, "qh"),
 			self.get_dat(sample, "qk"),
@@ -190,6 +203,10 @@ class H5Loader:
 			self.kfix = self.ana_k
 		else:
 			self.kfix = self.mono_k
+
+		self.temp_t = self.get_dat(sample, "temperature")
+		self.temp_r = self.get_dat(sample, "regulation_temperature")
+		self.mag_field = self.get_dat(sample, "additional_environment/MagneticField/field")
 
 
 	#
@@ -228,6 +245,8 @@ class H5Loader:
 		print("COMND: %s" % self.commandline)
 		print("POSQE: QH = %.4f, QK = %.4f, QL = %.4f, EN = %.4f, UN=meV" % self.posqe)
 		print("CURVE: MONO = %s, ANA = %s" % (self.mono_autocurve, self.ana_autocurve))
+		print("STEPS: QH = %.4f, QK = %.4f" % (self.qh_step, self.qk_step))
+		print("PARAM: GONIO = %s" % self.gonio)
 		print("PARAM: DM = %.5f, DA = %.5f, KFIX = %.5f" % (self.mono_d, self.ana_d, self.kfix))
 		print("PARAM: SM = %d, SS = %d, SA = %d, FX = %d" % (self.mono_sense, self.sample_sense, self.ana_sense, self.kfix_which))
 		if self.colli_h[0] != None:
@@ -239,6 +258,8 @@ class H5Loader:
 		print("PARAM: AA = %.5f, BB = %.5f, CC = %.5f" % self.angles)
 		print("PARAM: AX = %.3f, AY = %.3f, AZ = %.3f" % self.plane0)
 		print("PARAM: BX = %.3f, BY = %.3f, BZ = %.3f" % self.plane1)
+		print("PARAM: TT = %.4f, RT = %.4f, MAG = %.6f" % (self.temp_t, self.temp_r, self.mag_field))
+		print("PARAM: REACTOR = %s" % self.reactor)
 		print_var(self.varias, "VARIA")
 		print_var(self.zeros, "ZEROS")
 		print_var(self.targets, "TARGET")
@@ -252,6 +273,74 @@ class H5Loader:
 		print("FORMT:")  # TODO
 		print("DATA_:")
 		self.print_table(table_format = "plain")
+
+
+
+
+	#
+	# write a table of the scanned variables
+	#
+	def write_table(self, f, table_format = "rounded_grid"):
+		indices = np.array([np.where(self.columns == selected_column)[0][0] \
+			for selected_column in self.selected_columns])
+		f.write(tab.tabulate(self.data[:,indices], self.columns[indices],
+			numalign = "right", tablefmt = table_format))
+
+
+	#
+	# write the old-style TAS text file format
+	#
+	def write_retro(self, f):
+		# write header variable
+		def write_var(var, name, f):
+			ctr = 0
+			for key in var:
+				if ctr % 4 == 0:
+					f.write("\n%s: " % name)
+				val = float(var[key])
+				f.write("%-8s = %6.2f, " % (key, val))
+				ctr += 1
+
+		# write header
+		f.write("INSTR: %s\n" % self.instrname)
+		f.write("EXPNO: %s\n" % self.expnumber)
+		f.write("USER_: %s\n" % self.username)
+		f.write("LOCAL: %s\n" % self.localname)
+		f.write("FILE_: %d\n" % self.numor)
+		f.write("DATE_: %s\n" % self.starttime)
+		f.write("TITLE: %s\n" % self.exptitle)
+		f.write("TYPE_: %s\n" % self.instrmode)
+		f.write("COMND: %s\n" % self.commandline)
+		f.write("POSQE: QH = %.4f, QK = %.4f, QL = %.4f, EN = %.4f, UN=meV\n" % self.posqe)
+		f.write("CURVE: MONO = %s, ANA = %s\n" % (self.mono_autocurve, self.ana_autocurve))
+		f.write("STEPS: QH = %.4f, QK = %.4f\n" % (self.qh_step, self.qk_step))
+		f.write("PARAM: GONIO = %s\n" % self.gonio)
+		f.write("PARAM: DM = %.5f, DA = %.5f, KFIX = %.5f\n" % (self.mono_d, self.ana_d, self.kfix))
+		f.write("PARAM: SM = %d, SS = %d, SA = %d, FX = %d\n" % (self.mono_sense, self.sample_sense, self.ana_sense, self.kfix_which))
+		if self.colli_h[0] != None:
+			f.write("PARAM: ALF1 = %.2f, ALF2 = %.2f, ALF3 = %.2f, ALF4 = %.2f\n" % (self.colli_h[0], self.colli_h[1], self.colli_h[2], self.colli_h[3]))
+		if self.colli_v[0] != None:
+			f.write("PARAM: BET1 = %.2f, BET2 = %.2f, BET3 = %.2f, BET4 = %.2f\n" % (self.colli_v[0], self.colli_v[1], self.colli_v[2], self.colli_v[3]))
+		f.write("PARAM: ETAM = %.2f, ETAS = %.5f, ETAA = %.2f\n" % (self.mono_mosaic, self.sample_mosaic, self.ana_mosaic))
+		f.write("PARAM: AS = %.5f, BS = %.5f, CS = %.5f\n" % self.lattice)
+		f.write("PARAM: AA = %.5f, BB = %.5f, CC = %.5f\n" % self.angles)
+		f.write("PARAM: AX = %.3f, AY = %.3f, AZ = %.3f\n" % self.plane0)
+		f.write("PARAM: BX = %.3f, BY = %.3f, BZ = %.3f\n" % self.plane1)
+		f.write("PARAM: TT = %.4f, RT = %.4f, MAG = %.6f\n" % (self.temp_t, self.temp_r, self.mag_field))
+		f.write("PARAM: REACTOR = %s\n" % self.reactor)
+		write_var(self.varias, "VARIA", f)
+		write_var(self.zeros, "ZEROS", f)
+		write_var(self.targets, "TARGET", f)
+		f.write("\n")
+		for polcmd in self.palcmd.split("|"):
+			polcmd = polcmd.strip()
+			if polcmd != "":
+				f.write("POLAN: %s" % polcmd)
+
+		# write data
+		f.write("FORMT:\n")  # TODO
+		f.write("DATA_:\n")
+		self.write_table(f, table_format = "plain")
 
 
 	#
@@ -292,6 +381,24 @@ class H5Loader:
 			(count_time, count_time / 60., count_time / 3600., count_time / scan_time * 100.))
 		print("\tInstrument movement time: %.2f s = %.3f min = %.4f h = %.2f %%" % \
 			(move_time, move_time / 60., move_time / 3600., move_time / scan_time * 100.))
+		
+
+	#
+	# write some statistics about the measurement
+	#
+	def write_statistics(self, title, scan_duration, count_time, move_time, f):
+		scan_time = scan_duration.total_seconds()
+
+		f.write("\nTotal time needed for %s:" % title)
+		if self != None:
+			f.write("\tScan start time:          %s" % self.starttime)
+			f.write("\tScan stop time:           %s" % self.endtime)
+		f.write("\tScan time:                %d s = %.2f min = %.2f h = %s" % \
+			(scan_time, scan_time / 60., scan_time / 3600., str(scan_duration)))
+		f.write("\tActual counting time:     %.2f s = %.3f min = %.4f h = %.2f %%" % \
+			(count_time, count_time / 60., count_time / 3600., count_time / scan_time * 100.))
+		f.write("\tInstrument movement time: %.2f s = %.3f min = %.4f h = %.2f %%" % \
+			(move_time, move_time / 60., move_time / 3600., move_time / scan_time * 100.))
 
 
 #
@@ -302,31 +409,78 @@ def main(argv):
 	total_scan_duration = None
 	total_count_time = 0.
 	total_move_time = 0.
-	files = argv[1:]
+	files = []
+
+	parser = argparse.ArgumentParser(description=".nxs files treatment")
+	parser.add_argument("input", nargs="+", help="input paths of .nxs files and folders")
+	parser.add_argument("-o", "--output", help="create output file.dat", action="store_true")
+	args = parser.parse_args()
+	input_arg = args.input
+
+
+	for argname in input_arg:
+		nxs_file = re.compile(".*\\.nxs$")
+		if os.path.isdir(argname):
+			for file_name in os.listdir(argname):
+				if nxs_file.match(file_name):
+					files.append(os.path.join(argname, file_name))
+		else:
+			if nxs_file.match(argname):
+				files.append(argname)
+		
 
 	for filename in files:
-		try:
-			h5 = H5Loader(filename)
+		if args.output:
+			output_name = filename[0:-3]+"dat"
+			with open(output_name, "w") as f:
+				print(filename + " -> " + output_name)
+				
+				try:
+					h5 = H5Loader(filename)
 
-			if print_retro:
-				#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
-				h5.print_retro()
+					if print_retro:
+						#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
+						h5.write_retro(f)
 
-			if print_statistics:
-				[scan_duration, count_time, move_time] = h5.get_statistics()
-				h5.print_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time)
+					if print_statistics:
+						[scan_duration, count_time, move_time] = h5.get_statistics()
+						h5.write_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time, f)
 
-				if total_scan_duration == None:
-					total_scan_duration = scan_duration
-				else:
-					total_scan_duration += scan_duration
-				total_count_time += count_time
-				total_move_time += move_time
-		except FileNotFoundError as err:
-			print(err, file = sys.stderr)
+						if total_scan_duration == None:
+							total_scan_duration = scan_duration
+						else:
+							total_scan_duration += scan_duration
+						total_count_time += count_time
+						total_move_time += move_time
+				except FileNotFoundError as err:
+					print(err, file = sys.stderr)
+			f.close
+		else:
+			if print_statistics and len(files) > 1:
+				H5Loader.print_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
+			else:							
+				try:
+					h5 = H5Loader(filename)
+					print(filename)
 
-	if print_statistics and len(files) > 1:
-		H5Loader.print_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
+					if print_retro:
+						#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
+						h5.print_retro()
+
+					if print_statistics:
+						[scan_duration, count_time, move_time] = h5.get_statistics()
+						h5.print_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time)
+
+						if total_scan_duration == None:
+							total_scan_duration = scan_duration
+						else:
+							total_scan_duration += scan_duration
+						total_count_time += count_time
+						total_move_time += move_time
+				except FileNotFoundError as err:
+					print(err, file = sys.stderr)
+
+
 
 
 if __name__ == "__main__":
