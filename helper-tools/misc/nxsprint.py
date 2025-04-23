@@ -2,6 +2,7 @@
 #
 # hdf5 tas file converter
 # @author Tobias Weber <tweber@ill.fr>
+# @author Gabriel Rebolini <rebolinig@ill.fr>
 # @date 18-oct-2022
 # @license GPLv2
 #
