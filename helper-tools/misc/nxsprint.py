@@ -12,8 +12,8 @@ import numpy as np
 import tabulate as tab
 import re
 import os
+import sys
 import argparse
-import subprocess
 
 print_retro = True
 print_statistics = False
@@ -208,96 +208,37 @@ class H5Loader:
 		self.temp_t = self.get_dat(sample, "temperature")
 		self.temp_r = self.get_dat(sample, "regulation_temperature")
 		self.mag_field = self.get_dat(sample, "additional_environment/MagneticField/field")
-
-
-	#
-	# prints a table of the scanned variables
-	#
-	def print_table(self, table_format = "rounded_grid"):
-		indices = np.array([np.where(self.columns == selected_column)[0][0] \
-			for selected_column in self.selected_columns])
-		print(tab.tabulate(self.data[:,indices], self.columns[indices],
-			numalign = "right", tablefmt = table_format))
-
-
-	#
-	# prints the old-style TAS text file format
-	#
-	def print_retro(self):
-		# print header variable
-		def print_var(var, name):
-			ctr = 0
-			for key in var:
-				if ctr % 4 == 0:
-					print("\n%s: " % name, end="")
-				val = float(var[key])
-				print("%-8s = %6.2f, " % (key, val), end="")
-				ctr += 1
-
-		# print header
-		print("INSTR: %s" % self.instrname)
-		print("EXPNO: %s" % self.expnumber)
-		print("USER_: %s" % self.username)
-		print("LOCAL: %s" % self.localname)
-		print("FILE_: %d" % self.numor)
-		print("DATE_: %s" % self.starttime)
-		print("TITLE: %s" % self.exptitle)
-		print("TYPE_: %s" % self.instrmode)
-		print("COMND: %s" % self.commandline)
-		print("POSQE: QH = %.4f, QK = %.4f, QL = %.4f, EN = %.4f, UN=meV" % self.posqe)
-		print("CURVE: MONO = %s, ANA = %s" % (self.mono_autocurve, self.ana_autocurve))
-		print("STEPS: QH = %.4f, QK = %.4f" % (self.qh_step, self.qk_step))
-		print("PARAM: GONIO = %s" % self.gonio)
-		print("PARAM: DM = %.5f, DA = %.5f, KFIX = %.5f" % (self.mono_d, self.ana_d, self.kfix))
-		print("PARAM: SM = %d, SS = %d, SA = %d, FX = %d" % (self.mono_sense, self.sample_sense, self.ana_sense, self.kfix_which))
-		if self.colli_h[0] != None:
-			print("PARAM: ALF1 = %.2f, ALF2 = %.2f, ALF3 = %.2f, ALF4 = %.2f" % (self.colli_h[0], self.colli_h[1], self.colli_h[2], self.colli_h[3]))
-		if self.colli_v[0] != None:
-			print("PARAM: BET1 = %.2f, BET2 = %.2f, BET3 = %.2f, BET4 = %.2f" % (self.colli_v[0], self.colli_v[1], self.colli_v[2], self.colli_v[3]))
-		print("PARAM: ETAM = %.2f, ETAS = %.5f, ETAA = %.2f" % (self.mono_mosaic, self.sample_mosaic, self.ana_mosaic))
-		print("PARAM: AS = %.5f, BS = %.5f, CS = %.5f" % self.lattice)
-		print("PARAM: AA = %.5f, BB = %.5f, CC = %.5f" % self.angles)
-		print("PARAM: AX = %.3f, AY = %.3f, AZ = %.3f" % self.plane0)
-		print("PARAM: BX = %.3f, BY = %.3f, BZ = %.3f" % self.plane1)
-		print("PARAM: TT = %.4f, RT = %.4f, MAG = %.6f" % (self.temp_t, self.temp_r, self.mag_field))
-		print("PARAM: REACTOR = %s" % self.reactor)
-		print_var(self.varias, "VARIA")
-		print_var(self.zeros, "ZEROS")
-		print_var(self.targets, "TARGET")
-		print()
-		for polcmd in self.palcmd.split("|"):
-			polcmd = polcmd.strip()
-			if polcmd != "":
-				print("POLAN: %s" % polcmd)
-
-		# print data
-		print("FORMT:")  # TODO
-		print("DATA_:")
-		self.print_table(table_format = "plain")
-
+		if self.temp_t == None:
+			self.temp_t = -1.
+		if self.temp_r == None:
+			self.temp_r = -1.
+		if self.mag_field == None:
+			self.mag_field = -1.
 
 
 
 	#
 	# write a table of the scanned variables
 	#
-	def write_table(self, f, table_format = "rounded_grid"):
+	def write_table(self, outfile = sys.stdout, table_format = "rounded_grid"):
 		indices = np.array([np.where(self.columns == selected_column)[0][0] \
 			for selected_column in self.selected_columns])
-		f.write(tab.tabulate(self.data[:,indices], self.columns[indices],
+		outfile.write(tab.tabulate(self.data[:,indices], self.columns[indices],
 			numalign = "right", tablefmt = table_format))
 
 
 	#
 	# write the old-style TAS text file format
 	#
-	def write_retro(self, f):
+	def write_retro(self, f = sys.stdout):
 		# write header variable
 		def write_var(var, name, f):
 			ctr = 0
 			for key in var:
+				if ctr % 4 == 0 and ctr != 0:
+					f.write("\n")
 				if ctr % 4 == 0:
-					f.write("\n%s: " % name)
+					f.write("%s: " % name)
 				val = float(var[key])
 				f.write("%-8s = %6.2f, " % (key, val))
 				ctr += 1
@@ -342,6 +283,7 @@ class H5Loader:
 		f.write("FORMT:\n")  # TODO
 		f.write("DATA_:\n")
 		self.write_table(f, table_format = "plain")
+		f.write("\n")
 
 
 	#
@@ -367,46 +309,28 @@ class H5Loader:
 
 
 	#
-	# prints some statistics about the measurement
-	#
-	def print_statistics(self, title, scan_duration, count_time, move_time):
-		scan_time = scan_duration.total_seconds()
-
-		print("\nTotal time needed for %s:" % title)
-		if self != None:
-			print("\tScan start time:          %s" % self.starttime)
-			print("\tScan stop time:           %s" % self.endtime)
-		print("\tScan time:                %d s = %.2f min = %.2f h = %s" % \
-			(scan_time, scan_time / 60., scan_time / 3600., str(scan_duration)))
-		print("\tActual counting time:     %.2f s = %.3f min = %.4f h = %.2f %%" % \
-			(count_time, count_time / 60., count_time / 3600., count_time / scan_time * 100.))
-		print("\tInstrument movement time: %.2f s = %.3f min = %.4f h = %.2f %%" % \
-			(move_time, move_time / 60., move_time / 3600., move_time / scan_time * 100.))
-		
-
-	#
 	# write some statistics about the measurement
 	#
-	def write_statistics(self, title, scan_duration, count_time, move_time, f):
+	def write_statistics(self, title, scan_duration, count_time, move_time, f = sys.stdout):
 		scan_time = scan_duration.total_seconds()
 
-		f.write("\nTotal time needed for %s:" % title)
+		f.write("\nTotal time needed for %s:\n" % title)
 		if self != None:
-			f.write("\tScan start time:          %s" % self.starttime)
-			f.write("\tScan stop time:           %s" % self.endtime)
-		f.write("\tScan time:                %d s = %.2f min = %.2f h = %s" % \
+			f.write("\tScan start time:          %s\n" % self.starttime)
+			f.write("\tScan stop time:           %s\n" % self.endtime)
+		f.write("\tScan time:                %d s = %.2f min = %.2f h = %s\n" % \
 			(scan_time, scan_time / 60., scan_time / 3600., str(scan_duration)))
-		f.write("\tActual counting time:     %.2f s = %.3f min = %.4f h = %.2f %%" % \
+		f.write("\tActual counting time:     %.2f s = %.3f min = %.4f h = %.2f %%\n" % \
 			(count_time, count_time / 60., count_time / 3600., count_time / scan_time * 100.))
-		f.write("\tInstrument movement time: %.2f s = %.3f min = %.4f h = %.2f %%" % \
+		f.write("\tInstrument movement time: %.2f s = %.3f min = %.4f h = %.2f %%\n" % \
 			(move_time, move_time / 60., move_time / 3600., move_time / scan_time * 100.))
+		f.write("\n")
 
 
 #
 # loads TAS files from the command line and converts them
 #
 def main(argv):
-
 	total_scan_duration = None
 	total_count_time = 0.
 	total_move_time = 0.
@@ -414,10 +338,11 @@ def main(argv):
 
 	parser = argparse.ArgumentParser(description=".nxs files treatment")
 	parser.add_argument("input", nargs="+", help="input paths of .nxs files and folders")
-	parser.add_argument("-o", "--output", help="create output file.dat", action="store_true")
+	parser.add_argument("-o", "--output", action="store_true", help="create output file.dat")
+	parser.add_argument("-s", "--statistics", action="store_true", help="show statistics")
 	args = parser.parse_args()
 	input_arg = args.input
-
+	print_statistics = args.statistics
 
 	for argname in input_arg:
 		nxs_file = re.compile(".*\\.nxs$")
@@ -428,59 +353,40 @@ def main(argv):
 		else:
 			if nxs_file.match(argname):
 				files.append(argname)
-		
+
+	def convert_file(h5, outfile = sys.stdout):
+		if print_retro:
+			#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
+			h5.write_retro(outfile)
+
+		if print_statistics:
+			[scan_duration, count_time, move_time] = h5.get_statistics()
+			h5.write_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time)
+
+			nonlocal total_scan_duration, total_count_time, total_move_time
+			if total_scan_duration == None:
+				total_scan_duration = scan_duration
+			else:
+				total_scan_duration += scan_duration
+			total_count_time += count_time
+			total_move_time += move_time
 
 	for filename in files:
-		if args.output:
-			output_name = filename[0:-3]+"dat"
-			with open(output_name, "w") as f:
-				print(filename + " -> " + output_name)
-				
-				try:
-					h5 = H5Loader(filename)
+		try:
+			h5 = H5Loader(filename)
 
-					if print_retro:
-						#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
-						h5.write_retro(f)
+			if args.output:
+				output_name = filename[0:-3] + "dat"
+				with open(output_name, "w") as outfile:
+					print(filename + " -> " + output_name)
+					convert_file(h5, outfile)
+			else:
+				convert_file(h5)
+		except FileNotFoundError as err:
+			print(err, file = sys.stderr)
 
-					if print_statistics:
-						[scan_duration, count_time, move_time] = h5.get_statistics()
-						h5.write_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time, f)
-
-						if total_scan_duration == None:
-							total_scan_duration = scan_duration
-						else:
-							total_scan_duration += scan_duration
-						total_count_time += count_time
-						total_move_time += move_time
-				except FileNotFoundError as err:
-					print(err, file = sys.stderr)
-			f.close
-		else:
-			if print_statistics and len(files) > 1:
-				H5Loader.print_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
-			else:							
-				try:
-					h5 = H5Loader(filename)
-					print(filename)
-
-					if print_retro:
-						#h5.selected_columns = [ "QH", "QK", "QL", "EN" ]
-						h5.print_retro()
-
-					if print_statistics:
-						[scan_duration, count_time, move_time] = h5.get_statistics()
-						h5.print_statistics("scan %s" % h5.numor, scan_duration, count_time, move_time)
-
-						if total_scan_duration == None:
-							total_scan_duration = scan_duration
-						else:
-							total_scan_duration += scan_duration
-						total_count_time += count_time
-						total_move_time += move_time
-				except FileNotFoundError as err:
-					print(err, file = sys.stderr)
-
+	if print_statistics and len(files) > 1:
+		H5Loader.write_statistics(None, "all scans" , total_scan_duration, total_count_time, total_move_time)
 
 
 
