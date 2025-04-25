@@ -6,7 +6,7 @@
  * @date mar-2025
  * @license GPLv2
  *
- * @desc for extended algorithm: [end25] M. Enderle, personal communication (7/apr/2025)
+ * @desc for extended algorithm: [end25] M. Enderle, personal communication (24/apr/2025)
  * @desc for original algorithm: [eck14] G. Eckold and O. Sobolev, NIM A 752, pp. 54-64 (2014), doi: 10.1016/j.nima.2014.03.019
  * @desc for vertical scattering modification: [eck20] G. Eckold, personal communication, 2020.
  * @desc for alternate R0 normalisation: [mit84] P. W. Mitchell, R. A. Cowley and S. A. Higgins, Acta Cryst. Sec A, 40(2), 152-160 (1984), doi: 10.1107/S0108767384000325
@@ -481,7 +481,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 				(matV(ECK_K_Z, i) * matV(ECK_K_Z, j) / U1(ECK_K_Z, ECK_K_Z)
 				+ matV2(ECK_K_Y, i) * matV2(ECK_K_Y, j) / U2(ECK_K_Y, ECK_K_Y));
 
-	// C_all,0 in [end25], equ. 1.1, 2.1
+	// C_all,0 in [end25], equs. 1.1, 2.1
 	t_real Z0 = std::sqrt(pi/std::abs(U1(ECK_K_Z, ECK_K_Z)))
 		* std::sqrt(pi/std::abs(U2(ECK_K_Y, ECK_K_Y)));
 	t_real Z = dReflM * dReflA * Z0;
@@ -497,12 +497,12 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		(fwhm2sig*sample_mosaic_v/rads * eck.Q*angs) * (fwhm2sig*sample_mosaic_v/rads * eck.Q*angs)
 	};
 
-	// sample mosaic, gives the same as equs. 3.3 and 7.7 in [end25]
+	// sample mosaic, gives the same as equ. 4.3 in [end25]
 	t_mat mosaic = tl::submatrix_wnd(U, 2, 2, 1, 1);
 	mosaic(0, 0) += 1. / mos_Q_sq[0];  // horizontal
 	mosaic(1, 1) += 1. / mos_Q_sq[1];  // vertical
 
-	// equs. 3.4 and 7.14 in [end25]
+	// equ. 4.4 in [end25]
 	Z *= pi*pi / std::sqrt(tl::determinant(mosaic));
 	Z *= fwhm2sig / std::sqrt(2. * pi * mos_Q_sq[0] * mos_Q_sq[1]);
 
@@ -512,11 +512,11 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		t_vec Uvec = tl::get_column<t_vec>(U, comp + 1);
 		t_real Mnorm = 1./mos_Q_sq[comp] + U(comp + 1, comp + 1);
 
-		// gives the same as equs. 3.5 and 7.8 in [end25]
+		// gives the same as equ. 4.5 in [end25]
 		matK -= 0.25 * ublas::outer_prod(Pvec, Pvec) / Mnorm;
-		// gives the same as equs. 3.7 and 7.10 in [end25]
+		// gives the same as equ. 4.7 in [end25]
 		matP -= ublas::outer_prod(Uvec, Pvec) / Mnorm;
-		// gives the same as equs. 3.6 and 7.9 in [end25]
+		// gives the same as equ. 4.6 in [end25]
 		U -= ublas::outer_prod(Uvec, Uvec) / Mnorm;
 	}
 	//--------------------------------------------------------------------------
@@ -528,17 +528,17 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// TODO: sample rotation
 	t_mat T_E = ublas::identity_matrix<t_real>(3);
 
-	// cuboid sample integration, equ. 6.6 in [end25]
-	t_real sample_var[3] = { pi, pi, pi };
+	// cuboid sample integration, page 16 in [end25]
+	t_real sample_var[3] = { 6., 6., 6. };
 	volume V_sample = eck.sample_w_perpq * eck.sample_w_q * eck.sample_h;
 	if(!eck.bSampleCub)
 	{
-		// cylindrical sample integration, equ. 6.3 in [end25]
-		sample_var[0] = sample_var[1] = 4.;
+		// cylindrical sample integration, equ. 5.13 in [end25]
+		sample_var[0] = sample_var[1] = 6./pi / 0.5*0.5 /* diameter -> radius */;
 		V_sample = pi * 0.5*eck.sample_w_perpq * 0.5*eck.sample_w_q * eck.sample_h;
 	}
 
-	// equs. 4.4, 6.3, and 6.6 in [end25]
+	// equ. 5.4 in [end25]
 	t_mat matN = matK;
 	matN += tl::transform<t_mat>(tl::diag_matrix<t_mat>({
 		sample_var[0]/(eck.sample_w_perpq*eck.sample_w_perpq /angs/angs),
@@ -549,14 +549,15 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	t_real detN = tl::determinant(matN);
 	t_mat Nadj = tl::adjugate(matN, true);
 
-	// page 9 and equs. 7.11, 7.12 and 7.13 in [end25]
+	// page 15 in [end25]
 	U -= 0.25 / detN * tl::transform<t_mat>(Nadj, ublas::trans(matP), true);
 	t_mat NadjK = ublas::prod(Nadj, matK);
 	matP -= 1. / detN * ublas::prod(matP, NadjK);
 	matK -= 1. / detN * ublas::prod(matK, NadjK);
 
-	// page 9 in [end25]
+	// page 15 in [end25]
 	Z *= pi*pi*pi / detN;
+	Z *= 6.*6.*6. / pi*pi*pi;
 
 	// normalise R0 to sample volume
 	if(eck.flags & NORM_TO_SAMPLE)
