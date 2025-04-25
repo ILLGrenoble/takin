@@ -540,9 +540,9 @@ ResoResults calc_pop(const PopParams& pop)
 	// include sample mosaic, see [zhe07], equs. 12-14 and cf. equs. 15 & 16
 	// in [zhe07], equ. 16 the (det(...)/det(...))^(1/2) factor should be
 	// (det(...)/(det(...)))^(-1/2), cf. volume normalisation in [zhe07], equ. 8
-	// this just corrects the resolution volume, which is already normalised in the MC step
+	// this just divides out the old factor (res_nomosaic) and multiplies the new (res)
+	// and is already taken care of by the total normalisation further below
 	//res.dR0 /= std::sqrt(std::abs(tl::determinant(cov) / tl::determinant(cov_nomosaic)));
-
 
 	// --------------------------------------------------------------------
 	// mono parts of the matrices until the monitor, see: [zhe07], p. 10

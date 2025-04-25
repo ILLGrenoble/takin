@@ -440,7 +440,7 @@ def calc(param, pointlike = False):
             / (np.sin(thetam) * np.sin(thetaa))
 
     # new: include sample mosaic, see [zhe07], equs. 12-14, equs. 15 & 16
-    #R0 *= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
+    #R0 /= np.sqrt(la.det(cov) / la.det(cov_nomosaic))
 
     # old: include sample mosaic, see [zhe07], equs. 12-14
     #R0 /= np.sqrt(1. + cov[1, 1]*mos_h - mos_h**2.) * np.sqrt(1. + cov[2, 2]*mos_v - mos_v**2.)
