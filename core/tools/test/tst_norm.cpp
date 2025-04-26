@@ -4,7 +4,7 @@
  * @data may-2019
  * @license GPLv2
  *
- * g++ -I../../ -o tst_norm tst_norm.cpp ../../tlibs/math/rand.cpp ../../tlibs/log/log.cpp
+ * g++ -std=c++14 -I../../ -o tst_norm tst_norm.cpp ../../tlibs/math/rand.cpp ../../tlibs/log/log.cpp
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
@@ -35,23 +35,73 @@
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/rand.h"
 
-using t_real = double;
 
-int main()
+/**
+ * test to ensure that the histogram doesn't perform an internal normalisation
+ */
+template<class t_real>
+void tst_histo()
 {
-	constexpr const std::size_t ITERS = 100000;
-	constexpr const std::size_t BINS = 64;
+	auto histo_axis = std::vector<boost::histogram::axis::regular<t_real>>
+	{
+		boost::histogram::axis::regular<t_real>{
+			5 /* bins*/, 0 /* min */, 5 /* max */ }
+	};
 
-	t_real sigma = 2.5;
-	t_real mu = 5.;
+	auto histo = boost::histogram::make_histogram(histo_axis);
+
+	histo(0);
+	histo(0);
+	histo(1);
+	histo(1);
+	histo(1);
+	histo(3);
+
+	std::ostream& ostr = std::cout;
+	ostr.precision(5);
+
+	ostr << std::left
+		<< std::setw(12) << "lower" << " "
+		<< std::setw(12) << "upper" << " "
+		<< std::setw(12) << "count" << " "
+		<< std::endl;
+
+	for(const auto& val : boost::histogram::indexed(histo))
+	{
+		t_real x = val.bin().lower() + 0.5*(val.bin().upper() - val.bin().lower());
+
+		ostr << std::left
+			<< std::setw(12) << val.bin().lower() << " "
+			<< std::setw(12) << val.bin().upper() << " "
+			<< std::setw(12) << *val << "\n";
+	}
+
+	ostr << std::endl;
+}
+
+
+/**
+ * tests normalisation of random gauss distribution
+ */
+template<class t_real>
+void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins)
+{
+	t_real range = 6. * sigma;
+	t_real bin_density = static_cast<t_real>(bins) / range;
 
 	auto histo_axis = std::vector<boost::histogram::axis::regular<t_real>>
 	{
-		boost::histogram::axis::regular<t_real>{ BINS, mu-4.*sigma /*min*/, mu+4.*sigma /*max*/ }
+		boost::histogram::axis::regular<t_real>
+		{
+			bins,
+			mu - range/2. /* min */,
+			mu + range/2. /* max */
+		}
 	};
+
 	auto histo = boost::histogram::make_histogram(histo_axis);
 
-	for(std::size_t i = 0; i < ITERS; ++i)
+	for(std::size_t i = 0; i < iters; ++i)
 	{
 		t_real val = tl::rand_norm<t_real>(mu, sigma);
 		histo(val);
@@ -63,21 +113,42 @@ int main()
 	ostr << std::left
 		<< std::setw(12) << "# x" << " "
 		<< std::setw(12) << "y_mc" << " "
-		<< std::setw(12) << "y_model" << " "
-		<< std::setw(12) << "y_model/y_mc"
+		<< std::setw(12) << "y_amp" << " "
+		<< std::setw(12) << "y_area" << " "
+		<< std::setw(12) << "y_amp/y_mc" << " "
+		<< std::setw(12) << "y_area/y_mc"
 		<< std::endl;
 
 	for(const auto& val : boost::histogram::indexed(histo))
 	{
 		t_real x = val.bin().lower() + 0.5*(val.bin().upper() - val.bin().lower());
-		t_real yMC = *val / t_real{ITERS} * t_real{BINS} / M_PI;
-		t_real yModel = tl::gauss_model_amp<t_real>(x, mu, sigma, 1., 0.);
+		t_real yMC = *val / static_cast<t_real>(iters);
+		//yMC *= bin_density * 8. * sigma / M_PI;  // amp normalisation
+		//yMC *= bin_density * 8. / M_PI / std::sqrt(2. * M_PI);  // area normalisation
+		yMC *= bin_density * std::sqrt(32. / M_PI/M_PI/M_PI);  // area normalisation
+		t_real yModel_amp = tl::gauss_model_amp<t_real>(x, mu, sigma, 1., 0.);
+		t_real yModel_area = tl::gauss_model<t_real>(x, mu, sigma, 1., 0.);
 
-		ostr << std::left << std::setw(12) << x << " " <<
-			std::left << std::setw(12) << yMC << " " <<
-			std::left << std::setw(12) << yModel << " " <<
-			std::left << std::setw(12) << yModel/yMC << "\n";
+		ostr << std::left
+			<< std::setw(12) << x << " "
+			<< std::setw(12) << yMC << " "
+			<< std::setw(12) << yModel_amp << " "
+			<< std::setw(12) << yModel_area << " "
+			<< std::setw(12) << yModel_amp/yMC << " "
+			<< std::setw(12) << yModel_area/yMC << "\n";
 	}
+
+	ostr << std::endl;
+}
+
+
+int main()
+{
+	using t_real = double;
+
+	tst_histo<t_real>();
+	tst_norm<t_real>(2.5, 5., 250000, 100);
+	tst_norm<t_real>(3.5, 0., 250000, 50);
 
 	return 0;
 }
