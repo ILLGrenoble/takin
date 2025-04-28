@@ -28,6 +28,7 @@
  * ----------------------------------------------------------------------------
  */
 
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -84,9 +85,10 @@ void tst_histo()
  * tests normalisation of random gauss distribution
  */
 template<class t_real>
-void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins)
+void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins, std::ostream& ostr = std::cout)
 {
 	t_real range = 6. * sigma;
+	//range = 1.;
 	t_real bin_density = static_cast<t_real>(bins) / range;
 
 	auto histo_axis = std::vector<boost::histogram::axis::regular<t_real>>
@@ -94,8 +96,8 @@ void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins)
 		boost::histogram::axis::regular<t_real>
 		{
 			bins,
-			mu - range/2. /* min */,
-			mu + range/2. /* max */
+			mu - range / 2. /* min */,
+			mu + range / 2. /* max */
 		}
 	};
 
@@ -107,9 +109,7 @@ void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins)
 		histo(val);
 	}
 
-	std::ostream& ostr = std::cout;
 	ostr.precision(5);
-
 	ostr << std::left
 		<< std::setw(12) << "# x" << " "
 		<< std::setw(12) << "y_mc" << " "
@@ -142,13 +142,43 @@ void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins)
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
 	using t_real = double;
 
-	tst_histo<t_real>();
-	tst_norm<t_real>(2.5, 5., 250000, 100);
-	tst_norm<t_real>(3.5, 0., 250000, 50);
+	if(argc >= 6)
+	{
+		// run gaussian test with given parameters
+		t_real sig = 1.;
+		t_real mu = 0.;
+		unsigned int iters = 100000;
+		unsigned int bins = 64;
+		std::string filename = "gauss.dat";
+
+		std::istringstream{argv[1]} >> sig;
+		std::istringstream{argv[2]} >> mu;
+		std::istringstream{argv[3]} >> iters;
+		std::istringstream{argv[4]} >> bins;
+		std::istringstream{argv[5]} >> filename;
+
+		std::ofstream ofstr{filename};
+		tst_norm<t_real>(sig, mu, iters, bins, ofstr);
+
+		std::cerr << "Plot with \"plot \"" << filename << "\" u 1:2 w l lw 2, "
+			<< "\"" << filename << "\" u 1:4 w l lw 2\"."
+			<< std::endl;
+	}
+	else
+	{
+		std::cerr << "Running standard tests. To use specific parameters, use the format:\n"
+			<< "\t" << argv[0] << " <sigma> <mu> <iters> <bins> <filename>\n"
+			<< std::endl;
+
+		// run some tests
+		tst_histo<t_real>();
+		tst_norm<t_real>(2.5, 0., 250000, 50);
+		tst_norm<t_real>(3.5, 0., 250000, 100);
+	}
 
 	return 0;
 }
