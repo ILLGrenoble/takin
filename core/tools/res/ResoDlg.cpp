@@ -163,10 +163,10 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecPosEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
-	m_vecCheckBoxes = {checkUseGeneralR0, checkUseKi3, checkUseKf3,
+	m_vecCheckBoxes = {checkUseAltR0, checkUseKi3, checkUseKf3,
 		checkUseKfKi, checkUseKi, checkUseMonitor, checkUseSampleVol,
 		checkUseResVol};
-	m_vecCheckNames = {"reso/use_general_R0", "reso/use_ki3", "reso/use_kf3",
+	m_vecCheckNames = {"reso/use_alt_R0", "reso/use_ki3", "reso/use_kf3",
 		"reso/use_kfki", "reso/use_monki", "reso/use_mon", "reso/use_samplevol",
 		"reso/use_resvol"};
 
@@ -383,10 +383,10 @@ void ResoDlg::Calc()
 		}
 
 
-		if(checkUseGeneralR0->isChecked())
-			tas.flags |= CALC_GENERAL_R0;
+		if(checkUseAltR0->isChecked())
+			tas.flags |= CALC_ALT_R0;
 		else
-			tas.flags &= ~CALC_GENERAL_R0;
+			tas.flags &= ~CALC_ALT_R0;
 		if(checkUseKi3->isChecked())
 			tas.flags |= CALC_KI3;
 		else

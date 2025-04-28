@@ -511,7 +511,7 @@ ResoResults calc_eck(const EckParams& eck)
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	bool use_monitor = (eck.flags & CALC_MON) != 0;
 
-	if(eck.flags & CALC_GENERAL_R0)
+	if(eck.flags & CALC_ALT_R0)
 	{
 		// alternate R0 normalisation factor, see [mit84], equ. A.57
 		res.dR0 = mitch_R0<t_real>(use_monitor, dReflM, dReflA,

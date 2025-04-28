@@ -641,30 +641,7 @@ ResoResults calc_pop(const PopParams& pop)
 	// --------------------------------------------------------------------
 	t_real dDetF = tl::determinant(F_mosaics);
 
-	if(pop.flags & CALC_GENERAL_R0)
-	{
-		// alternate, more general calculation from [zhe07], p. 10, equ. 8
-		t_real dDetHG = tl::determinant(H_G_div);
-		res.dR0 *= std::sqrt(dDetF / dDetHG);
-
-		if(pop.flags & CALC_MON)
-		{
-			t_mat Hi_mono_div = tl::transform_inv(Ki_mono_geo, D_mono_geo_div_trafo, true);
-			t_mat HG_mono_div;
-			if(!tl::inverse(Hi_mono_div, HG_mono_div))
-			{
-				res.bOk = false;
-				res.strErr = "Matrix H_mono^(-1) cannot be inverted.";
-				return res;
-			}
-			HG_mono_div += G_mono_collis;
-
-			// mono part, [zhe07], p. 10, equ. 10
-			res.dR0 /= std::sqrt(std::abs(tl::determinant(F_mono_mosaics) / tl::determinant(HG_mono_div)));
-			res.dR0 /= dmono_refl;  // removes all monochromator intensity factors
-		}
-	}
-	else
+	if(pop.flags & CALC_ALT_R0)
 	{
 		// resolution volume, [pop75], equ. 13a & 16
 		// [D] = 1/cm, [SI] = cm^2
@@ -704,6 +681,29 @@ ResoResults calc_pop(const PopParams& pop)
 			t_real dDetDSiDti_mono = tl::determinant(DSiDti_mono);
 
 			res.dR0 /= std::sqrt(std::abs(dDetS_mono*dDetF_mono / (dDetK_mono*dDetDSiDti_mono)));
+			res.dR0 /= dmono_refl;  // removes all monochromator intensity factors
+		}
+	}
+	else
+	{
+		// more general calculation from [zhe07], p. 10, equ. 8
+		t_real dDetHG = tl::determinant(H_G_div);
+		res.dR0 *= std::sqrt(dDetF / dDetHG);
+
+		if(pop.flags & CALC_MON)
+		{
+			t_mat Hi_mono_div = tl::transform_inv(Ki_mono_geo, D_mono_geo_div_trafo, true);
+			t_mat HG_mono_div;
+			if(!tl::inverse(Hi_mono_div, HG_mono_div))
+			{
+				res.bOk = false;
+				res.strErr = "Matrix H_mono^(-1) cannot be inverted.";
+				return res;
+			}
+			HG_mono_div += G_mono_collis;
+
+			// mono part, [zhe07], p. 10, equ. 10
+			res.dR0 /= std::sqrt(std::abs(tl::determinant(F_mono_mosaics) / tl::determinant(HG_mono_div)));
 			res.dR0 /= dmono_refl;  // removes all monochromator intensity factors
 		}
 	}

@@ -253,10 +253,15 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_reso.flags |= CALC_MON;
 	else
 		m_reso.flags &= ~CALC_MON;
+	// for compatibility with old version
 	if(xml.Query<int>((strXmlRoot + "reso/use_general_R0").c_str(), 0))
-		m_reso.flags |= CALC_GENERAL_R0;
+		m_reso.flags &= ~CALC_ALT_R0;
 	else
-		m_reso.flags &= ~CALC_GENERAL_R0;
+		m_reso.flags |= CALC_ALT_R0;
+	if(xml.Query<int>((strXmlRoot + "reso/use_alt_R0").c_str(), 0))
+		m_reso.flags |= CALC_ALT_R0;
+	else
+		m_reso.flags &= ~CALC_ALT_R0;
 	if(xml.Query<int>((strXmlRoot + "reso/use_samplevol").c_str(), 0))
 		m_reso.flags |= NORM_TO_SAMPLE;
 	else
@@ -265,7 +270,6 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_reso.flags |= NORM_TO_RESVOL;
 	else
 		m_reso.flags &= ~NORM_TO_RESVOL;
-	//m_reso.flags &= ~NORM_TO_RESVOL;  // not used anymore
 
 	m_R0_scale = xml.Query<t_real>((strXmlRoot + "reso/r0_scale").c_str(), 1.);
 
@@ -333,6 +337,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.pos_x = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_x").c_str(), 0.)*cm;
 	m_reso.pos_y = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_y").c_str(), 0.)*cm;
 	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*cm;
+	// for compatibility with old version
 	if(xml.Query<int>((strXmlRoot+"reso/scatter_kf_vert").c_str(), 0) != 0)
 		m_reso.angle_kf = t_real_reso(0.5)*tl::get_pi<t_real_reso>() * rads;
 	else
