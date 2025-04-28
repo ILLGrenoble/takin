@@ -456,7 +456,7 @@ def calc(param):
         R0 *= np.pi**3. / detN
         R0 *= (6./np.pi)**3.
 
-    elif param["sample_int"] == "analytical" and not param["kf_vert"]:
+    elif param["sample_int"] == "analytical":
         # this doesn't work because the error function depends on Q.
         # equ. 8.2 in [end25] ????
         #matK_plane = matK[0:2, 0:2]
@@ -473,10 +473,16 @@ def calc(param):
         #U[2, 2] -= 0.25*matP[2, 2]**2. / matK[2, 2]
         #U[0:2, 2] = U[2, 0:2] = U[3, 2] = U[2, 3] = 0.
 
+        # bottom of page 17 and 18 in [end25]
+        invK = la.inv(matK)
+        detK = la.det(matK)
+        U -= 0.25 * np.dot(matP, np.dot(invK, np.transpose(matP)))
+        R0 *= np.pi**3. / (64. * detK)
+
         if param["sample_shape"] == "spherical":
             # equs. 8.16 and 8.18 in [end25]  ????
             matN = matK + 24. * (3./(4.*np.pi))**(2./3.) / (np.pi*sample_dims**2.)
-        elif param["sample_shape"] == "cylindrical":
+        elif param["sample_shape"] == "cylindrical" and not param["kf_vert"]:
             # equs. 8.16 and 8.17 in [end25] ????
             matN = matK + np.diag([
                 24./(np.pi*sample_dims[0]**2.),
@@ -485,16 +491,16 @@ def calc(param):
         else:
             raise ValueError("ResPy: No valid sample shape given.")
 
-        detN = la.det(matN)
-        Nadj = helpers.adjugate(matN)
+        #detN = la.det(matN)
+        #Nadj = helpers.adjugate(matN)
 
         # page 15 and equs. 8.20, 8.21 and 8.22 in [end25]  ????
-        U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
-        matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
-        matK -= 1. / detN * np.dot(Nadj, np.dot(matK, matK))
+        #U -= 0.25 / detN * np.dot(matP, np.dot(Nadj, np.transpose(matP)))
+        #matP -= 1. / detN * np.dot(matP, np.dot(Nadj, matK))
+        #matK -= 1. / detN * np.dot(Nadj, np.dot(matK, matK))
 
         # equs. 8.24 in [end25]  ????
-        R0 *= 6.**3. / detN
+        #R0 *= 6.**3. / detN
 
     else:
         raise ValueError("ResPy: No valid sample integration method given.")
