@@ -656,10 +656,35 @@ ConvoDlg::t_sqwparams ConvoDlg::GetSqwParams(bool only_fitparams) const
 		}
 
 		if((only_fitparams && bFit) || !only_fitparams)
-			params.emplace_back(std::make_tuple(strName, std::get<SQW_TYPE>(var), std::get<SQW_VAL>(var), strErr, bFit, strRange));
+		{
+			params.emplace_back(std::make_tuple(
+				strName, std::get<SQW_TYPE>(var), std::get<SQW_VAL>(var),
+				strErr, bFit, strRange));
+		}
 	}
 
 	return params;
+}
+
+
+/**
+ * write out the parameters of the currently loaded model
+ */
+void ConvoDlg::DumpSqwVars(std::ostream& ostr) const
+{
+	if(!m_pSqw)
+		return;
+
+	std::vector<SqwBase::t_var> vars = m_pSqw->GetVars();
+	ostr << "#\n";
+
+	for(const SqwBase::t_var& var : vars)
+	{
+		const std::string& name = std::get<SQW_NAME>(var);
+		const std::string& val = std::get<SQW_VAL>(var);
+
+		ostr << "# " << name << ": " << val << "\n";
+	}
 }
 
 // -----------------------------------------------------------------------------
