@@ -42,12 +42,13 @@
 using t_real = t_real_glob;
 
 
+
 /**
  * gets space group index from combo box
  */
 static int find_sg_from_combo(QComboBox* pCombo, const std::string& str)
 {
-	for(int iIdx=0; iIdx<pCombo->count(); ++iIdx)
+	for(int iIdx = 0; iIdx < pCombo->count(); ++iIdx)
 	{
 		xtl::SpaceGroup<t_real> *pSG = reinterpret_cast<xtl::SpaceGroup<t_real>*>
 			(pCombo->itemData(iIdx).value<void*>());
@@ -60,8 +61,25 @@ static int find_sg_from_combo(QComboBox* pCombo, const std::string& str)
 
 
 
+bool TazDlg::LoadSettings(const char* file)
+{
+	if(!m_pSettingsDlg)
+		return false;
+
+	QSettings sett(file, QSettings::IniFormat, this);
+
+	// load settings from file and save them globally
+	if(m_pSettingsDlg->LoadSettings(&sett))
+		return m_pSettingsDlg->SaveSettings();
+
+	return false;
+}
+
+
+
 //--------------------------------------------------------------------------------
 // loading/saving
+//--------------------------------------------------------------------------------
 
 void TazDlg::New()
 {
@@ -795,13 +813,13 @@ bool TazDlg::Import(const char* pcFile)
 
 	return true;
 }
-
 //--------------------------------------------------------------------------------
 
 
 
 //--------------------------------------------------------------------------------
 // CIF importing
+//--------------------------------------------------------------------------------
 
 #include "libs/spacegroups/xtl_xml.h"
 #include "tlibs/helper/proc.h"
@@ -1016,3 +1034,4 @@ bool TazDlg::ImportCIF(const char* pcFile)
 
 	return true;
 }
+//--------------------------------------------------------------------------------

@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -273,7 +273,7 @@ int main(int argc, char** argv)
 		// --------------------------------------------------------------------
 		// get program options
 		std::vector<std::string> vecTazFiles;
-		std::string connectTo;
+		std::string connectTo, configFile;
 
 		// tool to start
 		bool bStartScanviewer = false;
@@ -291,6 +291,10 @@ int main(int argc, char** argv)
 
 		opts::options_description args("Takin options");
 		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("help",
+			opts::bool_switch(&bShowHelp),
+			"shows the program options")));
+		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("taz-file",
 			opts::value<decltype(vecTazFiles)>(&vecTazFiles),
 			"loads a Takin session file")));
@@ -299,9 +303,9 @@ int main(int argc, char** argv)
 			opts::value<decltype(connectTo)>(&connectTo),
 			"connect to an instrument, arg format: system:host:port[:user:pass], where system=nicos or sics")));
 		args.add(boost::shared_ptr<opts::option_description>(
-			new opts::option_description("help",
-			opts::bool_switch(&bShowHelp),
-			"shows the program options")));
+			new opts::option_description("config",
+			opts::value<decltype(configFile)>(&configFile),
+			"loads a configuration file")));
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("scans",
 			opts::bool_switch(&bStartScanviewer),
@@ -586,6 +590,21 @@ int main(int argc, char** argv)
 			show_splash_msg(app_gui, pSplash.get(),
 				strStarting + "\nLoading 1/2 ...");
 			pTakDlg.reset(new TazDlg{nullptr, strLog});
+
+			// load configuration from a file
+			if(configFile != "")
+			{
+				if(pTakDlg->LoadSettings(configFile.c_str()))
+				{
+					tl::log_info("Loaded configuration from \"", configFile, "\".");
+				}
+				else
+				{
+					QMessageBox::critical(nullptr, "Error",
+						"Could not load configuration file.");
+				}
+			}
+
 			app_gui->SetTakDlg(pTakDlg);
 			show_splash_msg(app_gui, pSplash.get(),
 				strStarting + "\nLoading 2/2 ...");
@@ -614,7 +633,6 @@ int main(int argc, char** argv)
 				if(rex::regex_match(connectTo, match_url, regex_url))
 				{
 					// connection string is in url format
-
 					if(tl::str_to_lower(std::string(match_url[5])) == "nicos")
 						control_sys = ControlSystem::NICOS;
 					else if(tl::str_to_lower(std::string(match_url[5])) == "sics")

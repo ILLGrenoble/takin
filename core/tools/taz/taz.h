@@ -232,12 +232,14 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 	public:
 		TazDlg(QWidget *pParent, const std::string& strLogFile = "");
-		TazDlg() : TazDlg(0) { }
+		TazDlg() : TazDlg(nullptr) { }
 		virtual ~TazDlg();
 
 		bool Load(const char* pcFile);
 		bool Import(const char* pcFile);
 		bool ImportCIF(const char* pcFile);
+
+		bool LoadSettings(const char* pcFile);
 
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);
@@ -360,7 +362,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 	public slots:
 		void ConnectTo(ControlSystem control_sys,
 			const QString& strHost, const QString& strPort,
-			 const QString& strUser, const QString& strPass);
+			const QString& strUser, const QString& strPass);
 		void Disconnect();
 
 	signals:

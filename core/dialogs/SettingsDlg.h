@@ -42,7 +42,7 @@
 class SettingsDlg : public QDialog, Ui::SettingsDlg
 { Q_OBJECT
 	protected:
-		QSettings *m_pSettings = 0;
+		QSettings *m_pSettings = nullptr;
 
 		// key, default, lineedit
 		typedef std::tuple<std::string, std::string, QLineEdit*> t_tupEdit;
@@ -67,13 +67,13 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		SettingsDlg(QWidget* pParent = nullptr, QSettings* pSett = nullptr);
 		virtual ~SettingsDlg();
 
+		bool LoadSettings(QSettings* = nullptr);
+		bool SaveSettings(QSettings* = nullptr) const;
+
 	signals:
 		void SettingsChanged() const;
 
 	protected:
-		bool LoadSettings(QSettings* = nullptr);
-		bool SaveSettings(QSettings* = nullptr) const;
-
 		void SetDefaults(bool bOverwrite = false);
 		void SetGlobals(QSettings* = nullptr) const;
 
