@@ -677,13 +677,14 @@ void ConvoDlg::DumpSqwVars(std::ostream& ostr) const
 
 	std::vector<SqwBase::t_var> vars = m_pSqw->GetVars();
 	ostr << "#\n";
+	ostr << "# S(Q, E) model parameters:\n";
 
 	for(const SqwBase::t_var& var : vars)
 	{
 		const std::string& name = std::get<SQW_NAME>(var);
 		const std::string& val = std::get<SQW_VAL>(var);
 
-		ostr << "# " << name << ": " << val << "\n";
+		ostr << "#\t" << name << " = " << val << "\n";
 	}
 }
 
