@@ -1,12 +1,12 @@
 /**
- * Settings
+ * settings
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 5-dec-2014
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -41,6 +41,7 @@
 #include <QFileDialog>
 #include <QFontDialog>
 #include <QStyleFactory>
+#include <QPushButton>
 
 #include <iostream>
 #include <limits>
@@ -355,10 +356,14 @@ void SettingsDlg::SetDefaults(bool bOverwrite)
 
 
 
-void SettingsDlg::LoadSettings()
+bool SettingsDlg::LoadSettings(QSettings *sett)
 {
-	if(!m_pSettings)
-		return;
+	// use global settings if none given
+	if(!sett)
+		sett = m_pSettings;
+	if(!sett)
+		return false;
+
 
 	for(const t_tupEdit& tup : m_vecEdits)
 	{
@@ -366,7 +371,7 @@ void SettingsDlg::LoadSettings()
 		const std::string& strDef = std::get<1>(tup);
 		QLineEdit* pEdit = std::get<2>(tup);
 
-		QString strVal = m_pSettings->value(strKey.c_str(), strDef.c_str()).toString();
+		QString strVal = sett->value(strKey.c_str(), strDef.c_str()).toString();
 		pEdit->setText(strVal);
 	}
 
@@ -376,7 +381,7 @@ void SettingsDlg::LoadSettings()
 		bool bDef = std::get<1>(tup);
 		QCheckBox* pCheck = std::get<2>(tup);
 
-		bool bVal = m_pSettings->value(strKey.c_str(), bDef).toBool();
+		bool bVal = sett->value(strKey.c_str(), bDef).toBool();
 		pCheck->setChecked(bVal);
 	}
 
@@ -386,7 +391,7 @@ void SettingsDlg::LoadSettings()
 		int iDef = std::get<1>(tup);
 		QSpinBox* pSpin = std::get<2>(tup);
 
-		int iVal = m_pSettings->value(strKey.c_str(), iDef).toInt();
+		int iVal = sett->value(strKey.c_str(), iDef).toInt();
 		pSpin->setValue(iVal);
 	}
 
@@ -396,7 +401,7 @@ void SettingsDlg::LoadSettings()
 		int iDef = std::get<1>(tup);
 		QComboBox* pCombo = std::get<2>(tup);
 
-		int iVal = m_pSettings->value(strKey.c_str(), iDef).toInt();
+		int iVal = sett->value(strKey.c_str(), iDef).toInt();
 		pCombo->setCurrentIndex(iVal);
 	}
 
@@ -409,27 +414,27 @@ void SettingsDlg::LoadSettings()
 		const std::string& elli_name = elli_names[row];
 		int elli_row = m_elli_rows[row];
 
-		int x = m_pSettings->value(("reso/ellipse_" + elli_name + "_x").c_str(), -2).toInt();
+		int x = sett->value(("reso/ellipse_" + elli_name + "_x").c_str(), -2).toInt();
 		if(x > -2)
 			tabEllipses->item(elli_row, ELLI_X)->setText(tl::var_to_str(tl::clamp(x, -1, 3)).c_str());
 
-		int y = m_pSettings->value(("reso/ellipse_" + elli_name + "_y").c_str(), -2).toInt();
+		int y = sett->value(("reso/ellipse_" + elli_name + "_y").c_str(), -2).toInt();
 		if(y > -2)
 			tabEllipses->item(elli_row, ELLI_Y)->setText(tl::var_to_str(tl::clamp(y, -1, 3)).c_str());
 
-		int proj1 = m_pSettings->value(("reso/ellipse_" + elli_name + "_proj1").c_str(), -2).toInt();
+		int proj1 = sett->value(("reso/ellipse_" + elli_name + "_proj1").c_str(), -2).toInt();
 		if(proj1 > -2)
 			tabEllipses->item(elli_row, ELLI_PROJ1)->setText(tl::var_to_str(tl::clamp(proj1, -1, 3)).c_str());
 
-		int rem1 = m_pSettings->value(("reso/ellipse_" + elli_name + "_rem1").c_str(), -2).toInt();
+		int rem1 = sett->value(("reso/ellipse_" + elli_name + "_rem1").c_str(), -2).toInt();
 		if(rem1 > -2)
 			tabEllipses->item(elli_row, ELLI_REM1)->setText(tl::var_to_str(tl::clamp(rem1, -1, 3)).c_str());
 
-		int proj2 = m_pSettings->value(("reso/ellipse_" + elli_name + "_proj2").c_str(), -2).toInt();
+		int proj2 = sett->value(("reso/ellipse_" + elli_name + "_proj2").c_str(), -2).toInt();
 		if(proj2 > -2)
 			tabEllipses->item(elli_row, ELLI_PROJ2)->setText(tl::var_to_str(tl::clamp(proj2, -1, 3)).c_str());
 
-		int rem2 = m_pSettings->value(("reso/ellipse_" + elli_name + "_rem2").c_str(), -2).toInt();
+		int rem2 = sett->value(("reso/ellipse_" + elli_name + "_rem2").c_str(), -2).toInt();
 		if(rem2 > -2)
 			tabEllipses->item(elli_row, ELLI_REM2)->setText(tl::var_to_str(tl::clamp(rem2, -1, 3)).c_str());
 	}
@@ -443,40 +448,45 @@ void SettingsDlg::LoadSettings()
 		const std::string& ello_name = ello_names[row];
 		int ello_row = m_ello_rows[row];
 
-		int x = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_x").c_str(), -2).toInt();
+		int x = sett->value(("reso/ellipsoid3d_" + ello_name + "_x").c_str(), -2).toInt();
 		if(x > -2)
 			tabEllipsoids->item(ello_row, ELLO_X)->setText(tl::var_to_str(tl::clamp(x, -1, 3)).c_str());
 
-		int y = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_y").c_str(), -2).toInt();
+		int y = sett->value(("reso/ellipsoid3d_" + ello_name + "_y").c_str(), -2).toInt();
 		if(y > -2)
 			tabEllipsoids->item(ello_row, ELLO_Y)->setText(tl::var_to_str(tl::clamp(y, -1, 3)).c_str());
 
-		int z = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_z").c_str(), -2).toInt();
+		int z = sett->value(("reso/ellipsoid3d_" + ello_name + "_z").c_str(), -2).toInt();
 		if(z > -2)
 			tabEllipsoids->item(ello_row, ELLO_Z)->setText(tl::var_to_str(tl::clamp(z, -1, 3)).c_str());
 
-		int proj = m_pSettings->value(("reso/ellipsoid3d_" + ello_name + "_proj_or_rem").c_str(), -2).toInt();
+		int proj = sett->value(("reso/ellipsoid3d_" + ello_name + "_proj_or_rem").c_str(), -2).toInt();
 		if(proj > -2)
 			tabEllipsoids->item(ello_row, ELLO_PROJREM)->setText(tl::var_to_str(tl::clamp(proj, -1, 3)).c_str());
 	}
 
 
-	SetGlobals();
+	SetGlobals(sett);
+	return true;
 }
 
 
 
-void SettingsDlg::SaveSettings()
+bool SettingsDlg::SaveSettings(QSettings *sett) const
 {
-	if(!m_pSettings)
-		return;
+	// use global settings if none given
+	if(!sett)
+		sett = m_pSettings;
+	if(!sett)
+		return false;
+
 
 	for(const t_tupEdit& tup : m_vecEdits)
 	{
 		const std::string& strKey = std::get<0>(tup);
 		QLineEdit* pEdit = std::get<2>(tup);
 
-		m_pSettings->setValue(strKey.c_str(), pEdit->text());
+		sett->setValue(strKey.c_str(), pEdit->text());
 	}
 
 	for(const t_tupCheck& tup : m_vecChecks)
@@ -484,7 +494,7 @@ void SettingsDlg::SaveSettings()
 		const std::string& strKey = std::get<0>(tup);
 		QCheckBox* pCheck = std::get<2>(tup);
 
-		m_pSettings->setValue(strKey.c_str(), pCheck->isChecked());
+		sett->setValue(strKey.c_str(), pCheck->isChecked());
 	}
 
 	for(const t_tupSpin& tup : m_vecSpins)
@@ -492,7 +502,7 @@ void SettingsDlg::SaveSettings()
 		const std::string& strKey = std::get<0>(tup);
 		QSpinBox* pSpin = std::get<2>(tup);
 
-		m_pSettings->setValue(strKey.c_str(), pSpin->value());
+		sett->setValue(strKey.c_str(), pSpin->value());
 	}
 
 	for(const t_tupCombo& tup : m_vecCombos)
@@ -501,8 +511,8 @@ void SettingsDlg::SaveSettings()
 		QComboBox* pCombo = std::get<2>(tup);
 
 		// save both combo-box index and value
-		m_pSettings->setValue(strKey.c_str(), pCombo->currentIndex());
-		m_pSettings->setValue((strKey+"_value").c_str(), pCombo->currentText());
+		sett->setValue(strKey.c_str(), pCombo->currentIndex());
+		sett->setValue((strKey+"_value").c_str(), pCombo->currentText());
 	}
 
 
@@ -514,17 +524,17 @@ void SettingsDlg::SaveSettings()
 		const std::string& elli_name = elli_names[row];
 		int elli_row = m_elli_rows[row];
 
-		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_x").c_str(),
+		sett->setValue(("reso/ellipse_" + elli_name + "_x").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_X)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_y").c_str(),
+		sett->setValue(("reso/ellipse_" + elli_name + "_y").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_Y)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_proj1").c_str(),
+		sett->setValue(("reso/ellipse_" + elli_name + "_proj1").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_PROJ1)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_rem1").c_str(),
+		sett->setValue(("reso/ellipse_" + elli_name + "_rem1").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_REM1)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_proj2").c_str(),
+		sett->setValue(("reso/ellipse_" + elli_name + "_proj2").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_PROJ2)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipse_" + elli_name + "_rem2").c_str(),
+		sett->setValue(("reso/ellipse_" + elli_name + "_rem2").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipses->item(elli_row, ELLI_REM2)->text().toStdString()), -1, 3));
 	}
 
@@ -537,24 +547,30 @@ void SettingsDlg::SaveSettings()
 		const std::string& ello_name = ello_names[row];
 		int ello_row = m_ello_rows[row];
 
-		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_x").c_str(),
+		sett->setValue(("reso/ellipsoid3d_" + ello_name + "_x").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_X)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_y").c_str(),
+		sett->setValue(("reso/ellipsoid3d_" + ello_name + "_y").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_Y)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_z").c_str(),
+		sett->setValue(("reso/ellipsoid3d_" + ello_name + "_z").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_Z)->text().toStdString()), -1, 3));
-		m_pSettings->setValue(("reso/ellipsoid3d_" + ello_name + "_proj_or_rem").c_str(),
+		sett->setValue(("reso/ellipsoid3d_" + ello_name + "_proj_or_rem").c_str(),
 			tl::clamp(tl::str_to_var<int>(tabEllipsoids->item(ello_row, ELLO_PROJREM)->text().toStdString()), -1, 3));
 	}
 
 
 	SetGlobals();
+	return true;
 }
 
 
 
-void SettingsDlg::SetGlobals() const
+void SettingsDlg::SetGlobals(QSettings *sett) const
 {
+	// use global settings if none given
+	if(!sett)
+		sett = m_pSettings;
+
+
 	// precisions
 	g_iPrec = spinPrecGen->value();
 	g_iPrecGfx = spinPrecGfx->value();
@@ -608,7 +624,7 @@ void SettingsDlg::SetGlobals() const
 
 
 	// if no GUI style has been set, use a safe default
-	if(m_pSettings && !m_pSettings->contains("main/gui_style_value"))
+	if(sett && !sett->contains("main/gui_style_value"))
 	{
 		int iGUIDefault = comboGUI->findText("Fusion", Qt::MatchContains);
 		if(iGUIDefault >= 0)
@@ -715,6 +731,62 @@ void SettingsDlg::showEvent(QShowEvent *pEvt)
 
 void SettingsDlg::ButtonBoxClicked(QAbstractButton *pBtn)
 {
+	// load setting from file
+	if(pBtn == static_cast<QAbstractButton*>(buttonBox->button(QDialogButtonBox::Open)))
+	{
+		QFileDialog::Option fileopt = QFileDialog::Option(0);
+		if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+			fileopt = QFileDialog::DontUseNativeDialog;
+
+		QString strDirLast = "";
+		if(m_pSettings)
+			strDirLast = m_pSettings->value("settings/last_dir", "~").toString();
+		QString strFile = QFileDialog::getOpenFileName(this,
+			"Load Configuration...", strDirLast,
+			"Settings Files (*.ini *.INI)", nullptr, fileopt);
+		if(strFile == "")
+			return;
+
+		QSettings sett(strFile, QSettings::IniFormat, this);
+		bool ok = LoadSettings(&sett);
+
+		if(ok && m_pSettings)
+		{
+			std::string strDir = tl::get_dir(strFile.toStdString());
+			m_pSettings->setValue("settings/last_dir", QString(strDir.c_str()));
+		}
+
+		return;
+	}
+
+	// save setting to file
+	else if(pBtn == static_cast<QAbstractButton*>(buttonBox->button(QDialogButtonBox::Save)))
+	{
+		QFileDialog::Option fileopt = QFileDialog::Option(0);
+		if(m_pSettings && !m_pSettings->value("main/native_dialogs", 1).toBool())
+			fileopt = QFileDialog::DontUseNativeDialog;
+
+		QString strDirLast = "";
+		if(m_pSettings)
+			strDirLast = m_pSettings->value("settings/last_dir", "~").toString();
+		QString strFile = QFileDialog::getSaveFileName(this,
+			"Save Configuration", strDirLast,
+			"Settings FIles (*.ini *.INI)", nullptr, fileopt);
+		if(strFile == "")
+			return;
+
+		QSettings sett(strFile, QSettings::IniFormat, this);
+		bool ok = SaveSettings(&sett);
+
+		if(ok && m_pSettings)
+		{
+			std::string strDir = tl::get_dir(strFile.toStdString());
+			m_pSettings->setValue("settings/last_dir", QString(strDir.c_str()));
+		}
+
+		return;
+	}
+
 	if(buttonBox->buttonRole(pBtn) == QDialogButtonBox::ApplyRole ||
 	   buttonBox->buttonRole(pBtn) == QDialogButtonBox::AcceptRole)
 	{

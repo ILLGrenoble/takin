@@ -1,12 +1,12 @@
 /**
- * Settings
+ * settings
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date 5-dec-2014
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -64,18 +64,18 @@ class SettingsDlg : public QDialog, Ui::SettingsDlg
 		std::vector<int> m_elli_rows, m_ello_rows;
 
 	public:
-		SettingsDlg(QWidget* pParent=0, QSettings* pSett=0);
+		SettingsDlg(QWidget* pParent = nullptr, QSettings* pSett = nullptr);
 		virtual ~SettingsDlg();
 
 	signals:
 		void SettingsChanged() const;
 
 	protected:
-		void LoadSettings();
-		void SaveSettings();
+		bool LoadSettings(QSettings* = nullptr);
+		bool SaveSettings(QSettings* = nullptr) const;
 
-		void SetDefaults(bool bOverwrite=0);
-		void SetGlobals() const;
+		void SetDefaults(bool bOverwrite = false);
+		void SetGlobals(QSettings* = nullptr) const;
 
 	protected:
 		virtual void showEvent(QShowEvent *pEvt) override;
