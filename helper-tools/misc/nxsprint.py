@@ -338,7 +338,7 @@ def main(argv):
 
 	parser = argparse.ArgumentParser(description=".nxs files treatment")
 	parser.add_argument("input", nargs="+", help="input paths of .nxs files and folders")
-	parser.add_argument("-o", "--output", action="store_true", help="create output file.dat")
+	parser.add_argument("-p", "--print", action="store_true", help="print converted file to console")
 	parser.add_argument("-s", "--statistics", action="store_true", help="show statistics")
 	args = parser.parse_args()
 	input_arg = args.input
@@ -375,13 +375,14 @@ def main(argv):
 		try:
 			h5 = H5Loader(filename)
 
-			if args.output:
+			if args.print:
+				convert_file(h5)
+			else:
 				output_name = filename[0:-3] + "dat"
 				with open(output_name, "w") as outfile:
 					print(filename + " -> " + output_name)
 					convert_file(h5, outfile)
-			else:
-				convert_file(h5)
+				
 		except FileNotFoundError as err:
 			print(err, file = sys.stderr)
 
