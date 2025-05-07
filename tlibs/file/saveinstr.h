@@ -1,6 +1,6 @@
 /**
  * saves instrument-specific data files
- * @author Tobias Weber <tobias.weber@tum.de>
+ * @author Tobias Weber <tweber@ill.fr>
  * @date may-2025
  * @license GPLv2 or GPLv3
  *
