@@ -65,6 +65,7 @@ class FileInstrBase
 		virtual ~FileInstrBase() = default;
 
 		virtual bool Load(const char* pcFile) = 0;
+		virtual bool Save(std::ostream& ostr);
 
 		virtual std::array<t_real, 3> GetSampleLattice() const = 0;
 		virtual std::array<t_real, 3> GetSampleAngles() const = 0;
@@ -86,7 +87,7 @@ class FileInstrBase
 		virtual std::size_t GetScanCount() const = 0;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const = 0;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false);
-		virtual void SmoothData(const std::string& strCol, t_real dEps, bool bIterate=1);
+		virtual void SmoothData(const std::string& strCol, t_real dEps, bool bIterate = true);
 
 		virtual std::string GetTitle() const = 0;
 		virtual std::string GetUser() const = 0;
@@ -120,7 +121,7 @@ class FileInstrBase
 
 	public:
 		virtual bool MatchColumn(const std::string& strRegex,
-			std::string& strColName, bool bSortByCounts=0, bool bFilterEmpty=1) const;
+			std::string& strColName, bool bSortByCounts = false, bool bFilterEmpty = true) const;
 
 		static FileInstrBase<t_real>* LoadInstr(const char* pcFile);
 };

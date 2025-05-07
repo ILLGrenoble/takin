@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).

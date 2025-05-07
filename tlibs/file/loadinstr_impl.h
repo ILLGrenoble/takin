@@ -41,6 +41,7 @@
 #endif
 
 #include "loadinstr.h"
+#include "saveinstr.h"
 #include "loadinstr_psi.h"
 #include "loadinstr_frm.h"
 #include "loadinstr_raw.h"

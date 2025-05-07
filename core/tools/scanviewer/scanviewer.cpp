@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -254,7 +254,7 @@ void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
 
 	// save recent directory list
 	QStringList lstDirs;
-	for(int iDir=0; iDir<comboPath->count(); ++iDir)
+	for(int iDir = 0; iDir < comboPath->count(); ++iDir)
 	{
 		QString qstrPath = comboPath->itemText(iDir);
 
@@ -337,7 +337,7 @@ int ScanViewerDlg::HasRecentPath(const QString& strPath)
 	if(*tl::wstr_to_str(dir.native()).rbegin() != fs::path::preferred_separator)
 		dir /= T_STR{} + fs::path::preferred_separator;
 
-	for(int iDir=0; iDir<comboPath->count(); ++iDir)
+	for(int iDir = 0; iDir < comboPath->count(); ++iDir)
 	{
 		QString strOtherPath = comboPath->itemText(iDir);
 		fs::path dirOther(strOtherPath.toStdString());
@@ -438,7 +438,8 @@ void ScanViewerDlg::FileSelected()
 	// first file
 	std::string strFile = m_strCurDir + m_strCurFile;
 	m_pInstr = tl::FileInstrBase<t_real>::LoadInstr(strFile.c_str());
-	if(!m_pInstr) return;
+	if(!m_pInstr)
+		return;
 
 	// merge with other selected files
 	bool allow_merging = false;
@@ -588,7 +589,7 @@ void ScanViewerDlg::PlotScan()
 		m_vecYErr.reserve(m_vecY.size());
 
 		// calculate error
-		for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
+		for(std::size_t iY = 0; iY < m_vecY.size(); ++iY)
 		{
 			t_real err = tl::float_equal(m_vecY[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(m_vecY[iY]));
 			m_vecYErr.push_back(err);
@@ -612,7 +613,7 @@ void ScanViewerDlg::PlotScan()
 		vecMonErr.reserve(m_vecY.size());
 
 		// calculate error
-		for(std::size_t iY=0; iY<vecMon.size(); ++iY)
+		for(std::size_t iY = 0; iY < vecMon.size(); ++iY)
 		{
 			t_real err = tl::float_equal(vecMon[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecMon[iY]));
 			vecMonErr.push_back(err);
@@ -673,7 +674,7 @@ void ScanViewerDlg::PlotScan()
 	{
 		decltype(m_vecX) vecXNew, vecYNew, vecMonNew, vecYErrNew, vecMonErrNew;
 
-		for(std::size_t iRow=0; iRow<std::min(m_vecX.size(), m_vecY.size()); ++iRow)
+		for(std::size_t iRow = 0; iRow < std::min(m_vecX.size(), m_vecY.size()); ++iRow)
 		{
 			vecXNew.push_back(m_vecX[iRow]);
 			vecYNew.push_back(m_vecY[iRow]);
@@ -702,11 +703,11 @@ void ScanViewerDlg::PlotScan()
 	// normalise to monitor?
 	if(bNormalise)
 	{
-		for(std::size_t iY=0; iY<m_vecY.size(); ++iY)
+		for(std::size_t iY = 0; iY < m_vecY.size(); ++iY)
 		{
 			if(tl::float_equal(vecMon[iY], t_real(0), g_dEps))
 			{
-				tl::log_warn("Monitor counter is zero for point ", iY+1, ".");
+				tl::log_warn("Monitor counter is zero for point ", iY + 1, ".");
 
 				m_vecY[iY] = 0.;
 				m_vecYErr[iY] = 1.;
@@ -808,7 +809,6 @@ void ScanViewerDlg::GenerateExternal(int iLang)
 		tl::log_err("Unknown external language.");
 
 	textExportedFile->setText(strSrc.c_str());
-
 }
 
 
@@ -826,7 +826,7 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 		if(!ifstr)
 			continue;
 
-		auto ch_ptr = std::unique_ptr<char[]>(new char[size+1]);
+		auto ch_ptr = std::unique_ptr<char[]>(new char[size + 1]);
 		ch_ptr[size] = 0;
 		ifstr.read(ch_ptr.get(), size);
 
@@ -851,10 +851,23 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 			std::string file_ext = tl::get_fileext(file);
 			if(file_ext == "nxs" || file_ext == "hdf")
 			{
-				rawFiles = "<binary data>";
+				tl::FileInstrBase<t_real> *instr = tl::FileInstrBase<t_real>::LoadInstr(file.c_str());
+				if(!instr)
+				{
+					tl::log_err("Cannot load binary file \"", file, "\".");
+					continue;
+				}
 
-				rawFiles += "\n\nHere's a tool to convert NXS TAS files to the old-style text format:\n";
-				rawFiles += "https://github.com/ILLGrenoble/takin/blob/master/helper-tools/misc/nxsprint.py\n";
+				std::ostringstream ostr;
+				ostr.precision(g_iPrec);
+
+				if(!instr->Save(ostr))
+				{
+					tl::log_err("Cannot convert binary file \"", file, "\".");
+					continue;
+				}
+
+				rawFiles += ostr.str().c_str();
 			}
 			else
 			{
@@ -876,7 +889,7 @@ void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pIte
 	if(!pItem)
 		m_strSelectedKey = "";
 
-	for(int iItem=0; iItem<tableProps->rowCount(); ++iItem)
+	for(int iItem = 0; iItem < tableProps->rowCount(); ++iItem)
 	{
 		const QTableWidgetItem *pKey = tableProps->item(iItem, 0);
 		const QTableWidgetItem *pVal = tableProps->item(iItem, 1);
@@ -931,8 +944,8 @@ void ScanViewerDlg::ShowProps()
 
 
 	// retain previous selection
-	bool bHasSelection = 0;
-	for(int iItem=0; iItem<tableProps->rowCount(); ++iItem)
+	bool bHasSelection = false;
+	for(int iItem = 0; iItem < tableProps->rowCount(); ++iItem)
 	{
 		const QTableWidgetItem *pItem = tableProps->item(iItem, 0);
 		if(!pItem) continue;
@@ -940,7 +953,7 @@ void ScanViewerDlg::ShowProps()
 		if(pItem->text().toStdString() == m_strSelectedKey)
 		{
 			tableProps->selectRow(iItem);
-			bHasSelection = 1;
+			bHasSelection = true;
 			break;
 		}
 	}
