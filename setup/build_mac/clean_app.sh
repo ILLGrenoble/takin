@@ -96,18 +96,18 @@ rm -fv ${DST_PY_DIR}/Versions/Current/lib/tcl*
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/tcl*
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/tk*
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/pkgconfig/tk.pc
-rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.12/tkinter
-rm -fv ${DST_PY_DIR}/Versions/Current/lib/python3.12/lib-dynload/_tkinter*.so
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.13/tkinter
+rm -fv ${DST_PY_DIR}/Versions/Current/lib/python3.13/lib-dynload/_tkinter*.so
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/Tk*
 
 
 # remove non-needed site packages
 pushd ${PRG}/Contents
-	ln -sf Frameworks/Python.framework/Versions/Current/lib/python3.12/site-packages
+	ln -sf Frameworks/Python.framework/Versions/Current/lib/python3.13/site-packages
 popd
 
-rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.12/test
-rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.12/idlelib
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.13/test
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.13/idlelib
 
 rm -rfv ${PRG}/Contents/site-packages/setuptools*
 rm -rfv ${PRG}/Contents/site-packages/pip*
