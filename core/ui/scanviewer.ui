@@ -17,7 +17,16 @@
    <bool>true</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>4</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
     <number>4</number>
    </property>
    <property name="spacing">
@@ -117,7 +126,16 @@
            <string>Plot</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_5">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -142,7 +160,16 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_11">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>2</number>
+              </property>
+              <property name="topMargin">
+               <number>2</number>
+              </property>
+              <property name="rightMargin">
+               <number>2</number>
+              </property>
+              <property name="bottomMargin">
                <number>2</number>
               </property>
               <property name="spacing">
@@ -241,7 +268,16 @@
            <string>Polarisation</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_15">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -253,7 +289,16 @@
               <string>(Pseudo-) Device Names for Spherical Polarisation Analysis</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_13">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
                <number>4</number>
               </property>
               <property name="spacing">
@@ -322,7 +367,16 @@
               <string>Polarisation Matrix Elements</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_14">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
                <number>4</number>
               </property>
               <property name="spacing">
@@ -350,7 +404,16 @@
               <string>(Pseudo-) Device Names for Linear Polarisation Analysis</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_16">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
                <number>4</number>
               </property>
               <property name="spacing">
@@ -401,7 +464,16 @@
            <string>Experiment</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_7">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -429,7 +501,16 @@
               <string>Scattering Plane</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_8">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
                <number>4</number>
               </property>
               <property name="spacing">
@@ -528,23 +609,25 @@
               <string>Experiment</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_9">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
                <number>4</number>
               </property>
               <property name="spacing">
                <number>2</number>
               </property>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="editUser">
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="3">
-               <widget class="QLabel" name="label_12">
+              <item row="3" column="0">
+               <widget class="QLabel" name="labelKfix">
                 <property name="text">
-                 <string>Contact:</string>
+                 <string>kfix (1/Å):</string>
                 </property>
                </widget>
               </item>
@@ -555,10 +638,38 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QLineEdit" name="editKfix">
+              <item row="1" column="3">
+               <widget class="QLabel" name="label_12">
+                <property name="text">
+                 <string>Contact:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="editUser">
                 <property name="readOnly">
                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="4">
+               <widget class="QLineEdit" name="editTimestamp">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="editTitle">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="3">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>Date:</string>
                 </property>
                </widget>
               </item>
@@ -578,17 +689,24 @@
                 </property>
                </spacer>
               </item>
-              <item row="1" column="4">
-               <widget class="QLineEdit" name="editContact">
+              <item row="0" column="3">
+               <widget class="QLabel" name="label_13">
+                <property name="text">
+                 <string>Sample:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="editKfix">
                 <property name="readOnly">
                  <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="labelKfix">
-                <property name="text">
-                 <string>kfix (1/Å):</string>
+              <item row="1" column="4">
+               <widget class="QLineEdit" name="editContact">
+                <property name="readOnly">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -599,20 +717,6 @@
                 </property>
                </widget>
               </item>
-              <item row="0" column="3">
-               <widget class="QLabel" name="label_13">
-                <property name="text">
-                 <string>Sample:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="editTitle">
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="4">
                <widget class="QLineEdit" name="editSample">
                 <property name="readOnly">
@@ -620,19 +724,25 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="4">
-               <widget class="QLineEdit" name="editTimestamp">
-                <property name="readOnly">
-                 <bool>true</bool>
+              <item row="2" column="0">
+               <widget class="QLabel" name="label_21">
+                <property name="text">
+                 <string>Proposal:</string>
                 </property>
                </widget>
               </item>
               <item row="2" column="3">
-               <widget class="QLabel" name="label_15">
+               <widget class="QLabel" name="label_22">
                 <property name="text">
-                 <string>Date:</string>
+                 <string>Instrument:</string>
                 </property>
                </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="editProposal"/>
+              </item>
+              <item row="2" column="4">
+               <widget class="QLineEdit" name="editInstrument"/>
               </item>
              </layout>
             </widget>
@@ -646,7 +756,16 @@
               <bool>false</bool>
              </property>
              <layout class="QGridLayout" name="gridLayout_6">
-              <property name="margin">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
                <number>4</number>
               </property>
               <property name="spacing">
@@ -762,7 +881,16 @@
            <string>All Properties</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_4">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -804,7 +932,16 @@
            <string>Export</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_10">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -869,7 +1006,16 @@
            <string>Raw File</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_10b">
-           <property name="margin">
+           <property name="leftMargin">
+            <number>2</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>2</number>
+           </property>
+           <property name="bottomMargin">
             <number>2</number>
            </property>
            <property name="spacing">
@@ -1164,6 +1310,15 @@
   <tabstop>comboPath</tabstop>
   <tabstop>btnRefresh</tabstop>
   <tabstop>btnBrowse</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>btnParam</tabstop>
+  <tabstop>btnGauss</tabstop>
+  <tabstop>btnLorentz</tabstop>
+  <tabstop>btnVoigt</tabstop>
+  <tabstop>checkSloped</tabstop>
+  <tabstop>btnLine</tabstop>
+  <tabstop>btnParabola</tabstop>
+  <tabstop>btnSine</tabstop>
   <tabstop>comboX</tabstop>
   <tabstop>comboY</tabstop>
   <tabstop>comboMon</tabstop>
@@ -1171,25 +1326,21 @@
   <tabstop>spinStart</tabstop>
   <tabstop>spinStop</tabstop>
   <tabstop>spinSkip</tabstop>
-  <tabstop>tabWidget</tabstop>
-  <tabstop>btnParam</tabstop>
-  <tabstop>checkSloped</tabstop>
-  <tabstop>btnGauss</tabstop>
-  <tabstop>btnLorentz</tabstop>
-  <tabstop>btnVoigt</tabstop>
-  <tabstop>btnLine</tabstop>
-  <tabstop>btnParabola</tabstop>
-  <tabstop>btnSine</tabstop>
   <tabstop>editPolVec1</tabstop>
   <tabstop>editPolVec2</tabstop>
   <tabstop>editPolCur1</tabstop>
   <tabstop>editPolCur2</tabstop>
+  <tabstop>editFlip1</tabstop>
+  <tabstop>editFlip2</tabstop>
+  <tabstop>editXYZ</tabstop>
   <tabstop>editPolMat</tabstop>
   <tabstop>editTitle</tabstop>
   <tabstop>editUser</tabstop>
+  <tabstop>editProposal</tabstop>
   <tabstop>editKfix</tabstop>
   <tabstop>editSample</tabstop>
   <tabstop>editContact</tabstop>
+  <tabstop>editInstrument</tabstop>
   <tabstop>editTimestamp</tabstop>
   <tabstop>editA</tabstop>
   <tabstop>editB</tabstop>

@@ -451,6 +451,18 @@ template<class t_real> std::string FileTax<t_real>::GetTitle() const
 }
 
 
+template<class t_real> std::string FileTax<t_real>::GetProposal() const
+{
+	using t_map = typename FileInstrBase<t_real>::t_mapParams;
+	const t_map& params = GetAllParams();
+
+	typename t_map::const_iterator iter = params.find("proposal");
+	if(iter != params.end())
+		return iter->second;
+	return "";
+}
+
+
 template<class t_real> std::string FileTax<t_real>::GetUser() const
 {
 	using t_map = typename FileInstrBase<t_real>::t_mapParams;
@@ -460,6 +472,18 @@ template<class t_real> std::string FileTax<t_real>::GetUser() const
 	if(iter != params.end())
 		return iter->second;
 	return "";
+}
+
+
+template<class t_real> std::string FileTax<t_real>::GetInstrument() const
+{
+	using t_map = typename FileInstrBase<t_real>::t_mapParams;
+	const t_map& params = GetAllParams();
+
+	typename t_map::const_iterator iter = params.find("instrument");
+	if(iter != params.end())
+		return iter->second;
+	return "tax";
 }
 
 

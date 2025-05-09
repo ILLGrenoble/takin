@@ -175,13 +175,12 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		}
 
 		// get the name of the instrument if available
-		std::string instr_dir;
-		bool instr_found = get_h5_string(h5file, entry + "/instrument_name", instr_dir);
+		bool instr_found = get_h5_string(h5file, entry + "/instrument_name", m_instrname);
 
 		if(instr_found)
 		{
 			// check if the instrument group exists
-			instr_found = h5file.nameExists(entry + "/" + instr_dir);
+			instr_found = h5file.nameExists(entry + "/" + m_instrname);
 		}
 
 		if(!instr_found)
@@ -195,7 +194,7 @@ bool FileH5<t_real>::Load(const char* pcFile)
 				if(nx_class == "NXinstrument")
 				{
 					// found an instrument entry
-					instr_dir = main_entry;
+					m_instrname = main_entry;
 					instr_found = true;
 					break;
 				}
@@ -204,8 +203,8 @@ bool FileH5<t_real>::Load(const char* pcFile)
 
 		if(!instr_found)
 		{
-			instr_dir = "instrument";
-			log_err("No instrument group found, defaulting to \"", instr_dir, "\".");
+			m_instrname = "instrument";
+			log_err("No instrument group found, defaulting to \"", m_instrname, "\".");
 		}
 
 		// get experiment infos
@@ -214,40 +213,41 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		get_h5_string(h5file, entry + "/start_time", m_timestamp);
 		get_h5_string(h5file, entry + "/end_time", timestamp_end);
 		get_h5_scalar(h5file, entry + "/run_number", m_scannumber);
-		get_h5_string(h5file, entry + "/" + instr_dir + "/command_line/actual_command", m_scancommand);
+		get_h5_string(h5file, entry + "/" + m_instrname + "/command_line/actual_command", m_scancommand);
 
 		// get polarisation infos
-		get_h5_string(h5file, entry + "/" + instr_dir + "/pal/pal_contents", m_palcommand);
+		get_h5_string(h5file, entry + "/" + m_instrname + "/pal/pal_contents", m_palcommand);
 		if(!get_h5_scalar(h5file, entry + "/data_scan/pal_steps", m_numPolChannels))
 			m_numPolChannels = 0;
 
 		// get user infos
 		get_h5_string(h5file, entry + "/user/name", m_username);
 		get_h5_string(h5file, entry + "/user/namelocalcontact", m_localname);
+		get_h5_string(h5file, entry + "/user/proposal", m_proposal);
 
 		// get instrument infos
 		t_real mono_sense = -1., ana_sense = -1., sample_sense = 1.;
 		t_real ki = 0., kf = 0.;
 		int fx = 2;
 
-		get_h5_scalar(h5file, entry + "/" + instr_dir + "/Monochromator/d_spacing", m_dspacings[0]);
-		if(!get_h5_scalar(h5file, entry + "/" + instr_dir + "/Monochromator/sense", mono_sense))
-			get_h5_scalar(h5file, entry + "/" + instr_dir + "/Monochromator/sens", mono_sense);
-		if(!get_h5_scalar(h5file, entry + "/" + instr_dir + "/Monochromator/ki", ki))
+		get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/d_spacing", m_dspacings[0]);
+		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/sense", mono_sense))
+			get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/sens", mono_sense);
+		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/ki", ki))
 		{
 			// if ki does not exist, try to convert from Ei
 			t_real Ei = 0.;
-			if(get_h5_scalar(h5file, entry + "/" + instr_dir + "/Monochromator/ei", Ei))
+			if(get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/ei", Ei))
 				ki = std::sqrt(get_E2KSQ<t_real>() * Ei);
 		}
-		get_h5_scalar(h5file, entry + "/" + instr_dir + "/Analyser/d_spacing", m_dspacings[1]);
-		if(!get_h5_scalar(h5file, entry + "/" + instr_dir + "/Analyser/sense", ana_sense))
-			get_h5_scalar(h5file, entry + "/" + instr_dir + "/Analyser/sens", ana_sense);
-		if(!get_h5_scalar(h5file, entry + "/" + instr_dir + "/Analyser/kf", kf))
+		get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/d_spacing", m_dspacings[1]);
+		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/sense", ana_sense))
+			get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/sens", ana_sense);
+		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/kf", kf))
 		{
 			// if kf does not exist, try to convert from Ef
 			t_real Ef = 0.;
-			if(get_h5_scalar(h5file, entry + "/" + instr_dir + "/Analyser/ef", Ef))
+			if(get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/ef", Ef))
 				kf = std::sqrt(get_E2KSQ<t_real>() * Ef);
 		}
 		if(!get_h5_scalar(h5file, entry + "/sample/sense", sample_sense))
@@ -643,9 +643,21 @@ template<class t_real> std::string FileH5<t_real>::GetTitle() const
 }
 
 
+template<class t_real> std::string FileH5<t_real>::GetProposal() const
+{
+	return m_proposal;
+}
+
+
 template<class t_real> std::string FileH5<t_real>::GetUser() const
 {
 	return m_username;
+}
+
+
+template<class t_real> std::string FileH5<t_real>::GetInstrument() const
+{
+	return m_instrname;
 }
 
 

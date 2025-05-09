@@ -378,7 +378,9 @@ bool FileTrisp<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_
 }
 
 template<class t_real> std::string FileTrisp<t_real>::GetTitle() const { return ""; }
+template<class t_real> std::string FileTrisp<t_real>::GetProposal() const { return ""; }
 template<class t_real> std::string FileTrisp<t_real>::GetUser() const { return ""; }
+template<class t_real> std::string FileTrisp<t_real>::GetInstrument() const { return "trisp"; }
 template<class t_real> std::string FileTrisp<t_real>::GetLocalContact() const { return ""; }
 template<class t_real> std::string FileTrisp<t_real>::GetScanNumber() const { return ""; }
 template<class t_real> std::string FileTrisp<t_real>::GetSampleName() const { return ""; }

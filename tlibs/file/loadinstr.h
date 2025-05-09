@@ -79,8 +79,8 @@ class FileInstrBase
 		virtual bool IsKiFixed() const = 0;
 
 		virtual bool HasCol(const std::string& strName) const;
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const = 0;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) = 0;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const = 0;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) = 0;
 
 		virtual std::array<t_real, 4> GetPosHKLE() const = 0;	// zero pos.
 
@@ -90,7 +90,9 @@ class FileInstrBase
 		virtual void SmoothData(const std::string& strCol, t_real dEps, bool bIterate = true);
 
 		virtual std::string GetTitle() const = 0;
+		virtual std::string GetProposal() const = 0;
 		virtual std::string GetUser() const = 0;
+		virtual std::string GetInstrument() const = 0;
 		virtual std::string GetLocalContact() const = 0;
 		virtual std::string GetScanNumber() const = 0;
 		virtual std::string GetSampleName() const = 0;
@@ -181,8 +183,8 @@ class FilePsi : public FileInstrBase<_t_real>
 		std::size_t GetColCount() const { return m_vecColNames.size(); }
 
 		const t_vecVals& GetCol(std::size_t iCol) const { return m_vecData[iCol]; }
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
 
 	public:
 		virtual std::array<t_real, 3> GetSampleLattice() const override;
@@ -204,7 +206,9 @@ class FilePsi : public FileInstrBase<_t_real>
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		virtual std::string GetTitle() const override;
+		virtual std::string GetProposal() const override;
 		virtual std::string GetUser() const override;
+		virtual std::string GetInstrument() const override;
 		virtual std::string GetLocalContact() const override;
 		virtual std::string GetScanNumber() const override;
 		virtual std::string GetSampleName() const override;
@@ -252,7 +256,7 @@ class FileFrm : public FileInstrBase<_t_real>
 		t_mapParams m_mapParams;
 		t_vecColNames m_vecQuantities, m_vecUnits;
 		t_vecDat m_vecData;
-		std::string m_strInstrIdent;
+		std::string m_instrname;
 
 	public:
 		FileFrm() = default;
@@ -282,11 +286,13 @@ class FileFrm : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
 
 		virtual std::string GetTitle() const override;
+		virtual std::string GetProposal() const override;
 		virtual std::string GetUser() const override;
+		virtual std::string GetInstrument() const override;
 		virtual std::string GetLocalContact() const override;
 		virtual std::string GetScanNumber() const override;
 		virtual std::string GetSampleName() const override;
@@ -352,11 +358,13 @@ class FileMacs : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
 
 		virtual std::string GetTitle() const override;
+		virtual std::string GetProposal() const override;
 		virtual std::string GetUser() const override;
+		virtual std::string GetInstrument() const override;
 		virtual std::string GetLocalContact() const override;
 		virtual std::string GetScanNumber() const override;
 		virtual std::string GetSampleName() const override;
@@ -422,11 +430,13 @@ class FileTrisp : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
 
 		virtual std::string GetTitle() const override;
+		virtual std::string GetProposal() const override;
 		virtual std::string GetUser() const override;
+		virtual std::string GetInstrument() const override;
 		virtual std::string GetLocalContact() const override;
 		virtual std::string GetScanNumber() const override;
 		virtual std::string GetSampleName() const override;
@@ -490,11 +500,13 @@ class FileTax : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
 
 		virtual std::string GetTitle() const override;
+		virtual std::string GetProposal() const override;
 		virtual std::string GetUser() const override;
+		virtual std::string GetInstrument() const override;
 		virtual std::string GetLocalContact() const override;
 		virtual std::string GetScanNumber() const override;
 		virtual std::string GetSampleName() const override;
@@ -555,11 +567,13 @@ class FileRaw : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
 
 		virtual std::string GetTitle() const override;
+		virtual std::string GetProposal() const override;
 		virtual std::string GetUser() const override;
+		virtual std::string GetInstrument() const override;
 		virtual std::string GetLocalContact() const override;
 		virtual std::string GetScanNumber() const override;
 		virtual std::string GetSampleName() const override;
@@ -603,7 +617,8 @@ class FileH5 : public FileInstrBase<_t_real>
 		t_vecColNames m_vecCols;
 		t_mapParams m_params;
 
-		std::string m_title, m_username, m_localname, m_timestamp;
+		std::string m_title, m_username, m_proposal;
+		std::string m_instrname, m_localname, m_timestamp;
 		int m_scannumber = 0;
 		std::string m_scancommand, m_palcommand;
 
@@ -658,11 +673,13 @@ class FileH5 : public FileInstrBase<_t_real>
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
 		std::size_t GetColCount() const { return m_vecCols.size(); }
-		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) const override;
-		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx=0) override;
+		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
 
 		virtual std::string GetTitle() const override;
+		virtual std::string GetProposal() const override;
 		virtual std::string GetUser() const override;
+		virtual std::string GetInstrument() const override;
 		virtual std::string GetLocalContact() const override;
 		virtual std::string GetScanNumber() const override;
 		virtual std::string GetSampleName() const override;

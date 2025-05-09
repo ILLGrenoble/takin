@@ -475,7 +475,9 @@ bool FileRaw<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_co
 
 
 template<class t_real> std::string FileRaw<t_real>::GetTitle() const { return ""; }
+template<class t_real> std::string FileRaw<t_real>::GetProposal() const { return ""; }
 template<class t_real> std::string FileRaw<t_real>::GetUser() const { return ""; }
+template<class t_real> std::string FileRaw<t_real>::GetInstrument() const { return ""; }
 template<class t_real> std::string FileRaw<t_real>::GetLocalContact() const { return ""; }
 template<class t_real> std::string FileRaw<t_real>::GetScanNumber() const { return "0"; }
 template<class t_real> std::string FileRaw<t_real>::GetSampleName() const { return ""; }

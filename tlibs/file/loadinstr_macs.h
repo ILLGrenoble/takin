@@ -403,14 +403,20 @@ template<class t_real>
 std::string FileMacs<t_real>::GetTitle() const
 {
 	std::string strTitle;
+	typename t_mapParams::const_iterator iter = m_mapParams.find("ExptName");
+	if(iter != m_mapParams.end())
+		strTitle = iter->second;
+	return strTitle;
+}
+
+
+template<class t_real>
+std::string FileMacs<t_real>::GetProposal() const
+{
+	std::string strTitle;
 	typename t_mapParams::const_iterator iter = m_mapParams.find("ExptID");
 	if(iter != m_mapParams.end())
 		strTitle = iter->second;
-
-	iter = m_mapParams.find("ExptName");
-	if(iter != m_mapParams.end() && iter->second != "")
-		strTitle += " - " + iter->second;
-
 	return strTitle;
 }
 
@@ -423,6 +429,17 @@ std::string FileMacs<t_real>::GetUser() const
 	if(iter != m_mapParams.end())
 		str = iter->second;
 	return str;
+}
+
+
+template<class t_real>
+std::string FileMacs<t_real>::GetInstrument() const
+{
+	std::string str;
+	typename t_mapParams::const_iterator iter = m_mapParams.find("Instrument");
+	if(iter != m_mapParams.end())
+		return iter->second;
+	return "macs";
 }
 
 

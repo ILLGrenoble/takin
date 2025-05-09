@@ -514,11 +514,16 @@ bool FilePsi<t_real>::Load(const char* pcFile)
 		iterPos = m_mapParams.find("POSQE"),
 		iterSteps = m_mapParams.find("STEPS");
 
-	if(iterParams!=m_mapParams.end()) GetInternalParams(iterParams->second, m_mapParameters);
-	if(iterZeros!=m_mapParams.end()) GetInternalParams(iterZeros->second, m_mapZeros);
-	if(iterVars!=m_mapParams.end()) GetInternalParams(iterVars->second, m_mapVariables);
-	if(iterPos!=m_mapParams.end()) GetInternalParams(iterPos->second, m_mapPosHkl);
-	if(iterSteps!=m_mapParams.end()) GetInternalParams(iterSteps->second, m_mapScanSteps, true);
+	if(iterParams!=m_mapParams.end())
+		GetInternalParams(iterParams->second, m_mapParameters);
+	if(iterZeros!=m_mapParams.end())
+		GetInternalParams(iterZeros->second, m_mapZeros);
+	if(iterVars!=m_mapParams.end())
+		GetInternalParams(iterVars->second, m_mapVariables);
+	if(iterPos!=m_mapParams.end())
+		GetInternalParams(iterPos->second, m_mapPosHkl);
+	if(iterSteps!=m_mapParams.end())
+		GetInternalParams(iterSteps->second, m_mapScanSteps, true);
 
 	if(m_bAutoParsePol)
 		ParsePolData();
@@ -781,10 +786,40 @@ std::string FilePsi<t_real>::GetTitle() const
 
 
 template<class t_real>
+std::string FilePsi<t_real>::GetProposal() const
+{
+	std::string strTitle;
+	typename t_mapParams::const_iterator iter = m_mapParams.find("EXPNO");
+	if(iter != m_mapParams.end())
+		strTitle = iter->second;
+
+	if(strTitle == "")
+	{
+		typename t_mapIParams::const_iterator iter = m_mapParameters.find("ProposalID");
+		if(iter != m_mapParameters.end())
+			strTitle = tl::var_to_str(unsigned(iter->second));
+	}
+
+	return strTitle;
+}
+
+
+template<class t_real>
 std::string FilePsi<t_real>::GetUser() const
 {
 	std::string strUser;
 	typename t_mapParams::const_iterator iter = m_mapParams.find("USER_");
+	if(iter != m_mapParams.end())
+		strUser = iter->second;
+	return strUser;
+}
+
+
+template<class t_real>
+std::string FilePsi<t_real>::GetInstrument() const
+{
+	std::string strUser;
+	typename t_mapParams::const_iterator iter = m_mapParams.find("INSTR");
 	if(iter != m_mapParams.end())
 		strUser = iter->second;
 	return strUser;

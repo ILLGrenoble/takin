@@ -44,6 +44,8 @@ template<class t_real>
 bool FileInstrBase<t_real>::Save(std::ostream& ostr)
 {
 	// output header
+	ostr << "INSTR: " << GetInstrument() << "\n";
+	ostr << "EXPNO: " << GetProposal() << "\n";
 	ostr << "USER_: " << GetUser() << "\n";
 	ostr << "LOCAL: " << GetLocalContact() << "\n";
 	ostr << "FILE_: " << GetScanNumber() << "\n";

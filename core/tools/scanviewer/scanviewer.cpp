@@ -555,7 +555,6 @@ void ScanViewerDlg::PlotScan()
 	const int iStartIdx = spinStart->value();
 	const int iEndSkip = spinStop->value();
 	const int iSkipRows = spinSkip->value();
-	const std::string strTitle = m_pInstr->GetTitle();
 	m_strCmd = m_pInstr->GetScanCommand();
 
 	// get data vectors
@@ -753,10 +752,12 @@ void ScanViewerDlg::PlotScan()
 		: QString::fromWCharArray(L"kf (1/\x212b):"));
 	editKfix->setText(tl::var_to_str(m_pInstr->GetKFix()).c_str());
 
-	editTitle->setText(strTitle.c_str());
+	editTitle->setText(m_pInstr->GetTitle().c_str());
+	editProposal->setText(m_pInstr->GetProposal().c_str());
 	editSample->setText(m_pInstr->GetSampleName().c_str());
 	editUser->setText(m_pInstr->GetUser().c_str());
 	editContact->setText(m_pInstr->GetLocalContact().c_str());
+	editInstrument->setText(m_pInstr->GetInstrument().c_str());
 	editTimestamp->setText(m_pInstr->GetTimestamp().c_str());
 
 

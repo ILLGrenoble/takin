@@ -101,7 +101,7 @@ void FileFrm<t_real>::ReadHeader(std::istream& istr)
 				iter->second += ", " + pairLine.second;
 
 			// try to find instrument name
-			if(m_strInstrIdent == "")
+			if(m_instrname == "")
 			{
 				try
 				{
@@ -109,7 +109,7 @@ void FileFrm<t_real>::ReadHeader(std::istream& istr)
 					rex::regex rx(strRegex, rex::regex::ECMAScript|rex::regex_constants::icase);
 					rex::smatch m;
 					if(rex::regex_search(pairLine.first, m, rx) && m.size()>=2)
-						m_strInstrIdent = m[1];
+						m_instrname = m[1];
 				}
 				catch(const std::exception& ex)
 				{
@@ -347,7 +347,7 @@ template<class t_real>
 std::array<t_real, 4> FileFrm<t_real>::GetPosHKLE() const
 {
 	typename t_mapParams::const_iterator iter = m_mapParams.find(
-		m_strInstrIdent + "_value");
+		m_instrname + "_value");
 	if(iter == m_mapParams.end())
 		return std::array<t_real,4>{{0, 0, 0, 0}};
 
@@ -439,6 +439,17 @@ std::string FileFrm<t_real>::GetTitle() const
 
 
 template<class t_real>
+std::string FileFrm<t_real>::GetProposal() const
+{
+	std::string strTitle;
+	typename t_mapParams::const_iterator iter = m_mapParams.find("Exp_proposal");
+	if(iter != m_mapParams.end())
+		strTitle = iter->second;
+	return strTitle;
+}
+
+
+template<class t_real>
 std::string FileFrm<t_real>::GetUser() const
 {
 	std::string strUser;
@@ -446,6 +457,13 @@ std::string FileFrm<t_real>::GetUser() const
 	if(iter != m_mapParams.end())
 		strUser = iter->second;
 	return strUser;
+}
+
+
+template<class t_real>
+std::string FileFrm<t_real>::GetInstrument() const
+{
+	return m_instrname;
 }
 
 
