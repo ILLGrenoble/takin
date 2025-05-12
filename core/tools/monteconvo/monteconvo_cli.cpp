@@ -444,6 +444,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	ostrOut << "# Offset: " << cfg.S_offs << "\n";
 	if(cfg.scanfile != "")
 		ostrOut << "# Scan file: " << cfg.scanfile << "\n";
+	dump_sqw_vars(pSqw, ostrOut);
 	ostrOut << "#\n";
 
 	ostrOut << std::left << std::setw(g_iPrec*2) << "# h" << " "

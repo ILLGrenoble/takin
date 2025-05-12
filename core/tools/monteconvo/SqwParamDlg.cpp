@@ -27,6 +27,8 @@
  */
 
 #include "SqwParamDlg.h"
+#include "monteconvo_common.h"
+
 #include <QMessageBox>
 #include <QCheckBox>
 

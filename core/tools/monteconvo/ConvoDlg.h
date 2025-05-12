@@ -123,8 +123,6 @@ protected:
 	void Start1D();
 	void Start2D();
 
-	void DumpSqwVars(std::ostream& ostr) const;
-
 
 public:
 	void Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot);

@@ -101,3 +101,25 @@ void write_takin_metadata(std::ostream& ostrOut)
 	ostrOut << "# Timestamp: " << tl::epoch_to_str(tl::epoch()) << "\n";
 	ostrOut << "# User: " << pcUser << "\n";
 }
+
+
+/**
+ * write out the parameters of the currently loaded model
+ */
+void dump_sqw_vars(std::shared_ptr<SqwBase> sqw, std::ostream& ostr)
+{
+	if(!sqw)
+		return;
+
+	std::vector<SqwBase::t_var> vars = sqw->GetVars();
+	ostr << "#\n";
+	ostr << "# S(Q, E) model parameters:\n";
+
+	for(const SqwBase::t_var& var : vars)
+	{
+		const std::string& name = std::get<SQW_NAME>(var);
+		const std::string& val = std::get<SQW_VAL>(var);
+
+		ostr << "#\t" << name << " = " << val << "\n";
+	}
+}

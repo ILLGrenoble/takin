@@ -34,10 +34,23 @@
 
 #include "tools/convofit/scan.h"
 #include "TASReso.h"
+#include "sqwbase.h"
 
 
 #define EPS_RLU   1e-3
 #define EPS_PLANE 5e-4
+
+
+enum
+{
+	SQW_NAME  = 0,
+	SQW_TYPE  = 1,
+	SQW_VAL   = 2,
+
+	SQW_ERR   = 3,
+	SQW_RANGE = 4,
+	SQW_FIT   = 5,
+};
 
 
 /**
@@ -101,6 +114,7 @@ extern bool load_scan_file(const std::string& _strFile, Scan& scan,
 
 
 extern void write_takin_metadata(std::ostream& ostr);
+extern void dump_sqw_vars(std::shared_ptr<SqwBase> sqw, std::ostream& ostr);
 
 
 #endif

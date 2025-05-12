@@ -666,28 +666,6 @@ ConvoDlg::t_sqwparams ConvoDlg::GetSqwParams(bool only_fitparams) const
 	return params;
 }
 
-
-/**
- * write out the parameters of the currently loaded model
- */
-void ConvoDlg::DumpSqwVars(std::ostream& ostr) const
-{
-	if(!m_pSqw)
-		return;
-
-	std::vector<SqwBase::t_var> vars = m_pSqw->GetVars();
-	ostr << "#\n";
-	ostr << "# S(Q, E) model parameters:\n";
-
-	for(const SqwBase::t_var& var : vars)
-	{
-		const std::string& name = std::get<SQW_NAME>(var);
-		const std::string& val = std::get<SQW_VAL>(var);
-
-		ostr << "#\t" << name << " = " << val << "\n";
-	}
-}
-
 // -----------------------------------------------------------------------------
 
 

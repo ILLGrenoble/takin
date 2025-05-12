@@ -263,7 +263,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			ostrOut << "# File: " << m_strLastFile << "\n";
 		if(editScan->text() != "")
 			ostrOut << "# Scan file: " << editScan->text().toStdString() << "\n";
-		DumpSqwVars(ostrOut);
+		dump_sqw_vars(m_pSqw, ostrOut);
 		ostrOut << "#\n";
 
 		ostrOut << std::left << std::setw(g_iPrec*2) << "# h" << " "
@@ -800,7 +800,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 		//ostrOut << "# Offset: " << dOffs << "\n";
 		if(m_strLastFile != "")
 			ostrOut << "# File: " << m_strLastFile << "\n";
-		DumpSqwVars(ostrOut);
+		dump_sqw_vars(m_pSqw, ostrOut);
 		ostrOut << "#\n";
 		ostrOut << std::left << std::setw(g_iPrec*2) << "# h" << " "
 			<< std::left << std::setw(g_iPrec*2) << "k" << " "

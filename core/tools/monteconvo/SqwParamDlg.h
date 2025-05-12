@@ -36,17 +36,6 @@
 #include "sqwbase.h"
 
 
-enum
-{
-	SQW_NAME  = 0,
-	SQW_TYPE  = 1,
-	SQW_VAL   = 2,
-
-	SQW_ERR   = 3,
-	SQW_RANGE = 4,
-	SQW_FIT   = 5,
-};
-
 
 class SqwParamDlg : public QDialog, Ui::SqwParamDlg
 { Q_OBJECT
