@@ -98,6 +98,7 @@ declare -a SRC_LIBS=(
 	"/usr/local/opt/icu4c@77/lib/libicuuc.77.dylib"
 	"/usr/local/lib/libqcustomplot.dylib"
 	"/usr/local/lib/libmd4c.0.dylib"
+	"/usr/local/lib/libgemmi_cpp.dylib"
 )
 #	"/usr/local/opt/openblas/lib/libopenblas.0.dylib"
 
