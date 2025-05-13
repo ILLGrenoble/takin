@@ -108,7 +108,7 @@ struct ConvoConfig
 
 	std::string crys{}, instr{};
 	std::string sqw{}, sqw_conf{};
-	std::string scanfile{};
+	std::string file{}, scanfile{};
 	std::string counter{}, monitor{};
 	std::string temp_override{}, field_override{};
 	std::string autosave{};
@@ -442,6 +442,8 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	ostrOut << "# Scale: " << cfg.S_scale << "\n";
 	ostrOut << "# Slope: " << cfg.S_slope << "\n";
 	ostrOut << "# Offset: " << cfg.S_offs << "\n";
+	if(cfg.file != "")
+		ostrOut << "# File: " << cfg.file << "\n";
 	if(cfg.scanfile != "")
 		ostrOut << "# Scan file: " << cfg.scanfile << "\n";
 	dump_sqw_vars(pSqw, ostrOut);
@@ -842,6 +844,11 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	ostrOut << "# Scale: " << cfg.S_scale << "\n";
 	ostrOut << "# Slope: " << cfg.S_slope << "\n";
 	ostrOut << "# Offset: " << cfg.S_offs << "\n";
+	if(cfg.file != "")
+		ostrOut << "# File: " << cfg.file << "\n";
+	if(cfg.scanfile != "")
+		ostrOut << "# Scan file: " << cfg.scanfile << "\n";
+	dump_sqw_vars(pSqw, ostrOut);
 	ostrOut << "#\n";
 	ostrOut << std::left << std::setw(g_iPrec*2) << "# h" << " "
 		<< std::left << std::setw(g_iPrec*2) << "k" << " "
@@ -1163,6 +1170,7 @@ int monteconvo_main(int argc, char** argv)
 		}
 
 		ConvoConfig cfg = load_config(xml);
+		cfg.file = strJobFile;
 
 		if(scanfile_override != "")
 		{
