@@ -117,6 +117,35 @@ struct ConvoConfig
 
 
 /**
+ * output meta data header
+ */
+static void write_scan_metadata(std::ostream& ostr, const ConvoConfig& cfg, std::shared_ptr<SqwBase> pSqw)
+{
+	ostr << "#\n";
+	write_takin_metadata(ostr);
+	ostr << "# MC neutrons: " << cfg.neutron_count << "\n";
+	ostr << "# MC sample steps: " << cfg.sample_step_count << "\n";
+	ostr << "# Scale: " << cfg.S_scale << "\n";
+	ostr << "# Slope: " << cfg.S_slope << "\n";
+	ostr << "# Offset: " << cfg.S_offs << "\n";
+	if(cfg.file != "")
+		ostr << "# File: " << cfg.file << "\n";
+	if(cfg.scanfile != "")
+		ostr << "# Scan file: " << cfg.scanfile << "\n";
+	dump_sqw_vars(pSqw, ostr);
+	ostr << "#\n";
+
+	ostr << std::left << std::setw(g_iPrec*2) << "# h" << " "
+		<< std::left << std::setw(g_iPrec*2) << "k" << " "
+		<< std::left << std::setw(g_iPrec*2) << "l" << " "
+		<< std::left << std::setw(g_iPrec*2) << "E" << " "
+		<< std::left << std::setw(g_iPrec*2) << "S(Q, E)" << " "
+		<< std::left << std::setw(g_iPrec*2) << "S_scaled(Q, E)"
+		<< "\n";
+}
+
+
+/**
  * loads the configuration for the convolution from a job file
  */
 static ConvoConfig load_config(const tl::Prop<std::string>& xml)
@@ -432,31 +461,9 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 	reso.SetOptimalFocus(get_reso_focus(cfg.mono_foc, cfg.ana_foc));
 
 
-	// meta data
 	std::ostringstream ostrOut;
 	ostrOut.precision(g_iPrec);
-	ostrOut << "#\n";
-	write_takin_metadata(ostrOut);
-	ostrOut << "# MC neutrons: " << cfg.neutron_count << "\n";
-	ostrOut << "# MC sample steps: " << cfg.sample_step_count << "\n";
-	ostrOut << "# Scale: " << cfg.S_scale << "\n";
-	ostrOut << "# Slope: " << cfg.S_slope << "\n";
-	ostrOut << "# Offset: " << cfg.S_offs << "\n";
-	if(cfg.file != "")
-		ostrOut << "# File: " << cfg.file << "\n";
-	if(cfg.scanfile != "")
-		ostrOut << "# Scan file: " << cfg.scanfile << "\n";
-	dump_sqw_vars(pSqw, ostrOut);
-	ostrOut << "#\n";
-
-	ostrOut << std::left << std::setw(g_iPrec*2) << "# h" << " "
-		<< std::left << std::setw(g_iPrec*2) << "k" << " "
-		<< std::left << std::setw(g_iPrec*2) << "l" << " "
-		<< std::left << std::setw(g_iPrec*2) << "E" << " "
-		<< std::left << std::setw(g_iPrec*2) << "S(Q, E)" << " "
-		<< std::left << std::setw(g_iPrec*2) << "S_scaled(Q, E)"
-		<< "\n";
-
+	write_scan_metadata(ostrOut, cfg, pSqw);
 
 	std::vector<t_real_reso> vecQ, vecS, vecScaledS;
 
@@ -540,12 +547,12 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 					// really the dynamical structure factor, or its absolute square
 					dS += (*pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
-					for(int i=0; i<4; ++i)
+					for(int i = 0; i < 4; ++i)
 						dhklE_mean[i] += vecHKLE[i];
 				}
 
 				dS /= t_real(cfg.neutron_count*cfg.sample_step_count);
-				for(int i=0; i<4; ++i)
+				for(int i = 0; i < 4; ++i)
 					dhklE_mean[i] /= t_real(cfg.neutron_count*cfg.sample_step_count);
 
 				dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
@@ -636,7 +643,7 @@ static bool start_convo_1d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 			// find point on S(Q, E) curve closest to scan point
 			std::size_t iMinIdx = 0;
 			t_real dMinDist = std::numeric_limits<t_real>::max();
-			for(std::size_t iStep=0; iStep<cfg.step_count; ++iStep)
+			for(std::size_t iStep = 0; iStep < cfg.step_count; ++iStep)
 			{
 				ublas::vector<t_real> vecCurveHKLE =
 					tl::make_vec({ vecH[iStep], vecK[iStep], vecL[iStep], vecE[iStep] });
@@ -837,36 +844,16 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 
 	std::ostringstream ostrOut;
 	ostrOut.precision(g_iPrec);
-	ostrOut << "#\n";
-	write_takin_metadata(ostrOut);
-	ostrOut << "# MC neutrons: " << cfg.neutron_count << "\n";
-	ostrOut << "# MC sample steps: " << cfg.sample_step_count << "\n";
-	ostrOut << "# Scale: " << cfg.S_scale << "\n";
-	ostrOut << "# Slope: " << cfg.S_slope << "\n";
-	ostrOut << "# Offset: " << cfg.S_offs << "\n";
-	if(cfg.file != "")
-		ostrOut << "# File: " << cfg.file << "\n";
-	if(cfg.scanfile != "")
-		ostrOut << "# Scan file: " << cfg.scanfile << "\n";
-	dump_sqw_vars(pSqw, ostrOut);
-	ostrOut << "#\n";
-	ostrOut << std::left << std::setw(g_iPrec*2) << "# h" << " "
-		<< std::left << std::setw(g_iPrec*2) << "k" << " "
-		<< std::left << std::setw(g_iPrec*2) << "l" << " "
-		<< std::left << std::setw(g_iPrec*2) << "E" << " "
-		<< std::left << std::setw(g_iPrec*2) << "S(Q, E)" << " "
-		<< std::left << std::setw(g_iPrec*2) << "S_scaled(Q, E)"
-		<< "\n";
-
+	write_scan_metadata(ostrOut, cfg, pSqw);
 
 	std::vector<t_real> vecH; vecH.reserve(cfg.step_count*cfg.step_count);
 	std::vector<t_real> vecK; vecK.reserve(cfg.step_count*cfg.step_count);
 	std::vector<t_real> vecL; vecL.reserve(cfg.step_count*cfg.step_count);
 	std::vector<t_real> vecE; vecE.reserve(cfg.step_count*cfg.step_count);
 
-	for(unsigned int iStepY=0; iStepY<cfg.step_count; ++iStepY)
+	for(unsigned int iStepY = 0; iStepY < cfg.step_count; ++iStepY)
 	{
-		for(unsigned int iStepX=0; iStepX<cfg.step_count; ++iStepX)
+		for(unsigned int iStepX = 0; iStepX < cfg.step_count; ++iStepX)
 		{
 			vecH.push_back(dStartHKL[0] + dDeltaHKL2[0]*t_real(iStepY) + dDeltaHKL1[0]*t_real(iStepX));
 			vecK.push_back(dStartHKL[1] + dDeltaHKL2[1]*t_real(iStepY) + dDeltaHKL1[1]*t_real(iStepX));
@@ -952,12 +939,12 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 					// really the dynamical structure factor, or its absolute square
 					dS += (*pSqw)(vecHKLE[0], vecHKLE[1], vecHKLE[2], vecHKLE[3]);
 
-					for(int i=0; i<4; ++i)
+					for(int i = 0; i < 4; ++i)
 						dhklE_mean[i] += vecHKLE[i];
 				}
 
 				dS /= t_real(cfg.neutron_count*cfg.sample_step_count);
-				for(int i=0; i<4; ++i)
+				for(int i = 0; i < 4; ++i)
 					dhklE_mean[i] /= t_real(cfg.neutron_count*cfg.sample_step_count);
 
 				dS *= localreso.GetResoResults().dR0 * localreso.GetR0Scale();
@@ -1129,7 +1116,7 @@ int monteconvo_main(int argc, char** argv)
 		{
 			std::ostringstream ostrHelp;
 			ostrHelp << "Usage: ";
-			for(int argidx=0; argidx<args_to_ignore; ++argidx)
+			for(int argidx = 0; argidx < args_to_ignore; ++argidx)
 				ostrHelp << argv[argidx] << " ";
 			ostrHelp << "[options] <config file>\n";
 			ostrHelp << args;
