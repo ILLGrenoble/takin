@@ -39,12 +39,17 @@ using t_real = t_real_glob;
 
 
 /**
- * calculates the polarisation matrix
+ * calculates the polarisation matrix (of the first selected file)
  */
 void ScanViewerDlg::CalcPol()
 {
 	editPolMat->clear();
-	if(!m_pInstr)
+
+	if(!m_instrs.size())
+		return;
+
+	tl::FileInstrBase<t_real_glob> *instr = m_instrs[0];
+	if(!instr)
 		return;
 
 	const std::string strPolVec1 = editPolVec1->text().toStdString();
@@ -55,11 +60,11 @@ void ScanViewerDlg::CalcPol()
 	const std::string strFlip2 = editFlip2->text().toStdString();
 	const std::string strXYZ = editXYZ->text().toStdString();
 
-	m_pInstr->SetPolNames(strPolVec1.c_str(), strPolVec2.c_str(), strPolCur1.c_str(), strPolCur2.c_str());
-	m_pInstr->SetLinPolNames(strFlip1.c_str(), strFlip2.c_str(), strXYZ.c_str());
-	m_pInstr->ParsePolData();
+	instr->SetPolNames(strPolVec1.c_str(), strPolVec2.c_str(), strPolCur1.c_str(), strPolCur2.c_str());
+	instr->SetLinPolNames(strFlip1.c_str(), strFlip2.c_str(), strXYZ.c_str());
+	instr->ParsePolData();
 
-	const std::vector<std::array<t_real, 6>>& vecPolStates = m_pInstr->GetPolStates();
+	const std::vector<std::array<t_real, 6>>& vecPolStates = instr->GetPolStates();
 	const std::size_t iNumPolStates = vecPolStates.size();
 	if(iNumPolStates == 0)
 	{
@@ -159,13 +164,13 @@ void ScanViewerDlg::CalcPol()
 	}
 
 
-	const std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();
+	const std::vector<std::string> vecScanVars = instr->GetScannedVars();
 	std::string strX;
 	if(vecScanVars.size())
 		strX = vecScanVars[0];
-	const std::vector<t_real>& vecX = m_pInstr->GetCol(strX.c_str());
-	const std::vector<t_real>& vecCnts = m_pInstr->GetCol(m_pInstr->GetCountVar().c_str());
-	const std::vector<t_real>& vecMons = m_pInstr->GetCol(m_pInstr->GetMonVar().c_str());
+	const std::vector<t_real>& vecX = instr->GetCol(strX.c_str());
+	const std::vector<t_real>& vecCnts = instr->GetCol(instr->GetCountVar().c_str());
+	const std::vector<t_real>& vecMons = instr->GetCol(instr->GetMonVar().c_str());
 	bool has_mon = (vecCnts.size() == vecMons.size());
 
 	// raw counts per polarisation channel

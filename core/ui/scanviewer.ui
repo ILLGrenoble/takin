@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>893</width>
-    <height>660</height>
+    <width>969</width>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -116,7 +116,68 @@
        <property name="spacing">
         <number>4</number>
        </property>
-       <item row="0" column="0" colspan="4">
+       <item row="2" column="4">
+        <widget class="QSpinBox" name="spinSkip">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Number of rows to skip between data rows.</string>
+         </property>
+         <property name="prefix">
+          <string>Interleave: </string>
+         </property>
+         <property name="maximum">
+          <number>99999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QSpinBox" name="spinStart">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Start index of first data row.</string>
+         </property>
+         <property name="prefix">
+          <string>Start: </string>
+         </property>
+         <property name="maximum">
+          <number>99999</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="checkNorm">
+         <property name="toolTip">
+          <string>Normalise main counter to monitor counter.</string>
+         </property>
+         <property name="text">
+          <string>Norm.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QComboBox" name="comboY">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Ordinate (y), e.g. main counter.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="5">
         <widget class="QTabWidget" name="tabWidget">
          <property name="currentIndex">
           <number>0</number>
@@ -1175,33 +1236,7 @@
          </widget>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="comboX">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Abscissa (x), scan axis.</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="QComboBox" name="comboY">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Ordinate (y), e.g. main counter.</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
+       <item row="1" column="4">
         <widget class="QComboBox" name="comboMon">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1214,26 +1249,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QSpinBox" name="spinStart">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>1</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Start index of first data row.</string>
-         </property>
-         <property name="prefix">
-          <string>Start: </string>
-         </property>
-         <property name="maximum">
-          <number>99999</number>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="2">
+       <item row="2" column="3">
         <widget class="QSpinBox" name="spinStop">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -1252,39 +1268,33 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="3">
-        <widget class="QSpinBox" name="spinSkip">
+       <item row="1" column="2">
+        <widget class="QComboBox" name="comboX">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>1</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="toolTip">
-          <string>Number of rows to skip between data rows.</string>
-         </property>
-         <property name="prefix">
-          <string>Interleave: </string>
-         </property>
-         <property name="maximum">
-          <number>99999</number>
+          <string>Abscissa (x), scan axis.</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="checkNorm">
+       <item row="2" column="1">
+        <widget class="QCheckBox" name="checkMerge">
          <property name="toolTip">
-          <string>Normalise main counter to monitor counter.</string>
+          <string>Merge scan files or show them individually.</string>
          </property>
          <property name="text">
-          <string>Norm.</string>
+          <string>Merge</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="1" column="0" colspan="2">
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Axes:</string>
+          <string>Axes (x, y, mon.):</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -1323,6 +1333,7 @@
   <tabstop>comboY</tabstop>
   <tabstop>comboMon</tabstop>
   <tabstop>checkNorm</tabstop>
+  <tabstop>checkMerge</tabstop>
   <tabstop>spinStart</tabstop>
   <tabstop>spinStop</tabstop>
   <tabstop>spinSkip</tabstop>

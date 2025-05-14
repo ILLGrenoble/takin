@@ -163,7 +163,7 @@ bool is_integer(T d, T eps = get_epsilon<T>())
 // -----------------------------------------------------------------------------
 
 
-template<class T, typename REAL=double>
+template<class T, typename REAL = double>
 T lerp(const T& a, const T& b, REAL val)
 {
 	return a + T((b-a)*val);
@@ -189,7 +189,7 @@ T bilinear_interp(T x0y0, T x1y0, T x0y1, T x1y1, T x, T y)
 }
 
 
-template<typename T=double, typename REAL=double,
+template<typename T=double, typename REAL = double,
 	template<class...> class t_vec=std::vector>
 t_vec<T> linspace(const T& tmin, const T& tmax, std::size_t iNum)
 {
@@ -209,7 +209,7 @@ t_vec<T> linspace(const T& tmin, const T& tmax, std::size_t iNum)
 }
 
 
-template<typename T=double, typename REAL=double,
+template<typename T=double, typename REAL = double,
 	template<class...> class t_vec=std::vector>
 t_vec<T> logspace(const T& tmin, const T& tmax, std::size_t iNum, T tBase=T(10))
 {

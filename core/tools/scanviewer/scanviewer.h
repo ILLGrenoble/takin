@@ -81,8 +81,8 @@ private:
 	std::vector<std::string> m_vecExts;
 
 	bool m_bDoUpdate = false;
-	tl::FileInstrBase<t_real_glob> *m_pInstr = nullptr;
-	std::vector<t_real_glob> m_vecX, m_vecY, m_vecYErr;
+	std::vector<tl::FileInstrBase<t_real_glob>*> m_instrs;
+	std::vector<std::vector<t_real_glob>> m_vecX, m_vecY, m_vecYErr;
 	std::vector<t_real_glob> m_vecFitX, m_vecFitY;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 	std::string m_strX, m_strY, m_strMon, m_strCmd;
@@ -95,8 +95,11 @@ private:
 
 
 protected:
+	void SetupPlotter(unsigned int numCurves = 2);
+
 	void ClearPlot();
 	void PlotScan();
+	void ShowMetaData();
 	void ShowProps();
 
 	int HasRecentPath(const QString& strPath);
@@ -115,7 +118,7 @@ protected:
 
 
 protected slots:
-	void GenerateExternal(int iLang=0);
+	void GenerateExternal(int iLang = 0);
 
 	void UpdateFileList();
 	void FileSelected();
@@ -129,6 +132,7 @@ protected slots:
 	void YAxisSelected(int);
 	void MonAxisSelected(int);
 	void NormaliseStateChanged(int iState);
+	void MergeStateChanged(int iState);
 	void StartOrSkipChanged(int);
 
 	void ShowFitParams();

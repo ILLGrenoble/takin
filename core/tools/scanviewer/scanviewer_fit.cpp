@@ -54,7 +54,7 @@ void ScanViewerDlg::ShowFitParams()
 
 
 /**
- * fit a function to data points
+ * fit a function to the data points (of the first selected file)
  */
 template<std::size_t iFuncArgs, class t_func>
 bool ScanViewerDlg::Fit(t_func&& func,
@@ -68,10 +68,15 @@ bool ScanViewerDlg::Fit(t_func&& func,
 	m_vecFitX.clear();
 	m_vecFitY.clear();
 
-	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+	if(!m_vecX.size() || !m_vecY.size() || !m_vecYErr.size())
 		return false;
 
-	bool bOk = 0;
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+	const std::vector<t_real>& vecYErr = m_vecYErr[0];
+
+
+	bool bOk = false;
 	try
 	{
 		std::vector<t_real_min>
@@ -81,13 +86,13 @@ bool ScanViewerDlg::Fit(t_func&& func,
 		if(bUseSwarm)
 		{
 			bOk = tl::swarmfit<t_real, iFuncArgs>
-				(func, m_vecX, m_vecY, m_vecYErr, vecParamNames, vecVals, vecErrs);
+				(func, vecX, vecY, vecYErr, vecParamNames, vecVals, vecErrs);
 		}
 
 		bOk = tl::fit<iFuncArgs>(func,
-			tl::container_cast<t_real_min, t_real, std::vector>()(m_vecX),
-			tl::container_cast<t_real_min, t_real, std::vector>()(m_vecY),
-			tl::container_cast<t_real_min, t_real, std::vector>()(m_vecYErr),
+			tl::container_cast<t_real_min, t_real, std::vector>()(vecX),
+			tl::container_cast<t_real_min, t_real, std::vector>()(vecY),
+			tl::container_cast<t_real_min, t_real, std::vector>()(vecYErr),
 			vecParamNames, _vecVals, _vecErrs, &vecFixed);
 		vecVals = tl::container_cast<t_real, t_real_min, std::vector>()(_vecVals);
 		vecErrs = tl::container_cast<t_real, t_real_min, std::vector>()(_vecErrs);
@@ -103,7 +108,7 @@ bool ScanViewerDlg::Fit(t_func&& func,
 		return false;
 	}
 
-	auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
+	auto minmaxX = std::minmax_element(vecX.begin(), vecX.end());
 
 	m_vecFitX.reserve(GFX_NUM_POINTS);
 	m_vecFitY.reserve(GFX_NUM_POINTS);
@@ -111,7 +116,7 @@ bool ScanViewerDlg::Fit(t_func&& func,
 	std::vector<t_real> vecValsWithX = { 0. };
 	for(t_real dVal : vecVals) vecValsWithX.push_back(dVal);
 
-	for(std::size_t i=0; i<GFX_NUM_POINTS; ++i)
+	for(std::size_t i = 0; i < GFX_NUM_POINTS; ++i)
 	{
 		t_real dX = t_real(i)*(*minmaxX.second - *minmaxX.first)/t_real(GFX_NUM_POINTS-1) + *minmaxX.first;
 		vecValsWithX[0] = dX;
@@ -129,8 +134,15 @@ bool ScanViewerDlg::Fit(t_func&& func,
 
 void ScanViewerDlg::FitLine()
 {
-	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+	if(!m_vecX.size() || !m_vecY.size())
 		return;
+
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+
+	if(std::min(vecX.size(), vecY.size()) == 0)
+		return;
+
 
 	auto func = [](t_real x, t_real m, t_real offs) -> t_real { return m*x + offs; };
 	constexpr std::size_t iFuncArgs = 3;
@@ -144,8 +156,8 @@ void ScanViewerDlg::FitLine()
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
 	{
-		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+		auto minmaxX = std::minmax_element(vecX.begin(), vecX.end());
+		auto minmaxY = std::minmax_element(vecY.begin(), vecY.end());
 
 		dSlope = (*minmaxY.second - *minmaxY.first) / (*minmaxX.second - *minmaxX.first);
 		dOffs = *minmaxY.first;
@@ -177,8 +189,15 @@ void ScanViewerDlg::FitLine()
  */
 void ScanViewerDlg::FitParabola()
 {
-	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+	if(!m_vecX.size() || !m_vecY.size())
 		return;
+
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+
+	if(std::min(vecX.size(), vecY.size()) == 0)
+		return;
+
 
 	const bool bUseSlope = checkSloped->isChecked();
 
@@ -200,9 +219,9 @@ void ScanViewerDlg::FitParabola()
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
 	{
-		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+		auto minmaxY = std::minmax_element(vecY.begin(), vecY.end());
 
-		dX0 = m_vecX[minmaxY.second - m_vecY.begin()];
+		dX0 = vecX[minmaxY.second - vecY.begin()];
 		dAmp = std::abs(*minmaxY.second-*minmaxY.first);
 		dOffs = *minmaxY.first;
 
@@ -281,8 +300,15 @@ void sanitise_sine_params(t_real& amp, t_real& freq, t_real& phase, t_real& offs
 
 void ScanViewerDlg::FitSine()
 {
-	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+	if(!m_vecX.size() || !m_vecY.size())
 		return;
+
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+
+	if(std::min(vecX.size(), vecY.size()) == 0)
+		return;
+
 
 	const bool bUseSlope = checkSloped->isChecked();
 
@@ -310,17 +336,17 @@ void ScanViewerDlg::FitSine()
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
 	{
-		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+		auto minmaxX = std::minmax_element(vecX.begin(), vecX.end());
+		auto minmaxY = std::minmax_element(vecY.begin(), vecY.end());
 
 		dFreq = t_real(2.*M_PI) / (*minmaxX.second - *minmaxX.first);
 		//dOffs = *minmaxY.first + (*minmaxY.second - *minmaxY.first)*0.5;
-		dOffs = tl::mean_value(m_vecY);
+		dOffs = tl::mean_value(vecY);
 		dAmp = (std::abs(*minmaxY.second - dOffs) + std::abs(dOffs - *minmaxY.first)) * 0.5;
 		dPhase = 0.;
 
 		dFreqErr = dFreq * 0.1;
-		dOffsErr = tl::std_dev(m_vecY);;
+		dOffsErr = tl::std_dev(vecY);;
 		dAmpErr = dAmp * 0.1;
 		dPhaseErr = M_PI;
 
@@ -372,14 +398,20 @@ void ScanViewerDlg::FitSine()
  */
 void ScanViewerDlg::FitGauss()
 {
-	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+	if(!m_vecX.size() || !m_vecY.size())
+		return;
+
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+
+	if(std::min(vecX.size(), vecY.size()) == 0)
 		return;
 
 
 	// prefit
 	unsigned int iOrder = m_settings.value("spline_order", 6).toInt();
 	std::vector<t_real> vecMaximaX, vecMaximaSize, vecMaximaWidth;
-	tl::find_peaks<t_real>(m_vecX.size(), m_vecX.data(), m_vecY.data(), iOrder,
+	tl::find_peaks<t_real>(vecX.size(), vecX.data(), vecY.data(), iOrder,
 		vecMaximaX, vecMaximaSize, vecMaximaWidth, g_dEpsGfx);
 
 
@@ -405,8 +437,8 @@ void ScanViewerDlg::FitGauss()
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
 	{
-		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+		auto minmaxX = std::minmax_element(vecX.begin(), vecX.end());
+		auto minmaxY = std::minmax_element(vecY.begin(), vecY.end());
 
 		// use prefitter values
 		if(vecMaximaX.size())
@@ -419,7 +451,7 @@ void ScanViewerDlg::FitGauss()
 		// try to guess values
 		else
 		{
-			dX0 = m_vecX[minmaxY.second - m_vecY.begin()];
+			dX0 = vecX[minmaxY.second - vecY.begin()];
 			dSig = std::abs((*minmaxX.second-*minmaxX.first) * 0.5);
 			dAmp = std::abs(*minmaxY.second-*minmaxY.first);
 			dOffs = *minmaxY.first;
@@ -475,14 +507,20 @@ void ScanViewerDlg::FitGauss()
  */
 void ScanViewerDlg::FitLorentz()
 {
-	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+	if(!m_vecX.size() || !m_vecY.size())
+		return;
+
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+
+	if(std::min(vecX.size(), vecY.size()) == 0)
 		return;
 
 
 	// prefit
 	unsigned int iOrder = m_settings.value("spline_order", 6).toInt();
 	std::vector<t_real> vecMaximaX, vecMaximaSize, vecMaximaWidth;
-	tl::find_peaks<t_real>(m_vecX.size(), m_vecX.data(), m_vecY.data(), iOrder,
+	tl::find_peaks<t_real>(vecX.size(), vecX.data(), vecY.data(), iOrder,
 		vecMaximaX, vecMaximaSize, vecMaximaWidth, g_dEpsGfx);
 
 
@@ -508,8 +546,8 @@ void ScanViewerDlg::FitLorentz()
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
 	{
-		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+		auto minmaxX = std::minmax_element(vecX.begin(), vecX.end());
+		auto minmaxY = std::minmax_element(vecY.begin(), vecY.end());
 
 		// use prefitter values
 		if(vecMaximaX.size())
@@ -522,7 +560,7 @@ void ScanViewerDlg::FitLorentz()
 		// try to guess values
 		else
 		{
-			dX0 = m_vecX[minmaxY.second - m_vecY.begin()];
+			dX0 = vecX[minmaxY.second - vecY.begin()];
 			dHWHM = std::abs((*minmaxX.second-*minmaxX.first) * 0.5);
 			dAmp = std::abs(*minmaxY.second-*minmaxY.first);
 			dOffs = *minmaxY.first;
@@ -585,14 +623,20 @@ void ScanViewerDlg::FitVoigt() {}
  */
 void ScanViewerDlg::FitVoigt()
 {
-	if(std::min(m_vecX.size(), m_vecY.size()) == 0)
+	if(!m_vecX.size() || !m_vecY.size())
+		return;
+
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+
+	if(std::min(vecX.size(), vecY.size()) == 0)
 		return;
 
 
 	// prefit
 	unsigned int iOrder = m_settings.value("spline_order", 6).toInt();
 	std::vector<t_real> vecMaximaX, vecMaximaSize, vecMaximaWidth;
-	tl::find_peaks<t_real>(m_vecX.size(), m_vecX.data(), m_vecY.data(), iOrder,
+	tl::find_peaks<t_real>(vecX.size(), vecX.data(), vecY.data(), iOrder,
 		vecMaximaX, vecMaximaSize, vecMaximaWidth, g_dEpsGfx);
 
 
@@ -620,8 +664,8 @@ void ScanViewerDlg::FitVoigt()
 	// automatic parameter determination
 	if(!m_pFitParamDlg->WantParams())
 	{
-		auto minmaxX = std::minmax_element(m_vecX.begin(), m_vecX.end());
-		auto minmaxY = std::minmax_element(m_vecY.begin(), m_vecY.end());
+		auto minmaxX = std::minmax_element(vecX.begin(), vecX.end());
+		auto minmaxY = std::minmax_element(vecY.begin(), vecY.end());
 
 		// use prefitter values
 		if(vecMaximaX.size())
@@ -635,7 +679,7 @@ void ScanViewerDlg::FitVoigt()
 		// try to guess values
 		else
 		{
-			dX0 = m_vecX[minmaxY.second - m_vecY.begin()];
+			dX0 = vecX[minmaxY.second - vecY.begin()];
 			dHWHM = std::abs((*minmaxX.second-*minmaxX.first) * 0.25);
 			dSig = std::abs((*minmaxX.second-*minmaxX.first) * 0.25);
 			dAmp = std::abs(*minmaxY.second-*minmaxY.first);

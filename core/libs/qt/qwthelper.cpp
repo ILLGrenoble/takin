@@ -76,7 +76,7 @@ public:
 	explicit MyQwtPlotZoomer(t_widget_or_canvas* ptr) : QwtPlotZoomer(ptr)
 	{
 		QwtPlotZoomer::setMaxStackDepth(-1);
-		QwtPlotZoomer::setEnabled(1);
+		QwtPlotZoomer::setEnabled(true);
 	}
 
 	virtual ~MyQwtPlotZoomer() {}
@@ -108,7 +108,7 @@ protected:
 	}
 
 public:
-	MyQwtPlotPicker(QwtPlotWrapper *pPlotWrap, bool bNoTrackerSignal=0) :
+	MyQwtPlotPicker(QwtPlotWrapper *pPlotWrap, bool bNoTrackerSignal = false) :
 		QwtPlotPicker(pPlotWrap->GetPlot()->xBottom, pPlotWrap->GetPlot()->yLeft,
 		QwtPlotPicker::NoRubberBand,
 		bNoTrackerSignal ? QwtPicker::AlwaysOn : QwtPicker::AlwaysOff,
@@ -118,7 +118,7 @@ public:
 		QwtPlotPicker::setStateMachine(new QwtPickerTrackerMachine());
 		//connect(this, SIGNAL(moved(const QPointF&)), this, SLOT(cursorMoved(const QPointF&)));
 
-		QwtPlotPicker::setEnabled(1);
+		QwtPlotPicker::setEnabled(true);
 	}
 
 	virtual ~MyQwtPlotPicker() {}
@@ -156,10 +156,10 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 			return pCol;
 		};
 
-		t_real_qwt dCBMin=0., dCBMax=1.;
+		t_real_qwt dCBMin = 0., dCBMax = 1.;
 		m_pPlot->enableAxis(QwtPlot::yRight);
 		QwtScaleWidget *pRightAxis = m_pPlot->axisWidget(QwtPlot::yRight);
-		pRightAxis->setColorBarEnabled(1);
+		pRightAxis->setColorBarEnabled(true);
 		m_pPlot->setAxisScale(QwtPlot::yRight, dCBMin, dCBMax);
 
 		m_pSpec->setColorMap(create_colmap());
@@ -173,7 +173,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 	else
 	{
 		m_vecCurves.reserve(iNumCurves);
-		for(unsigned int iCurve=0; iCurve<iNumCurves; ++iCurve)
+		for(unsigned int iCurve = 0; iCurve < iNumCurves; ++iCurve)
 		{
 			MyQwtCurve* pCurve = new MyQwtCurve();
 			pCurve->setPen(penCurve);
@@ -223,7 +223,7 @@ QwtPlotWrapper::~QwtPlotWrapper()
 {
 	if(m_pPicker)
 	{
-		m_pPicker->setEnabled(0);
+		m_pPicker->setEnabled(false);
 		delete m_pPicker;
 		m_pPicker = nullptr;
 	}
@@ -239,12 +239,16 @@ QwtPlotWrapper::~QwtPlotWrapper()
 }
 
 
-bool QwtPlotWrapper::HasTrackerSignal() const { return 1; }
+bool QwtPlotWrapper::HasTrackerSignal() const
+{
+	return true;
+}
 
 
 void QwtPlotWrapper::ToggleLogY()
 {
-	if(!m_pPlot) return;
+	if(!m_pPlot)
+		return;
 
 	if(m_curYScaler == 0)
 	{
@@ -265,12 +269,12 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 {
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
-	if(!bCopy)	// copy pointers
+	if(!bCopy)  // copy pointers
 	{
 		m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 		m_vecCurves[iCurve]->SetYErr(pvecYErr);
 
-		m_bHasDataPtrs = 1;
+		m_bHasDataPtrs = true;
 		if(iCurve >= m_vecDataPtrs.size())
 			m_vecDataPtrs.resize(iCurve+1);
 
@@ -278,12 +282,12 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 		std::get<1>(m_vecDataPtrs[iCurve]) = &vecY;
 		std::get<2>(m_vecDataPtrs[iCurve]) = pvecYErr;
 	}
-	else		// copy data, TODO: errorbars
+	else  // copy data, TODO: error bars
 	{
 		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 		//m_vecCurves[iCurve]->SetYErr(pvecYErr);
 
-		m_bHasDataPtrs = 0;
+		m_bHasDataPtrs = false;
 		m_vecDataPtrs.clear();
 	}
 
@@ -321,7 +325,8 @@ void QwtPlotWrapper::SavePlot() const
 		nullptr).toStdString();
 
 	tl::trim(strFile);
-	if(strFile == "") return;
+	if(strFile == "")
+		return;
 
 	std::ofstream ofstrDat(strFile);
 	if(!ofstrDat)
@@ -367,7 +372,7 @@ void QwtPlotWrapper::SavePlot() const
 	{
 		ofstrDat << "#\n";
 
-		std::size_t iDataSet=0;
+		std::size_t iDataSet = 0;
 		for(const auto& pairVecs : m_vecDataPtrs)
 		{
 			const std::vector<t_real_qwt>* pVecX = std::get<0>(pairVecs);
@@ -376,7 +381,8 @@ void QwtPlotWrapper::SavePlot() const
 
 			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
 			// if no data points are available, skip the curve
-			if(!iSize) continue;
+			if(!iSize)
+				continue;
 
 
 			if(m_vecDataPtrs.size() > 1)
@@ -421,7 +427,8 @@ void QwtPlotWrapper::ExportGpl() const
 		nullptr).toStdString();
 
 	tl::trim(strFile);
-	if(strFile == "") return;
+	if(strFile == "")
+		return;
 
 	std::ofstream ofstrDat(strFile);
 	if(!ofstrDat)
@@ -490,9 +497,9 @@ void QwtPlotWrapper::ExportGpl() const
 			<< "using (xmin + $1*xscale) : (ymin + $2*yscale) : ($3*zscale) "
 			<< "matrix with image\n";
 
-		for(std::size_t iY=0; iY<m_pRaster->GetHeight(); ++iY)
+		for(std::size_t iY = 0; iY < m_pRaster->GetHeight(); ++iY)
 		{
-			for(std::size_t iX=0; iX<m_pRaster->GetWidth(); ++iX)
+			for(std::size_t iX = 0; iX < m_pRaster->GetWidth(); ++iX)
 			{
 				ofstrDat << std::left << std::setw(g_iPrec*2)
 					<< m_pRaster->GetPixel(iX, iY) << " ";
@@ -514,7 +521,8 @@ void QwtPlotWrapper::ExportGpl() const
 			const std::vector<t_real_qwt>* pVecX = std::get<0>(m_vecDataPtrs[iCurve]);
 			const std::vector<t_real_qwt>* pVecY = std::get<1>(m_vecDataPtrs[iCurve]);
 			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
-			if(!iSize) continue;
+			if(!iSize)
+				continue;
 
 			// points or lines?
 			if(m_vecCurves[iCurve]->style() /*& QwtPlotCurve::CurveStyle::Lines*/
@@ -552,7 +560,8 @@ void QwtPlotWrapper::ExportGpl() const
 
 			// if no data points are available, skip the curve
 			const std::size_t iSize = std::min(pVecX->size(), pVecY->size());
-			if(!iSize) continue;
+			if(!iSize)
+				continue;
 
 			for(std::size_t iCur=0; iCur<iSize; ++iCur)
 			{
@@ -576,7 +585,8 @@ void QwtPlotWrapper::ExportGpl() const
 
 void QwtPlotWrapper::setAxisTitle(int iAxis, const QString& str)
 {
-	if(!m_pPlot) return;
+	if(!m_pPlot)
+		return;
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
 	m_pPlot->setAxisTitle(iAxis, str);
@@ -585,7 +595,8 @@ void QwtPlotWrapper::setAxisTitle(int iAxis, const QString& str)
 
 void QwtPlotWrapper::setZoomBase(const QRectF& rect)
 {
-	if(!m_pZoomer) return;
+	if(!m_pZoomer)
+		return;
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
 	m_pZoomer->setZoomBase(rect);
@@ -594,7 +605,8 @@ void QwtPlotWrapper::setZoomBase(const QRectF& rect)
 
 void QwtPlotWrapper::scaleColorBar()
 {
-	if(!m_pPlot || !m_pRaster) return;
+	if(!m_pPlot || !m_pRaster)
+		return;
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
 	t_real_qwt dMin = m_pRaster->GetZMin();
@@ -608,7 +620,8 @@ void QwtPlotWrapper::scaleColorBar()
 
 void QwtPlotWrapper::doUpdate()
 {
-	if(!m_pPlot) return;
+	if(!m_pPlot)
+		return;
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
 	m_pPlot->replot();
@@ -655,7 +668,8 @@ void MyQwtRasterData::SetZRange(t_real_qwt dMin, t_real_qwt dMax)
 
 void MyQwtRasterData::SetZRange()	// automatically determined range
 {
-	if(!m_pData) return;
+	if(!m_pData)
+		return;
 
 	auto minmax = std::minmax_element(m_pData.get(), m_pData.get()+m_iW*m_iH);
 	m_dZRange[0] = *minmax.first; m_dZRange[1] = *minmax.second;
@@ -784,7 +798,7 @@ void MyQwtCurve::drawDots(QPainter* pPainter,
 		penErr.setWidthF(1.5);
 		pPainter->setPen(penErr);
 
-		for(int iPt=iPtFirst; iPt<=iPtLast; ++iPt)
+		for(int iPt = iPtFirst; iPt <= iPtLast; ++iPt)
 		{
 			QPointF pt = data()->sample(iPt);
 			t_real_qwt err = 0;
@@ -811,7 +825,7 @@ void MyQwtCurve::drawDots(QPainter* pPainter,
 	pPainter->setPen(oldpen);
 	pPainter->setBrush(oldpen.color());
 
-	for(int iPt=iPtFirst; iPt<=iPtLast; ++iPt)
+	for(int iPt = iPtFirst; iPt <= iPtLast; ++iPt)
 	{
 		QPointF pt = data()->sample(iPt);
 		QPointF ptMid(scX.transform(pt.x()), scY.transform(pt.y()));
@@ -833,11 +847,12 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	t_real_qwt dL, t_real_qwt dR, t_real_qwt dT, t_real_qwt dB,
 	bool bMetaCall, QwtPlotWrapper* pPlotWrap)
 {
-	if(!pZoomer) return;
+	if(!pZoomer)
+		return;
 
 	QRectF rect;
-	rect.setLeft(dL);	rect.setRight(dR);
-	rect.setTop(dT);	rect.setBottom(dB);
+	rect.setLeft(dL);  rect.setRight(dR);
+	rect.setTop(dT);   rect.setBottom(dB);
 
 	if(bMetaCall)
 	{
@@ -937,7 +952,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 		return;
 
 	std::vector<t_real_qwt> vecX, vecY;
-	for(std::size_t iVec=0; iVec<vecvecX.size(); ++iVec)
+	for(std::size_t iVec = 0; iVec < vecvecX.size(); ++iVec)
 	{
 		vecX.insert(vecX.end(), vecvecX[iVec].begin(), vecvecX[iVec].end());
 		vecY.insert(vecY.end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
@@ -960,7 +975,7 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 		return;
 
 	std::vector<t_real_qwt> vecY;
-	for(std::size_t iVec=0; iVec<vecvecY.size(); ++iVec)
+	for(std::size_t iVec = 0; iVec < vecvecY.size(); ++iVec)
 		vecY.insert(vecY.end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
 
 	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap, bUseYErrs);

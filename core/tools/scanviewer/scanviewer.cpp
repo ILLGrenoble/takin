@@ -90,30 +90,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	splitter->setStretchFactor(0, 1);
 	splitter->setStretchFactor(1, 2);
 
-
-	// -------------------------------------------------------------------------
-	// plot stuff
-	QColor colorBck(240, 240, 240, 255);
-	plot->setCanvasBackground(colorBck);
-
-	m_plotwrap.reset(new QwtPlotWrapper(plot, 2, true));
-
-
-	QPen penCurve;
-	penCurve.setColor(QColor(0,0,0x99));
-	penCurve.setWidth(2);
-	m_plotwrap->GetCurve(0)->setPen(penCurve);
-	m_plotwrap->GetCurve(0)->setStyle(QwtPlotCurve::CurveStyle::Lines);
-	m_plotwrap->GetCurve(0)->setTitle("Scan Curve");
-
-	QPen penPoints;
-	penPoints.setColor(QColor(0xff,0,0));
-	penPoints.setWidth(4);
-	m_plotwrap->GetCurve(1)->setPen(penPoints);
-	m_plotwrap->GetCurve(1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
-	m_plotwrap->GetCurve(1)->setTitle("Scan Points");
-	// -------------------------------------------------------------------------
-
+	SetupPlotter(2);
 
 	// -------------------------------------------------------------------------
 	// property map stuff
@@ -150,6 +127,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	QObject::connect(comboY, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
 	QObject::connect(comboMon, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::MonAxisSelected);
 	QObject::connect(checkNorm, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), pThis, &ScanViewerDlg::NormaliseStateChanged);
+	QObject::connect(checkMerge, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), pThis, &ScanViewerDlg::MergeStateChanged);
 	QObject::connect(spinStart, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
 	QObject::connect(spinStop, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
 	QObject::connect(spinSkip, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
@@ -187,6 +165,10 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	//comboPath->setEditText(strDir);
 
 
+	if(m_settings.contains("norm"))
+		checkNorm->setChecked(m_settings.value("norm").toBool());
+	if(m_settings.contains("merge_mode"))
+		checkMerge->setChecked(m_settings.value("merge_mode").toBool());
 	if(m_settings.contains("pol/vec1"))
 		editPolVec1->setText(m_settings.value("pol/vec1").toString());
 	if(m_settings.contains("pol/vec2"))
@@ -218,11 +200,64 @@ ScanViewerDlg::~ScanViewerDlg()
 }
 
 
+void ScanViewerDlg::SetupPlotter(unsigned int numCurves)
+{
+	auto get_colour = [numCurves](unsigned int curve, bool is_curve) -> QColor
+	{
+		if(numCurves == 2)
+		{
+			// plotting single data set only
+			if(is_curve)  // curve
+				return QColor(0, 0, 0x99);
+			else          // data points
+				return QColor(0xff, 0, 0);
+		}
+
+		// plotting multiple data sets
+		t_real lerpval = t_real(curve) / t_real(numCurves - 2);
+		t_real r = tl::lerp<t_real, t_real>(1., 0., lerpval);
+		t_real g = 0.;
+		t_real b = tl::lerp<t_real, t_real>(0., 1., lerpval);
+
+		return QColor(int(r * 255.), int(g * 255.), int(b * 255.));
+	};
+
+
+	// already set up with this number of curves?
+	if(m_plotwrap && numCurves == m_plotwrap->GetNumCurves())
+		return;
+
+	QColor colorBck(240, 240, 240, 255);
+	plot->setCanvasBackground(colorBck);
+
+	m_plotwrap.reset(new QwtPlotWrapper(plot, numCurves, true));
+
+	for(unsigned int curve = 0; curve < numCurves; curve += 2)
+	{
+		// even indices are curves
+		QPen penCurve;
+		penCurve.setColor(get_colour(curve, true));
+		penCurve.setWidth(2);
+		m_plotwrap->GetCurve(curve)->setPen(penCurve);
+		m_plotwrap->GetCurve(curve)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+		m_plotwrap->GetCurve(curve)->setTitle("Scan Curve");
+
+		// odd indices are scan points
+		QPen penPoints;
+		penPoints.setColor(get_colour(curve, false));
+		penPoints.setWidth(4);
+		m_plotwrap->GetCurve(curve + 1)->setPen(penPoints);
+		m_plotwrap->GetCurve(curve + 1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
+		m_plotwrap->GetCurve(curve + 1)->setTitle("Scan Points");
+	}
+}
+
+
 void ScanViewerDlg::SetAbout()
 {
 	labelVersion->setText("Version " TAKIN_VER ".");
 	labelWritten->setText("Written by Tobias Weber <tweber@ill.fr>.");
-	labelYears->setText("Years: 2015 - 2024.");
+	labelYears->setText("Years: 2015 - 2025.");
 
 	std::string strCC = "Built";
 #ifdef BOOST_PLATFORM
@@ -244,6 +279,8 @@ void ScanViewerDlg::SetAbout()
 void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
 {
 	// save settings
+	m_settings.setValue("norm", checkNorm->isChecked());
+	m_settings.setValue("merge_mode", checkMerge->isChecked());
 	m_settings.setValue("pol/vec1", editPolVec1->text());
 	m_settings.setValue("pol/vec2", editPolVec2->text());
 	m_settings.setValue("pol/cur1", editPolCur1->text());
@@ -285,11 +322,14 @@ void ScanViewerDlg::keyPressEvent(QKeyEvent* pEvt)
 
 void ScanViewerDlg::ClearPlot()
 {
-	if(m_pInstr)
+	for(tl::FileInstrBase<t_real_glob>* instr : m_instrs)
 	{
-		delete m_pInstr;
-		m_pInstr = nullptr;
+		if(!instr)
+			continue;
+		delete instr;
 	}
+
+	m_instrs.clear();
 
 	m_vecX.clear();
 	m_vecY.clear();
@@ -297,8 +337,10 @@ void ScanViewerDlg::ClearPlot()
 	m_vecFitX.clear();
 	m_vecFitY.clear();
 
-	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
-	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 0);
+	// set dummy data
+	static const std::vector<t_real> dummy;
+	for(unsigned int curve = 0; curve < m_plotwrap->GetNumCurves(); ++curve)
+		set_qwt_data<t_real>()(*m_plotwrap, dummy, dummy, curve, false);
 
 	m_strX = m_strY = m_strCmd = "";
 	plot->setAxisTitle(QwtPlot::xBottom, "");
@@ -398,6 +440,7 @@ void ScanViewerDlg::XAxisSelected(int) { PlotScan(); }
 void ScanViewerDlg::YAxisSelected(int) { PlotScan(); }
 void ScanViewerDlg::MonAxisSelected(int) { PlotScan(); }
 void ScanViewerDlg::NormaliseStateChanged(int iState) { PlotScan(); }
+void ScanViewerDlg::MergeStateChanged(int iState) { FileSelected(); }
 void ScanViewerDlg::StartOrSkipChanged(int) { PlotScan(); }
 
 
@@ -416,12 +459,14 @@ void ScanViewerDlg::FileSelected()
 
 	// get first selected file
 	m_strCurFile = lstSelected.first()->text().toStdString();
+	std::string strFirstFile = m_strCurDir + m_strCurFile;
 
 	// get the rest of the selected files
 	std::vector<std::string> vecSelectedFiles, vecSelectedFilesRest;
 	for(const QListWidgetItem *pLstItem : lstSelected)
 	{
-		if(!pLstItem) continue;
+		if(!pLstItem)
+			continue;
 
 		std::string selectedFile = m_strCurDir + pLstItem->text().toStdString();
 		vecSelectedFiles.push_back(selectedFile);
@@ -435,40 +480,58 @@ void ScanViewerDlg::FileSelected()
 
 	ShowRawFiles(vecSelectedFiles);
 
-	// first file
-	std::string strFile = m_strCurDir + m_strCurFile;
-	m_pInstr = tl::FileInstrBase<t_real>::LoadInstr(strFile.c_str());
-	if(!m_pInstr)
-		return;
-
-	// merge with other selected files
-	bool allow_merging = false;
-	if(m_core_settings)
-		allow_merging = m_core_settings->value("main/allow_scan_merging", 0).toBool();
-	for(const std::string& strOtherFile : vecSelectedFilesRest)
+	if(checkMerge->isChecked())
 	{
-		std::unique_ptr<tl::FileInstrBase<t_real>> pToMerge(
-			tl::FileInstrBase<t_real>::LoadInstr(strOtherFile.c_str()));
-		if(!pToMerge)
-			continue;
+		m_instrs.resize(1);
+		m_instrs[0] = tl::FileInstrBase<t_real>::LoadInstr(strFirstFile.c_str());
+		if(!m_instrs[0])
+			return;
 
-		m_pInstr->MergeWith(pToMerge.get(), allow_merging);
+		// merge with other selected files
+		bool allow_incompatible_merging = false;
+		if(m_core_settings)
+			allow_incompatible_merging = m_core_settings->value("main/allow_scan_merging", 0).toBool();
+		for(const std::string& strOtherFile : vecSelectedFilesRest)
+		{
+			std::unique_ptr<tl::FileInstrBase<t_real>> pToMerge(
+				tl::FileInstrBase<t_real>::LoadInstr(strOtherFile.c_str()));
+			if(!pToMerge)
+				continue;
+
+			m_instrs[0]->MergeWith(pToMerge.get(), allow_incompatible_merging);
+		}
+	}
+	else
+	{
+		m_instrs.resize(vecSelectedFilesRest.size() + 1);
+
+		std::size_t instr_idx = 0;
+		m_instrs[instr_idx] = tl::FileInstrBase<t_real>::LoadInstr(strFirstFile.c_str());
+		if(m_instrs[instr_idx])
+			++instr_idx;
+
+		for(const std::string& strOtherFile : vecSelectedFilesRest)
+		{
+			m_instrs[instr_idx] = tl::FileInstrBase<t_real>::LoadInstr(strOtherFile.c_str());
+			if(m_instrs[instr_idx])
+				++instr_idx;
+		}
 	}
 
-	std::vector<std::string> vecScanVars = m_pInstr->GetScannedVars();
-	std::string strCntVar = m_pInstr->GetCountVar();
-	std::string strMonVar = m_pInstr->GetMonVar();
+	std::vector<std::string> vecScanVars = m_instrs[0]->GetScannedVars();
+	std::string strCntVar = m_instrs[0]->GetCountVar();
+	std::string strMonVar = m_instrs[0]->GetMonVar();
 	//tl::log_info("Count var: ", strCntVar, ", mon var: ", strMonVar);
 
 	const std::wstring strPM = tl::get_spec_char_utf16("pm");  // +-
 
 	m_bDoUpdate = false;
 	int iIdxX = -1, iIdxY = -1, iIdxMon = -1, iCurIdx = 0;
-	int iAlternateX = -1;
-	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_pInstr->GetColNames();
+	int iAlternateX = 0;
+	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_instrs[0]->GetColNames();
 	for(const tl::FileInstrBase<t_real>::t_vecColNames::value_type& strCol : vecColNames)
 	{
-		const tl::FileInstrBase<t_real>::t_vecVals& vecCol = m_pInstr->GetCol(strCol);
+		const tl::FileInstrBase<t_real>::t_vecVals& vecCol = m_instrs[0]->GetCol(strCol);
 
 		t_real dMean = tl::mean_value(vecCol);
 		t_real dStd = tl::std_dev(vecCol);
@@ -519,12 +582,13 @@ void ScanViewerDlg::FileSelected()
 
 	CalcPol();
 
-	int iNumPol = static_cast<int>(m_pInstr->NumPolChannels()) - 1;
-	if(iNumPol < 0) iNumPol = 0;
+	int iNumPol = static_cast<int>(m_instrs[0]->NumPolChannels()) - 1;
+	if(iNumPol < 0)
+		iNumPol = 0;
 	spinSkip->setValue(iNumPol);
 
 	m_bDoUpdate = true;
-
+	ShowMetaData();
 	ShowProps();
 	PlotScan();
 }
@@ -543,187 +607,240 @@ void ScanViewerDlg::SearchProps(const QString& qstr)
 
 void ScanViewerDlg::PlotScan()
 {
-	if(m_pInstr == nullptr || !m_bDoUpdate)
+	if(!m_bDoUpdate)
 		return;
+
+	SetupPlotter(m_instrs.size() * 2);  // curves and points
 
 	bool bNormalise = checkNorm->isChecked();
 
 	m_strX = comboX->itemData(comboX->currentIndex(), Qt::UserRole).toString().toStdString();
 	m_strY = comboY->itemData(comboY->currentIndex(), Qt::UserRole).toString().toStdString();
 	m_strMon = comboMon->itemData(comboMon->currentIndex(), Qt::UserRole).toString().toStdString();
+	if(m_strX == "" || m_strY == "" || m_strMon == "")
+		return;
 
 	const int iStartIdx = spinStart->value();
 	const int iEndSkip = spinStop->value();
 	const int iSkipRows = spinSkip->value();
-	m_strCmd = m_pInstr->GetScanCommand();
 
-	// get data vectors
-	m_vecX = m_pInstr->GetCol(m_strX.c_str());
-	m_vecY = m_pInstr->GetCol(m_strY.c_str());
-	std::vector<t_real> vecMon = m_pInstr->GetCol(m_strMon.c_str());
+	m_vecX.resize(m_instrs.size());
+	m_vecY.resize(m_instrs.size());
+	m_vecYErr.resize(m_instrs.size());
 
-	// TODO: sort data vectors
-	//tl::sort_3(m_vecX.begin(), m_vecX.end(), m_vecY.begin(), vecMon.begin());
-
-	bool bYIsACountVar = (m_strY == m_pInstr->GetCountVar() || m_strY == m_pInstr->GetMonVar());
-	m_plotwrap->GetCurve(1)->SetShowErrors(bYIsACountVar);
-
-	// see if there's a corresponding error column for the selected counter or monitor
-	std::string ctr_err_col, mon_err_col;
-
-	// get counter error if defined
-	if(m_strY == m_pInstr->GetCountVar())
-		ctr_err_col = m_pInstr->GetCountErr();
-	else if(m_strY == m_pInstr->GetMonVar())
-		ctr_err_col = m_pInstr->GetMonErr();
-
-	if(ctr_err_col != "")
+	for(std::size_t instr_idx = 0; instr_idx < m_instrs.size(); ++ instr_idx)
 	{
-		// use given error column
-		m_vecYErr = m_pInstr->GetCol(ctr_err_col);
-	}
-	else
-	{
-		m_vecYErr.clear();
-		m_vecYErr.reserve(m_vecY.size());
+		const tl::FileInstrBase<t_real_glob> *instr = m_instrs[instr_idx];
+		if(!instr)
+			continue;
 
-		// calculate error
-		for(std::size_t iY = 0; iY < m_vecY.size(); ++iY)
+		std::vector<t_real>& vecX = m_vecX[instr_idx];
+		std::vector<t_real>& vecY = m_vecY[instr_idx];
+		std::vector<t_real>& vecYErr = m_vecYErr[instr_idx];
+
+		// get the data vectors
+		vecX = instr->GetCol(m_strX.c_str());
+		vecY = instr->GetCol(m_strY.c_str());
+		std::vector<t_real> vecMon = instr->GetCol(m_strMon.c_str());
+
+		// TODO: sort the data vectors
+		//tl::sort_3(vecX.begin(), vecX.end(), vecY.begin(), vecMon.begin());
+
+		bool bYIsACountVar = (m_strY == instr->GetCountVar() || m_strY == instr->GetMonVar());
+		m_plotwrap->GetCurve(instr_idx*2 + 1)->SetShowErrors(bYIsACountVar);
+
+		// see if there's a corresponding error column for the selected counter or monitor
+		std::string ctr_err_col, mon_err_col;
+
+		// get counter error if defined
+		if(m_strY == instr->GetCountVar())
+			ctr_err_col = instr->GetCountErr();
+		else if(m_strY == instr->GetMonVar())
+			ctr_err_col = instr->GetMonErr();
+
+		if(ctr_err_col != "")
 		{
-			t_real err = tl::float_equal(m_vecY[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(m_vecY[iY]));
-			m_vecYErr.push_back(err);
-		}
-	}
-
-	// get monitor error if defined
-	std::vector<t_real> vecMonErr;
-	if(m_strMon == m_pInstr->GetCountVar())
-		mon_err_col = m_pInstr->GetCountErr();
-	else if(m_strMon == m_pInstr->GetMonVar())
-		mon_err_col = m_pInstr->GetMonErr();
-
-	if(mon_err_col != "")
-	{
-		// use given error column
-		vecMonErr = m_pInstr->GetCol(mon_err_col);
-	}
-	else
-	{
-		vecMonErr.reserve(m_vecY.size());
-
-		// calculate error
-		for(std::size_t iY = 0; iY < vecMon.size(); ++iY)
-		{
-			t_real err = tl::float_equal(vecMon[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecMon[iY]));
-			vecMonErr.push_back(err);
-		}
-	}
-
-
-	// remove points from start
-	if(iStartIdx != 0)
-	{
-		if(std::size_t(iStartIdx) >= m_vecX.size())
-			m_vecX.clear();
-		else
-			m_vecX.erase(m_vecX.begin(), m_vecX.begin()+iStartIdx);
-
-		if(std::size_t(iStartIdx) >= m_vecY.size())
-		{
-			m_vecY.clear();
-			vecMon.clear();
-			m_vecYErr.clear();
-			vecMonErr.clear();
+			// use given error column
+			vecYErr = instr->GetCol(ctr_err_col);
 		}
 		else
 		{
-			m_vecY.erase(m_vecY.begin(), m_vecY.begin()+iStartIdx);
-			vecMon.erase(vecMon.begin(), vecMon.begin()+iStartIdx);
-			m_vecYErr.erase(m_vecYErr.begin(), m_vecYErr.begin()+iStartIdx);
-			vecMonErr.erase(vecMonErr.begin(), vecMonErr.begin()+iStartIdx);
-		}
-	}
+			vecYErr.clear();
+			vecYErr.reserve(vecY.size());
 
-	// remove points from end
-	if(iEndSkip != 0)
-	{
-		if(std::size_t(iEndSkip) >= m_vecX.size())
-			m_vecX.clear();
-		else
-			m_vecX.erase(m_vecX.end()-iEndSkip, m_vecX.end());
-
-		if(std::size_t(iEndSkip) >= m_vecY.size())
-		{
-			m_vecY.clear();
-			vecMon.clear();
-			m_vecYErr.clear();
-			vecMonErr.clear();
-		}
-		else
-		{
-			m_vecY.erase(m_vecY.end()-iEndSkip, m_vecY.end());
-			vecMon.erase(vecMon.end()-iEndSkip, vecMon.end());
-			m_vecYErr.erase(m_vecYErr.end()-iEndSkip, m_vecYErr.end());
-			vecMonErr.erase(vecMonErr.end()-iEndSkip, vecMonErr.end());
-		}
-	}
-
-	// interleave rows
-	if(iSkipRows != 0)
-	{
-		decltype(m_vecX) vecXNew, vecYNew, vecMonNew, vecYErrNew, vecMonErrNew;
-
-		for(std::size_t iRow = 0; iRow < std::min(m_vecX.size(), m_vecY.size()); ++iRow)
-		{
-			vecXNew.push_back(m_vecX[iRow]);
-			vecYNew.push_back(m_vecY[iRow]);
-			vecMonNew.push_back(vecMon[iRow]);
-			vecYErrNew.push_back(m_vecYErr[iRow]);
-			vecMonErrNew.push_back(vecMonErr[iRow]);
-
-			iRow += iSkipRows;
-		}
-
-		m_vecX = std::move(vecXNew);
-		m_vecY = std::move(vecYNew);
-		vecMon = std::move(vecMonNew);
-		m_vecYErr = std::move(vecYErrNew);
-		vecMonErr = std::move(vecMonErrNew);
-	}
-
-
-	// errors
-	if(vecMon.size() != m_vecY.size() || vecMonErr.size() != m_vecYErr.size())
-	{
-		bNormalise = 0;
-		tl::log_err("Counter and monitor data count do not match, cannot normalise.");
-	}
-
-	// normalise to monitor?
-	if(bNormalise)
-	{
-		for(std::size_t iY = 0; iY < m_vecY.size(); ++iY)
-		{
-			if(tl::float_equal(vecMon[iY], t_real(0), g_dEps))
+			// calculate error
+			for(std::size_t iY = 0; iY < vecY.size(); ++iY)
 			{
-				tl::log_warn("Monitor counter is zero for point ", iY + 1, ".");
+				t_real err = tl::float_equal(vecY[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecY[iY]));
+				vecYErr.push_back(err);
+			}
+		}
 
-				m_vecY[iY] = 0.;
-				m_vecYErr[iY] = 1.;
+		// get monitor error if defined
+		std::vector<t_real> vecMonErr;
+		if(m_strMon == instr->GetCountVar())
+			mon_err_col = instr->GetCountErr();
+		else if(m_strMon == instr->GetMonVar())
+			mon_err_col = instr->GetMonErr();
+
+		if(mon_err_col != "")
+		{
+			// use given error column
+			vecMonErr = instr->GetCol(mon_err_col);
+		}
+		else
+		{
+			vecMonErr.reserve(vecY.size());
+
+			// calculate error
+			for(std::size_t iY = 0; iY < vecMon.size(); ++iY)
+			{
+				t_real err = tl::float_equal(vecMon[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecMon[iY]));
+				vecMonErr.push_back(err);
+			}
+		}
+
+
+		// remove points from start
+		if(iStartIdx != 0)
+		{
+			if(std::size_t(iStartIdx) >= vecX.size())
+				vecX.clear();
+			else
+				vecX.erase(vecX.begin(), vecX.begin()+iStartIdx);
+
+			if(std::size_t(iStartIdx) >= vecY.size())
+			{
+				vecY.clear();
+				vecMon.clear();
+				vecYErr.clear();
+				vecMonErr.clear();
 			}
 			else
 			{
-				std::tie(m_vecY[iY], m_vecYErr[iY]) = norm_cnts_to_mon(
-					m_vecY[iY], m_vecYErr[iY], vecMon[iY], vecMonErr[iY]);
+				vecY.erase(vecY.begin(), vecY.begin() + iStartIdx);
+				vecMon.erase(vecMon.begin(), vecMon.begin() + iStartIdx);
+				vecYErr.erase(vecYErr.begin(), vecYErr.begin() + iStartIdx);
+				vecMonErr.erase(vecMonErr.begin(), vecMonErr.begin() + iStartIdx);
 			}
 		}
+
+		// remove points from end
+		if(iEndSkip != 0)
+		{
+			if(std::size_t(iEndSkip) >= vecX.size())
+				vecX.clear();
+			else
+				vecX.erase(vecX.end() - iEndSkip, vecX.end());
+
+			if(std::size_t(iEndSkip) >= vecY.size())
+			{
+				vecY.clear();
+				vecMon.clear();
+				vecYErr.clear();
+				vecMonErr.clear();
+			}
+			else
+			{
+				vecY.erase(vecY.end() - iEndSkip, vecY.end());
+				vecMon.erase(vecMon.end() - iEndSkip, vecMon.end());
+				vecYErr.erase(vecYErr.end() - iEndSkip, vecYErr.end());
+				vecMonErr.erase(vecMonErr.end() - iEndSkip, vecMonErr.end());
+			}
+		}
+
+		// interleave rows
+		if(iSkipRows != 0)
+		{
+			std::vector<t_real> vecXNew, vecYNew, vecMonNew, vecYErrNew, vecMonErrNew;
+
+			for(std::size_t iRow = 0; iRow < std::min(vecX.size(), vecY.size()); ++iRow)
+			{
+				vecXNew.push_back(vecX[iRow]);
+				vecYNew.push_back(vecY[iRow]);
+				vecMonNew.push_back(vecMon[iRow]);
+				vecYErrNew.push_back(vecYErr[iRow]);
+				vecMonErrNew.push_back(vecMonErr[iRow]);
+
+				iRow += iSkipRows;
+			}
+
+			vecX = std::move(vecXNew);
+			vecY = std::move(vecYNew);
+			vecMon = std::move(vecMonNew);
+			vecYErr = std::move(vecYErrNew);
+			vecMonErr = std::move(vecMonErrNew);
+		}
+
+
+		// errors
+		if(vecMon.size() != vecY.size() || vecMonErr.size() != vecYErr.size())
+		{
+			bNormalise = false;
+			tl::log_err("Counter and monitor data count do not match, cannot normalise.");
+		}
+
+		// normalise to monitor?
+		if(bNormalise)
+		{
+			for(std::size_t iY = 0; iY < vecY.size(); ++iY)
+			{
+				if(tl::float_equal(vecMon[iY], t_real(0), g_dEps))
+				{
+					tl::log_warn("Monitor counter is zero for point ", iY + 1, ".");
+
+					vecY[iY] = 0.;
+					vecYErr[iY] = 1.;
+				}
+				else
+				{
+					std::tie(vecY[iY], vecYErr[iY]) = norm_cnts_to_mon(
+						vecY[iY], vecYErr[iY], vecMon[iY], vecMonErr[iY]);
+				}
+			}
+		}
+
+
+		// show fit (for fist scan file)
+		if(m_vecFitX.size() && instr_idx == 0)
+			set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, instr_idx*2, false);
+		else
+			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2, false);
+		set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2 + 1, true, &vecYErr);
 	}
 
 
-	std::array<t_real, 3> arrLatt = m_pInstr->GetSampleLattice();
-	std::array<t_real, 3> arrAng = m_pInstr->GetSampleAngles();
-	std::array<t_real, 3> arrPlaneX = m_pInstr->GetScatterPlane0();
-	std::array<t_real, 3> arrPlaneY = m_pInstr->GetScatterPlane1();
+	// labels
+	QString strY = m_strY.c_str();
+	if(bNormalise)
+	{
+		strY += " / ";
+		strY += m_strMon.c_str();
+	}
+	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
+	plot->setAxisTitle(QwtPlot::yLeft, strY);
+	plot->setTitle(m_strCmd.c_str());
+
+	GenerateExternal(comboExport->currentIndex());
+}
+
+
+/**
+ * shown metadata from the first selected scan file (if multiple are selected)
+ */
+void ScanViewerDlg::ShowMetaData()
+{
+	if(!m_instrs.size())
+		return;
+
+	const tl::FileInstrBase<t_real_glob> *instr = m_instrs[0];
+	if(!instr || !m_bDoUpdate)
+		return;
+
+	std::array<t_real, 3> arrLatt = instr->GetSampleLattice();
+	std::array<t_real, 3> arrAng = instr->GetSampleAngles();
+	std::array<t_real, 3> arrPlaneX = instr->GetScatterPlane0();
+	std::array<t_real, 3> arrPlaneY = instr->GetScatterPlane1();
 
 	// scattering plane normal
 	t_vec plane_1 = tl::make_vec<t_vec>({ arrPlaneX[0],  arrPlaneX[1], arrPlaneX[2] });
@@ -747,67 +864,68 @@ void ScanViewerDlg::PlotScan()
 	editPlaneZ1->setText(tl::var_to_str(plane_n[1], g_iPrec).c_str());
 	editPlaneZ2->setText(tl::var_to_str(plane_n[2], g_iPrec).c_str());
 
-	labelKfix->setText(m_pInstr->IsKiFixed()
+	labelKfix->setText(instr->IsKiFixed()
 		? QString::fromWCharArray(L"ki (1/\x212b):")
 		: QString::fromWCharArray(L"kf (1/\x212b):"));
-	editKfix->setText(tl::var_to_str(m_pInstr->GetKFix()).c_str());
+	editKfix->setText(tl::var_to_str(instr->GetKFix()).c_str());
 
-	editTitle->setText(m_pInstr->GetTitle().c_str());
-	editProposal->setText(m_pInstr->GetProposal().c_str());
-	editSample->setText(m_pInstr->GetSampleName().c_str());
-	editUser->setText(m_pInstr->GetUser().c_str());
-	editContact->setText(m_pInstr->GetLocalContact().c_str());
-	editInstrument->setText(m_pInstr->GetInstrument().c_str());
-	editTimestamp->setText(m_pInstr->GetTimestamp().c_str());
+	editTitle->setText(instr->GetTitle().c_str());
+	editProposal->setText(instr->GetProposal().c_str());
+	editSample->setText(instr->GetSampleName().c_str());
+	editUser->setText(instr->GetUser().c_str());
+	editContact->setText(instr->GetLocalContact().c_str());
+	editInstrument->setText(instr->GetInstrument().c_str());
+	editTimestamp->setText(instr->GetTimestamp().c_str());
 
-
-	QString strY = m_strY.c_str();
-	if(bNormalise)
-	{
-		strY += " / ";
-		strY += m_strMon.c_str();
-	}
-	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
-	plot->setAxisTitle(QwtPlot::yLeft, strY);
-	plot->setTitle(m_strCmd.c_str());
-
-
-	//if(m_vecX.size()==0 || m_vecY.size()==0)
-	//	return;
-
-	if(m_vecFitX.size())
-		set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, 0, 0);
-	else
-		set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 0, 0);
-	set_qwt_data<t_real>()(*m_plotwrap, m_vecX, m_vecY, 1, 1, &m_vecYErr);
-
-	GenerateExternal(comboExport->currentIndex());
+	m_strCmd = instr->GetScanCommand();
 }
 
 
 /**
  * convert to external plotter format
+ * TODO: include all plot curves, not only the first
  */
 void ScanViewerDlg::GenerateExternal(int iLang)
 {
 	textExportedFile->clear();
-	if(!m_vecX.size() || !m_vecY.size())
+	if(!m_vecX.size() || !m_vecY.size() || !m_vecYErr.size())
 		return;
+
+	const std::vector<t_real>& vecX = m_vecX[0];
+	const std::vector<t_real>& vecY = m_vecY[0];
+	const std::vector<t_real>& vecYErr = m_vecYErr[0];
 
 	std::string strSrc;
 
 	if(iLang == 0)	// gnuplot
-		strSrc = export_scan_to_gnuplot<decltype(m_vecX)>(m_vecX, m_vecY, m_vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	{
+		strSrc = export_scan_to_gnuplot<std::vector<t_real>>(
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	}
 	else if(iLang == 1)	// root
-		strSrc = export_scan_to_root<decltype(m_vecX)>(m_vecX, m_vecY, m_vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	{
+		strSrc = export_scan_to_root<std::vector<t_real>>(
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	}
 	else if(iLang == 2)	// python
-		strSrc = export_scan_to_python<decltype(m_vecX)>(m_vecX, m_vecY, m_vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	{
+		strSrc = export_scan_to_python<std::vector<t_real>>(
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	}
 	else if(iLang == 3) // julia
-		strSrc = export_scan_to_julia<decltype(m_vecX)>(m_vecX, m_vecY, m_vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	{
+		strSrc = export_scan_to_julia<std::vector<t_real>>(
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	}
 	else if(iLang == 4) // hermelin
-		strSrc = export_scan_to_hermelin<decltype(m_vecX)>(m_vecX, m_vecY, m_vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	{
+		strSrc = export_scan_to_hermelin<std::vector<t_real>>(
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+	}
 	else
+	{
 		tl::log_err("Unknown external language.");
+	}
 
 	textExportedFile->setText(strSrc.c_str());
 }
@@ -832,7 +950,7 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 		ifstr.read(ch_ptr.get(), size);
 
 		// check if the file is of non-binary type
-		bool is_printable = std::all_of(ch_ptr.get(), ch_ptr.get()+size, [](char ch) -> bool
+		bool is_printable = std::all_of(ch_ptr.get(), ch_ptr.get() + size, [](char ch) -> bool
 		{
 			bool is_bin = std::iscntrl(ch) != 0 && std::isspace(ch) == 0;
 			//if(is_bin)
@@ -848,7 +966,6 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 		}
 		else
 		{
-			//tl::log_err("Cannot print binary file \"", file, "\".");
 			std::string file_ext = tl::get_fileext(file);
 			if(file_ext == "nxs" || file_ext == "hdf")
 			{
@@ -872,9 +989,8 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 			}
 			else
 			{
-				rawFiles = "<unknown binary file>";
+				rawFiles += "<unknown binary file>";
 			}
-			break;
 		}
 	}
 
@@ -895,7 +1011,7 @@ void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pIte
 		const QTableWidgetItem *pKey = tableProps->item(iItem, 0);
 		const QTableWidgetItem *pVal = tableProps->item(iItem, 1);
 
-		if(pKey==pItem || pVal==pItem)
+		if(pKey == pItem || pVal == pItem)
 		{
 			m_strSelectedKey = pKey->text().toStdString();
 			break;
@@ -909,10 +1025,14 @@ void ScanViewerDlg::PropSelected(QTableWidgetItem *pItem, QTableWidgetItem *pIte
  */
 void ScanViewerDlg::ShowProps()
 {
-	if(m_pInstr==nullptr || !m_bDoUpdate)
+	if(!m_instrs.size())
 		return;
 
-	const tl::FileInstrBase<t_real>::t_mapParams& params = m_pInstr->GetAllParams();
+	const tl::FileInstrBase<t_real_glob> *instr = m_instrs[0];
+	if(!instr || !m_bDoUpdate)
+		return;
+
+	const tl::FileInstrBase<t_real>::t_mapParams& params = instr->GetAllParams();
 	tableProps->setRowCount(params.size());
 
 	const bool bSort = tableProps->isSortingEnabled();
