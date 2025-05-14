@@ -129,7 +129,8 @@ public:
 
 
 QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
-	unsigned int iNumCurves, bool bNoTrackerSignal, bool bUseSpline, bool bUseSpectrogram)
+	unsigned int iNumCurves, bool bNoTrackerSignal, bool bUseSpline,
+	bool bUseSpectrogram, bool bShowLegend)
 	: m_pPlot(pPlot)
 {
 	QPen penGrid;
@@ -206,6 +207,12 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 	m_pPicker = new MyQwtPlotPicker(this, bNoTrackerSignal);
 	m_pPlot->canvas()->setMouseTracking(1);
 
+	if(bShowLegend)
+	{
+		m_pLegend = new QwtLegend();
+		m_pPlot->insertLegend(m_pLegend);
+	}
+
 	// fonts
 	QwtText txt = m_pPlot->title();
 	txt.setFont(g_fontGfx);
@@ -230,6 +237,7 @@ QwtPlotWrapper::~QwtPlotWrapper()
 	if(m_pGrid) { delete m_pGrid; m_pGrid = nullptr; }
 	if(m_pZoomer) { delete m_pZoomer; m_pZoomer = nullptr; }
 	if(m_pPanner) { delete m_pPanner; m_pPanner = nullptr; }
+	if(m_pLegend) { delete m_pLegend; m_pLegend = nullptr; }
 
 	for(QwtPlotCurve* pCurve : m_vecCurves)
 		if(pCurve) delete pCurve;

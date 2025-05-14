@@ -43,6 +43,7 @@
 #include <qwt_plot_picker.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
+#include <qwt_legend.h>
 #include <qwt_color_map.h>
 
 #include "tlibs/string/string.h"
@@ -158,6 +159,7 @@ protected:
 	QwtPlotPicker *m_pPicker = nullptr;
 	QwtPlotZoomer *m_pZoomer = nullptr;
 	QwtPlotPanner *m_pPanner = nullptr;
+	QwtLegend *m_pLegend = nullptr;
 
 	int m_curYScaler = 0;
 
@@ -174,7 +176,8 @@ protected:
 
 public:
 	QwtPlotWrapper(QwtPlot *pPlot, unsigned int iNumCurves = 1,
-		bool bNoTrackerSignal = false, bool bUseSpline = false, bool bUseSpectrogram = false);
+		bool bNoTrackerSignal = false, bool bUseSpline = false,
+		bool bUseSpectrogram = false, bool bShowLegend = false);
 	virtual ~QwtPlotWrapper();
 
 	QwtPlot* GetPlot() { return m_pPlot; }

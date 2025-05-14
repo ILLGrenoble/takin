@@ -230,7 +230,8 @@ void ScanViewerDlg::SetupPlotter(unsigned int numCurves)
 	QColor colorBck(240, 240, 240, 255);
 	plot->setCanvasBackground(colorBck);
 
-	m_plotwrap.reset(new QwtPlotWrapper(plot, numCurves, true));
+	bool show_legend = (numCurves > 2);  // only when plotting multiple scans
+	m_plotwrap.reset(new QwtPlotWrapper(plot, numCurves, true, false, false, show_legend));
 
 	for(unsigned int curve = 0; curve < numCurves; curve += 2)
 	{
@@ -240,7 +241,8 @@ void ScanViewerDlg::SetupPlotter(unsigned int numCurves)
 		penCurve.setWidth(2);
 		m_plotwrap->GetCurve(curve)->setPen(penCurve);
 		m_plotwrap->GetCurve(curve)->setStyle(QwtPlotCurve::CurveStyle::Lines);
-		m_plotwrap->GetCurve(curve)->setTitle("Scan Curve");
+		m_plotwrap->GetCurve(curve)->setTitle("Curve");
+		m_plotwrap->GetCurve(curve)->setItemAttribute(QwtPlotCurve::Legend, false);
 
 		// odd indices are scan points
 		QPen penPoints;
@@ -248,7 +250,8 @@ void ScanViewerDlg::SetupPlotter(unsigned int numCurves)
 		penPoints.setWidth(4);
 		m_plotwrap->GetCurve(curve + 1)->setPen(penPoints);
 		m_plotwrap->GetCurve(curve + 1)->setStyle(QwtPlotCurve::CurveStyle::Dots);
-		m_plotwrap->GetCurve(curve + 1)->setTitle("Scan Points");
+		m_plotwrap->GetCurve(curve + 1)->setTitle("Data");
+		m_plotwrap->GetCurve(curve + 1)->setItemAttribute(QwtPlotCurve::Legend, false);
 	}
 }
 
@@ -819,6 +822,11 @@ void ScanViewerDlg::PlotScan()
 		else
 			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2, false);
 		set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2 + 1, false, &vecYErr);
+
+		// legend
+		m_plotwrap->GetCurve(instr_idx*2 + 1)->setTitle(instr->GetScanNumber().c_str());
+		m_plotwrap->GetCurve(instr_idx*2 + 0)->setItemAttribute(QwtPlotCurve::Legend, false);
+		m_plotwrap->GetCurve(instr_idx*2 + 1)->setItemAttribute(QwtPlotCurve::Legend, true);
 	}
 
 	// labels
