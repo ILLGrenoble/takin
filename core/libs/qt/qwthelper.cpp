@@ -946,19 +946,23 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<std::vector<t_real_qwt>>& vecvecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
 	bool bMetaCall, QwtPlotWrapper* pPlotWrap,
-	bool bUseYErrs)
+	bool bUseYErrs, const std::vector<std::vector<t_real_qwt>> *vecvecYErr)
 {
 	if(!pZoomer || !vecvecX.size() || !vecvecY.size())
 		return;
 
-	std::vector<t_real_qwt> vecX, vecY;
+	std::vector<t_real_qwt> vecX, vecY, vecYErr;
 	for(std::size_t iVec = 0; iVec < vecvecX.size(); ++iVec)
 	{
 		vecX.insert(vecX.end(), vecvecX[iVec].begin(), vecvecX[iVec].end());
 		vecY.insert(vecY.end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
+
+		if(vecvecYErr)
+			vecYErr.insert(vecYErr.end(), (*vecvecYErr)[iVec].begin(), (*vecvecYErr)[iVec].end());
 	}
 
-	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap, bUseYErrs);
+	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap,
+		bUseYErrs, vecvecYErr ? &vecYErr : nullptr);
 }
 
 

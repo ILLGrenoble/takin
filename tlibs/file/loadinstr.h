@@ -86,6 +86,7 @@ class FileInstrBase
 
 		virtual std::size_t GetScanCount() const = 0;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const = 0;
+		virtual bool IsCompatible(const FileInstrBase<t_real>* pDat);
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false);
 		virtual void SmoothData(const std::string& strCol, t_real dEps, bool bIterate = true);
 

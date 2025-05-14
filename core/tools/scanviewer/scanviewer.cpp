@@ -480,6 +480,10 @@ void ScanViewerDlg::FileSelected()
 
 	ShowRawFiles(vecSelectedFiles);
 
+	bool allow_incompatible_merging = false;
+	if(m_core_settings)
+		allow_incompatible_merging = m_core_settings->value("main/allow_scan_merging", 0).toBool();
+
 	if(checkMerge->isChecked())
 	{
 		m_instrs.resize(1);
@@ -488,9 +492,6 @@ void ScanViewerDlg::FileSelected()
 			return;
 
 		// merge with other selected files
-		bool allow_incompatible_merging = false;
-		if(m_core_settings)
-			allow_incompatible_merging = m_core_settings->value("main/allow_scan_merging", 0).toBool();
 		for(const std::string& strOtherFile : vecSelectedFilesRest)
 		{
 			std::unique_ptr<tl::FileInstrBase<t_real>> pToMerge(
@@ -513,8 +514,19 @@ void ScanViewerDlg::FileSelected()
 		for(const std::string& strOtherFile : vecSelectedFilesRest)
 		{
 			m_instrs[instr_idx] = tl::FileInstrBase<t_real>::LoadInstr(strOtherFile.c_str());
-			if(m_instrs[instr_idx])
-				++instr_idx;
+			if(!m_instrs[instr_idx])
+				continue;
+
+			// check if files are compatible (i.e. would be mergeable)
+			if(m_instrs[instr_idx] && !allow_incompatible_merging && instr_idx > 0
+				&& !m_instrs[0]->IsCompatible(m_instrs[instr_idx]))
+			{
+				delete m_instrs[instr_idx];
+				m_instrs[instr_idx] = nullptr;
+				continue;
+			}
+
+			++instr_idx;
 		}
 	}
 
@@ -628,7 +640,7 @@ void ScanViewerDlg::PlotScan()
 	m_vecY.resize(m_instrs.size());
 	m_vecYErr.resize(m_instrs.size());
 
-	for(std::size_t instr_idx = 0; instr_idx < m_instrs.size(); ++ instr_idx)
+	for(std::size_t instr_idx = 0; instr_idx < m_instrs.size(); ++instr_idx)
 	{
 		const tl::FileInstrBase<t_real_glob> *instr = m_instrs[instr_idx];
 		if(!instr)
@@ -806,9 +818,8 @@ void ScanViewerDlg::PlotScan()
 			set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, instr_idx*2, false);
 		else
 			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2, false);
-		set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2 + 1, true, &vecYErr);
+		set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2 + 1, false, &vecYErr);
 	}
-
 
 	// labels
 	QString strY = m_strY.c_str();
@@ -820,6 +831,10 @@ void ScanViewerDlg::PlotScan()
 	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
 	plot->setAxisTitle(QwtPlot::yLeft, strY);
 	plot->setTitle(m_strCmd.c_str());
+
+	// replot
+	set_zoomer_base(m_plotwrap->GetZoomer(), m_vecX, m_vecY, false, m_plotwrap.get(), true, &m_vecYErr);
+	m_plotwrap->GetPlot()->replot();
 
 	GenerateExternal(comboExport->currentIndex());
 }

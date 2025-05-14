@@ -265,6 +265,25 @@ bool FileInstrBase<t_real>::MatchColumn(const std::string& strRegex,
 
 
 template<class t_real>
+bool FileInstrBase<t_real>::IsCompatible(const FileInstrBase<t_real>* pDat)
+{
+	if(this->GetColNames().size() != pDat->GetColNames().size())
+		return false;
+
+	for(const std::string& strCol : GetColNames())
+	{
+		const t_vecVals& col1 = this->GetCol(strCol);
+		const t_vecVals& col2 = pDat->GetCol(strCol);
+
+		if(col1.size() == 0 || col2.size() == 0)
+			return false;
+	}
+
+	return true;
+}
+
+
+template<class t_real>
 bool FileInstrBase<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
 	if(!allow_col_mismatch && this->GetColNames().size() != pDat->GetColNames().size())

@@ -263,19 +263,19 @@ extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
-	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap=nullptr,
+	bool bMetaCall = false, QwtPlotWrapper* pPlotWrap = nullptr,
 	bool bUseYErrs = false, const std::vector<t_real_qwt> *vecYErr = nullptr);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<std::vector<t_real_qwt>>& vecvecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
-	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap = nullptr,
-	bool bUseYErrs = false);
+	bool bMetaCall = false, QwtPlotWrapper* pPlotWrap = nullptr,
+	bool bUseYErrs = false, const std::vector<std::vector<t_real_qwt>> *vecvecYErr = nullptr);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
-	bool bMetaCall=false, QwtPlotWrapper* pPlotWrap = nullptr,
+	bool bMetaCall = false, QwtPlotWrapper* pPlotWrap = nullptr,
 	bool bUseYErrs = false);
 
 
