@@ -205,7 +205,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 	m_pZoomer = new MyQwtPlotZoomer(m_pPlot->canvas());
 
 	m_pPicker = new MyQwtPlotPicker(this, bNoTrackerSignal);
-	m_pPlot->canvas()->setMouseTracking(1);
+	m_pPlot->canvas()->setMouseTracking(true);
 
 	if(bShowLegend)
 	{
@@ -237,7 +237,7 @@ QwtPlotWrapper::~QwtPlotWrapper()
 	if(m_pGrid) { delete m_pGrid; m_pGrid = nullptr; }
 	if(m_pZoomer) { delete m_pZoomer; m_pZoomer = nullptr; }
 	if(m_pPanner) { delete m_pPanner; m_pPanner = nullptr; }
-	if(m_pLegend) { delete m_pLegend; m_pLegend = nullptr; }
+	//if(m_pLegend) { delete m_pLegend; m_pLegend = nullptr; }
 
 	for(QwtPlotCurve* pCurve : m_vecCurves)
 		if(pCurve) delete pCurve;

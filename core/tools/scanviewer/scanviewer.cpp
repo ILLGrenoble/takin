@@ -222,7 +222,6 @@ void ScanViewerDlg::SetupPlotter(unsigned int numCurves)
 		return QColor(int(r * 255.), int(g * 255.), int(b * 255.));
 	};
 
-
 	// already set up with this number of curves?
 	if(m_plotwrap && numCurves == m_plotwrap->GetNumCurves())
 		return;
@@ -253,6 +252,8 @@ void ScanViewerDlg::SetupPlotter(unsigned int numCurves)
 		m_plotwrap->GetCurve(curve + 1)->setTitle("Data");
 		m_plotwrap->GetCurve(curve + 1)->setItemAttribute(QwtPlotCurve::Legend, false);
 	}
+
+	m_plotwrap->GetPlot()->updateLegend();
 }
 
 
@@ -369,6 +370,7 @@ void ScanViewerDlg::ClearPlot()
 	spinStop->setValue(0);
 	spinSkip->setValue(0);
 
+	m_plotwrap->GetPlot()->updateLegend();
 	m_plotwrap->GetPlot()->replot();
 }
 
@@ -461,8 +463,7 @@ void ScanViewerDlg::FileSelected()
 	ClearPlot();
 
 	// get first selected file
-	m_strCurFile = lstSelected.first()->text().toStdString();
-	std::string strFirstFile = m_strCurDir + m_strCurFile;
+	m_strCurFile = lstSelected.first()->data(Qt::UserRole).toString().toStdString();
 
 	// get the rest of the selected files
 	std::vector<std::string> vecSelectedFiles, vecSelectedFilesRest;
@@ -471,7 +472,7 @@ void ScanViewerDlg::FileSelected()
 		if(!pLstItem)
 			continue;
 
-		std::string selectedFile = m_strCurDir + pLstItem->text().toStdString();
+		std::string selectedFile = pLstItem->data(Qt::UserRole).toString().toStdString();
 		vecSelectedFiles.push_back(selectedFile);
 
 		// ignore first file
@@ -490,7 +491,7 @@ void ScanViewerDlg::FileSelected()
 	if(checkMerge->isChecked())
 	{
 		m_instrs.resize(1);
-		m_instrs[0] = tl::FileInstrBase<t_real>::LoadInstr(strFirstFile.c_str());
+		m_instrs[0] = tl::FileInstrBase<t_real>::LoadInstr(m_strCurFile.c_str());
 		if(!m_instrs[0])
 			return;
 
@@ -510,7 +511,7 @@ void ScanViewerDlg::FileSelected()
 		m_instrs.resize(vecSelectedFilesRest.size() + 1);
 
 		std::size_t instr_idx = 0;
-		m_instrs[instr_idx] = tl::FileInstrBase<t_real>::LoadInstr(strFirstFile.c_str());
+		m_instrs[instr_idx] = tl::FileInstrBase<t_real>::LoadInstr(m_strCurFile.c_str());
 		if(m_instrs[instr_idx])
 			++instr_idx;
 
@@ -566,7 +567,7 @@ void ScanViewerDlg::FileSelected()
 		comboY->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 		comboMon->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 
-		std::string strFirstScanVar = tl::str_to_lower(vecScanVars[0]);
+		std::string strFirstScanVar = vecScanVars.size() ? tl::str_to_lower(vecScanVars[0]) : "";
 		std::string strColLower = tl::str_to_lower(strCol);
 
 		if(vecScanVars.size())
@@ -826,7 +827,7 @@ void ScanViewerDlg::PlotScan()
 		// legend
 		m_plotwrap->GetCurve(instr_idx*2 + 1)->setTitle(instr->GetScanNumber().c_str());
 		m_plotwrap->GetCurve(instr_idx*2 + 0)->setItemAttribute(QwtPlotCurve::Legend, false);
-		m_plotwrap->GetCurve(instr_idx*2 + 1)->setItemAttribute(QwtPlotCurve::Legend, true);
+		m_plotwrap->GetCurve(instr_idx*2 + 1)->setItemAttribute(QwtPlotCurve::Legend, m_instrs.size() > 1);
 	}
 
 	// labels
@@ -842,6 +843,7 @@ void ScanViewerDlg::PlotScan()
 
 	// replot
 	set_zoomer_base(m_plotwrap->GetZoomer(), m_vecX, m_vecY, false, m_plotwrap.get(), true, &m_vecYErr);
+	m_plotwrap->GetPlot()->updateLegend();
 	m_plotwrap->GetPlot()->replot();
 
 	GenerateExternal(comboExport->currentIndex());
@@ -923,27 +925,27 @@ void ScanViewerDlg::GenerateExternal(int iLang)
 	if(iLang == 0)	// gnuplot
 	{
 		strSrc = export_scan_to_gnuplot<std::vector<t_real>>(
-			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurFile);
 	}
 	else if(iLang == 1)	// root
 	{
 		strSrc = export_scan_to_root<std::vector<t_real>>(
-			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurFile);
 	}
 	else if(iLang == 2)	// python
 	{
 		strSrc = export_scan_to_python<std::vector<t_real>>(
-			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurFile);
 	}
 	else if(iLang == 3) // julia
 	{
 		strSrc = export_scan_to_julia<std::vector<t_real>>(
-			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurFile);
 	}
 	else if(iLang == 4) // hermelin
 	{
 		strSrc = export_scan_to_hermelin<std::vector<t_real>>(
-			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurDir + m_strCurFile);
+			vecX, vecY, vecYErr, m_strX, m_strY, m_strCmd, m_strCurFile);
 	}
 	else
 	{
@@ -1116,22 +1118,33 @@ void ScanViewerDlg::ChangedPath()
 	ClearPlot();
 	tableProps->setRowCount(0);
 
-	std::string path = comboPath->currentText().toStdString();
-	if(tl::dir_exists(path.c_str()))
+	m_strCurDir = "";
+	std::vector<std::string> dirs;
+	tl::get_tokens<std::string, std::string, std::vector<std::string>>(comboPath->currentText().toStdString(), ";", dirs);
+
+	// watch directory for changes
+	m_pWatcher.reset(new QFileSystemWatcher(this));
+	QObject::connect(m_pWatcher.get(), &QFileSystemWatcher::directoryChanged,
+		 this, &ScanViewerDlg::DirWasModified);
+
+	for(const std::string& curDir : dirs)
 	{
-		m_strCurDir = tl::wstr_to_str(fs::path(path).native());
+		if(!tl::dir_exists(curDir.c_str()))
+			continue;
+
+		if(m_strCurDir != "")
+			m_strCurDir += ";";
+		m_strCurDir += tl::wstr_to_str(fs::path(curDir).native());
 		tl::trim(m_strCurDir);
 		std::size_t len = m_strCurDir.length();
-		if(len > 0 && *(m_strCurDir.begin()+len-1) != fs::path::preferred_separator)
+		if(len > 0 && *(m_strCurDir.begin() + len - 1) != fs::path::preferred_separator)
 			m_strCurDir += fs::path::preferred_separator;
-		UpdateFileList();
 
 		// watch directory for changes
-		m_pWatcher.reset(new QFileSystemWatcher(this));
-		m_pWatcher->addPath(m_strCurDir.c_str());
-		QObject::connect(m_pWatcher.get(), &QFileSystemWatcher::directoryChanged,
-			this, &ScanViewerDlg::DirWasModified);
+		m_pWatcher->addPath(curDir.c_str());
 	}
+
+	UpdateFileList();
 }
 
 
@@ -1165,37 +1178,47 @@ void ScanViewerDlg::UpdateFileList()
 {
 	listFiles->clear();
 
-	try
+	std::vector<std::string> dirs;
+	tl::get_tokens<std::string, std::string, std::vector<std::string>>(m_strCurDir, ";", dirs);
+
+	for(const std::string& curDir : dirs)
 	{
-		fs::path dir(m_strCurDir);
-		fs::directory_iterator dir_begin(dir), dir_end;
+		try
+		{
+			fs::path dir(curDir);
+			fs::directory_iterator dir_begin(dir), dir_end;
 
-		std::set<fs::path> lst;
-		std::copy_if(dir_begin, dir_end, std::insert_iterator<decltype(lst)>(lst, lst.end()),
-			[this](const fs::path& p) -> bool
+			std::set<fs::path> lst;
+			std::copy_if(dir_begin, dir_end, std::insert_iterator<decltype(lst)>(lst, lst.end()),
+				[this](const fs::path& p) -> bool
+				{
+					// ignore non-existing files and directories
+					if(!tl::file_exists(p.string().c_str()))
+						return false;
+
+					std::string strExt = tl::wstr_to_str(p.extension().native());
+					if(strExt == ".bz2" || strExt == ".gz" || strExt == ".z")
+						strExt = "." + tl::wstr_to_str(tl::get_fileext2(p.filename().native()));
+
+					// allow everything if no extensions are defined
+					if(this->m_vecExts.size() == 0)
+						return true;
+
+					// see if extension is in list
+					return std::find(this->m_vecExts.begin(), this->m_vecExts.end(),
+						strExt) != this->m_vecExts.end();
+				});
+
+			for(const fs::path& d : lst)
 			{
-				// ignore non-existing files and directories
-				if(!tl::file_exists(p.string().c_str()))
-					return false;
-
-				std::string strExt = tl::wstr_to_str(p.extension().native());
-				if(strExt == ".bz2" || strExt == ".gz" || strExt == ".z")
-					strExt = "." + tl::wstr_to_str(tl::get_fileext2(p.filename().native()));
-
-				// allow everything if no extensions are defined
-				if(this->m_vecExts.size() == 0)
-					return true;
-
-				// see if extension is in list
-				return std::find(this->m_vecExts.begin(), this->m_vecExts.end(),
-					strExt) != this->m_vecExts.end();
-			});
-
-		for(const fs::path& d : lst)
-			listFiles->addItem(tl::wstr_to_str(d.filename().native()).c_str());
+				QListWidgetItem *item = new QListWidgetItem(tl::wstr_to_str(d.filename().native()).c_str());
+				item->setData(Qt::UserRole, QString(tl::wstr_to_str(d.string()).c_str()));
+				listFiles->addItem(item);
+			}
+		}
+		catch(const std::exception& ex)
+		{}
 	}
-	catch(const std::exception& ex)
-	{}
 }
 
 
