@@ -384,7 +384,7 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 
 	for(const std::string& file : files)
 	{
-		std::string file_ext = tl::get_fileext(file);
+		std::string file_ext = tl::get_fileext(file, true);
 
 		// see if it's an nxs file; if so, convert it to text
 		if(file_ext == "nxs" || file_ext == "hdf")
@@ -405,6 +405,8 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 				continue;
 			}
 
+			if(files.size() > 1)
+				rawFiles += ("# Converted file: " + file + "\n").c_str();
 			rawFiles += ostr.str().c_str();
 			rawFiles += "\n";
 			continue;
@@ -431,13 +433,15 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 
 		if(is_printable)
 		{
-			//rawFiles += ("# File: " + file + "\n").c_str();
+			if(files.size() > 1)
+				rawFiles += ("# File: " + file + "\n").c_str();
 			rawFiles += ch_ptr.get();
 			rawFiles += "\n";
 		}
 		else
 		{
-			rawFiles += "<unknown binary file>\n";
+			rawFiles += ("# Unknown binary file: " + file).c_str();
+			rawFiles += "\n";
 		}
 	}
 
