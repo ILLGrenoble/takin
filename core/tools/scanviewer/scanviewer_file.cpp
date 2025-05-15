@@ -551,8 +551,21 @@ void ScanViewerDlg::UpdateFileList()
 
 			for(const fs::path& d : lst)
 			{
-				QListWidgetItem *item = new QListWidgetItem(tl::wstr_to_str(d.filename().native()).c_str());
-				item->setData(Qt::UserRole, QString(tl::wstr_to_str(d.string()).c_str()));
+				std::string filename_full = tl::wstr_to_str(d.string());
+				QString itemname = tl::wstr_to_str(d.filename().native()).c_str();
+
+				// get scan type
+				/*tl::FileInstrBase<t_real> *instr = tl::FileInstrBase<t_real>::LoadInstr(filename_full.c_str());
+				if(instr)
+				{
+					std::vector<std::string> vars = instr->GetScannedVars();
+					if(vars.size())
+						itemname += (" (" + vars[0] + " scan)").c_str();
+					delete instr;
+				}*/
+
+				QListWidgetItem *item = new QListWidgetItem(itemname);
+				item->setData(Qt::UserRole, QString(filename_full.c_str()));
 				listFiles->addItem(item);
 			}
 		}
