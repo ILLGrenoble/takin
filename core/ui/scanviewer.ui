@@ -1064,7 +1064,7 @@
          </widget>
          <widget class="QWidget" name="tabRawFile">
           <attribute name="title">
-           <string>Raw File</string>
+           <string>File Contents</string>
           </attribute>
           <layout class="QGridLayout" name="gridLayout_10b">
            <property name="leftMargin">

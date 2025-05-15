@@ -384,6 +384,33 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 
 	for(const std::string& file : files)
 	{
+		std::string file_ext = tl::get_fileext(file);
+
+		// see if it's an nxs file; if so, convert it to text
+		if(file_ext == "nxs" || file_ext == "hdf")
+		{
+			tl::FileInstrBase<t_real> *instr = tl::FileInstrBase<t_real>::LoadInstr(file.c_str());
+			if(!instr)
+			{
+				tl::log_err("Cannot load binary file \"", file, "\".");
+				continue;
+			}
+
+			std::ostringstream ostr;
+			ostr.precision(g_iPrec);
+
+			if(!instr->Save(ostr))
+			{
+				tl::log_err("Cannot convert binary file \"", file, "\".");
+				continue;
+			}
+
+			rawFiles += ostr.str().c_str();
+			rawFiles += "\n";
+			continue;
+		}
+
+		// else if it's a text file, display it in raw format
 		std::size_t size = tl::get_file_size(file);
 		std::ifstream ifstr(file);
 		if(!ifstr)
@@ -410,31 +437,7 @@ void ScanViewerDlg::ShowRawFiles(const std::vector<std::string>& files)
 		}
 		else
 		{
-			std::string file_ext = tl::get_fileext(file);
-			if(file_ext == "nxs" || file_ext == "hdf")
-			{
-				tl::FileInstrBase<t_real> *instr = tl::FileInstrBase<t_real>::LoadInstr(file.c_str());
-				if(!instr)
-				{
-					tl::log_err("Cannot load binary file \"", file, "\".");
-					continue;
-				}
-
-				std::ostringstream ostr;
-				ostr.precision(g_iPrec);
-
-				if(!instr->Save(ostr))
-				{
-					tl::log_err("Cannot convert binary file \"", file, "\".");
-					continue;
-				}
-
-				rawFiles += ostr.str().c_str();
-			}
-			else
-			{
-				rawFiles += "<unknown binary file>";
-			}
+			rawFiles += "<unknown binary file>\n";
 		}
 	}
 
