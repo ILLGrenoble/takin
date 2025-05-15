@@ -37,6 +37,7 @@
 #include <QKeyEvent>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 
 #include "tlibs/file/loadinstr.h"
@@ -44,22 +45,6 @@
 #include "libs/qt/qwthelper.h"
 #include "libs/globals.h"
 #include "FitParamDlg.h"
-
-
-
-/**
- * normalise detector (y) by monitor (m) counts
- * y_new = y / m
- * dy_new = 1/m dy - y/m^2 dm
- */
-template<class t_real = t_real_glob>
-std::pair<t_real, t_real> norm_cnts_to_mon(t_real y, t_real dy, t_real m, t_real dm)
-{
-	t_real val = y / m;
-	t_real err = std::sqrt(std::pow(dy/m, 2.) + std::pow(dm*y/(m*m), 2.));
-
-	return std::make_pair(val, err);
-}
 
 
 
@@ -74,6 +59,7 @@ public:
 
 private:
 	QSettings m_settings, *m_core_settings{nullptr};
+	std::unordered_map<std::string, std::vector<std::string>> m_col_aliases;
 
 	std::unique_ptr<QFileSystemWatcher> m_pWatcher;
 	std::string m_strCurDir, m_strCurFile;
@@ -92,6 +78,9 @@ private:
 
 private:
 	void SetAbout();
+	const std::vector<t_real_glob>& GetCol(
+		const tl::FileInstrBase<t_real_glob>* instr,
+		const std::string& colname) const;
 
 
 protected:

@@ -1195,5 +1195,23 @@ t_flux<Sys,Y> larmor_field(const t_length<Sys,Y>& lam,
 
 //------------------------------------------------------------------------------
 
+
+
+//------------------------------------------------------------------------------
+/**
+ * normalise detector (y) by monitor (m) counts
+ * y_new = y / m
+ * dy_new = 1/m dy - y/m^2 dm
+ */
+template<class t_real = double>
+std::pair<t_real, t_real> norm_cnts_to_mon(t_real y, t_real dy, t_real m, t_real dm)
+{
+	t_real val = y / m;
+	t_real err = std::sqrt(std::pow(dy/m, 2.) + std::pow(dm*y/(m*m), 2.));
+
+	return std::make_pair(val, err);
+}
+//------------------------------------------------------------------------------
+
 }
 #endif

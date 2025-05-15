@@ -154,7 +154,7 @@ void ScanViewerDlg::CalcPol()
 	// indices to spin-flipped states
 	std::vector<std::size_t> vecSFIdx;
 
-	for(std::size_t iPol=0; iPol<iNumPolStates; ++iPol)
+	for(std::size_t iPol = 0; iPol < iNumPolStates; ++iPol)
 	{
 		const std::array<t_real, 6>& state = vecPolStates[iPol];
 		std::size_t iIdx = find_spinflip_state_idx(state);
@@ -179,7 +179,7 @@ void ScanViewerDlg::CalcPol()
 	ostrCnts << "<p><h2>Counts in Polarisation Channels</h2>";
 
 	// iterate over scan points
-	for(std::size_t iPt=0; iPt<vecCnts.size();)
+	for(std::size_t iPt = 0; iPt < vecCnts.size();)
 	{
 		ostrCnts << "<p><b>Scan Point " << (iPt/iNumPolStates+1);
 		if(strX != "" && iPt < vecX.size())
@@ -199,7 +199,7 @@ void ScanViewerDlg::CalcPol()
 		ostrCnts << "</tr>";
 
 		// iterate over polarisation states
-		for(std::size_t iPol=0; iPol<iNumPolStates; ++iPol, ++iPt)
+		for(std::size_t iPol = 0; iPol < iNumPolStates; ++iPol, ++iPt)
 		{
 			t_real dPix = vecPolStates[iPol][0];
 			t_real dPiy = vecPolStates[iPol][1];
@@ -224,7 +224,7 @@ void ScanViewerDlg::CalcPol()
 			if(has_mon)
 			{
 				t_real norm_cts = 0., norm_err = 0.;
-				std::tie(norm_cts, norm_err) = norm_cnts_to_mon(
+				std::tie(norm_cts, norm_err) = tl::norm_cnts_to_mon(
 					t_real(iCnts), dErr, t_real(iMon), dMonErr);
 
 				ostrCnts << "<td><b>" << iMon << "</b></td>";
@@ -245,7 +245,7 @@ void ScanViewerDlg::CalcPol()
 	bool bHasAnyData = false;
 
 	// iterate over scan points
-	for(std::size_t iPt=0; iPt<vecCnts.size()/iNumPolStates; ++iPt)
+	for(std::size_t iPt = 0; iPt < vecCnts.size()/iNumPolStates; ++iPt)
 	{
 		ostrPol << "<p><b>Scan Point " << (iPt+1);
 		if(strX != "" && iPt*iNumPolStates < vecX.size())
@@ -304,9 +304,9 @@ void ScanViewerDlg::CalcPol()
 				if(tl::float_equal(dMonSF, t_real(0), g_dEps))
 					dMonSFErr = 1.;
 
-				std::tie(dCntsNSF, dNSFErr) = norm_cnts_to_mon(
+				std::tie(dCntsNSF, dNSFErr) = tl::norm_cnts_to_mon(
 					dCntsNSF, dNSFErr, dMonNSF, dMonNSFErr);
-				std::tie(dCntsSF, dSFErr) = norm_cnts_to_mon(
+				std::tie(dCntsSF, dSFErr) = tl::norm_cnts_to_mon(
 					dCntsSF, dSFErr, dMonSF, dMonSFErr);
 			}
 

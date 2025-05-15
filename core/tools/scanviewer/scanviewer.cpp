@@ -49,6 +49,7 @@
 #include "tlibs/math/math.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/stat.h"
+#include "tlibs/phys/neutrons.h"
 #include "tlibs/string/spec_char.h"
 #include "tlibs/file/file.h"
 #include "tlibs/log/log.h"
@@ -449,6 +450,42 @@ void ScanViewerDlg::MergeStateChanged(int iState) { FileSelected(); }
 void ScanViewerDlg::StartOrSkipChanged(int) { PlotScan(); }
 
 
+
+/**
+ * get a data column from a scan file
+ */
+const std::vector<t_real>& ScanViewerDlg::GetCol(const tl::FileInstrBase<t_real_glob>* instr,
+	const std::string& colname) const
+{
+	static const std::vector<t_real> nullcol;
+	if(!instr)
+		return nullcol;
+
+	const std::size_t invalid_idx = instr->GetColNames().size();
+
+	// try given column name
+	std::size_t idx = 0;
+	const std::vector<t_real>& col = instr->GetCol(colname, &idx);
+	if(idx != invalid_idx)
+		return col;
+
+	// try column name aliases
+	auto iter = m_col_aliases.find(colname);
+	if(iter != m_col_aliases.end())
+	{
+		for(const std::string& alias : iter->second)
+		{
+			const std::vector<t_real>& aliascol = instr->GetCol(colname, &idx);
+			if(idx != invalid_idx)
+				return aliascol;
+		}
+	}
+
+	return nullcol;
+}
+
+
+
 /**
  * new file selected
  */
@@ -655,9 +692,9 @@ void ScanViewerDlg::PlotScan()
 		std::vector<t_real>& vecYErr = m_vecYErr[instr_idx];
 
 		// get the data vectors
-		vecX = instr->GetCol(m_strX.c_str());
-		vecY = instr->GetCol(m_strY.c_str());
-		std::vector<t_real> vecMon = instr->GetCol(m_strMon.c_str());
+		vecX = GetCol(instr, m_strX);
+		vecY = GetCol(instr, m_strY);
+		std::vector<t_real> vecMon = GetCol(instr, m_strMon);
 
 		// TODO: sort the data vectors
 		//tl::sort_3(vecX.begin(), vecX.end(), vecY.begin(), vecMon.begin());
@@ -677,7 +714,7 @@ void ScanViewerDlg::PlotScan()
 		if(ctr_err_col != "")
 		{
 			// use given error column
-			vecYErr = instr->GetCol(ctr_err_col);
+			vecYErr = GetCol(instr, ctr_err_col);
 		}
 		else
 		{
@@ -702,7 +739,7 @@ void ScanViewerDlg::PlotScan()
 		if(mon_err_col != "")
 		{
 			// use given error column
-			vecMonErr = instr->GetCol(mon_err_col);
+			vecMonErr = GetCol(instr, mon_err_col);
 		}
 		else
 		{
@@ -810,7 +847,7 @@ void ScanViewerDlg::PlotScan()
 				}
 				else
 				{
-					std::tie(vecY[iY], vecYErr[iY]) = norm_cnts_to_mon(
+					std::tie(vecY[iY], vecYErr[iY]) = tl::norm_cnts_to_mon(
 						vecY[iY], vecYErr[iY], vecMon[iY], vecMonErr[iY]);
 				}
 			}

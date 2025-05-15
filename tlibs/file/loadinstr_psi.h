@@ -1,5 +1,5 @@
 /**
- * Loads instrument-specific data files
+ * loads instrument-specific data files
  * @author Tobias Weber <tobias.weber@tum.de>
  * @date feb-2015 - 2023
  * @license GPLv2 or GPLv3
@@ -112,7 +112,7 @@ std::string FilePsi<t_real>::ReadData(std::istream& istr)
 				vecToks.push_back(0.);
 		}
 
-		for(std::size_t iTok=0; iTok<vecToks.size(); ++iTok)
+		for(std::size_t iTok = 0; iTok < vecToks.size(); ++iTok)
 			m_vecData[iTok].push_back(vecToks[iTok]);
 	}
 
@@ -260,7 +260,7 @@ static std::vector<std::array<t_real, 6>> parse_pol_states(const std::string& po
 			std::size_t iCurComp = 0;
 
 			// scan next tokens in drive command
-			for(std::size_t iDr=1; iDr<vecLine.size(); ++iDr)
+			for(std::size_t iDr = 1; iDr < vecLine.size(); ++iDr)
 			{
 				const std::string& strWord = vecLine[iDr];
 
@@ -395,9 +395,9 @@ static std::vector<std::array<t_real, 6>> parse_pol_states(const std::string& po
 	}
 
 	// cleanup
-	for(std::size_t iPol=0; iPol<vecPolStates.size(); ++iPol)
+	for(std::size_t iPol = 0; iPol < vecPolStates.size(); ++iPol)
 	{
-		for(unsigned iComp=0; iComp<6; ++iComp)
+		for(unsigned iComp = 0; iComp < 6; ++iComp)
 			set_eps_0(vecPolStates[iPol][iComp]);
 	}
 
@@ -545,7 +545,7 @@ FilePsi<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
 {
 	static std::vector<t_real> vecNull;
 
-	for(std::size_t i=0; i<m_vecColNames.size(); ++i)
+	for(std::size_t i = 0; i < m_vecColNames.size(); ++i)
 	{
 		if(str_to_lower(m_vecColNames[i]) == str_to_lower(strName))
 		{
@@ -555,6 +555,7 @@ FilePsi<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
 		}
 	}
 
+	// set invalid index if the column was not found
 	if(pIdx)
 		*pIdx = m_vecColNames.size();
 

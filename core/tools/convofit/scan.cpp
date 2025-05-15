@@ -202,7 +202,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 
 	if(bNormToMon)
 	{
-		// normalise couter to monitor
+		// normalise counter to monitor
 		for(std::size_t iPos = 0; iPos < scan.vecCts.size(); ++iPos)
 		{
 			t_real_sc y = scan.vecCts[iPos];
@@ -210,8 +210,8 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 			t_real_sc m = scan.vecMon[iPos];
 			t_real_sc dm  = scan.vecMonErr[iPos];
 
-			scan.vecCts[iPos] /= m;
-			scan.vecCtsErr[iPos] = std::sqrt(dy/m * dy/m  +  y*dm/(m*m) * y*dm/(m*m));
+			std::tie(scan.vecCts[iPos], scan.vecCtsErr[iPos]) =
+				tl::norm_cnts_to_mon(y, dy, m, dm);
 		}
 	}
 

@@ -82,7 +82,7 @@ class FileInstrBase
 		virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const = 0;
 		virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) = 0;
 
-		virtual std::array<t_real, 4> GetPosHKLE() const = 0;	// zero pos.
+		virtual std::array<t_real, 4> GetPosHKLE() const = 0;  // zero pos.
 
 		virtual std::size_t GetScanCount() const = 0;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const = 0;
@@ -118,9 +118,9 @@ class FileInstrBase
 		virtual std::size_t NumPolChannels() const;
 		virtual const std::vector<std::array<t_real, 6>>& GetPolStates() const;
 		virtual void SetPolNames(const char* pVec1, const char* pVec2,
-			const char* pCur1, const char* pCur2);	// spherical PA
+			const char* pCur1, const char* pCur2);  // spherical PA
 		virtual void SetLinPolNames(const char* pFlip1, const char* pFlip2,
-			const char* pXYZ);	// linear PA
+			const char* pXYZ);  // linear PA
 
 	public:
 		virtual bool MatchColumn(const std::string& strRegex,
@@ -159,11 +159,11 @@ class FilePsi : public FileInstrBase<_t_real>
 		std::vector<std::array<t_real, 6>> m_vecPolStates;
 
 		// instrument-specific device names
-		std::string m_strPolVec1 {"p1"}, m_strPolVec2 {"p2"};
-		std::string m_strPolCur1 {"i1"}, m_strPolCur2 {"i2"};
+		std::string m_strPolVec1{"p1"}, m_strPolVec2{"p2"};
+		std::string m_strPolCur1{"i1"}, m_strPolCur2{"i2"};
 
-		std::string m_strXYZ {"hx"};
-		std::string m_strFlip1 {"f1"}, m_strFlip2 {"f2"};
+		std::string m_strXYZ{"hx"};
+		std::string m_strFlip1{"f1"}, m_strFlip2{"f2"};
 
 
 	protected:
@@ -199,8 +199,8 @@ class FilePsi : public FileInstrBase<_t_real>
 		virtual t_real GetKFix() const override;
 		virtual bool IsKiFixed() const override;
 
-		virtual std::array<t_real, 4> GetPosHKLE() const override;	// zero pos.
-		std::array<t_real, 4> GetDeltaHKLE() const;	// scan steps
+		virtual std::array<t_real, 4> GetPosHKLE() const override;  // zero pos.
+		std::array<t_real, 4> GetDeltaHKLE() const;  // scan steps
 
 		virtual std::size_t GetScanCount() const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
@@ -278,7 +278,7 @@ class FileFrm : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 3> GetScatterPlane0() const override;
 		virtual std::array<t_real, 3> GetScatterPlane1() const override;
 
-		virtual std::array<t_real, 4> GetPosHKLE() const override;	// zero pos.
+		virtual std::array<t_real, 4> GetPosHKLE() const override;  // zero pos.
 
 		virtual t_real GetKFix() const override;
 		virtual bool IsKiFixed() const override;
@@ -350,7 +350,7 @@ class FileMacs : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 3> GetScatterPlane0() const override;
 		virtual std::array<t_real, 3> GetScatterPlane1() const override;
 
-		virtual std::array<t_real, 4> GetPosHKLE() const override;	// zero pos.
+		virtual std::array<t_real, 4> GetPosHKLE() const override;  // zero pos.
 
 		virtual t_real GetKFix() const override;
 		virtual bool IsKiFixed() const override;
@@ -422,7 +422,7 @@ class FileTrisp : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 3> GetScatterPlane0() const override;
 		virtual std::array<t_real, 3> GetScatterPlane1() const override;
 
-		virtual std::array<t_real, 4> GetPosHKLE() const override;	// zero pos.
+		virtual std::array<t_real, 4> GetPosHKLE() const override;  // zero pos.
 
 		virtual t_real GetKFix() const override;
 		virtual bool IsKiFixed() const override;
@@ -492,7 +492,7 @@ class FileTax : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 3> GetScatterPlane0() const override;
 		virtual std::array<t_real, 3> GetScatterPlane1() const override;
 
-		virtual std::array<t_real, 4> GetPosHKLE() const override;	// zero pos.
+		virtual std::array<t_real, 4> GetPosHKLE() const override;  // zero pos.
 
 		virtual t_real GetKFix() const override;
 		virtual bool IsKiFixed() const override;
@@ -559,7 +559,7 @@ class FileRaw : public FileInstrBase<_t_real>
 		virtual std::array<t_real, 3> GetScatterPlane0() const override;
 		virtual std::array<t_real, 3> GetScatterPlane1() const override;
 
-		virtual std::array<t_real, 4> GetPosHKLE() const override;	// zero pos.
+		virtual std::array<t_real, 4> GetPosHKLE() const override;  // zero pos.
 
 		virtual t_real GetKFix() const override;
 		virtual bool IsKiFixed() const override;
