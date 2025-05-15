@@ -951,9 +951,15 @@ std::vector<std::string> FilePsi<t_real>::GetScannedVars() const
 template<class t_real>
 std::string FilePsi<t_real>::GetCountVar() const
 {
+	// try to match names
 	std::string strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(cnts)REX", strRet))
 		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(det)REX", strRet))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector)REX", strRet))
+		return strRet;
+
 	return "";
 }
 
@@ -962,7 +968,9 @@ template<class t_real>
 std::string FilePsi<t_real>::GetMonVar() const
 {
 	std::string strRet;
-	if(FileInstrBase<t_real>::MatchColumn(R"REX(m[0-9])REX", strRet))
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(m[0-9]+)REX", strRet))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(Monitor[0-9]*)REX", strRet))
 		return strRet;
 	return "";
 }

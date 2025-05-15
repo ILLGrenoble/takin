@@ -558,9 +558,7 @@ template<class t_real> std::string FileH5<t_real>::GetCountVar() const
 {
 	// try to match names
 	std::string strRet;
-	if(FileInstrBase<t_real>::MatchColumn(R"REX(Detector)REX", strRet))
-		return strRet;
-	if(FileInstrBase<t_real>::MatchColumn(R"REX(SingleDetector)REX", strRet))
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector)REX", strRet))
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(cnts)REX", strRet))
 		return strRet;
@@ -633,7 +631,13 @@ template<class t_real> void FileH5<t_real>::SetAutoParsePolData(bool b)
 
 template<class t_real> std::string FileH5<t_real>::GetMonVar() const
 {
-	return "Monitor1";
+	std::string strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(Monitor[0-9]*)REX", strRet))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(m[0-9]+)REX", strRet))
+		return strRet;
+
+	return "";
 }
 
 
