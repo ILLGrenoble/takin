@@ -85,7 +85,7 @@ void FileFrm<t_real>::ReadHeader(std::istream& istr)
 		strLine = strLine.substr(1);
 
 		std::pair<std::string, std::string> pairLine =
-			split_first<std::string>(strLine, ":", 1);
+			split_first<std::string>(strLine, ":", true);
 
 		if(pairLine.first == "")
 		{

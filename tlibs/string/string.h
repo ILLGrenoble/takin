@@ -145,7 +145,7 @@ t_str str_to_lower(const t_str& str)
 
 
 template<class t_str = std::string>
-t_str get_file_noext(const t_str& str, bool bToLower=0)
+t_str get_file_noext(const t_str& str, bool bToLower = false)
 {
 	std::size_t iPos = str.find_last_of('.');
 
@@ -161,7 +161,7 @@ t_str get_file_noext(const t_str& str, bool bToLower=0)
 
 
 template<class t_str = std::string>
-t_str get_fileext(const t_str& str, bool bToLower=0)
+t_str get_fileext(const t_str& str, bool bToLower = false)
 {
 	std::size_t iPos = str.find_last_of('.');
 
@@ -180,7 +180,7 @@ t_str get_fileext(const t_str& str, bool bToLower=0)
  *  e.g. returns "tof" for "123.tof.bz2"
  */
 template<class t_str = std::string>
-t_str get_fileext2(const t_str& str, bool bToLower=0)
+t_str get_fileext2(const t_str& str, bool bToLower = false)
 {
 	std::size_t iPos = str.find_last_of('.');
 	if(iPos == t_str::npos || iPos == 0)
@@ -195,7 +195,7 @@ t_str get_fileext2(const t_str& str, bool bToLower=0)
  * e.g. returns "tof" for "123.tof.bz2" and for "123.tof"
  */
 template<class t_str = std::string>
-t_str get_fileext_nocomp(const t_str& str, bool bToLower=0)
+t_str get_fileext_nocomp(const t_str& str, bool bToLower = false)
 {
 	std::size_t iCnt = std::count(str.begin(), str.end(), '.');
 	if(iCnt==0)
@@ -208,7 +208,7 @@ t_str get_fileext_nocomp(const t_str& str, bool bToLower=0)
 
 
 template<class t_str = std::string>
-t_str get_dir(const t_str& str, bool bToLower=0)
+t_str get_dir(const t_str& str, bool bToLower = false)
 {
 	std::size_t iPos = str.find_last_of(get_dir_seps<t_str>());
 
@@ -224,7 +224,7 @@ t_str get_dir(const t_str& str, bool bToLower=0)
 
 
 template<class t_str = std::string>
-t_str get_file_nodir(const t_str& str, bool bToLower=0)
+t_str get_file_nodir(const t_str& str, bool bToLower = false)
 {
 	std::size_t iPos = str.find_last_of(get_dir_seps<t_str>());
 
@@ -244,7 +244,7 @@ t_str get_file_nodir(const t_str& str, bool bToLower=0)
 
 
 template<class t_str = std::string>
-bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
+bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase = false)
 {
 	std::locale loc;
 
@@ -275,7 +275,7 @@ bool str_is_equal(const t_str& str0, const t_str& str1, bool bCase=0)
 
 template<class t_str = std::string>
 bool str_is_equal_to_either(const t_str& str0,
-	const std::initializer_list<t_str>& lststr1, bool bCase=0)
+	const std::initializer_list<t_str>& lststr1, bool bCase = false)
 {
 	for(const t_str& str1 : lststr1)
 		if(str_is_equal<t_str>(str0, str1, bCase))
@@ -285,7 +285,7 @@ bool str_is_equal_to_either(const t_str& str0,
 
 
 template<class t_str = std::string>
-bool str_contains(const t_str& str, const t_str& strSub, bool bCase=0)
+bool str_contains(const t_str& str, const t_str& strSub, bool bCase = false)
 {
 	std::locale loc;
 
@@ -494,7 +494,7 @@ t_str insert_before(const t_str& str, const t_str& strChar, const t_str& strInse
 
 
 template<class t_str = std::string>
-bool begins_with(const t_str& str, const t_str& strBeg, bool bCase=1)
+bool begins_with(const t_str& str, const t_str& strBeg, bool bCase = true)
 {
 	std::locale loc;
 
@@ -529,7 +529,7 @@ bool begins_with(const t_str& str, const t_str& strBeg, bool bCase=1)
 
 
 template<class t_str = std::string>
-bool ends_with(const t_str& str, const t_str& strEnd, bool bCase=1)
+bool ends_with(const t_str& str, const t_str& strEnd, bool bCase = true)
 {
 	std::locale loc;
 
@@ -569,7 +569,7 @@ bool ends_with(const t_str& str, const t_str& strEnd, bool bCase=1)
 
 template<class t_str = std::string>
 std::pair<t_str, t_str>
-split_first(const t_str& str, const t_str& strSep, bool bTrim=0, bool bSeq=0)
+split_first(const t_str& str, const t_str& strSep, bool bTrim = false, bool bSeq = false)
 {
 	t_str str1, str2;
 
@@ -613,7 +613,7 @@ t_str str_between(const t_str& str, const t_str& strSep1, const t_str& strSep2,
 // ----------------------------------------------------------------------------
 
 
-template<typename T, class t_str = std::string, bool bTIsStr=0>
+template<typename T, class t_str = std::string, bool bTIsStr = false>
 struct _str_to_var_impl;
 
 
@@ -799,7 +799,7 @@ struct _var_to_str_impl
 {
 	t_str operator()(const T& t,
 		std::streamsize iPrec = std::numeric_limits<T>::max_digits10,
-		int iGroup=-1)
+		int iGroup = -1)
 	{
 		//if(std::is_convertible<T, t_str>::value)
 		//	return *reinterpret_cast<const t_str*>(&t);
@@ -895,7 +895,7 @@ t_str cont_to_str(const t_cont& cont, const char* pcDelim=",",
 template<typename t_char=char>
 bool skip_after_line(std::basic_istream<t_char>& istr,
 	const std::basic_string<t_char>& strLineBegin,
-	bool bTrim=true, bool bCase=0)
+	bool bTrim = true, bool bCase = false)
 {
 	while(!istr.eof())
 	{
@@ -917,7 +917,7 @@ bool skip_after_line(std::basic_istream<t_char>& istr,
 
 
 template<typename t_char=char>
-void skip_after_char(std::basic_istream<t_char>& istr, t_char ch, bool bCase=0)
+void skip_after_char(std::basic_istream<t_char>& istr, t_char ch, bool bCase = false)
 {
 	std::locale loc;
 	if(!bCase) ch = std::tolower(ch, loc);

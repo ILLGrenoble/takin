@@ -485,6 +485,7 @@ add_executable(takin
 
 	# scanviewer
 	tools/scanviewer/scanviewer.cpp tools/scanviewer/scanviewer_fit.cpp
+	tools/scanviewer/scanviewer_file.cpp tools/scanviewer/scanviewer_plot.cpp
 	tools/scanviewer/scanviewer_pol.cpp
 	tools/scanviewer/FitParamDlg.cpp
 	tools/scanpos/ScanPosDlg.cpp

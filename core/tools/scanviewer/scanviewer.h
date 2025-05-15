@@ -1,7 +1,7 @@
 /**
  * scan viewer
  * @author Tobias Weber <tweber@ill.fr>
- * @date mar-2015 - 2020
+ * @date mar-2015 - 2025
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------
@@ -85,6 +85,7 @@ private:
 
 protected:
 	void SetupPlotter(unsigned int numCurves = 2);
+	void SetupColumnAliases();
 
 	void ClearPlot();
 	void PlotScan();
