@@ -262,7 +262,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Net Polling Interval:</string>
+             <string>Polling Interval:</string>
             </property>
             <property name="buddy">
              <cstring>spinNetPoll</cstring>
