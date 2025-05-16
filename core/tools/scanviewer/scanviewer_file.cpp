@@ -521,6 +521,10 @@ void ScanViewerDlg::UpdateFileList()
 	std::vector<std::string> dirs;
 	tl::get_tokens<std::string, std::string, std::vector<std::string>>(m_strCurDir, ";", dirs);
 
+	bool show_scan_type = false;
+	if(m_core_settings)
+		show_scan_type = m_core_settings->value("main/show_scan_type", 0).toBool();
+
 	for(const std::string& curDir : dirs)
 	{
 		try
@@ -554,15 +558,18 @@ void ScanViewerDlg::UpdateFileList()
 				std::string filename_full = tl::wstr_to_str(d.string());
 				QString itemname = tl::wstr_to_str(d.filename().native()).c_str();
 
-				// get scan type
-				/*tl::FileInstrBase<t_real> *instr = tl::FileInstrBase<t_real>::LoadInstr(filename_full.c_str());
-				if(instr)
+				if(show_scan_type)
 				{
-					std::vector<std::string> vars = instr->GetScannedVars();
-					if(vars.size())
-						itemname += (" (" + vars[0] + " scan)").c_str();
-					delete instr;
-				}*/
+					// get scan type
+					tl::FileInstrBase<t_real> *instr = tl::FileInstrBase<t_real>::LoadInstr(filename_full.c_str());
+					if(instr)
+					{
+						std::vector<std::string> vars = instr->GetScannedVars();
+						if(vars.size())
+							itemname += (" (" + vars[0] + " scan)").c_str();
+						delete instr;
+					}
+				}
 
 				QListWidgetItem *item = new QListWidgetItem(itemname);
 				item->setData(Qt::UserRole, QString(filename_full.c_str()));

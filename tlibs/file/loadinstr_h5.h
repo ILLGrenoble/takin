@@ -100,7 +100,7 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		}
 
 		std::vector<t_real> scanned_stddevs;
-		for(std::size_t idx = 0; idx<std::min(m_vecCols.size(), scanned.size()); ++idx)
+		for(std::size_t idx = 0; idx < std::min(m_vecCols.size(), scanned.size()); ++idx)
 		{
 			const std::string& col_name = m_vecCols[idx];
 			const t_vecVals& col_vec = GetCol(col_name);
@@ -129,7 +129,7 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		m_vecCols.insert(m_vecCols.begin(), "Point_Index");
 		t_vecVals vals_idx;
 		vals_idx.reserve(GetScanCount());
-		for(std::size_t idx=0; idx<GetScanCount(); ++idx)
+		for(std::size_t idx = 0; idx < GetScanCount(); ++idx)
 			vals_idx.push_back(idx);
 		m_data.emplace(m_data.begin(), std::move(vals_idx));
 
@@ -160,7 +160,7 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		}
 
 		// move the first scan variable with non-zero deviation to the front
-		for(std::size_t i=0; i<m_scanned_vars.size(); ++i)
+		for(std::size_t i = 0; i < m_scanned_vars.size(); ++i)
 		{
 			if(tl::float_equal<t_real>(scanned_stddevs[i], t_real(0), eps))
 				continue;
@@ -410,7 +410,7 @@ FileH5<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
 {
 	static std::vector<t_real> vecNull;
 
-	for(std::size_t i=0; i<m_vecCols.size(); ++i)
+	for(std::size_t i = 0; i < m_vecCols.size(); ++i)
 	{
 		if(str_to_lower(m_vecCols[i]) == str_to_lower(strName))
 		{
