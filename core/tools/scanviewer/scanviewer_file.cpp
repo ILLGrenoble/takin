@@ -201,7 +201,7 @@ void ScanViewerDlg::FileSelected()
 
 	bool allow_incompatible_merging = false;
 	if(m_core_settings)
-		allow_incompatible_merging = m_core_settings->value("main/allow_scan_merging", 0).toBool();
+		allow_incompatible_merging = m_core_settings->value("scanviewer/allow_scan_merging", 0).toBool();
 
 	if(checkMerge->isChecked())
 	{
@@ -523,7 +523,7 @@ void ScanViewerDlg::UpdateFileList()
 
 	bool show_scan_type = false;
 	if(m_core_settings)
-		show_scan_type = m_core_settings->value("main/show_scan_type", 0).toBool();
+		show_scan_type = m_core_settings->value("scanviewer/show_scan_type", 0).toBool();
 
 	for(const std::string& curDir : dirs)
 	{

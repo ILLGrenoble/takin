@@ -173,10 +173,11 @@ SettingsDlg::SettingsDlg(QWidget* pParent, QSettings* pSett)
 	{
 		t_tupCheck("main/dlg_previews", 1, checkPreview),
 		t_tupCheck("main/native_dialogs", 1, checkNativeDlg),
+		t_tupCheck("main/ignore_xtal_restrictions", 0, checkIgnoreXtalRestrictions),
 		t_tupCheck("net/flip_orient2", 1, checkFlipOrient2),
 		t_tupCheck("net/sth_stt_corr", 0, checkSthSttCorr),
-		t_tupCheck("main/ignore_xtal_restrictions", 0, checkIgnoreXtalRestrictions),
-		t_tupCheck("main/allow_scan_merging", 0, checkAllowScanMerging),
+		t_tupCheck("scanviewer/allow_scan_merging", 0, checkAllowScanMerging),
+		t_tupCheck("scanviewer/show_scan_type", 0, checkShowScanType),
 	};
 
 	m_vecSpins =
