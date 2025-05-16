@@ -235,7 +235,7 @@
        <item row="2" column="1">
         <widget class="QGroupBox" name="groupBox_7">
          <property name="title">
-          <string>Miscellaneous</string>
+          <string>Network</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <property name="leftMargin">
@@ -1298,7 +1298,7 @@
           <item row="1" column="0" colspan="3">
            <widget class="QGroupBox" name="groupBox_17">
             <property name="title">
-             <string>Scan Viewer</string>
+             <string>Scan Files</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_16">
              <property name="leftMargin">
@@ -1329,7 +1329,7 @@
              <item row="1" column="0">
               <widget class="QCheckBox" name="checkShowScanType">
                <property name="toolTip">
-                <string>Show the scanned variables in the scan list.</string>
+                <string>Show the scanned variables in the file list of Scan Viewer.</string>
                </property>
                <property name="text">
                 <string>Show Scan Type</string>
