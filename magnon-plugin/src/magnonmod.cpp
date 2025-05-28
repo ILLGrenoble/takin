@@ -376,7 +376,7 @@ Please refer to the Takin help for more information and tutorials.)RAWSTR";
 
 std::tuple<std::string, std::string, std::string, std::string> sqw_info()
 {
-	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics", g_help);
+	return std::make_tuple(TAKIN_VER, "magnonmod", "Magnetic Dynamics [Magpie]", g_help);
 }
 
 std::shared_ptr<SqwBase> sqw_construct(const std::string& cfg_file)
