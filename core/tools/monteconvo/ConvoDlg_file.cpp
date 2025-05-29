@@ -70,6 +70,9 @@ void ConvoDlg::New()
 	m_scan = Scan();
 	ClearPlot1D();
 
+	if(m_pFavDlg)
+		m_pFavDlg->ClearList();
+
 	setWindowTitle(s_strTitle.c_str());
 }
 

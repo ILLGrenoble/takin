@@ -492,7 +492,7 @@ ConvoDlg::~ConvoDlg()
 	{
 		delete m_pFavDlg;
 		m_pFavDlg = nullptr;
-		}
+	}
 
 	if(m_pMenuBar)
 	{

@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -33,6 +33,7 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+
 
 using t_real = t_real_glob;
 static const tl::t_length_si<t_real> angs = tl::get_one_angstrom<t_real>();
@@ -598,7 +599,8 @@ void GotoDlg::RemPosFromList()
 	if(pItem)
 	{
 		HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
-		if(pPos) delete pPos;
+		if(pPos)
+			delete pPos;
 		delete pItem;
 	}
 }
@@ -609,10 +611,12 @@ void GotoDlg::ClearList()
 	while(listSeq->count())
 	{
 		QListWidgetItem *pItem = listSeq->item(0);
-		if(!pItem) break;
+		if(!pItem)
+			break;
 
 		HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
-		if(pPos) delete pPos;
+		if(pPos)
+			delete pPos;
 		delete pItem;
 	}
 }
@@ -704,12 +708,14 @@ void GotoDlg::Save(std::map<std::string, std::string>& mapConf, const std::strin
 	mapConf[strXmlRoot + "goto_pos/cki"] = radioFixedKi->isChecked()?"1":"0";
 
 	// favlist
-	for(int iItem=0; iItem<listSeq->count(); ++iItem)
+	for(int iItem = 0; iItem < listSeq->count(); ++iItem)
 	{
 		const QListWidgetItem *pItem = listSeq->item(iItem);
-		if(!pItem) continue;
+		if(!pItem)
+			continue;
 		const HklPos* pPos = (HklPos*)pItem->data(Qt::UserRole).value<void*>();
-		if(!pPos) continue;
+		if(!pPos)
+			continue;
 
 		std::ostringstream ostrItemBase;
 		ostrItemBase << "goto_favlist/pos_" << iItem << "/";

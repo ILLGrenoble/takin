@@ -63,7 +63,6 @@ FavDlg::FavDlg(QWidget* pParent, QSettings* pSett) : QDialog(pParent), m_pSettin
 		prop.Load(istr, tl::PropType::XML);
 		Load(prop, "");
 
-
 		if(m_pSettings->contains("fav_pos/geo"))
 			restoreGeometry(m_pSettings->value("fav_pos/geo").toByteArray());
 	}
@@ -106,7 +105,6 @@ void FavDlg::ButtonBoxClicked(QAbstractButton* pBtn)
 
 			m_pSettings->setValue("fav_pos/pos_list", QString(ostr.str().c_str()));
 
-
 			m_pSettings->setValue("fav_pos/geo", saveGeometry());
 		}
 		QDialog::accept();
@@ -128,14 +126,16 @@ void FavDlg::ListItemSelected()
 
 void FavDlg::ApplyPos(const FavHklPos* pPos)
 {
-	if(!pPos) return;
+	if(!pPos)
+		return;
 	emit ChangePos(*pPos);
 }
 
 
 void FavDlg::ListItemDoubleClicked(QListWidgetItem* pItem)
 {
-	if(!pItem) return;
+	if(!pItem)
+		return;
 	const FavHklPos* pPos = (FavHklPos*)pItem->data(Qt::UserRole).value<void*>();
 	ApplyPos(pPos);
 }
@@ -154,9 +154,9 @@ void FavDlg::AddPosToList(const FavHklPos& pos)
 	std::wostringstream ostrHKL;
 	ostrHKL.precision(g_iPrecGfx);
 	ostrHKL << "Q = (" << pPos->dhstart << ", " << pPos->dkstart << ", " << pPos->dlstart << ") rlu";
-	ostrHKL << "E = " << pPos->dEstart << " meV " << tl::get_spec_char_utf16("rightarrow") << "\n";
+	ostrHKL << ", E = " << pPos->dEstart << " meV ->\n"; //<< tl::get_spec_char_utf16("rightarrow") << "\n";
 	ostrHKL << "Q = (" << pPos->dhstop << ", " << pPos->dkstop << ", " << pPos->dlstop << ") rlu";
-	ostrHKL << "E = " << pPos->dEstop << " meV";
+	ostrHKL << ", E = " << pPos->dEstop << " meV";
 
 	QString qstr = QString::fromWCharArray(ostrHKL.str().c_str());
 	QListWidgetItem* pItem = new QListWidgetItem(qstr, listSeq);
@@ -187,10 +187,12 @@ void FavDlg::ClearList()
 	while(listSeq->count())
 	{
 		QListWidgetItem *pItem = listSeq->item(0);
-		if(!pItem) break;
+		if(!pItem)
+			break;
 
 		FavHklPos* pPos = (FavHklPos*)pItem->data(Qt::UserRole).value<void*>();
-		if(pPos) delete pPos;
+		if(pPos)
+			delete pPos;
 		delete pItem;
 	}
 }
@@ -202,12 +204,14 @@ void FavDlg::ClearList()
 void FavDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
 	// favlist
-	for(int iItem=0; iItem<listSeq->count(); ++iItem)
+	for(int iItem = 0; iItem < listSeq->count(); ++iItem)
 	{
 		const QListWidgetItem *pItem = listSeq->item(iItem);
-		if(!pItem) continue;
+		if(!pItem)
+			continue;
 		const FavHklPos* pPos = (FavHklPos*)pItem->data(Qt::UserRole).value<void*>();
-		if(!pPos) continue;
+		if(!pPos)
+			continue;
 
 		std::ostringstream ostrItemBase;
 		ostrItemBase << "fav_pos/pos_" << iItem << "/";
@@ -229,8 +233,8 @@ void FavDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
 	ClearList();
 
-	unsigned int iItem=0;
-	while(1)
+	unsigned int iItem = 0;
+	while(true)
 	{
 		std::ostringstream ostrItemBase;
 		ostrItemBase << "fav_pos/pos_" << iItem << "/";
