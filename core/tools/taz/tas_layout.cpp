@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -30,6 +30,7 @@
 #include "tlibs/string/spec_char.h"
 #include <iostream>
 
+
 using t_real = t_real_glob;
 using t_vec = ublas::vector<t_real>;
 using t_mat = ublas::matrix<t_real>;
@@ -49,17 +50,20 @@ TasLayoutNode::TasLayoutNode(TasLayout* pSupItem) : m_pParentItem(pSupItem)
 	setCursor(Qt::CrossCursor);
 }
 
+
 QRectF TasLayoutNode::boundingRect() const
 {
 	return QRectF(-5.*0.1*g_dFontSize, -5.*0.1*g_dFontSize,
 		10.*0.1*g_dFontSize, 10.*0.1*g_dFontSize);
 }
 
+
 void TasLayoutNode::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	pPainter->drawEllipse(QRectF(-2.*0.1*g_dFontSize, -2.*0.1*g_dFontSize,
 		4.*0.1*g_dFontSize, 4.*0.1*g_dFontSize));
 }
+
 
 QVariant TasLayoutNode::itemChange(GraphicsItemChange change, const QVariant &val)
 {
@@ -106,10 +110,12 @@ TasLayout::TasLayout(TasLayoutScene& scene) : m_scene(scene),
 	m_bUpdate = m_bReady = true;
 }
 
+
 TasLayout::~TasLayout()
 {
 	m_bUpdate = m_bReady = false;
 }
+
 
 void TasLayout::AllowMouseMove(bool bAllow)
 {
@@ -119,13 +125,16 @@ void TasLayout::AllowMouseMove(bool bAllow)
 	m_pDet->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
 }
 
+
 void TasLayout::nodeMoved(const TasLayoutNode *pNode)
 {
-	if(!m_bReady) return;
+	if(!m_bReady)
+		return;
 
 	// prevents recursive calling of update
 	static bool bAllowUpdate = true;
-	if(!bAllowUpdate) return;
+	if(!bAllowUpdate)
+		return;
 
 	const t_vec vecSrc = qpoint_to_vec(mapFromItem(m_pSrc.get(), 0, 0));
 	const t_vec vecMono = qpoint_to_vec(mapFromItem(m_pMono.get(), 0, 0));
@@ -278,6 +287,24 @@ QRectF TasLayout::boundingRect() const
 {
 	return QRectF(-100.*m_dZoom*g_dFontSize, -100.*m_dZoom*g_dFontSize,
 		200.*m_dZoom*g_dFontSize, 200.*m_dZoom*g_dFontSize);
+}
+
+
+/**
+ * gets the centre of the tas drawing
+ */
+QPointF TasLayout::GetGfxMid() const
+{
+	t_real num_nodes = 0.;
+	QPointF mid(0., 0.);
+
+	for(const TasLayoutNode* node : GetNodes())
+	{
+		mid += mapFromItem(node, 0, 0);
+		num_nodes += 1.;
+	}
+
+	return mid / num_nodes;
 }
 
 
@@ -699,6 +726,7 @@ void TasLayout::SetSampleTwoTheta(t_real dAngle)
 	nodeMoved(m_pAna.get());
 }
 
+
 void TasLayout::SetSampleTheta(t_real dAngle)
 {
 	//tl::log_info("sample theta: ", dAngle/M_PI*180.);
@@ -706,11 +734,13 @@ void TasLayout::SetSampleTheta(t_real dAngle)
 	nodeMoved();
 }
 
+
 void TasLayout::SetMonoTwoTheta(t_real dAngle)
 {
 	m_dMonoTwoTheta = dAngle;
 	nodeMoved(m_pMono.get());
 }
+
 
 void TasLayout::SetAnaTwoTheta(t_real dAngle)
 {
@@ -718,11 +748,13 @@ void TasLayout::SetAnaTwoTheta(t_real dAngle)
 	nodeMoved(m_pAna.get());
 }
 
+
 void TasLayout::SetAngleKiQ(t_real dAngle)
 {
 	m_dAngleKiQ = dAngle;
 	nodeMoved();
 }
+
 
 void TasLayout::SetRealQVisible(bool bVisible)
 {
@@ -730,18 +762,21 @@ void TasLayout::SetRealQVisible(bool bVisible)
 	this->update();
 }
 
+
 void TasLayout::SetZoom(t_real dZoom)
 {
 	m_dZoom = dZoom;
 	m_scene.update();
 }
 
-std::vector<TasLayoutNode*> TasLayout::GetNodes()
+
+std::vector<TasLayoutNode*> TasLayout::GetNodes() const
 {
 	return std::vector<TasLayoutNode*>
 			{ m_pSrc.get(), m_pMono.get(), m_pSample.get(),
 			m_pAna.get(), m_pDet.get() };
 }
+
 
 std::vector<std::string> TasLayout::GetNodeNames() const
 {
@@ -765,8 +800,10 @@ TasLayoutScene::TasLayoutScene(QObject *pParent)
 	this->addItem(m_pTas.get());
 }
 
+
 TasLayoutScene::~TasLayoutScene()
 {}
+
 
 void TasLayoutScene::emitAllParams()
 {
@@ -793,6 +830,7 @@ void TasLayoutScene::emitAllParams()
 	emit paramsChanged(parms);
 }
 
+
 void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 {
 	if(!m_pTas || !m_pTas->IsReady())
@@ -814,10 +852,12 @@ void TasLayoutScene::triangleChanged(const TriangleOptions& opts)
 	m_bDontEmitChange = false;
 }
 
+
 void TasLayoutScene::recipParamsChanged(const RecipParams& params)
 {
 	m_pTas->SetAngleKiQ(params.dKiQ);
 }
+
 
 void TasLayoutScene::emitUpdate(const TriangleOptions& opts)
 {
@@ -826,17 +866,21 @@ void TasLayoutScene::emitUpdate(const TriangleOptions& opts)
 	emit tasChanged(opts);
 }
 
+
 void TasLayoutScene::scaleChanged(t_real dTotalScale)
 {
-	if(!m_pTas) return;
+	if(!m_pTas)
+		return;
 	m_pTas->SetZoom(dTotalScale);
 }
+
 
 void TasLayoutScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	QGraphicsScene::mousePressEvent(pEvt);
 	emit nodeEvent(1);
 }
+
 
 void TasLayoutScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
 {
@@ -856,6 +900,7 @@ TasLayoutView::TasLayoutView(QWidget* pParent) : QGraphicsView(pParent)
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
+
 
 TasLayoutView::~TasLayoutView()
 {}
@@ -881,10 +926,12 @@ void TasLayoutView::keyPressEvent(QKeyEvent *pEvt)
 	QGraphicsView::keyPressEvent(pEvt);
 }
 
+
 void TasLayoutView::keyReleaseEvent(QKeyEvent *pEvt)
 {
 	QGraphicsView::keyReleaseEvent(pEvt);
 }
+
 
 void TasLayoutView::wheelEvent(QWheelEvent *pEvt)
 {

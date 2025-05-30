@@ -126,6 +126,7 @@ void TazDlg::New()
 	checkSenseA->setChecked(false);
 
 	VarsChanged(crys, triag);
+	CentreViews();
 }
 
 
@@ -453,10 +454,11 @@ bool TazDlg::Load(const char* pcFile)
 
 	if(m_pReso)
 	{
-		m_pReso->SetUpdateOn(1,1);
+		m_pReso->SetUpdateOn(1, 1);
 		m_sceneRecip.emitAllParams();
 	}
 
+	CentreViews();
 	return true;
 }
 

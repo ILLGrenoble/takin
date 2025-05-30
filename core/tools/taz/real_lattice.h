@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -99,7 +99,7 @@ class LatticeScene;
 class RealLattice : public QGraphicsItem
 {
 	protected:
-		bool m_bReady = 0;
+		bool m_bReady = false;
 		LatticeScene &m_scene;
 
 		t_real_glob m_dScaleFactor = 48.;	// pixels per A for zoom == 1.
@@ -114,7 +114,7 @@ class RealLattice : public QGraphicsItem
 
 		tl::Kd<t_real_glob> m_kdLattice;
 
-		bool m_bShowWS = 1;
+		bool m_bShowWS = true;
 		tl::Brillouin2D<t_real_glob> m_ws;	// "Wigner-Seitz cell"
 		tl::Brillouin3D<t_real_glob> m_ws3;	// "Wigner-Seitz cell"
 		std::vector<ublas::vector<t_real_glob>> m_vecWS3VertsUnproj, m_vecWS3Verts;
@@ -162,12 +162,12 @@ class RealLattice : public QGraphicsItem
 class LatticeScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
-		RealLattice *m_pLatt;
-		bool m_bSnap = 0;
-		bool m_bMousePressed = 0;
+		RealLattice *m_pLatt = nullptr;
+		bool m_bSnap = false;
+		bool m_bMousePressed = false;
 
 	public:
-		LatticeScene(QObject *pParent=nullptr);
+		LatticeScene(QObject *pParent = nullptr);
 		virtual ~LatticeScene();
 
 		const RealLattice* GetLattice() const { return m_pLatt; }
@@ -205,7 +205,7 @@ class LatticeView : public QGraphicsView
 		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;
 
 	public:
-		LatticeView(QWidget* pParent = 0);
+		LatticeView(QWidget* pParent = nullptr);
 		virtual ~LatticeView();
 
 	signals:

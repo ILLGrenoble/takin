@@ -99,6 +99,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 	private:
 		void DeleteDialogs();
 
+
 	private:
 		bool m_bUpdateRecipEdits = true;
 
@@ -128,6 +129,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		std::vector<std::string> m_vecSpinBoxNamesSample;
 		std::vector<std::string> m_vecCheckBoxNamesSenses;
+
 
 	protected:
 		static const t_real_glob s_dPlaneDistTolerance;
@@ -212,6 +214,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		SgListDlg *m_pSgListDlg = nullptr;
 
+
 	protected:
 		void InitReso();
 		void InitDarkAngles();
@@ -230,6 +233,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		virtual void keyPressEvent(QKeyEvent *pEvt) override;
 		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;
 
+
 	public:
 		TazDlg(QWidget *pParent, const std::string& strLogFile = "");
 		TazDlg() : TazDlg(nullptr) { }
@@ -241,9 +245,11 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 
 		bool LoadSettings(const char* pcFile);
 
+
 	protected:
 		void ExportSceneSVG(QGraphicsScene& scene);
 		void emitSampleParams();
+
 
 	protected slots:
 		void CalcPeaks();
@@ -264,6 +270,7 @@ class TazDlg : public QMainWindow, Ui::TazDlg
 		void EnableRealQDir(bool bEnable);
 		void ShowEwaldSphere();
 		void RecipProjChanged();
+		void CentreViews();
 
 		void RecipContextMenu(const QPoint&);
 		void RealContextMenu(const QPoint&);

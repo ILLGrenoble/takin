@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -49,17 +49,20 @@ TofLayoutNode::TofLayoutNode(TofLayout* pSupItem) : m_pParentItem(pSupItem)
 	setCursor(Qt::CrossCursor);
 }
 
+
 QRectF TofLayoutNode::boundingRect() const
 {
 	return QRectF(-0.5*g_dFontSize, -0.5*g_dFontSize,
 		1.*g_dFontSize, 1.*g_dFontSize);
 }
 
+
 void TofLayoutNode::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	pPainter->drawEllipse(QRectF(-2.*0.1*g_dFontSize, -2.*0.1*g_dFontSize,
 		4.*0.1*g_dFontSize, 4.*0.1*g_dFontSize));
 }
+
 
 QVariant TofLayoutNode::itemChange(GraphicsItemChange change, const QVariant &val)
 {
@@ -99,6 +102,7 @@ TofLayout::TofLayout(TofLayoutScene& scene) : m_scene(scene)
 	m_bUpdate = m_bReady = true;
 }
 
+
 TofLayout::~TofLayout()
 {
 	m_bUpdate = m_bReady = false;
@@ -108,6 +112,7 @@ TofLayout::~TofLayout()
 	delete m_pDet;
 }
 
+
 void TofLayout::AllowMouseMove(bool bAllow)
 {
 	//m_pSrc->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
@@ -115,13 +120,16 @@ void TofLayout::AllowMouseMove(bool bAllow)
 	m_pDet->setFlag(QGraphicsItem::ItemIsMovable, bAllow);
 }
 
+
 void TofLayout::nodeMoved(const TofLayoutNode *pNode)
 {
-	if(!m_bReady) return;
+	if(!m_bReady)
+		return;
 
 	// prevents recursive calling of update
 	static bool bAllowUpdate = true;
-	if(!bAllowUpdate) return;
+	if(!bAllowUpdate)
+		return;
 
 	const t_vec vecSrc = qpoint_to_vec(mapFromItem(m_pSrc, 0, 0));
 	const t_vec vecSample = qpoint_to_vec(mapFromItem(m_pSample, 0, 0));
@@ -188,10 +196,29 @@ void TofLayout::nodeMoved(const TofLayoutNode *pNode)
 	}
 }
 
+
 QRectF TofLayout::boundingRect() const
 {
 	return QRectF(-100.*m_dZoom*g_dFontSize, -100.*m_dZoom*g_dFontSize,
 		200.*m_dZoom*g_dFontSize, 200.*m_dZoom*g_dFontSize);
+}
+
+
+/**
+ * gets the centre of the tof drawing
+ */
+QPointF TofLayout::GetGfxMid() const
+{
+	t_real num_nodes = 0.;
+	QPointF mid(0., 0.);
+
+	for(const TofLayoutNode* node : GetNodes())
+	{
+		mid += mapFromItem(node, 0, 0);
+		num_nodes += 1.;
+	}
+
+	return mid / num_nodes;
 }
 
 
@@ -318,7 +345,6 @@ void TofLayout::paint(QPainter *pPainter, const QStyleOptionGraphicsItem*, QWidg
 	pPainter->setPen(penDash);
 	QLineF lineki_ext(ptSample, ptSample + (ptSample-ptSrc)/2.);
 	pPainter->drawLine(lineki_ext);
-
 
 
 	std::unique_ptr<QLineF> plineQ(nullptr);
@@ -470,11 +496,13 @@ void TofLayout::SetSampleTwoTheta(t_real dAngle)
 	nodeMoved(m_pDet);
 }
 
+
 void TofLayout::SetSampleTheta(t_real dAngle)
 {
 	m_dTheta = dAngle;
 	nodeMoved();
 }
+
 
 void TofLayout::SetAngleKiQ(t_real dAngle)
 {
@@ -482,11 +510,13 @@ void TofLayout::SetAngleKiQ(t_real dAngle)
 	nodeMoved();
 }
 
+
 void TofLayout::SetRealQVisible(bool bVisible)
 {
 	m_bRealQVisible = bVisible;
 	this->update();
 }
+
 
 void TofLayout::SetZoom(t_real dZoom)
 {
@@ -494,10 +524,12 @@ void TofLayout::SetZoom(t_real dZoom)
 	m_scene.update();
 }
 
-std::vector<TofLayoutNode*> TofLayout::GetNodes()
+
+std::vector<TofLayoutNode*> TofLayout::GetNodes() const
 {
 	return std::vector<TofLayoutNode*> { m_pSrc, m_pSample, m_pDet };
 }
+
 
 std::vector<std::string> TofLayout::GetNodeNames() const
 {
@@ -513,10 +545,13 @@ TofLayoutScene::TofLayoutScene(QObject *pParent) : QGraphicsScene(pParent)
 	this->addItem(m_pTof);
 }
 
+
 TofLayoutScene::~TofLayoutScene()
 {
-	delete m_pTof;
+	if(m_pTof)
+		delete m_pTof;
 }
+
 
 void TofLayoutScene::emitAllParams()
 {
@@ -532,6 +567,7 @@ void TofLayoutScene::emitAllParams()
 
 	emit paramsChanged(parms);
 }
+
 
 void TofLayoutScene::triangleChanged(const TriangleOptions& opts)
 {
@@ -550,10 +586,12 @@ void TofLayoutScene::triangleChanged(const TriangleOptions& opts)
 	m_bDontEmitChange = false;
 }
 
+
 void TofLayoutScene::recipParamsChanged(const RecipParams& params)
 {
 	m_pTof->SetAngleKiQ(params.dKiQ);
 }
+
 
 void TofLayoutScene::emitUpdate(const TriangleOptions& opts)
 {
@@ -562,17 +600,21 @@ void TofLayoutScene::emitUpdate(const TriangleOptions& opts)
 	emit tasChanged(opts);
 }
 
+
 void TofLayoutScene::scaleChanged(t_real dTotalScale)
 {
-	if(!m_pTof) return;
+	if(!m_pTof)
+		return;
 	m_pTof->SetZoom(dTotalScale);
 }
+
 
 void TofLayoutScene::mousePressEvent(QGraphicsSceneMouseEvent *pEvt)
 {
 	QGraphicsScene::mousePressEvent(pEvt);
 	emit nodeEvent(1);
 }
+
 
 void TofLayoutScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *pEvt)
 {
@@ -592,6 +634,7 @@ TofLayoutView::TofLayoutView(QWidget* pParent) : QGraphicsView(pParent)
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
+
 
 TofLayoutView::~TofLayoutView()
 {}
@@ -617,10 +660,12 @@ void TofLayoutView::keyPressEvent(QKeyEvent *pEvt)
 	QGraphicsView::keyPressEvent(pEvt);
 }
 
+
 void TofLayoutView::keyReleaseEvent(QKeyEvent *pEvt)
 {
 	QGraphicsView::keyReleaseEvent(pEvt);
 }
+
 
 void TofLayoutView::wheelEvent(QWheelEvent *pEvt)
 {

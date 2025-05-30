@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -51,7 +51,7 @@ class TofLayout;
 class TofLayoutNode : public QGraphicsItem
 {
 	protected:
-		TofLayout *m_pParentItem;
+		TofLayout *m_pParentItem = nullptr;
 
 	protected:
 		virtual QRectF boundingRect() const override;
@@ -114,7 +114,7 @@ class TofLayout : public QGraphicsItem
 		void SetAngleKiQ(t_real_glob dKiQ);
 
 		void SetReady(bool bReady) { m_bReady = bReady; }
-		void nodeMoved(const TofLayoutNode* pNode=0);
+		void nodeMoved(const TofLayoutNode* pNode = nullptr);
 
 		void AllowChanges(bool bAllow) { m_bAllowChanges = bAllow; };
 		void AllowMouseMove(bool bAllow);
@@ -123,8 +123,9 @@ class TofLayout : public QGraphicsItem
 		t_real_glob GetZoom() const { return m_dZoom; }
 
 	public:
-		std::vector<TofLayoutNode*> GetNodes();
+		std::vector<TofLayoutNode*> GetNodes() const;
 		std::vector<std::string> GetNodeNames() const;
+		QPointF GetGfxMid() const;
 
 		t_real_glob GetScaleFactor() const { return m_dScaleFactor; }
 		void SetScaleFactor(t_real_glob dScale) { m_dScaleFactor = dScale; }
@@ -137,7 +138,7 @@ class TofLayout : public QGraphicsItem
 class TofLayoutScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
-		TofLayout *m_pTof;
+		TofLayout *m_pTof = nullptr;
 		bool m_bDontEmitChange = true;
 		bool m_bSamplePosSense = true;
 
@@ -188,7 +189,7 @@ class TofLayoutView : public QGraphicsView
 		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;
 
 	public:
-		TofLayoutView(QWidget* pParent = 0);
+		TofLayoutView(QWidget* pParent = nullptr);
 		virtual ~TofLayoutView();
 
 	signals:

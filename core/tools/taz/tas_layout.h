@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -53,7 +53,7 @@ class TasLayout;
 class TasLayoutNode : public QGraphicsItem
 {
 	protected:
-		TasLayout *m_pParentItem;
+		TasLayout *m_pParentItem = nullptr;
 
 	protected:
 		virtual QRectF boundingRect() const override;
@@ -70,7 +70,7 @@ class TasLayoutScene;
 class TasLayout : public QGraphicsItem
 {
 	protected:
-		bool m_bReady = 0, m_bUpdate = 0;
+		bool m_bReady = false, m_bUpdate = false;
 		TasLayoutScene& m_scene;
 
 		std::unique_ptr<TasLayoutNode> m_pSrc,
@@ -90,8 +90,8 @@ class TasLayout : public QGraphicsItem
 		t_real_glob m_dScaleFactor = 1.4; // pixels per cm for zoom == 1
 		t_real_glob m_dZoom = 1.;
 
-		bool m_bRealQVisible = 1;
-		bool m_bAllowChanges = 1;
+		bool m_bRealQVisible = true;
+		bool m_bAllowChanges = true;
 
 		const std::vector<DarkAngle<t_real_glob>> *m_pvecDarkAngles = nullptr;
 
@@ -134,8 +134,9 @@ class TasLayout : public QGraphicsItem
 		void SetZoom(t_real_glob dZoom);
 		t_real_glob GetZoom() const { return m_dZoom; }
 
-		std::vector<TasLayoutNode*> GetNodes();
+		std::vector<TasLayoutNode*> GetNodes() const;
 		std::vector<std::string> GetNodeNames() const;
+		QPointF GetGfxMid() const;
 
 		t_real_glob GetScaleFactor() const { return m_dScaleFactor; }
 		void SetScaleFactor(t_real_glob dScale) { m_dScaleFactor = dScale; }
@@ -160,7 +161,7 @@ class TasLayoutScene : public QGraphicsScene
 
 
 	public:
-		TasLayoutScene(QObject *pParent=nullptr);
+		TasLayoutScene(QObject *pParent = nullptr);
 		virtual ~TasLayoutScene();
 
 		bool GetSampleSense() const { return m_bSamplePosSense; }
@@ -201,7 +202,7 @@ class TasLayoutView : public QGraphicsView
 		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;
 
 	public:
-		TasLayoutView(QWidget* pParent = 0);
+		TasLayoutView(QWidget* pParent = nullptr);
 		virtual ~TasLayoutView();
 
 	signals:

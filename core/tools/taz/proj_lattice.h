@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -92,7 +92,7 @@ class ProjLatticeScene;
 class ProjLattice : public QGraphicsItem
 {
 	protected:
-		bool m_bReady = 0;
+		bool m_bReady = false;
 		ProjLatticeScene &m_scene;
 
 		t_real_glob m_dScaleFactor = 150.;	// pixels per A for zoom == 1.
@@ -142,13 +142,13 @@ class ProjLattice : public QGraphicsItem
 class ProjLatticeScene : public QGraphicsScene
 {	Q_OBJECT
 	protected:
-		ProjLattice *m_pLatt;
+		ProjLattice *m_pLatt = nullptr;
 
-		bool m_bSnap = 0;
-		bool m_bMousePressed = 0;
+		bool m_bSnap = false;
+		bool m_bMousePressed = false;
 
 	public:
-		ProjLatticeScene(QObject *pParent=nullptr);
+		ProjLatticeScene(QObject *pParent = nullptr);
 		virtual ~ProjLatticeScene();
 
 		const ProjLattice* GetLattice() const { return m_pLatt; }
@@ -186,7 +186,7 @@ class ProjLatticeView : public QGraphicsView
 		virtual void keyReleaseEvent(QKeyEvent *pEvt) override;
 
 	public:
-		ProjLatticeView(QWidget* pParent = 0);
+		ProjLatticeView(QWidget* pParent = nullptr);
 		virtual ~ProjLatticeView();
 
 	signals:

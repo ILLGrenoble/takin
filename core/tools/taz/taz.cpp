@@ -1137,7 +1137,8 @@ void TazDlg::showEvent(QShowEvent *pEvt)
 
 void TazDlg::dragEnterEvent(QDragEnterEvent *pEvt)
 {
-	if(pEvt) pEvt->accept();
+	if(pEvt)
+		pEvt->accept();
 }
 
 
@@ -1293,7 +1294,7 @@ void TazDlg::RecipNodeEvent(bool bStarted)
 {
 	// optimises reso dialog update policy
 	if(m_pReso)
-		m_pReso->SetUpdateOn(!bStarted, 1);
+		m_pReso->SetUpdateOn(!bStarted, true);
 }
 
 
@@ -1301,7 +1302,7 @@ void TazDlg::RealNodeEvent(bool bStarted)
 {
 	// optimises reso dialog update policy
 	if(m_pReso)
-		m_pReso->SetUpdateOn(1, !bStarted);
+		m_pReso->SetUpdateOn(true, !bStarted);
 }
 
 
@@ -1309,7 +1310,7 @@ void TazDlg::TofNodeEvent(bool bStarted)
 {
 	// optimises reso dialog update policy
 	if(m_pReso)
-		m_pReso->SetUpdateOn(1, !bStarted);
+		m_pReso->SetUpdateOn(true, !bStarted);
 }
 
 
@@ -1331,6 +1332,22 @@ void TazDlg::RecipProjChanged()
 		m_sceneProjRecip.GetLattice()->CalcPeaks(m_latticecommon, true);
 	}
 }
+
+
+void TazDlg::CentreViews()
+{
+	if(m_pviewRecip)
+		m_pviewRecip->centerOn(m_sceneRecip.GetTriangle()->GetGfxMid());
+	if(m_pviewReal)
+		m_pviewReal->centerOn(m_sceneReal.GetTasLayout()->GetGfxMid());
+	if(m_pviewTof)
+		m_pviewTof->centerOn(m_sceneTof.GetTofLayout()->GetGfxMid());
+	if(m_pviewRealLattice)
+		m_pviewRealLattice->centerOn(QPointF(0., 0.));
+	if(m_pviewProjRecip)
+		m_pviewProjRecip->centerOn(QPointF(0., 0.));
+}
+
 
 
 // 3d stuff

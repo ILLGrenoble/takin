@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -84,7 +84,7 @@ class ScatteringTriangle;
 class ScatteringTriangleNode : public QGraphicsItem
 {
 	protected:
-		ScatteringTriangle *m_pParentItem;
+		ScatteringTriangle *m_pParentItem = nullptr;
 
 	protected:
 		virtual QRectF boundingRect() const override;
@@ -130,7 +130,7 @@ class ScatteringTriangle : public QGraphicsItem
 		using t_powderline = typename tl::Powder<int,t_real_glob>::t_peak;
 
 	protected:
-		bool m_bReady=0, m_bUpdate=0;
+		bool m_bReady = false, m_bUpdate = false;
 
 		ScatteringTriangleScene &m_scene;
 
@@ -151,17 +151,17 @@ class ScatteringTriangle : public QGraphicsItem
 		std::vector<t_real_glob> m_vecPowderLineWidths;
 		tl::Kd<t_real_glob> m_kdLattice;
 
-		bool m_bShowBZ = 1;
+		bool m_bShowBZ = true;
 		tl::Brillouin2D<t_real_glob> m_bz;
 		tl::Brillouin3D<t_real_glob> m_bz3;
 		std::vector<ublas::vector<t_real_glob>> m_vecBZ3VertsUnproj, m_vecBZ3Verts;
 		std::vector<ublas::vector<t_real_glob>> m_vecBZ3SymmPts;
 
-		bool m_bqVisible = 0;
-		bool m_bCoordAxesVisible = 1;
-		bool m_bShowEwaldSphere = 1;
-		bool m_bEwaldAroundKi = 0;
-		bool m_bShowAllPeaks = 1;
+		bool m_bqVisible = false;
+		bool m_bCoordAxesVisible = true;
+		bool m_bShowEwaldSphere = true;
+		bool m_bEwaldAroundKi = false;
+		bool m_bShowAllPeaks = true;
 
 	protected:
 		virtual QRectF boundingRect() const override;
@@ -260,20 +260,20 @@ class ScatteringTriangleScene : public QGraphicsScene
 		t_real_glob m_dMonoD = 3.355;
 		t_real_glob m_dAnaD = 3.355;
 
-		bool m_bSamplePosSense = 1;
-		bool m_bAnaPosSense = 0;
-		bool m_bMonoPosSense = 0;
+		bool m_bSamplePosSense = true;
+		bool m_bAnaPosSense = false;
+		bool m_bMonoPosSense = false;
 
-		bool m_bDontEmitChange = 0;
-		bool m_bSnap = 0;
-		bool m_bSnapq = 1;
-		bool m_bMousePressed = 0;
+		bool m_bDontEmitChange = false;
+		bool m_bSnap = false;
+		bool m_bSnapq = true;
+		bool m_bMousePressed = false;
 
-		bool m_bKeepAbsKiKf = 1;
-		bool m_bSnapKiKfToElastic = 0;
+		bool m_bKeepAbsKiKf = true;
+		bool m_bSnapKiKfToElastic = false;
 
 	public:
-		ScatteringTriangleScene(QObject *pParent=nullptr);
+		ScatteringTriangleScene(QObject *pParent = nullptr);
 		virtual ~ScatteringTriangleScene();
 
 		void SetEmitChanges(bool bEmit) { m_bDontEmitChange = !bEmit; }
@@ -345,7 +345,7 @@ class ScatteringTriangleView : public QGraphicsView
 		virtual bool event(QEvent *pEvt) override;
 
 	public:
-		ScatteringTriangleView(QWidget* pParent = 0);
+		ScatteringTriangleView(QWidget* pParent = nullptr);
 		virtual ~ScatteringTriangleView();
 
 	signals:
