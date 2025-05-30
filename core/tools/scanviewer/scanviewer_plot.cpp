@@ -173,7 +173,6 @@ void ScanViewerDlg::PlotScan()
 	const int iStartIdx = spinStart->value();
 	const int iEndSkip = spinStop->value();
 	const int iSkipRows = spinSkip->value();
-
 	m_vecX.resize(m_instrs.size());
 	m_vecY.resize(m_instrs.size());
 	m_vecYErr.resize(m_instrs.size());
@@ -257,7 +256,7 @@ void ScanViewerDlg::PlotScan()
 			if(std::size_t(iStartIdx) >= vecX.size())
 				vecX.clear();
 			else
-				vecX.erase(vecX.begin(), vecX.begin()+iStartIdx);
+				vecX.erase(vecX.begin(), vecX.begin() + iStartIdx);
 
 			if(std::size_t(iStartIdx) >= vecY.size())
 			{

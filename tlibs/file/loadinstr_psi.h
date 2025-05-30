@@ -237,8 +237,8 @@ static std::vector<std::array<t_real, 6>> parse_pol_states(const std::string& po
 	t_real Pi_sign = t_real(1);
 	t_real Pf_sign = t_real(1);
 
-	bool bIsSphericalPA = 1;
-	bool bSwitchOn = 0;
+	bool bIsSphericalPA = true;
+	bool bSwitchOn = false;
 
 	// iterate command lines
 	for(std::string& strLine : vecLines)

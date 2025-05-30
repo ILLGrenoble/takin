@@ -190,7 +190,7 @@ plot \
 	std::ostringstream ostrPoints;
 	ostrPoints.precision(g_iPrec);
 
-	for(std::size_t i=0; i<std::min(vecX.size(), vecY.size()); ++i)
+	for(std::size_t i = 0; i < std::min(vecX.size(), vecY.size()); ++i)
 	{
 		ostrPoints
 			<< std::left << std::setw(g_iPrec*2) << vecX[i] << " "
@@ -287,7 +287,7 @@ plt.show())RAWSTR";
 	ostrY.precision(g_iPrec);
 	ostrYErr.precision(g_iPrec);
 
-	for(std::size_t i=0; i<std::min(vecX.size(), vecY.size()); ++i)
+	for(std::size_t i = 0; i < std::min(vecX.size(), vecY.size()); ++i)
 	{
 		ostrX << vecX[i] << ", ";
 		ostrY << vecY[i] << ", ";
@@ -367,7 +367,7 @@ void scan_plot()
 	ostrY.precision(g_iPrec);
 	ostrYErr.precision(g_iPrec);
 
-	for(std::size_t i=0; i<std::min(vecX.size(), vecY.size()); ++i)
+	for(std::size_t i = 0; i < std::min(vecX.size(), vecY.size()); ++i)
 	{
 		ostrX << vecX[i] << ", ";
 		ostrY << vecY[i] << ", ";
@@ -508,7 +508,7 @@ mid = min + range*0.5
 	ostrY.precision(g_iPrec);
 	ostrYErr.precision(g_iPrec);
 
-	for(std::size_t i=0; i<std::min(vecX.size(), vecY.size()); ++i)
+	for(std::size_t i = 0; i < std::min(vecX.size(), vecY.size()); ++i)
 	{
 		ostrX << vecX[i] << ", ";
 		ostrY << vecY[i] << ", ";

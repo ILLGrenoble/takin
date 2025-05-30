@@ -338,9 +338,10 @@ void ScanViewerDlg::GenerateExternal(int iLang)
 	const std::vector<t_real>& vecX = m_vecX[0];
 	const std::vector<t_real>& vecY = m_vecY[0];
 	const std::vector<t_real>& vecYErr = m_vecYErr[0];
+	if(!vecX.size() || !vecY.size() || !vecYErr.size())
+		return;
 
 	std::string strSrc;
-
 	if(iLang == 0)	// gnuplot
 	{
 		strSrc = export_scan_to_gnuplot<std::vector<t_real>>(
