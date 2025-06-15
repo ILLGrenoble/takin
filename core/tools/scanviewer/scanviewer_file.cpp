@@ -461,7 +461,8 @@ void ScanViewerDlg::ChangedPath()
 
 	m_strCurDir = "";
 	std::vector<std::string> dirs;
-	tl::get_tokens<std::string, std::string, std::vector<std::string>>(comboPath->currentText().toStdString(), ";", dirs);
+	tl::get_tokens<std::string, std::string, std::vector<std::string>>(
+		comboPath->currentText().toStdString(), ";", dirs);
 
 	// watch directory for changes
 	m_pWatcher.reset(new QFileSystemWatcher(this));
@@ -513,14 +514,39 @@ void ScanViewerDlg::DirWasModified()
 
 
 /**
+ * rest the scan file extension list to its default values
+ */
+void ScanViewerDlg::ResetFileExtensions()
+{
+	editFileExts->setText(".dat; .scn; .ng0; .log; .nxs; .hdf; <empty>");
+	DirWasModified();
+}
+
+
+/**
  * re-populate file list
  */
 void ScanViewerDlg::UpdateFileList()
 {
 	listFiles->clear();
 
+	// get scan directories
 	std::vector<std::string> dirs;
-	tl::get_tokens<std::string, std::string, std::vector<std::string>>(m_strCurDir, ";", dirs);
+	tl::get_tokens<std::string, std::string, std::vector<std::string>>(
+		m_strCurDir, ";", dirs);
+
+	// get scan file extensions
+	std::vector<std::string> vecExts;
+	tl::get_tokens<std::string, std::string, std::vector<std::string>>(
+		editFileExts->text().toStdString(), ";", vecExts);
+	for(std::string& ext : vecExts)
+	{
+		tl::trim(ext);
+
+		// handle files with no extensions
+		if(ext == "<empty>" || ext == "<none>")
+			ext = "";
+	}
 
 	bool show_scan_type = false;
 	if(m_core_settings)
@@ -535,7 +561,7 @@ void ScanViewerDlg::UpdateFileList()
 
 			std::set<fs::path> lst;
 			std::copy_if(dir_begin, dir_end, std::insert_iterator<decltype(lst)>(lst, lst.end()),
-				[this](const fs::path& p) -> bool
+				[&vecExts](const fs::path& p) -> bool
 				{
 					// ignore non-existing files and directories
 					if(!tl::file_exists(p.string().c_str()))
@@ -546,12 +572,12 @@ void ScanViewerDlg::UpdateFileList()
 						strExt = "." + tl::wstr_to_str(tl::get_fileext2(p.filename().native()));
 
 					// allow everything if no extensions are defined
-					if(this->m_vecExts.size() == 0)
+					if(vecExts.size() == 0)
 						return true;
 
 					// see if extension is in list
-					return std::find(this->m_vecExts.begin(), this->m_vecExts.end(),
-						strExt) != this->m_vecExts.end();
+					return std::find(vecExts.begin(), vecExts.end(),
+						tl::str_to_lower(strExt)) != vecExts.end();
 				});
 
 			for(const fs::path& d : lst)

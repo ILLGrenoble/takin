@@ -68,7 +68,6 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	: QDialog(pParent, Qt::WindowTitleHint|Qt::WindowCloseButtonHint|Qt::WindowMinMaxButtonsHint),
 		m_settings("takin", "scanviewer", this),
 		m_core_settings{core_settings},
-		m_vecExts({ ".dat", ".DAT", ".scn", ".SCN", ".ng0", ".NG0", ".log", ".LOG", ".nxs", ".NXS", ".hdf", ".HDF", "" }),
 		m_pFitParamDlg(new FitParamDlg(this, &m_settings))
 {
 	this->setupUi(this);
@@ -108,6 +107,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	QObject::connect(comboPath, &QComboBox::editTextChanged, pThis, &ScanViewerDlg::ChangedPath);
 	QObject::connect(listFiles, &QListWidget::itemSelectionChanged, pThis, &ScanViewerDlg::FileSelected);
 	QObject::connect(editSearch, &QLineEdit::textEdited, pThis, &ScanViewerDlg::SearchProps);
+	QObject::connect(editFileExts, &QLineEdit::textEdited, pThis, static_cast<void (ScanViewerDlg::*)()>(&ScanViewerDlg::DirWasModified));
+	QObject::connect(btnResetExts, &QToolButton::clicked, pThis, static_cast<void (ScanViewerDlg::*)()>(&ScanViewerDlg::ResetFileExtensions));
 	QObject::connect(btnBrowse, &QToolButton::clicked, pThis, static_cast<void (ScanViewerDlg::*)()>(&ScanViewerDlg::SelectDir));
 	QObject::connect(btnRefresh, &QToolButton::clicked, pThis, static_cast<void (ScanViewerDlg::*)()>(&ScanViewerDlg::DirWasModified));
 	for(QLineEdit* pEdit : {editPolVec1, editPolVec2, editPolCur1, editPolCur2})
@@ -175,6 +176,8 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 		editPolCur1->setText(m_settings.value("pol/cur1").toString());
 	if(m_settings.contains("pol/cur2"))
 		editPolCur2->setText(m_settings.value("pol/cur2").toString());
+	if(m_settings.contains("file_exts"))
+		editFileExts->setText(m_settings.value("file_exts").toString());
 
 	m_bDoUpdate = true;
 	ChangedPath();
@@ -230,6 +233,7 @@ void ScanViewerDlg::closeEvent(QCloseEvent* pEvt)
 	m_settings.setValue("pol/vec2", editPolVec2->text());
 	m_settings.setValue("pol/cur1", editPolCur1->text());
 	m_settings.setValue("pol/cur2", editPolCur2->text());
+	m_settings.setValue("file_exts", editFileExts->text());
 	m_settings.setValue("last_dir", QString(m_strCurDir.c_str()));
 	m_settings.setValue("geo", saveGeometry());
 	m_settings.setValue("splitter", splitter->saveState());

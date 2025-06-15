@@ -42,6 +42,7 @@
        <property name="spacing">
         <number>4</number>
        </property>
+
        <item row="0" column="0" colspan="3">
         <widget class="QListWidget" name="listFiles">
          <property name="sizePolicy">
@@ -61,7 +62,36 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0" rowspan="2">
+
+       <item row="1" column="0" colspan="2">
+         <widget class="QLineEdit" name="editFileExts">
+           <property name="toolTip">
+             <string>Scan file extensions.</string>
+           </property>
+           <property name="text">
+             <string>.dat; .scn; .ng0; .log; .nxs; .hdf; &lt;empty&gt;;</string>
+           </property>
+         </widget>
+       </item>
+
+       <item row="1" column="2" rowspan="1">
+        <widget class="QToolButton" name="btnResetExts">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Reset default scan file extensions.</string>
+         </property>
+         <property name="text">
+          <string>&#x232b;</string>
+         </property>
+        </widget>
+       </item>
+
+       <item row="2" column="0" rowspan="1">
         <widget class="QComboBox" name="comboPath">
          <property name="toolTip">
           <string>Current and recent data directories.</string>
@@ -77,7 +107,8 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1" rowspan="2">
+
+       <item row="2" column="1" rowspan="1">
         <widget class="QToolButton" name="btnRefresh">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -89,14 +120,15 @@
           <string>Refresh current data directory.</string>
          </property>
          <property name="text">
-          <string>⭯</string>
+          <string>&#8634;</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="2" rowspan="2">
+
+       <item row="2" column="2" rowspan="1">
         <widget class="QToolButton" name="btnBrowse">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>1</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -109,6 +141,7 @@
          </property>
         </widget>
        </item>
+
       </layout>
      </widget>
      <widget class="QWidget" name="layoutWidget_2">
@@ -1317,6 +1350,8 @@
  </customwidgets>
  <tabstops>
   <tabstop>listFiles</tabstop>
+  <tabstop>editFileExts</tabstop>
+  <tabstop>btnResetExts</tabstop>
   <tabstop>comboPath</tabstop>
   <tabstop>btnRefresh</tabstop>
   <tabstop>btnBrowse</tabstop>

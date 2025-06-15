@@ -64,7 +64,6 @@ private:
 	std::unique_ptr<QFileSystemWatcher> m_pWatcher;
 	std::string m_strCurDir, m_strCurFile;
 	std::string m_strSelectedKey;
-	std::vector<std::string> m_vecExts;
 
 	bool m_bDoUpdate = false;
 	std::vector<tl::FileInstrBase<t_real_glob>*> m_instrs;
@@ -116,6 +115,7 @@ protected slots:
 	void SelectDir();
 	void ChangedPath();
 	void DirWasModified();
+	void ResetFileExtensions();
 	void SearchProps(const QString&);
 
 	void XAxisSelected(int);
