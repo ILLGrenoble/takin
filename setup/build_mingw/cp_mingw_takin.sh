@@ -58,10 +58,10 @@ rm -v ${INSTDIR}/CMakeLists.txt
 
 
 # examples
-cp -rv examples 		${INSTDIR}/
-cp -rv data/samples 		${INSTDIR}/
-cp -rv data/instruments 	${INSTDIR}/
-cp -rv data/demos 		${INSTDIR}/
+cp -rv examples			${INSTDIR}/
+cp -rv data/samples		${INSTDIR}/
+cp -rv data/instruments		${INSTDIR}/
+cp -rv demos			${INSTDIR}/
 
 
 # resources

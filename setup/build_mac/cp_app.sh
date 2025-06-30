@@ -219,7 +219,7 @@ cp -v ../AUTHORS "${PRG}/Contents/Resources/AUTHORS.txt"
 
 cp -rv data/instruments "${PRG}/Contents/Resources/"
 cp -rv data/samples "${PRG}/Contents/Resources/"
-cp -rv data/demos "${PRG}/Contents/Resources/"
+cp -rv demos "${PRG}/Contents/Resources/"
 
 rm -v "${PRG}/Contents/Resources/CMakeLists.txt"
 
