@@ -603,7 +603,7 @@ void ConvoDlg::browseSqwFiles()
 	if(m_pSett)
 		strDirLast = m_pSett->value("monteconvo/last_dir_sqw", "~").toString();
 	QString strFile = QFileDialog::getOpenFileName(this,
-		"Open S(q,E) File", strDirLast, "All S(q,E) files (*.dat *.DAT *.py *.PY *.jl *.JL *.XML *.xml *.MAGDYN *.magdyn);;All files (*.* *)",
+		"Open S(q,E) File", strDirLast, "All S(q,E) files (*.dat *.DAT *.py *.PY *.jl *.JL *.XML *.xml *.MAGDYN *.magdyn *.MAGPIE *.magpie);;All files (*.* *)",
 		nullptr, fileopt);
 	if(strFile == "")
 		return;
