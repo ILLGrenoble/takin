@@ -121,6 +121,7 @@ magdyn.add_coupling(mag,     "Anisotropy",  "Mn 1", "Mn 1",  "0", "0", "0",     
 # calculate the rest of the couplings by symmetry
 print("Calculating symmetry-equivalent couplings...")
 magdyn.symmetrise_couplings(mag, spacegroup)
+#mag.SortExchangeTerms()
 # -----------------------------------------------------------------------------
 
 
