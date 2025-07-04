@@ -29,6 +29,7 @@
 #include "scan.h"
 #include "tlibs/log/log.h"
 #include "tlibs/math/stat.h"
+#include "libs/globals.h"
 
 #include <fstream>
 
@@ -45,14 +46,15 @@
 /**
  * saving a scan file
  */
-bool save_file(const char* pcFile, const Scan& sc)
+bool save_file(const char* pcFile, const Scan& sc, const char* comment)
 {
 	std::ofstream ofstr(pcFile);
 	if(!ofstr)
 		return false;
 
-	ofstr.precision(16);
+	ofstr.precision(g_iPrec);
 
+	ofstr << "#\n";
 	ofstr << "# scan_origin = "
 		<< sc.vecScanOrigin[0] << " "
 		<< sc.vecScanOrigin[1] << " "
@@ -63,25 +65,27 @@ bool save_file(const char* pcFile, const Scan& sc)
 		<< sc.vecScanDir[1] << " "
 		<< sc.vecScanDir[2] << " "
 		<< sc.vecScanDir[3] << "\n";
-	ofstr << "# T = " << sc.dTemp << " +- " << sc.dTempErr << "\n";
-	ofstr << "# B = " << sc.dField << " +- " << sc.dFieldErr << "\n";
-
+	ofstr << "# T = " << sc.dTemp << " K +- " << sc.dTempErr << " K\n";
+	ofstr << "# B = " << sc.dField << " T +- " << sc.dFieldErr << " T\n";
 	ofstr << "#\n";
 
-	ofstr << std::left << std::setw(21) << "# x"
-		<< std::left << std::setw(21) << "counter"
-		<< std::left << std::setw(21) << "counter errors"
-		<< std::left << std::setw(21) << "monitor"
-		<< std::left << std::setw(21) << "monitor errors" << "\n";
+	if(comment)
+		ofstr << "# " << comment << "\n#\n";
+
+	ofstr << std::left << std::setw(g_iPrec*2.5) << "# scan_dir" << " "
+		<< std::left << std::setw(g_iPrec*2.5) << "counter" << " "
+		<< std::left << std::setw(g_iPrec*2.5) << "counter_err" <<  " "
+		<< std::left << std::setw(g_iPrec*2.5) << "monitor" << " "
+		<< std::left << std::setw(g_iPrec*2.5) << "monitor_err" << "\n";
 
 	const std::size_t iNum = sc.vecX.size();
-	for(std::size_t i=0; i<iNum; ++i)
+	for(std::size_t i = 0; i < iNum; ++i)
 	{
-		ofstr << std::left << std::setw(20) << sc.vecX[i] << " "
-			<< std::left << std::setw(20) << sc.vecCts[i] << " "
-			<< std::left << std::setw(20) << sc.vecCtsErr[i] << " "
-			<< std::left << std::setw(20) << sc.vecMon[i] << " "
-			<< std::left << std::setw(20) << sc.vecMonErr[i] << "\n";
+		ofstr << std::left << std::setw(g_iPrec*2.5) << sc.vecX[i] << " "
+			<< std::left << std::setw(g_iPrec*2.5) << sc.vecCts[i] << " "
+			<< std::left << std::setw(g_iPrec*2.5) << sc.vecCtsErr[i] << " "
+			<< std::left << std::setw(g_iPrec*2.5) << sc.vecMon[i] << " "
+			<< std::left << std::setw(g_iPrec*2.5) << sc.vecMonErr[i] << "\n";
 	}
 
 	return true;
@@ -358,7 +362,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 	}
 	else	// automatic determination
 	{
-		for(unsigned int i=0; i<4; ++i)
+		for(unsigned int i = 0; i < 4; ++i)
 		{
 			if(!tl::float_equal<t_real_sc>(scan.vecScanDir[i], 0., dEps))
 			{
@@ -447,7 +451,7 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 		vecCtsErrNew.push_back(scan.vecCtsErr[i]);
 		vecMonErrNew.push_back(scan.vecMonErr[i]);
 
-		for(int ihklE=0; ihklE<4; ++ihklE)
+		for(int ihklE = 0; ihklE < 4; ++ihklE)
 			vechklENew[ihklE].push_back(scan.vechklE[ihklE][i]);
 	}
 

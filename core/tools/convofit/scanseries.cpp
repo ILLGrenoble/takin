@@ -33,6 +33,7 @@
 #include "tlibs/file/file.h"
 #include "tlibs/file/prop.h"
 #include "tlibs/log/log.h"
+#include "libs/globals.h"
 
 
 using t_real = double;
@@ -46,7 +47,7 @@ bool get_fileprops(const std::string& strFile, t_map& mapProps)
 	if(!ifstr)
 	{
 		tl::log_err("Cannot open file \"", strFile, "\".");
-		return 0;
+		return false;
 	}
 
 	std::string strLine;
@@ -93,7 +94,7 @@ bool get_fileprops(const std::string& strFile, t_map& mapProps)
 			}
 		}
 		// hklE values -> split them, e.g. "scan_dir = 0 0 0 1" -> "scan_dir_h = 0", ...
-		else if(vecHKLE.size()==3 || vecHKLE.size()==4)
+		else if(vecHKLE.size() == 3 || vecHKLE.size() == 4)
 		{
 			std::vector<std::string> vecSuffixes = {"_h", "_k", "_l", "_E"};
 
@@ -111,7 +112,7 @@ bool get_fileprops(const std::string& strFile, t_map& mapProps)
 		}
 	}
 
-	return 1;
+	return true;
 }
 
 
@@ -135,15 +136,15 @@ int invoke_old(int argc, char** argv, int start_arg = 0)
 		tl::log_err("Cannot open output file \"", strOut, "\".");
 		return -1;
 	}
-	ofstr.precision(16);
-
+	ofstr.precision(g_iPrec);
+	int width = g_iPrec * 2.5;
 
 	for(std::size_t iCol = 0; iCol < vecCols.size(); ++iCol)
 	{
 		if(iCol==0)
-			ofstr << std::left << std::setw(42) << ("# " + vecCols[iCol]);
+			ofstr << std::left << std::setw((width + 1) * 2) << ("# " + vecCols[iCol]);
 		else
-			ofstr << std::left << std::setw(42) << vecCols[iCol];
+			ofstr << std::left << std::setw((width + 1) * 2) << vecCols[iCol];
 	}
 	ofstr << "\n";
 
@@ -169,8 +170,8 @@ int invoke_old(int argc, char** argv, int start_arg = 0)
 		for(const std::string& strCol : vecCols)
 		{
 			t_map::const_iterator iter = map.find(strCol);
-			ofstr << std::left << std::setw(20) << iter->second.first << " ";
-			ofstr << std::left << std::setw(20) << iter->second.second << " ";
+			ofstr << std::left << std::setw(width) << iter->second.first << " ";
+			ofstr << std::left << std::setw(width) << iter->second.second << " ";
 		}
 
 		ofstr << "\n";
@@ -191,7 +192,7 @@ bool invoke_new(const char* pcFile)
 	if(!file.Load(strFile, tl::PropType::INFO))
 	{
 		tl::log_err("Cannot open config file \"", strFile, "\".");
-		return 0;
+		return false;
 	}
 
 
@@ -209,7 +210,7 @@ bool invoke_new(const char* pcFile)
 			else
 			{
 				tl::log_err("No valid convo series defined in \"", strFile, "\".");
-				return 0;
+				return false;
 			}
 		}
 		else
@@ -227,7 +228,7 @@ bool invoke_new(const char* pcFile)
 		if(strOut == "")
 		{
 			tl::log_err("No output file given.");
-			return 0;
+			return false;
 		}
 
 
@@ -240,7 +241,7 @@ bool invoke_new(const char* pcFile)
 		if(!vecCols.size())
 		{
 			tl::log_err("No variables given.");
-			return 0;
+			return false;
 		}
 
 
@@ -278,10 +279,10 @@ bool invoke_new(const char* pcFile)
 			++iFile;
 		}
 
-		if(vecMod.size()==0 || vecScn.size()==0)
+		if(vecMod.size() == 0 || vecScn.size() == 0)
 		{
 			tl::log_err("No enough model/scan files given.");
-			return 0;
+			return false;
 		}
 
 		tl::log_info(vecMod.size(), " input files and ", vecCols.size(), " variables given.",
@@ -294,22 +295,22 @@ bool invoke_new(const char* pcFile)
 		if(!ofstr)
 		{
 			tl::log_err("Cannot open output file \"", strOut, "\".");
-			return 0;
+			return false;
 		}
-		ofstr.precision(16);
+		ofstr.precision(g_iPrec);
+		int width = g_iPrec * 2.5;
 
-
-		for(std::size_t iCol=0; iCol<vecCols.size(); ++iCol)
+		for(std::size_t iCol = 0; iCol < vecCols.size(); ++iCol)
 		{
-			if(iCol==0)
-				ofstr << std::left << std::setw(42) << ("# " + vecCols[iCol]);
+			if(iCol == 0)
+				ofstr << std::left << std::setw((width + 1) * 2) << ("# " + vecCols[iCol]);
 			else
-				ofstr << std::left << std::setw(42) << vecCols[iCol];
+				ofstr << std::left << std::setw((width + 1) * 2) << vecCols[iCol];
 		}
 		ofstr << "\n";
 
 
-		for(unsigned iNr=0; iNr<vecMod.size(); ++iNr)
+		for(unsigned iNr = 0; iNr < vecMod.size(); ++iNr)
 		{
 			const std::string& strModFile = vecMod[iNr];
 			const std::string& strScFile = vecScn[iNr];
@@ -331,8 +332,8 @@ bool invoke_new(const char* pcFile)
 			for(const std::string& strCol : vecCols)
 			{
 				t_map::const_iterator iter = map.find(strCol);
-				ofstr << std::left << std::setw(20) << iter->second.first << " ";
-				ofstr << std::left << std::setw(20) << iter->second.second << " ";
+				ofstr << std::left << std::setw(width) << iter->second.first << " ";
+				ofstr << std::left << std::setw(width) << iter->second.second << " ";
 			}
 
 			ofstr << "\n";
@@ -342,7 +343,7 @@ bool invoke_new(const char* pcFile)
 		++iSeries;
 	}
 
-	return 1;
+	return true;
 }
 
 

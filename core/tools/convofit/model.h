@@ -185,7 +185,8 @@ public:
 	{ SetMinuitParams(state.Parameters()); }
 
 	bool Save(const char *pcFile, std::size_t iPts = 256,
-		std::size_t iSkipBegin = 0, std::size_t iSkipEnd = 0) const;
+		std::size_t iSkipBegin = 0, std::size_t iSkipEnd = 0,
+		const char* comment = nullptr) const;
 
 	SqwBase* GetSqwBase() { return m_pSqw.get(); }
 };

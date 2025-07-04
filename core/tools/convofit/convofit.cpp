@@ -834,7 +834,7 @@ bool Convofit::run_job(const std::string& _strJob)
 		return false;
 	}
 
-	bool bValidFit = 0;
+	bool bValidFit = false;
 	if(bDoFit)
 	{
 		tl::log_info("Performing fit.");
@@ -869,9 +869,18 @@ bool Convofit::run_job(const std::string& _strJob)
 			strCurScOutFile += tl::var_to_str(iSc);
 		}
 
+		// command overplotting model & scan
+		std::ostringstream comment;
+		comment.precision(g_iPrec);
+		comment << "plot \"" << strCurScOutFile << "\" u 1:2:3 w yerr pt 7, \""
+			<< strCurModOutFile << "\" u 1:2 w l";
+
 		mod.SetParamSet(iSc);
-		mod.Save(strCurModOutFile.c_str(), iPlotPoints, iPlotPointsSkipBegin, iPlotPointsSkipEnd);
-		save_file(strCurScOutFile.c_str(), sc);
+		mod.Save(strCurModOutFile.c_str(), iPlotPoints,
+			iPlotPointsSkipBegin, iPlotPointsSkipEnd, comment.str().c_str());
+		save_file(strCurScOutFile.c_str(), sc, comment.str().c_str());
+
+		tl::log_info("Plot scan #", iSc, " using: ", comment.str());
 	}
 	// --------------------------------------------------------------------
 

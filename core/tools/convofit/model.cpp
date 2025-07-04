@@ -34,13 +34,13 @@
 #include "tlibs/log/log.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/array.h"
+#include "libs/globals.h"
 #include "../res/defs.h"
 #include "../res/ellipse.h"
 #include "convofit.h"
 
 
 using t_real = t_real_mod;
-#define NUM_PREC 16
 
 
 SqwFuncModel::SqwFuncModel(std::shared_ptr<SqwBase> pSqw, const TASReso& reso)
@@ -208,9 +208,9 @@ void SqwFuncModel::SetOtherParams(t_real dTemperature, t_real dField)
 {
 	std::vector<SqwBase::t_var> vecVars;
 	if(m_strTempParamName != "")
-		vecVars.push_back(std::make_tuple(m_strTempParamName, "double", tl::var_to_str(dTemperature, NUM_PREC)));
+		vecVars.push_back(std::make_tuple(m_strTempParamName, "double", tl::var_to_str(dTemperature, g_iPrec)));
 	if(m_strFieldParamName != "")
-		vecVars.push_back(std::make_tuple(m_strFieldParamName, "double", tl::var_to_str(dField, NUM_PREC)));
+		vecVars.push_back(std::make_tuple(m_strFieldParamName, "double", tl::var_to_str(dField, g_iPrec)));
 	m_pSqw->SetVars(vecVars);
 }
 
@@ -221,9 +221,9 @@ void SqwFuncModel::SetModelParams()
 	std::vector<SqwBase::t_var> vecVars;
 	vecVars.reserve(iNumParams);
 
-	for(std::size_t iParam=0; iParam<iNumParams; ++iParam)
+	for(std::size_t iParam = 0; iParam < iNumParams; ++iParam)
 	{
-		std::string strVal = tl::var_to_str(m_vecModelParams[iParam], NUM_PREC);
+		std::string strVal = tl::var_to_str(m_vecModelParams[iParam], g_iPrec);
 		SqwBase::t_var var = std::make_tuple(m_vecModelParamNames[iParam], "double", strVal);
 		vecVars.push_back(var);
 	}
@@ -282,9 +282,9 @@ bool SqwFuncModel::SetParams(const std::vector<tl::t_real_min>& vecParams)
 				bool bChanged = !tl::float_equal(dVal, dOldParam);
 				std::string strRet = strParam +
 					std::string(" = ") +
-					tl::var_to_str(dVal, NUM_PREC);
+					tl::var_to_str(dVal, g_iPrec);
 				if(bChanged)
-					strRet += " (old: " + tl::var_to_str(dOldParam, NUM_PREC) + ")";
+					strRet += " (old: " + tl::var_to_str(dOldParam, g_iPrec) + ")";
 				return strRet;
 			});
 
@@ -459,7 +459,8 @@ minuit::MnUserParameters SqwFuncModel::GetMinuitParams() const
 }
 
 
-bool SqwFuncModel::Save(const char *pcFile, std::size_t iNum, std::size_t iSkipBegin, std::size_t iSkipEnd) const
+bool SqwFuncModel::Save(const char *pcFile, std::size_t iNum,
+	std::size_t iSkipBegin, std::size_t iSkipEnd, const char* comment) const
 {
 	if(iSkipBegin + iSkipEnd >= iNum)
 	{
@@ -478,35 +479,40 @@ bool SqwFuncModel::Save(const char *pcFile, std::size_t iNum, std::size_t iSkipB
 			return false;
 		}
 
-		ofstr.precision(NUM_PREC);
+		ofstr.precision(g_iPrec);
 		const std::vector<std::string> vecNames = GetParamNames();
 
 		tl::container_cast<t_real, tl::t_real_min, std::vector> cst;
 		const std::vector<t_real> vecVals = cst(GetParamValues());
 		const std::vector<t_real> vecErrs = cst(GetParamErrors());
 
-		for(std::size_t iParam=0; iParam<vecNames.size(); ++iParam)
+		ofstr << "#\n";
+		for(std::size_t iParam = 0; iParam < vecNames.size(); ++iParam)
 		{
 			ofstr << "# " << vecNames[iParam] << " = "
 				<< vecVals[iParam] << " +- "
 				<< vecErrs[iParam] << "\n";
 		}
 
-		ofstr << "## Data columns: (1) scan axis, (2) intensity";
+		ofstr << "#\n";
+		if(comment)
+			ofstr << "# " << comment << "\n#\n";
+
+		ofstr << "# Data columns: (1) scan axis, (2) intensity";
 		ofstr << ", (3) Bragg Qx (rlu), (4) Bragg Qy (rlu), (5) Bragg Qz (rlu), (6) Bragg E (meV)\n";
+		ofstr << "#\n";
 
 		std::vector<t_real> vecFWHMs[4];
 
 		tl::log_info("Number of plot points: ", iNum, ", skip: ", iSkipBegin, ", ", iSkipEnd, ".");
 
-		for(std::size_t i=iSkipBegin; i<iNum-iSkipEnd; ++i)
+		for(std::size_t i = iSkipBegin; i < iNum - iSkipEnd; ++i)
 		{
 			t_real dX = tl::lerp(t_real(m_dPrincipalAxisMin), t_real(m_dPrincipalAxisMax), t_real(i)/t_real(iNum-1));
 			t_real dY = (*this)(dX);
 
-			ofstr << std::left << std::setw(NUM_PREC*2) << dX << " "
-				<< std::left << std::setw(NUM_PREC*2) << dY << " ";
-
+			ofstr << std::left << std::setw(g_iPrec*2.5) << dX << " "
+				<< std::left << std::setw(g_iPrec*2.5) << dY << " ";
 
 			// save bragg widths for error calculation
 			// TODO: also save bragg width in rlu
@@ -522,17 +528,17 @@ bool SqwFuncModel::Save(const char *pcFile, std::size_t iNum, std::size_t iSkipB
 				 resores.reso, resores.reso_v, resores.Q_avg);
 
 			const std::vector<t_real> vecFwhms = calc_bragg_fwhms(resoHKL);
-			for(int iFwhm=0; iFwhm<4; ++iFwhm)
+			for(int iFwhm = 0; iFwhm < 4; ++iFwhm)
 				vecFWHMs[iFwhm].push_back(vecFwhms[iFwhm]);
 
 			for(t_real dFwhm : vecFwhms)
-				ofstr << std::left << std::setw(NUM_PREC*2) << dFwhm << " ";
+				ofstr << std::left << std::setw(g_iPrec*2.5) << dFwhm << " ";
 			ofstr << "\n";
 
 			ofstr.flush();
 		}
 
-		for(int iFwhm=0; iFwhm<4; ++iFwhm)
+		for(int iFwhm = 0; iFwhm < 4; ++iFwhm)
 		{
 			t_real dSig = tl::mean_value(vecFWHMs[iFwhm]);
 			t_real dDSig = tl::std_dev(vecFWHMs[iFwhm]);
@@ -602,7 +608,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 
 			if(strParams.length())
 				strParams += ", ";
-			strParams += "scale = " + tl::var_to_str(m_dScale, NUM_PREC);
+			strParams += "scale = " + tl::var_to_str(m_dScale, g_iPrec);
 		}
 
 		if(iter_slope != all_params.end())
@@ -611,7 +617,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 
 			if(strParams.length())
 				strParams += ", ";
-			strParams += "slope = " + tl::var_to_str(m_dSlope, NUM_PREC);
+			strParams += "slope = " + tl::var_to_str(m_dSlope, g_iPrec);
 		}
 
 		if(iter_offs != all_params.end())
@@ -620,7 +626,7 @@ void SqwFuncModel::SetParamSet(std::size_t iSet)
 
 			if(strParams.length())
 				strParams += ", ";
-			strParams += "offs = " + tl::var_to_str(m_dOffs, NUM_PREC);
+			strParams += "offs = " + tl::var_to_str(m_dOffs, g_iPrec);
 		}
 
 

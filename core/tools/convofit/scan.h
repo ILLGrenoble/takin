@@ -132,7 +132,7 @@ extern bool load_file(const char* pcFile, Scan& scan,
 	bool bFlipCoords = false, bool bAllowScanMerging = false,
 	bool bUseFirstAndLastPoints = false);
 
-extern bool save_file(const char* pcFile, const Scan& sc);
+extern bool save_file(const char* pcFile, const Scan& sc, const char* comment = nullptr);
 
 
 #endif
