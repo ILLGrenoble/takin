@@ -183,7 +183,7 @@ if [ $build_magpie -ne 0 ]; then
 		fi
 
 		# copy tools to Takin main dir
-		cp -v ${BUILD_DIR}/tools/magdyn/magpie "${TAKIN_ROOT}"/core/bin/
+		cp -v ${BUILD_DIR}/magpie/magpie "${TAKIN_ROOT}"/core/bin/
 		cp -v ${BUILD_DIR}/tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
 		cp -v ${BUILD_DIR}/tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
 		cp -v ${BUILD_DIR}/tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/

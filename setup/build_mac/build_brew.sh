@@ -139,12 +139,12 @@ if [ $build_magpie -ne 0 ]; then
 		fi
 
 		# copy tools to Takin main dir
+		cp -v magpie/magpie "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/cif2xml/takin_cif2xml "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/cif2xml/takin_findsg "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/bz/takin_bz "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/structfact/takin_structfact "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/magstructfact/takin_magstructfact "${TAKIN_ROOT}"/core/bin/
-		cp -v tools/magdyn/magpie "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/scanbrowser/takin_scanbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/magsgbrowser/takin_magsgbrowser "${TAKIN_ROOT}"/core/bin/
 		cp -v tools/moldyn/takin_moldyn "${TAKIN_ROOT}"/core/bin/
