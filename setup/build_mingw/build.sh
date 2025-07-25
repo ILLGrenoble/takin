@@ -160,7 +160,7 @@ if [ $build_magpie -ne 0 ]; then
 		cp -v build/tools/cif2xml/takin_findsg.exe "${TAKIN_ROOT}"/core/bin/
 		cp -v build/tools/bz/takin_bz.exe "${TAKIN_ROOT}"/core/bin/
 		cp -v build/tools/structfact/takin_structfact.exe "${TAKIN_ROOT}"/core/bin/
-		cp -v build/tools/magstructfact/takin_magstructfact.exe "${TAKIN_ROOT}"/core/bin/
+		cp -v build/tools/structfact/takin_magstructfact.exe "${TAKIN_ROOT}"/core/bin/
 		cp -v build/tools/scanbrowser/takin_scanbrowser.exe "${TAKIN_ROOT}"/core/bin/
 		cp -v build/tools/magsgbrowser/takin_magsgbrowser.exe "${TAKIN_ROOT}"/core/bin/
 		cp -v build/tools/moldyn/takin_moldyn.exe "${TAKIN_ROOT}"/core/bin/
