@@ -39,6 +39,9 @@ fi
 MINUIT_REMOTE=https://codeload.github.com/root-project/root/zip/refs/heads/latest-stable
 MINUIT_DIR=root-latest-stable
 
+MINUIT_REMOTE=https://github.com/root-project/root/archive/refs/tags/v6-37-01.zip
+MINUIT_DIR=root-6-37-01
+
 
 MINUIT_LOCAL=${MINUIT_REMOTE##*[/\\]}
 rm -f "${MINUIT_LOCAL}"

@@ -37,8 +37,10 @@ fi
 
 
 
-LAPACK_REMOTE=https://codeload.github.com/Reference-LAPACK/lapack/zip/refs/heads/master
-LAPACK_LOCAL=${LAPACK_REMOTE##*[/\\]}
+#LAPACK_REMOTE=https://codeload.github.com/Reference-LAPACK/lapack/zip/refs/heads/master
+LAPACK_REMOTE=https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.12.1.zip
+LAPACK_LOCAL_ZIP=${LAPACK_REMOTE##*[/\\]}
+LAPACK_LOCAL=lapack-3.12.1
 
 
 rm -f "${LAPACK_LOCAL}"
@@ -51,16 +53,16 @@ fi
 
 
 rm -rf build_lapacke
-unzip "${LAPACK_LOCAL}"
+unzip "${LAPACK_LOCAL_ZIP}"
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	mkdir build_lapacke
 	cd build_lapacke
-	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE ../lapack-master
+	mingw64-cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE "../${LAPACK_LOCAL}"
 	mingw64-make -j${NUM_CORES} && sudo mingw64-make install/strip
 else
 	# no shared library, since this interferes with the system library
-	cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE -DBUILD_SHARED_LIBS=FALSE -B build_lapacke lapack-master
+	cmake -DCMAKE_BUILD_TYPE=Release -DLAPACKE=TRUE -DBUILD_SHARED_LIBS=FALSE -B build_lapacke "${LAPACK_LOCAL}"
 	cmake --build build_lapacke --parallel ${NUM_CORES} && sudo cmake --install build_lapacke --strip
 fi

@@ -37,8 +37,10 @@ fi
 
 
 
-GEMMI_REMOTE=https://codeload.github.com/project-gemmi/gemmi/zip/refs/heads/master
-GEMMI_LOCAL=${GEMMI_REMOTE##*[/\\]}
+#GEMMI_REMOTE=https://codeload.github.com/project-gemmi/gemmi/zip/refs/heads/master
+GEMMI_REMOTE=https://github.com/project-gemmi/gemmi/archive/refs/tags/v0.7.3.zip
+GEMMI_LOCAL_ZIP=${GEMMI_REMOTE##*[/\\]}
+GEMMI_LOCAL=gemmi-0.7.3
 
 
 rm -f "${GEMMI_LOCAL}"
@@ -50,9 +52,9 @@ if ! wget ${GEMMI_REMOTE}; then
 fi
 
 
-rm -rf gemmi-master
-unzip "${GEMMI_LOCAL}"
-cd gemmi-master
+rm -rf "${GEMMI_LOCAL}"
+unzip "${GEMMI_LOCAL_ZIP}"
+cd "${GEMMI_LOCAL}"
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then

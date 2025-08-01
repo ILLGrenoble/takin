@@ -37,8 +37,10 @@ fi
 
 
 
-QHULL_REMOTE=https://codeload.github.com/qhull/qhull/zip/refs/heads/master
-QHULL_LOCAL=${QHULL_REMOTE##*[/\\]}
+#QHULL_REMOTE=https://codeload.github.com/qhull/qhull/zip/refs/heads/master
+QHULL_REMOTE=https://github.com/qhull/qhull/archive/refs/tags/v8.0.2.zip
+QHULL_LOCAL_ZIP=${QHULL_REMOTE##*[/\\]}
+QHULL_LOCAL=qhull-8.0.2
 
 
 rm -f "${QHULL_LOCAL}"
@@ -50,14 +52,15 @@ if ! wget ${QHULL_REMOTE}; then
 fi
 
 
-rm -rf qhull-master
-unzip "${QHULL_LOCAL}"
-cd qhull-master
+rm -rf "${QHULL_LOCAL}"
+unzip "${QHULL_LOCAL_ZIP}"
+cd "${QHULL_LOCAL}"
 
 
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	mkdir build_lib && cd build_lib
 	mingw64-cmake -DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=True \
 		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False \
 		-DBUILD_STATIC_LIBS=True -DBUILD_SHARED_LIBS=False ..
@@ -65,6 +68,7 @@ if [ $BUILD_FOR_MINGW -ne 0 ]; then
 else
 	cmake -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=True \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		-DQHULL_ENABLE_TESTING=False -DBUILD_APPLICATIONS=False \
 		-DBUILD_STATIC_LIBS=True -DBUILD_SHARED_LIBS=False \
 		-B build_lib .
