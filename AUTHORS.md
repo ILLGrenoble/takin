@@ -16,18 +16,11 @@ CONTRIBUTORS
   - mail: mecoli\<AT\>ill.fr
   - active: 2025
   - contributions:
-    - for res_py: Python implementation of the Violini method
+    - cosmetic changes for the GUI.
 
 
 **Jens Krüger**
   - mail: jens.krueger\<AT\>frm2.tum.de
   - active: 2024
   - contributions:
-    - for setup: build scripts for more debian systems
-
-
-**Gabriel Rebolini**
-  - mail: rebolinig\<AT\>ill.fr
-  - active: april-june 2025 for an internship
-  - contributions:
-    - improvements for nxsprint.py.
+    - for setup: build scripts for more debian systems.
