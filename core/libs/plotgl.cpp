@@ -38,6 +38,7 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <QtGlobal>
 
 
 #define RENDER_FPS 40
@@ -48,8 +49,11 @@ using t_mat3 = tl::t_mat3_gen<t_real>;
 using t_vec4 = tl::t_vec4_gen<t_real>;
 using t_vec3 = tl::t_vec3_gen<t_real>;
 
-
-#define POS_F localPos
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define POS_F localPos //deprecated with Qt6
+#else
+#define POS_F position
+#endif
 
 
 static const int g_iTimerInterval = int(t_real(1e3) / t_real(RENDER_FPS));
