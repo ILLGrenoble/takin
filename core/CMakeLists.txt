@@ -39,11 +39,12 @@ option(USE_GENTAB "build setup utilities" TRUE)
 option(USE_RtMp "use auxilliary libraries" TRUE)
 option(USE_Dl "use dl libraries" TRUE)
 option(USE_Py "search for python" TRUE)
-option(USE_LAPACKE "search for Lapacke" TRUE)
+option(USE_LAPACKE "search for Lapacke" OFF)
 option(USE_CUSTOM_THREADPOOL "use custom threadpool implementation" FALSE)
 option(USE_INTERPROC_EMUL "force shared memory emulation mode" FALSE)
 option(DISABLE_INTERPROC_XSI "disable xsi shared memory syscalls" FALSE)
-
+#option(BUILD_WITH_QT6 "build this app with Qt6 instead of Qt5" TRUE)
+set(BUILD_WITH_QT6 True)
 set(USE_TR1_FUNCS FALSE)
 set(BUILD_EXT_TOOLS FALSE)
 
@@ -79,8 +80,8 @@ endif()
 
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-set(CMAKE_CXX_STANDARD 14)
-add_compile_options(-std=c++14)
+set(CMAKE_CXX_STANDARD 17)
+add_compile_options(-std=c++17)
 #add_compile_options(-fPIC)
 add_compile_options(-fvisibility=hidden)
 
@@ -166,10 +167,17 @@ else()
 	set(Py_FOUND FALSE)
 endif()
 
-
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPS} OPTIONAL_COMPONENTS ${BOOST_OPT_COMPS})
 find_package(Threads REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Svg) #OpenGL)
+
+if (BUILD_WITH_QT6)
+	message("Building with Qt6")
+	find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Svg OpenGLWidgets HINTS) #OpenGL)
+else()
+	message("Building with Qt5")
+	find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Svg HINTS) #OpenGL)
+endif()
+
 find_package(Qwt REQUIRED)
 find_package(Minuit2 REQUIRED)
 find_package(PNG REQUIRED)
@@ -217,13 +225,22 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 find_package(Freetype)
 
+if (BUILD_WITH_QT6)
+	if("${QT6_MOC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT6_MOC_EXECUTABLE Qt6::moc IMPORTED_LOCATION)
+	endif()
 
-if("${QT_MOC_EXECUTABLE}" STREQUAL "")
-	get_target_property(QT_MOC_EXECUTABLE Qt5::moc IMPORTED_LOCATION)
-endif()
+	if("${QT6_UIC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT6_UIC_EXECUTABLE Qt6::uic IMPORTED_LOCATION)
+	endif()
+else()
+	if("${QT5_MOC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT5_MOC_EXECUTABLE Qt5::moc IMPORTED_LOCATION)
+	endif()
 
-if("${QT_UIC_EXECUTABLE}" STREQUAL "")
-	get_target_property(QT_UIC_EXECUTABLE Qt5::uic IMPORTED_LOCATION)
+	if("${QT5_UIC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT5_UIC_EXECUTABLE Qt5::uic IMPORTED_LOCATION)
+	endif()
 endif()
 
 #if("${QT_QCOLLECTIONGENERATOR_EXECUTABLE}" STREQUAL "")
@@ -235,7 +252,7 @@ message("Project source dir: ${PROJECT_SOURCE_DIR}")
 message("CMake source dir: ${CMAKE_SOURCE_DIR}")
 message("CMake binary dir: ${CMAKE_BINARY_DIR}")
 message("Install path prefix: ${CMAKE_INSTALL_PREFIX}")
-message("Using Qt version ${Qt5Core_VERSION}.")
+message("Using Qt version ${QtCore_VERSION}.")
 if(NOT "${QWT_MAJOR_VERSION}" STREQUAL "")
 	message("Using Qwt version ${QWT_MAJOR_VERSION}.")
 endif()
@@ -248,7 +265,7 @@ endif()
 if(NOT "${Boost_PYTHON_VERSION}" STREQUAL "")
 	message("Using Boost.Py version ${Boost_PYTHON_VERSION}.")
 endif()
-message("Qt moc: ${QT_MOC_EXECUTABLE}\nQt uic: ${QT_UIC_EXECUTABLE}")
+message("Qt moc: ${QT6_MOC_EXECUTABLE}\nQt uic: ${QT6_UIC_EXECUTABLE}")
 
 
 add_definitions(-DNO_QHULL)
@@ -295,7 +312,11 @@ include_directories("." "./3rdparty")
 include_directories("${Boost_INCLUDE_DIRS}/..")
 include_directories("${PNG_INCLUDE_DIRS}")
 #include_directories("${JPEG_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS}")
-include_directories("${Qt5Core_INCLUDE_DIRS}" "${Qt5Gui_INCLUDE_DIRS}" "${Qt5Widgets_INCLUDE_DIRS}")
+if (BUILD_WITH_QT6)
+	include_directories("${Qt6Core_INCLUDE_DIRS}" "${Qt6Gui_INCLUDE_DIRS}" "${Qt6Widgets_INCLUDE_DIRS}")
+else()
+	include_directories("${Qt5Core_INCLUDE_DIRS}" "${Qt5Gui_INCLUDE_DIRS}" "${Qt5Widgets_INCLUDE_DIRS}")
+endif()
 include_directories("${QWT_INCLUDE_DIRS}")
 include_directories("${ZLIB_INCLUDE_DIRS}")
 include_directories("${BZIP2_INCLUDE_DIR}")
@@ -413,8 +434,14 @@ if(USE_GENTAB)
 		3rdparty/clipper-master/clipper/core/clipper_message.cpp
 	)
 
+	if (BUILD_WITH_QT6)
+		set(QtLibs Qt6::Core Qt6::Gui Qt6::Svg Qt6::OpenGLWidgets Qt6::Widgets)
+	else()
+		set(QtLibs Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
+	endif()
+
 	target_link_libraries(gentab
-		Qt5::Core Qt5::Gui Qt5::Widgets
+		${QtLibs}
 		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
 		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
@@ -494,7 +521,8 @@ add_executable(takin
 	# libs
 	libs/spacegroups/spacegroup.cpp tools/sglist/SgListDlg.cpp
 	libs/globals.cpp libs/globals_qt.cpp libs/spacegroups/crystalsys.cpp
-	libs/formfactors/formfact.cpp libs/qt/qthelper.cpp libs/qt/qwthelper.cpp
+	libs/formfactors/formfact.cpp libs/qt/qthelper.cpp
+	libs/qt/qwthelper.cpp
 
 	${SRCS_3D}
 
@@ -511,7 +539,7 @@ add_executable(takin
 target_link_libraries(takin
 	${LIBS_FIT} ${LIBS_LINALG}
 	${SOCK2}
-	Qt5::Core Qt5::Gui Qt5::Svg
+	${QtLibs}
 	${QWT_LIBRARIES}
 	${LIBS_3D}
 	${PNG_LIBRARIES}
