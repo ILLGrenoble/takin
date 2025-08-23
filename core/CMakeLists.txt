@@ -79,9 +79,15 @@ endif()
 
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-set(CMAKE_CXX_STANDARD 17)
-add_compile_options(-std=c++17)
-#add_compile_options(-fPIC)
+
+if(USE_QT6)
+	set(CMAKE_CXX_STANDARD 17)
+	add_compile_options(-std=c++17)
+else()
+	set(CMAKE_CXX_STANDARD 14)
+	add_compile_options(-std=c++14)
+endif()
+
 add_compile_options(-fvisibility=hidden)
 
 # for application plugins
@@ -169,7 +175,7 @@ endif()
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPS} OPTIONAL_COMPONENTS ${BOOST_OPT_COMPS})
 find_package(Threads REQUIRED)
 
-if (USE_QT6)
+if(USE_QT6)
 	message("Using Qt 6.")
 	find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Svg OpenGLWidgets HINTS) #OpenGL)
 else()
@@ -224,7 +230,7 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 find_package(Freetype)
 
-if (USE_QT6)
+if(USE_QT6)
 	if("${QT_MOC_EXECUTABLE}" STREQUAL "")
 		get_target_property(QT_MOC_EXECUTABLE Qt6::moc IMPORTED_LOCATION)
 	endif()
@@ -310,10 +316,12 @@ include_directories("." "./3rdparty")
 include_directories("${Boost_INCLUDE_DIRS}/..")
 include_directories("${PNG_INCLUDE_DIRS}")
 #include_directories("${JPEG_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS}")
-if (USE_QT6)
-	include_directories("${Qt6Core_INCLUDE_DIRS}" "${Qt6Gui_INCLUDE_DIRS}" "${Qt6Widgets_INCLUDE_DIRS}")
+if(USE_QT6)
+	include_directories("${Qt6Core_INCLUDE_DIRS}" "${Qt6Gui_INCLUDE_DIRS}"
+		"${Qt6Widgets_INCLUDE_DIRS}" "${Qt6OpenGLWidgets_INCLUDE_DIRS}")
 else()
-	include_directories("${Qt5Core_INCLUDE_DIRS}" "${Qt5Gui_INCLUDE_DIRS}" "${Qt5Widgets_INCLUDE_DIRS}")
+	include_directories("${Qt5Core_INCLUDE_DIRS}" "${Qt5Gui_INCLUDE_DIRS}"
+		"${Qt5Widgets_INCLUDE_DIRS}")
 endif()
 include_directories("${QWT_INCLUDE_DIRS}")
 include_directories("${ZLIB_INCLUDE_DIRS}")
@@ -432,7 +440,7 @@ if(USE_GENTAB)
 		3rdparty/clipper-master/clipper/core/clipper_message.cpp
 	)
 
-	if (USE_QT6)
+	if(USE_QT6)
 		set(QtLibs Qt6::Core Qt6::Gui Qt6::Svg Qt6::OpenGLWidgets Qt6::Widgets)
 	else()
 		set(QtLibs Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
