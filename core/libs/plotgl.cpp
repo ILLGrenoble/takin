@@ -50,9 +50,9 @@ using t_vec4 = tl::t_vec4_gen<t_real>;
 using t_vec3 = tl::t_vec3_gen<t_real>;
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-#define POS_F localPos //deprecated with Qt6
+	#define POS_F localPos  // deprecated with Qt6
 #else
-#define POS_F position
+	#define POS_F position
 #endif
 
 

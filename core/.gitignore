@@ -22,6 +22,7 @@ takin.app/*
 .clang/*
 .codelite/*
 .settings/*
+.qt/*
 
 CMakeFiles/*
 CMakeCache.txt
