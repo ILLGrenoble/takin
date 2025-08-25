@@ -177,10 +177,10 @@ find_package(Threads REQUIRED)
 
 if(USE_QT6)
 	message("Using Qt 6.")
-	find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Svg OpenGLWidgets HINTS) #OpenGL)
+	find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Svg OpenGLWidgets HINTS)
 else()
 	message("Using Qt 5.")
-	find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Svg HINTS) #OpenGL)
+	find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Svg HINTS)
 endif()
 
 find_package(Qwt REQUIRED)
@@ -390,7 +390,7 @@ if(OPENGL_FOUND AND FREETYPE_FOUND)
 	include_directories("${FREETYPE_INCLUDE_DIRS}")
 	if(NOT "${OPENGL_INCLUDE_DIR}" STREQUAL "")
 		include_directories("${OPENGL_INCLUDE_DIR}")
-		include_directories("${OPENGL_INCLUDE_DIR}/GL" "${OPENGL_INCLUDE_DIR}/OpenGL")
+		include_directories("${OPENGL_INCLUDE_DIR}/GL" "${OPENGL_INCLUDE_DIR}/OpenGL" "${OPENGL_INCLUDE_DIR}/Headers")
 	else()
 		message("Empty OGL dirs, guessing some defaults.")
 		include_directories("/usr/include/GL" "/usr/include/OpenGL" "/usr/x86_64-w64-mingw32/sys-root/mingw/include/GL")
@@ -419,6 +419,12 @@ set(CMAKE_AUTOUIC TRUE)
 set(CMAKE_AUTORCC FALSE)
 
 
+if(USE_QT6)
+	set(QtLibs Qt6::Core Qt6::Gui Qt6::Svg Qt6::OpenGLWidgets Qt6::Widgets)
+else()
+	set(QtLibs Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
+endif()
+
 
 # -----------------------------------------------------------------------------
 # gentab
@@ -439,12 +445,6 @@ if(USE_GENTAB)
 		3rdparty/clipper-master/clipper/core/clipper_util.cpp
 		3rdparty/clipper-master/clipper/core/clipper_message.cpp
 	)
-
-	if(USE_QT6)
-		set(QtLibs Qt6::Core Qt6::Gui Qt6::Svg Qt6::OpenGLWidgets Qt6::Widgets)
-	else()
-		set(QtLibs Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
-	endif()
 
 	target_link_libraries(gentab
 		${QtLibs}
@@ -543,9 +543,9 @@ add_executable(takin
 )
 
 target_link_libraries(takin
+	${QtLibs}
 	${LIBS_FIT} ${LIBS_LINALG}
 	${SOCK2}
-	${QtLibs}
 	${QWT_LIBRARIES}
 	${LIBS_3D}
 	${PNG_LIBRARIES}
