@@ -28,7 +28,7 @@
 find_path(QWT_INCLUDE_DIRS
 	NAMES qwt.h
 	PATH_SUFFIXES qwt6-qt6 qwt-qt6 qt6/qwt qt6/qwt/qwt qt6/qwt6 qt6 qwt6 qwt
-	HINTS /usr/local/qwt-6.3.0/include /usr/local/include /usr/include /opt/local/include /usr/local/Cellar/qwt/*/lib/qwt.framework/Versions/6/Headers/
+	HINTS /usr/local/qwt*/include /usr/local/include /usr/include /opt/local/include /usr/local/qwt*/lib/qwt.framework/Versions/6/Headers/ /usr/local/Cellar/qwt/*/lib/qwt.framework/Versions/6/Headers/
 	DOC "Qwt include directories"
 )
 
@@ -37,7 +37,7 @@ list(APPEND QWT_INCLUDE_DIRS "${QWT_INCLUDE_DIRS}/..")
 
 find_library(QWT_LIBRARIES
 	NAMES qwt6-qt6 qwt-qt6 qwt6 qwt
-	HINTS /usr/local/qwt-6.3.0/lib /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/lib32 /usr/local/lib32
+	HINTS /usr/local/qwt*/lib /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/lib32 /usr/local/lib32 /usr/local/qwt*/lib/qwt.framework/
 	DOC "Qwt libraries"
 )
 
