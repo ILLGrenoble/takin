@@ -124,17 +124,10 @@ if [ $build_externals -ne 0 ]; then
 		if ! "${TAKIN_ROOT}"/setup/externals/build_minuit.sh; then
 			exit -1
 		fi
-		if ! "${TAKIN_ROOT}"/setup/externals/build_qhull.sh; then
-			exit -1
-		fi
 		if ! "${TAKIN_ROOT}"/setup/externals/build_lapacke.sh; then
 			exit -1
 		fi
-		cp -v "${TAKIN_ROOT}"/setup/externals/CMakeLists_qcp.txt .
-		if ! "${TAKIN_ROOT}"/setup/externals/build_qcp.sh; then
-			exit -1
-		fi
-		if ! "${TAKIN_ROOT}"/setup/externals/build_gemmi.sh; then
+		if ! "${TAKIN_ROOT}"/setup/externals/build_qwt.sh; then
 			exit -1
 		fi
 	popd
@@ -170,6 +163,19 @@ if [ $build_magpie -ne 0 ]; then
 	pushd "${TAKIN_ROOT}/mag-core"
 		rm -rf ${BUILD_DIR}
 
+		# build external libraries
+		if ! ./setup/externals/build_qhull.sh; then
+			exit -1
+		fi
+		cp -v ./setup/externals/CMakeLists_qcp.txt .
+		if ! ./setup/externals/build_qcp.sh; then
+			exit -1
+		fi
+		if ! ./setup/externals/build_gemmi.sh; then
+			exit -1
+		fi
+
+		# build tools
 		if ! cmake -DCMAKE_BUILD_TYPE=Release \
 			-DONLY_BUILD_FINISHED=True -DBUILD_PY_MODULES=$__BUILD_PY_MODULES \
 			-B ${BUILD_DIR} . ; then

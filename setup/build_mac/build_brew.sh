@@ -123,6 +123,7 @@ if [ $build_magpie -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/mag-core"
+		# build tools
 		rm -rf build
 		mkdir -p build
 		cd build
