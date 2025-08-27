@@ -276,7 +276,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 		QObject::connect(pEdit, &QLineEdit::textEdited, this, &TazDlg::CalcPeaksRecip);
 	}
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 	QObject::connect(checkSenseM, &QCheckBox::checkStateChanged, this, &TazDlg::UpdateMonoSense);
 	QObject::connect(checkSenseS, &QCheckBox::checkStateChanged, this, &TazDlg::UpdateSampleSense);
 	QObject::connect(checkSenseA, &QCheckBox::checkStateChanged, this, &TazDlg::UpdateAnaSense);

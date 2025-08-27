@@ -125,7 +125,7 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	QObject::connect(comboX, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxisSelected);
 	QObject::connect(comboY, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
 	QObject::connect(comboMon, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::MonAxisSelected);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 	QObject::connect(checkNorm, static_cast<void (QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), pThis, &ScanViewerDlg::NormaliseStateChanged);
 	QObject::connect(checkMerge, static_cast<void (QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), pThis, &ScanViewerDlg::MergeStateChanged);
 #else

@@ -208,7 +208,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	connect(comboAlgo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ResoDlg::Calc);
 
 	connect(groupGuide, &QGroupBox::toggled, this, &ResoDlg::Calc);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 	connect(checkElli4dAutoCalc, &QCheckBox::checkStateChanged, this, &ResoDlg::checkAutoCalcElli4dChanged);
 #else
 	connect(checkElli4dAutoCalc, &QCheckBox::stateChanged, this, &ResoDlg::checkAutoCalcElli4dChanged);
