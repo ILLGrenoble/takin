@@ -164,14 +164,8 @@ if [ $build_magpie -ne 0 ]; then
 		rm -rf ${BUILD_DIR}
 
 		# build external libraries
-		if ! ./setup/externals/build_qhull.sh; then
-			exit -1
-		fi
-		cp -v ./setup/externals/CMakeLists_qcp.txt .
-		if ! ./setup/externals/build_qcp.sh; then
-			exit -1
-		fi
-		if ! ./setup/externals/build_gemmi.sh; then
+		if ! ./build_externals.sh; then
+			echo -e "Failed to build external libraries for magpie."
 			exit -1
 		fi
 
