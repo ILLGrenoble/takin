@@ -190,10 +190,6 @@ AboutDlg::AboutDlg(QWidget* pParent, QSettings *pSett)
 	ostrFeat << "Boost.Iostr ";
 #endif
 
-#if defined USE_BOOST_REX
-	ostrFeat << "Boost.Regex ";
-#endif
-
 	ostrFeat << ".";
 	labelFeatures->setText(ostrFeat.str().c_str());
 

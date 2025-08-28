@@ -58,14 +58,7 @@
 	#include <boost/asio/io_service.hpp>
 #endif
 
-#ifndef USE_BOOST_REX
-	#include <regex>
-	namespace rex = ::std;
-#else
-	#include <boost/tr1/regex.hpp>
-	namespace rex = ::boost;
-#endif
-
+#include <regex>
 #include <locale>
 #include <clocale>
 #include <memory>
@@ -625,12 +618,12 @@ int main(int argc, char** argv)
 				std::string hostname, portnumber;
 				std::string username, userpwd;
 
-				const rex::regex regex_url(
+				const std::regex regex_url(
 					"(([A-Za-z0-9]+)(:([A-Za-z0-9]+))?@)?([A-Za-z0-9]+)://([A-Za-z0-9\\.]+)(:([0-9]+))?",
-					rex::regex::ECMAScript);
-				rex::smatch match_url;
+					std::regex::ECMAScript);
+				std::smatch match_url;
 
-				if(rex::regex_match(connectTo, match_url, regex_url))
+				if(std::regex_match(connectTo, match_url, regex_url))
 				{
 					// connection string is in url format
 					if(tl::str_to_lower(std::string(match_url[5])) == "nicos")

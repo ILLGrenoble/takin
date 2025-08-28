@@ -32,14 +32,7 @@
 #include "libs/globals.h"
 
 #include <fstream>
-
-#ifndef USE_BOOST_REX
-	#include <regex>
-	namespace rex = ::std;
-#else
-	#include <boost/tr1/regex.hpp>
-	namespace rex = ::boost;
-#endif
+#include <regex>
 
 
 
@@ -417,24 +410,24 @@ bool load_file(const std::vector<std::string>& vecFiles, Scan& scan, bool bNormT
 			bool skip_pt = false;
 
 			const std::string& colName = filter.colEquals->first;
-			rex::regex rxCol(colName, rex::regex::ECMAScript | rex::regex_constants::icase);
-			rex::smatch matchCol;
+			std::regex rxCol(colName, std::regex::ECMAScript | std::regex_constants::icase);
+			std::smatch matchCol;
 
 			const tl::FileInstrBase<t_real_sc>::t_vecColNames& colNames
 				= pInstr->GetColNames();
 			for(std::size_t col = 0; col < colNames.size(); ++col)
 			{
 				// get first matching column
-				if(rex::regex_match(colNames[col], matchCol, rxCol))
+				if(std::regex_match(colNames[col], matchCol, rxCol))
 				{
 					const std::vector<t_real_sc>& filterCol = pInstr->GetCol(colNames[col]);
 
 					const std::string& rowVal = filter.colEquals->second;
-					rex::regex rxVal(rowVal, rex::regex::ECMAScript | rex::regex_constants::icase);
-					rex::smatch matchVal;
+					std::regex rxVal(rowVal, std::regex::ECMAScript | std::regex_constants::icase);
+					std::smatch matchVal;
 
 					std::string curRowVal = tl::var_to_str(filterCol[i]);
-					skip_pt = !rex::regex_match(curRowVal, matchVal, rxVal);
+					skip_pt = !std::regex_match(curRowVal, matchVal, rxVal);
 
 					break;
 				}
