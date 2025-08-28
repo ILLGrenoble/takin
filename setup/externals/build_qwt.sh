@@ -60,4 +60,5 @@ if [ $BUILD_FOR_MINGW -ne 0 ]; then
 else
 	QT_SELECT=6 qmake6 "CONFIG+=release" qwt.pro
 	make -j${NUM_CORES} && sudo make install
+#	make -j${NUM_CORES} CXX=/usr/local/bin/clang++ && sudo make install
 fi
