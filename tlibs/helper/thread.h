@@ -59,7 +59,7 @@ template<class t_func, class t_startfunc = void(void)>
 class ThreadPool
 {
 public:
-	using t_ret = typename std::result_of<t_func&()>::type;
+	using t_ret = typename std::invoke_result<t_func&>::type;
 	using t_fut = std::list<std::future<t_ret>>;
 	using t_task = std::list<std::packaged_task<t_ret()>>;
 

@@ -48,9 +48,7 @@ namespace tl {
 template<typename T=double> constexpr typename get_scalar_type<T>::value_type get_pi()
 { return boost::math::constants::pi<typename get_scalar_type<T>::value_type>(); }
 
-#if __cplusplus >= 201402L
-	template<typename T=double> static constexpr T g_pi = get_pi<T>();
-#endif
+template<typename T=double> static constexpr T g_pi = get_pi<T>();
 
 template<typename INT=int> bool is_even(INT i) { return (i%2 == 0); }
 template<typename INT=int> bool is_odd(INT i) { return !is_even<INT>(i); }

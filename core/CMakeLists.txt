@@ -35,7 +35,6 @@ message("System name: ${CMAKE_SYSTEM_NAME}.")
 option(DEBUG "debug build" FALSE)
 option(USE_QT6 "use Qt6 instead of Qt5" TRUE)
 option(USE_PLUGINS "use the plugin system" TRUE)
-option(USE_STRIP "strip debug info from release binaries" TRUE)
 option(USE_GENTAB "build setup utilities" TRUE)
 option(USE_RtMp "use auxilliary libraries" TRUE)
 option(USE_Dl "use dl libraries" TRUE)
@@ -44,8 +43,6 @@ option(USE_LAPACKE "search for Lapacke" OFF)
 option(USE_CUSTOM_THREADPOOL "use custom threadpool implementation" FALSE)
 option(USE_INTERPROC_EMUL "force shared memory emulation mode" FALSE)
 option(DISABLE_INTERPROC_XSI "disable xsi shared memory syscalls" FALSE)
-set(USE_TR1_FUNCS FALSE)
-set(BUILD_EXT_TOOLS FALSE)
 
 
 if(DEBUG)
@@ -158,9 +155,6 @@ endif()
 set(BOOST_COMPS program_options${BOOST_SUFFIX} iostreams${BOOST_SUFFIX} filesystem${BOOST_SUFFIX} system${BOOST_SUFFIX})
 set(BOOST_OPT_COMPS)
 
-if(USE_TR1_FUNCS)
-	list(APPEND BOOST_COMPS regex)
-endif()
 
 if(USE_Py)
 	find_package(Python3 COMPONENTS Interpreter Development)
@@ -282,10 +276,6 @@ add_definitions(-DHAS_COMPLEX_ERF)
 
 if(USE_PLUGINS)
 	add_definitions(-DUSE_PLUGINS)
-endif()
-
-if(USE_TR1_FUNCS)
-	add_definitions(-DUSE_BOOST_REX)
 endif()
 
 if(USE_LAPACKE)
@@ -427,6 +417,7 @@ else()
 endif()
 
 
+
 # -----------------------------------------------------------------------------
 # gentab
 # -----------------------------------------------------------------------------
@@ -558,14 +549,6 @@ target_link_libraries(takin
 )
 
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-	add_custom_command(TARGET takin POST_BUILD
-		COMMAND strip -v $<TARGET_FILE:takin>
-		MAIN_DEPENDENCY takin
-	)
-endif()
-
-
 if(USE_GENTAB)
 	add_dependencies(takin gentab)
 endif()
@@ -586,7 +569,6 @@ add_executable(takinmod_py
 	tlibs/math/rand.cpp
 )
 
-
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(takinmod_py
 		# create an __info_plist section in the binary
@@ -599,14 +581,6 @@ target_link_libraries(takinmod_py
 	${_BOOST_PY_TARGET} ${Python3_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 )
-
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-	add_custom_command(TARGET takinmod_py POST_BUILD
-		COMMAND strip -v $<TARGET_FILE:takinmod_py>
-		MAIN_DEPENDENCY takinmod_py
-	)
-endif()
 endif()
 
 
@@ -626,91 +600,5 @@ target_link_libraries(takinmod_jl
 	${Julia_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES}
 )
-
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-	add_custom_command(TARGET takinmod_jl POST_BUILD
-		COMMAND strip -v $<TARGET_FILE:takinmod_jl>
-		MAIN_DEPENDENCY takinmod_jl
-	)
-endif()
 endif()
 # -----------------------------------------------------------------------------
-
-
-
-if(BUILD_EXT_TOOLS)
-	add_definitions(-DCONVOFIT_STANDALONE)
-
-	# -----------------------------------------------------------------------------
-	# convofit, convoseries
-	# -----------------------------------------------------------------------------
-	add_executable(takin_convofit
-		tools/res/cn.cpp tools/res/pop.cpp tools/res/pop_cn.cpp
-		tools/res/eck.cpp tools/res/eck_ext.cpp
-		tools/res/vio.cpp
-		#tools/res/simple.cpp
-
-		tools/monteconvo/TASReso.cpp
-		tools/monteconvo/modules/kdtree.cpp
-		tools/monteconvo/modules/simple_magnon.cpp
-		tools/monteconvo/modules/simple_phonon.cpp
-		tools/monteconvo/modules/table1d.cpp
-		tools/monteconvo/modules/uniform_grid.cpp
-		tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
-
-		tools/convofit/convofit.cpp tools/convofit/convofit_import.cpp
-		tools/convofit/model.cpp tools/convofit/scan.cpp
-		tools/convofit/convofit_cli.cpp tools/convofit/convofit_cli_main.cpp
-
-		# statically link tlibs externals
-		tlibs/log/log.cpp
-		tlibs/math/rand.cpp
-		tlibs/file/tmp.cpp
-		#tlibs/file/loadinstr.cpp
-		libs/globals.cpp
-	)
-
-	set_target_properties(takin_convofit PROPERTIES COMPILE_FLAGS "-DNO_QT")
-
-	target_link_libraries(takin_convofit
-		${LIBS_FIT} ${LIBS_LINALG}
-		${SOCK2}
-		Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
-		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
-		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
-	)
-
-	if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-		add_custom_command(TARGET takin_convofit POST_BUILD
-			COMMAND strip -v $<TARGET_FILE:takin_convofit>
-			MAIN_DEPENDENCY takin_convofit
-		)
-	endif()
-
-	# -----------------------------------------------------------------------------
-
-	add_executable(takin_convoseries
-		tools/convofit/scanseries.cpp
-
-		# statically link tlibs externals
-		tlibs/log/log.cpp
-	)
-
-	set_target_properties(takin_convoseries PROPERTIES COMPILE_FLAGS "-DNO_QT")
-
-	target_link_libraries(takin_convoseries
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
-		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
-		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
-	)
-
-	if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-		add_custom_command(TARGET takin_convoseries POST_BUILD
-			COMMAND strip -v $<TARGET_FILE:takin_convoseries>
-			MAIN_DEPENDENCY takin_convoseries
-	)
-	endif()
-	# -----------------------------------------------------------------------------
-endif()
