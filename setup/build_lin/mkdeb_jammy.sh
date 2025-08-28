@@ -61,12 +61,11 @@ echo -e "Depends:" \
 	"libboost-regex1.74.0 (>=1.74.0)," \
 	"libboost-program-options1.74.0 (>=1.74.0)," \
 	"libboost-python1.74.0 (>=1.74.0)," \
-	"libqt5core5a (>=5.9.5)," \
-	"libqt5gui5 (>=5.9.5)," \
-	"libqt5opengl5 (>=5.9.5)," \
-	"libqt5svg5 (>=5.9.5)," \
-	"libqt5xml5 (>=5.9.5)," \
-	"libqwt-qt5-6 (>=6.1.3)," \
+	"libqt6core6 (>=6.0.0)," \
+	"libqt6gui6 (>=6.0.0)," \
+	"libqt6opengl6 (>=6.0.0)," \
+	"libqt6xml6 (>=6.0.0)," \
+	"libqt6svg6 (>=6.0.0)," \
 	"libpython3.10 (>=3.10.0)," \
 	"python3.10 (>=3.8.0)," \
 	"python3-numpy," \
@@ -85,6 +84,9 @@ echo -e "Depends:" \
 		>> ${INSTDIR}/DEBIAN/control
 
 # libqcustomplot2.0 is only needed by the external programs
+
+# once it exists:
+# "libqwt-qt6-6 (>=6.0.0)," \
 
 
 # copy program files

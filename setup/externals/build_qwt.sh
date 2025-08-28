@@ -58,6 +58,6 @@ cd ${QWT_DIR}
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	echo -e "TODO"
 else
-	qmake6 qwt.pro
+	QT_SELECT=6 qmake6 "CONFIG+=release" qwt.pro
 	make -j${NUM_CORES} && sudo make install
 fi
