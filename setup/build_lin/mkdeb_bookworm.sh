@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # creates a DEB distro
-# @author Tobias Weber <tobias.weber@tum.de>, Jens Krüger
+# @author Tobias Weber <tobias.weber@tum.de>
+# @author Jens Krüger
 # @date 27 may 2024
 # @license GPLv2
 # @note based on the mkdeb_jammy.sh script
