@@ -44,6 +44,7 @@ max_threads            = 0      # number of worker threads, 0: automatic determi
 num_Q_points           = 256    # number of Qs on a dispersion branch
 show_dividers          = False  # show vertical bars between dispersion branches
 show_markers           = False  # mark scan positions
+use_tick_labels        = True   # label q points (False: use raw q labels)
 use_custom_labels      = True   # show custom dispersion labels (branch_labels)
 use_colours            = True   # use dispersion colours (branch_colours)
 S_scale                = 64.    # weight scaling and clamp factors
@@ -211,8 +212,10 @@ def plot_disp(data, dispersion_plot_indices):
 	import matplotlib.pyplot as plot
 	plot.rcParams.update({
 		"font.sans-serif" : "DejaVu Sans",
-		"font.family" : "sans-serif",
-		"font.size" : 12,
+		"font.family"     : "sans-serif",
+		"font.size"       : 16,
+		"axes.linewidth"  : 2.,
+		"figure.figsize"  : (6.4, 4.8)
 	})
 
 	print("\nPlotting dispersion branches...")
@@ -243,14 +246,15 @@ def plot_disp(data, dispersion_plot_indices):
 		if use_colours:
 			axes[branch_idx].set_facecolor(branch_colours[branch_idx])
 
-		if use_custom_labels:
-			tick_labels = [
-				branch_labels[branch_idx],
-				branch_labels[branch_idx + 1] ]
-		else:
-			tick_labels = [
-				"(%.4g %.4g %.4g)" % (b1[0], b1[1], b1[2]),
-				"(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2]) ]
+		if use_tick_labels:
+			if use_custom_labels:
+				tick_labels = [
+					branch_labels[branch_idx],
+					branch_labels[branch_idx + 1] ]
+			else:
+				tick_labels = [
+					"(%.4g %.4g %.4g)" % (b1[0], b1[1], b1[2]),
+					"(%.4g %.4g %.4g)" % (b2[0], b2[1], b2[2]) ]
 
 		if branch_idx == 0:
 			axes[branch_idx].set_ylabel("E (meV)")
@@ -259,12 +263,14 @@ def plot_disp(data, dispersion_plot_indices):
 			if not show_dividers:
 				axes[branch_idx].spines["left"].set_visible(False)
 
-			tick_labels[0] = ""
+			if use_tick_labels:
+				tick_labels[0] = ""
 
 		if not show_dividers and branch_idx != num_branches - 1:
 			axes[branch_idx].spines["right"].set_visible(False)
 
-		axes[branch_idx].set_xticks([data_x[0], data_x[-1]], labels = tick_labels)
+		if use_tick_labels:
+			axes[branch_idx].set_xticks([data_x[0], data_x[-1]], labels = tick_labels)
 
 		if branch_idx == num_branches / 2 - 1:
 			axes[branch_idx].set_xlabel("Q (rlu)")
@@ -288,6 +294,7 @@ def plot_disp(data, dispersion_plot_indices):
 					marker_E - marker_dE*0.6))
 
 
+	#plt.legend(handletextpad = 0.1)
 	plt.tight_layout()
 	plt.subplots_adjust(wspace = 0)
 
