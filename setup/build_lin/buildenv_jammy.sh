@@ -38,7 +38,7 @@
 # -----------------------------------------------------------------------------
 if ! sudo apt-get install cmake clang build-essential \
 	libboost-all-dev libclipper-dev libhdf5-dev \
-	qtchooser qt6-base-dev qt6-base-dev-tools qt6-svg-dev \
+	qtchooser qt6-base-dev qt6-base-dev-tools libqt6svg6-dev \
 	libpython3-dev swig \
 	libqcustomplot-dev \
 	libgfortran5 \
