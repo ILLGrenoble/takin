@@ -33,7 +33,7 @@ PRG="takin.app"
 fix_libs=1
 
 NAME_TOOL=install_name_tool
-STRIP=strip
+STRIP=llvm-strip
 
 PY_VER=3.13
 echo -e "Py version: ${PY_VER}"
@@ -242,7 +242,7 @@ done
 
 if [ $fix_libs -ne 0 ]; then
 	# fix names for libraries
-	find ${PRG}/Contents/Libraries \( -name "*.dylib" -o -name "*.so" \) -print0 \
+	find ${PRG}/Contents/ \( -name "*.dylib" -o -name "*.so" \) -print0 \
 		| while read -d $'\0' dylib; do
 		fix_name $dylib
 	done
