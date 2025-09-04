@@ -146,7 +146,7 @@ if ! wget https://git.savannah.gnu.org/cgit/gettext.git/plain/gettext-runtime/in
 fi
 
 # pcre
-if ! wget https://raw.githubusercontent.com/PCRE2Project/pcre2/master/LICENCE -O ${LICDIR}/pcre_license.txt; then
+if ! wget https://raw.githubusercontent.com/PCRE2Project/pcre2/refs/heads/master/LICENCE.md -O ${LICDIR}/pcre_license.txt; then
 	echo -e "Error: Cannot download pcre license.";
 fi
 
@@ -167,7 +167,7 @@ if ! wget https://raw.githubusercontent.com/gcc-mirror/gcc/master/libquadmath/CO
 fi
 
 # hdf5
-if ! wget https://raw.githubusercontent.com/HDFGroup/hdf5/develop/COPYING -O ${LICDIR}/hdf5_license.txt; then
+if ! wget https://raw.githubusercontent.com/HDFGroup/hdf5/refs/heads/develop/LICENSE -O ${LICDIR}/hdf5_license.txt; then
 	echo -e "Error: Cannot download hdf5 license.";
 fi
 
