@@ -181,6 +181,26 @@ if ! wget https://raw.githubusercontent.com/harfbuzz/harfbuzz/main/COPYING -O ${
 	echo -e "Error: Cannot download harfbuzz license.";
 fi
 
+# libdouble-conversion
+if ! wget https://raw.githubusercontent.com/google/double-conversion/refs/heads/master/LICENSE -O ${LICDIR}/libdouble-conversion_license.txt; then
+	echo -e "Error: Cannot download libdouble-conversion license.";
+fi
+
+# graphite
+if ! wget https://raw.githubusercontent.com/silnrsi/graphite/refs/heads/master/LICENSE -O ${LICDIR}/graphite_license.txt; then
+	echo -e "Error: Cannot download graphite license.";
+fi
+
+# dbus
+if ! wget https://gitlab.freedesktop.org/dbus/dbus/-/raw/main/COPYING -O ${LICDIR}/dbus_license.txt; then
+	echo -e "Error: Cannot download dbus license.";
+fi
+
+# blake2
+if ! wget https://raw.githubusercontent.com/BLAKE2/BLAKE2/refs/heads/master/COPYING -O ${LICDIR}/blake2_license.txt; then
+	echo -e "Error: Cannot download blake2 license.";
+fi
+
 # libbzip2
 if ! wget https://raw.githubusercontent.com/libarchive/bzip2/master/COPYING -O ${LICDIR}/bzip2_license.txt; then
 	echo -e "Error: Cannot download bzip2 license.";

@@ -55,7 +55,7 @@ find "${DST_FRAMEWORK_DIR}" -type d -name "Current" -print0 | xargs -0 rm -rfv
 find "${DST_FRAMEWORK_DIR}" -name "*.pyc" -print0 | xargs -0 rm -rfv
 
 declare -a QT_FW_LIBS=("QtCore" "QtGui" "QtWidgets" "QtConcurrent" "QtOpenGL"
-	"QtSvg" "QtXml" "QtDBus" "QtPrintSupport" "qwt")
+	"QtOpenGLWidgets" "QtSvg" "QtXml" "QtDBus" "QtPrintSupport" "qwt")
 
 for qlib in ${QT_FW_LIBS[@]}; do
 	rm -rfv ${DST_FRAMEWORK_DIR}/${qlib}.framework/Resources
@@ -150,8 +150,8 @@ fi
 # ----------------------------------------------------------------------------
 # strip binaries
 # ----------------------------------------------------------------------------
-find ${PRG} -name "*.so" -exec strip -v {} \; -print
-find ${PRG} -name "*.dylib" -exec strip -v {} \; -print
+find ${PRG} -name "*.so" -exec llvm-strip {} \; -print
+find ${PRG} -name "*.dylib" -exec llvm-strip {} \; -print
 
 strip -v ${PRG}/Contents/MacOS/*
 # ----------------------------------------------------------------------------
