@@ -163,10 +163,12 @@ if [ $build_magpie -ne 0 ]; then
 	pushd "${TAKIN_ROOT}/mag-core"
 		rm -rf ${BUILD_DIR}
 
-		# build external libraries
-		if ! ./build_externals.sh; then
-			echo -e "Failed to build external libraries for magpie."
-			exit -1
+		if [ $build_externals -ne 0 ]; then
+			# build external libraries
+			if ! ./build_externals.sh; then
+				echo -e "Failed to build external libraries for magpie."
+				exit -1
+			fi
 		fi
 
 		# build tools
