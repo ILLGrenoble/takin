@@ -26,7 +26,7 @@
 # ----------------------------------------------------------------------------
 #
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(takin)
 
 message("System name: ${CMAKE_SYSTEM_NAME}.")
@@ -110,7 +110,7 @@ endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	message("Setting Darwin options.")
 
-	add_compile_options(-mmacosx-version-min=10.10)
+	add_compile_options(-mmacosx-version-min=10.13)
 	set(USE_GENTAB FALSE)
 	set(USE_RtMp FALSE)
 	set(USE_Dl FALSE)
