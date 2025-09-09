@@ -55,6 +55,10 @@ tar -xjvf "${QWT_LOCAL}"
 cd ${QWT_DIR}
 
 
+# only build static library
+echo -e "\nQWT_CONFIG -= QwtDll QwtDesigner QwtExamples QwtPlayground QwtTests\n" >> qwtconfig.pri
+
+
 if [ $BUILD_FOR_MINGW -ne 0 ]; then
 	echo -e "TODO"
 else
