@@ -175,12 +175,12 @@ if [ $build_magpie -ne 0 ]; then
 		if ! cmake -DCMAKE_BUILD_TYPE=Release \
 			-DONLY_BUILD_FINISHED=True -DBUILD_PY_MODULES=$__BUILD_PY_MODULES \
 			-B ${BUILD_DIR} . ; then
-			echo -e "Failed configuring mag-core package."
+			echo -e "Failed configuring magpie package."
 			exit -1
 		fi
 
 		if ! cmake --build ${BUILD_DIR} --parallel ${NUM_CORES} ; then
-			echo -e "Failed building mag-core package."
+			echo -e "Failed building magpie package."
 			exit -1
 		fi
 
