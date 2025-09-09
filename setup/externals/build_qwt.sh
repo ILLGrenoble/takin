@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# install all packages needed for building on focal (and bionic)
-# @author Tobias Weber <tobias.weber@tum.de>
-# @date 28-jul-20
-# @license GPLv2
+# builds qwt
+# @author Tobias Weber <tweber@ill.fr>
+# @date aug-2025
+# @license see 'LICENSE' file
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -27,23 +27,42 @@
 # ----------------------------------------------------------------------------
 #
 
-#if [[ $(id -u) -gt 0 ]]; then
-#	echo -e "Please run this script as root."
-#	exit -1
-#fi
+NUM_CORES=$(nproc)
 
 
-# -----------------------------------------------------------------------------
-# install packages
-# -----------------------------------------------------------------------------
-if ! sudo apt-get install cmake clang build-essential \
-	libboost-all-dev libclipper-dev libhdf5-dev \
-	qt5-default qttools5-dev-tools libqt5svg5-dev \
-	libqwt-qt5-dev libpython3-dev \
-	libfreetype6-dev libbz2-dev wget coreutils \
-	flex bison
-then
-	echo -e "Error: Could not install packages necessary for building."
+BUILD_FOR_MINGW=0
+if [ "$1" == "--mingw" ]; then
+	BUILD_FOR_MINGW=1
+fi
+
+
+QWT_REMOTE=http://downloads.sourceforge.net/project/qwt/qwt/6.3.0/qwt-6.3.0.tar.bz2
+QWT_DIR=qwt-6.3.0
+
+
+QWT_LOCAL=${QWT_REMOTE##*[/\\]}
+rm -f "${QWT_LOCAL}"
+
+
+if ! wget ${QWT_REMOTE}; then
+	echo -e "Could not download ${QWT_REMOTE}."
 	exit -1
 fi
-# -----------------------------------------------------------------------------
+
+
+rm -rf ${QWT_DIR}
+tar -xjvf "${QWT_LOCAL}"
+cd ${QWT_DIR}
+
+
+# only build static library
+echo -e "\nQWT_CONFIG -= QwtDll QwtDesigner QwtExamples QwtPlayground QwtTests\n" >> qwtconfig.pri
+
+
+if [ $BUILD_FOR_MINGW -ne 0 ]; then
+	echo -e "TODO"
+else
+	QT_SELECT=6 qmake6 "CONFIG+=release" qwt.pro
+	make -j${NUM_CORES} && sudo make install
+#	make -j${NUM_CORES} CXX=/usr/local/bin/clang++ && sudo make install
+fi

@@ -208,7 +208,11 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	connect(comboAlgo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ResoDlg::Calc);
 
 	connect(groupGuide, &QGroupBox::toggled, this, &ResoDlg::Calc);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+	connect(checkElli4dAutoCalc, &QCheckBox::checkStateChanged, this, &ResoDlg::checkAutoCalcElli4dChanged);
+#else
 	connect(checkElli4dAutoCalc, &QCheckBox::stateChanged, this, &ResoDlg::checkAutoCalcElli4dChanged);
+#endif
 	connect(btnCalcElli4d, &QPushButton::clicked, this, &ResoDlg::CalcElli4d);
 	connect(btnMCGenerate, &QPushButton::clicked, this, &ResoDlg::MCGenerate);
 	connect(buttonBox, &QDialogButtonBox::clicked, this, &ResoDlg::ButtonBoxClicked);
@@ -868,7 +872,7 @@ ResoAlgo ResoDlg::GetSelectedAlgo() const
 {
 	ResoAlgo algoSel = ResoAlgo::UNKNOWN;
 	QVariant varAlgo = comboAlgo->itemData(comboAlgo->currentIndex());
-	if(varAlgo == QVariant::Invalid)
+    if(varAlgo == QVariant::Invalid)
 		tl::log_err("Unknown resolution algorithm selected, index: ", static_cast<int>(algoSel), ".");
 	else
 		algoSel = static_cast<ResoAlgo>(varAlgo.toInt());

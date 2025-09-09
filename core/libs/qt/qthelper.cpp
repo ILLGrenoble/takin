@@ -58,7 +58,7 @@ bool save_table(const char* pcFile, const QTableWidget* pTable)
 	for(int iCol = 0; iCol < iNumCols; ++iCol)
 	{
 		const QTableWidgetItem *pItem = pTable->horizontalHeaderItem(iCol);
-		ptrMaxTxtLen[iCol] = std::max(pItem ? pItem->text().length() : 0, ptrMaxTxtLen[iCol]);
+		ptrMaxTxtLen[iCol] = std::max(pItem ? static_cast<int>(pItem->text().length()) : 0, ptrMaxTxtLen[iCol]);
 	}
 
 	for(int iRow = 0; iRow < iNumRows; ++iRow)
@@ -66,7 +66,7 @@ bool save_table(const char* pcFile, const QTableWidget* pTable)
 		for(int iCol = 0; iCol < iNumCols; ++iCol)
 		{
 			const QTableWidgetItem *pItem = pTable->item(iRow, iCol);
-			ptrMaxTxtLen[iCol] = std::max(pItem ? pItem->text().length() : 0, ptrMaxTxtLen[iCol]);
+			ptrMaxTxtLen[iCol] = std::max(pItem ? static_cast<int>(pItem->text().length()) : 0, ptrMaxTxtLen[iCol]);
 		}
 	}
 

@@ -35,8 +35,8 @@ DST_FRAMEWORK_DIR="${PRG}/Contents/Frameworks/"
 DST_LIB_DIR="${PRG}/Contents/Libraries/"
 DST_PLUGIN_DIR="${PRG}/Contents/PlugIns/"
 DST_SITEPACKAGES_DIR="${PRG}/Contents/site-packages"
-QT_DIR=/usr/local/opt/qt@5
-PLUGIN_DIR="${QT_DIR}/plugins/"
+QT_DIR=/usr/local/opt/qt
+PLUGIN_DIR="${QT_DIR}/share/qt/plugins/"
 
 
 # -----------------------------------------------------------------------------
@@ -46,12 +46,13 @@ declare -a SRC_FRAMEWORKS=(
 	"${QT_DIR}/lib/QtGui.framework"
 	"${QT_DIR}/lib/QtWidgets.framework"
 	"${QT_DIR}/lib/QtOpenGL.framework"
+	"${QT_DIR}/lib/QtOpenGLWidgets.framework"
 	"${QT_DIR}/lib/QtConcurrent.framework"
 	"${QT_DIR}/lib/QtXml.framework"
 	"${QT_DIR}/lib/QtSvg.framework"
 	"${QT_DIR}/lib/QtPrintSupport.framework"
 	"${QT_DIR}/lib/QtDBus.framework"
-	"/usr/local/opt/qwt-qt5/lib/qwt.framework"
+	"/usr/local/qwt-6.3.0/lib/qwt.framework"
 	"/Library/Frameworks/Python.framework"
 )
 #	"/usr/local/opt/python/Frameworks/Python.framework"
@@ -99,6 +100,11 @@ declare -a SRC_LIBS=(
 	"/usr/local/lib/libqcustomplot.dylib"
 	"/usr/local/lib/libmd4c.0.dylib"
 	"/usr/local/lib/libgemmi_cpp.dylib"
+	"/usr/local/lib/libharfbuzz.0.dylib"
+	"/usr/local/lib/libgraphite2.3.dylib"
+	"/usr/local/lib/libdbus-1.3.dylib"
+	"/usr/local/lib/libdouble-conversion.3.dylib"
+	"/usr/local/lib/libb2.1.dylib"
 )
 #	"/usr/local/opt/openblas/lib/libopenblas.0.dylib"
 
@@ -219,7 +225,7 @@ cp -v ../AUTHORS "${PRG}/Contents/Resources/AUTHORS.txt"
 
 cp -rv data/instruments "${PRG}/Contents/Resources/"
 cp -rv data/samples "${PRG}/Contents/Resources/"
-cp -rv demos "${PRG}/Contents/Resources/"
+cp -rv ../demos "${PRG}/Contents/Resources/"
 
 rm -v "${PRG}/Contents/Resources/CMakeLists.txt"
 

@@ -95,14 +95,7 @@ if [ $build_externals -ne 0 ]; then
 		if ! "${TAKIN_ROOT}"/setup/externals/build_lapacke.sh --mingw; then
 			exit -1
 		fi
-		if ! "${TAKIN_ROOT}"/setup/externals/build_qhull.sh --mingw; then
-			exit -1
-		fi
-		cp -v "${TAKIN_ROOT}"/setup/externals/CMakeLists_qcp.txt .
-		if ! "${TAKIN_ROOT}"/setup/externals/build_qcp.sh --mingw; then
-			exit -1
-		fi
-		if ! "${TAKIN_ROOT}"/setup/externals/build_gemmi.sh --mingw; then
+		if ! "${TAKIN_ROOT}"/setup/externals/build_qwt.sh --mingw; then
 			exit -1
 		fi
 	popd
@@ -139,6 +132,13 @@ if [ $build_magpie -ne 0 ]; then
 	echo -e "================================================================================\n"
 
 	pushd "${TAKIN_ROOT}/mag-core"
+		# build external libraries
+		if ! ./build_externals.sh; then
+			echo -e "Failed to build external libraries for magpie."
+			exit -1
+		fi
+
+		# build tools
 		rm -rf build
 		mkdir -p build
 		cd build

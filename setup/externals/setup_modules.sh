@@ -56,7 +56,7 @@ function clone_magpie
 	# clone a new copy
 	echo -e "Cloning Magpie project..."
 
-	if ! (git clone https://github.com/ILLGrenoble/magpie); then
+	if ! (git clone --branch ver-0.9.2 https://github.com/ILLGrenoble/magpie); then
 		echo -e "Error: Cannot clone Magpie project.";
 		return -1;
 	fi

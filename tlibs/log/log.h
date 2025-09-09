@@ -96,7 +96,6 @@ public:
 	void AddOstr(std::ostream* pOstr, bool bCol=1, bool bThreadLocal=0);
 	void RemoveOstr(std::ostream* pOstr);
 
-#if __cplusplus > 201402L	// C++1z
 	template<typename ...t_args>
 	void operator()(t_args&&... args)
 	{
@@ -113,35 +112,6 @@ public:
 		}
 		end_log();
 	}
-#else
-	template<typename t_arg>
-	void operator()(t_arg&& arg)
-	{
-		if(!m_bEnabled) return;
-
-		inc_depth();
-		const std::vector<t_pairOstr>& vecOstrsTh = GetThreadOstrs();
-		std::vector<t_pairOstr> vecOstrs = arrayunion({m_vecOstrs, vecOstrsTh});
-
-		for(t_pairOstr& pair : vecOstrs)
-		{
-			if(pair.first)
-				(*pair.first) << std::forward<t_arg>(arg);
-		}
-		dec_depth();
-	}
-
-	template<typename t_arg, typename... t_args>
-	void operator()(t_arg&& arg, t_args&&... args)
-	{
-		if(!m_bEnabled) return;
-
-		inc_depth();
-		(*this)(std::forward<t_arg>(arg));
-		(*this)(std::forward<t_args>(args)...);
-		dec_depth();
-	}
-#endif
 
 	void SetEnabled(bool bEnab) { m_bEnabled = bEnab; }
 	void SetShowDate(bool bDate) { m_bShowDate = bDate; }

@@ -27,13 +27,7 @@
  */
 
 
-#ifndef USE_BOOST_REX
-	#include <regex>
-	namespace rex = ::std;
-#else
-	#include <boost/tr1/regex.hpp>
-	namespace rex = ::boost;
-#endif
+#include <regex>
 
 
 // ============================================================================
@@ -260,8 +254,8 @@ bool gen_magformfacts()
 		}
 
 		// removing attributes
-		rex::basic_regex<char> rex("<([A-Za-z]*)[A-Za-z0-9\\=\\\"\\ ]*>", rex::regex::ECMAScript);
-		strTable = rex::regex_replace(strTable, rex, "<$1>");
+		std::basic_regex<char> rex("<([A-Za-z]*)[A-Za-z0-9\\=\\\"\\ ]*>", std::regex::ECMAScript);
+		strTable = std::regex_replace(strTable, rex, "<$1>");
 
 		tl::find_all_and_replace<std::string>(strTable, "<P>", "");
 		tl::find_all_and_replace<std::string>(strTable, "<p>", "");

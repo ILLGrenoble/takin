@@ -61,7 +61,11 @@ GenPosDlg::GenPosDlg(QWidget* pParent, QSettings* pSett)
 		this, &GenPosDlg::GeneratePositions);
 	QObject::connect(buttonBox, &QDialogButtonBox::clicked,
 		this, &GenPosDlg::ButtonBoxClicked);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+	QObject::connect(checkCKf, &QCheckBox::checkStateChanged, [this](Qt::CheckState state)
+#else
 	QObject::connect(checkCKf, &QCheckBox::stateChanged, [this](int state)
+#endif
 	{
 		if(state == Qt::Unchecked)
 			labelFixedK->setText("ki (Å⁻¹):");

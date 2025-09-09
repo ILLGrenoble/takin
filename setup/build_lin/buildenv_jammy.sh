@@ -38,8 +38,8 @@
 # -----------------------------------------------------------------------------
 if ! sudo apt-get install cmake clang build-essential \
 	libboost-all-dev libclipper-dev libhdf5-dev \
-	qtchooser qtbase5-dev qttools5-dev-tools libqt5svg5-dev \
-	libqwt-qt5-dev libpython3-dev swig \
+	qtchooser qt6-base-dev qt6-base-dev-tools libqt6svg6-dev \
+	libpython3-dev swig \
 	libqcustomplot-dev \
 	libgfortran5 \
 	libfreetype6-dev libbz2-dev wget coreutils \
@@ -48,6 +48,9 @@ then
 	echo -e "Error: Could not install packages necessary for building."
 	exit -1
 fi
+
+# once it exists:
+# libqwt-qt6-dev
 # -----------------------------------------------------------------------------
 
 #	g++-10 llvm llvm-dev \

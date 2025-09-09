@@ -8,8 +8,8 @@
 	<key>CFBundleExecutable</key>		<string>takin</string>
 	<key>CFBundleIconFile</key>		<string>takin.icns</string>
 	<key>CFBundleIdentifier</key>		<string>eu.ill.cs.takin</string>
-	<key>CFBundleVersion</key>		<string>2.8.5</string>
-	<key>CFBundleShortVersionString</key>	<string>2.8.5</string>
+	<key>CFBundleVersion</key>		<string>2.9</string>
+	<key>CFBundleShortVersionString</key>	<string>2.9</string>
 	<key>CFBundlePackageType</key>		<string>APPL</string>
 	<key>CFBundleSupportedPlatforms</key>	<array> <string>MacOSX</string> </array>
 

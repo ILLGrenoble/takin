@@ -3,6 +3,7 @@
 # builds minuit
 # @author Tobias Weber <tweber@ill.fr>
 # @date sep-2020
+# @note thanks to J. Krüger for cleaning up this script
 # @license GPLv2
 #
 # ----------------------------------------------------------------------------
@@ -36,8 +37,8 @@ if [ "$1" == "--mingw" ]; then
 fi
 
 
-MINUIT_REMOTE=https://codeload.github.com/root-project/root/zip/refs/heads/latest-stable
-MINUIT_DIR=root-latest-stable
+#MINUIT_REMOTE=https://codeload.github.com/root-project/root/zip/refs/heads/latest-stable
+#MINUIT_DIR=root-latest-stable
 
 MINUIT_REMOTE=https://github.com/root-project/root/archive/refs/tags/v6-33-01.zip
 MINUIT_DIR=root-6-33-01

@@ -380,7 +380,7 @@ ProjLatticeView::ProjLatticeView(QWidget* pParent)
 	: QGraphicsView(pParent)
 {
 	setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing |
-		QPainter::SmoothPixmapTransform | QPainter::HighQualityAntialiasing);
+		QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
 	setDragMode(QGraphicsView::ScrollHandDrag);

@@ -233,18 +233,16 @@ template<class T = double> t_length<units::si::system, T> get_r_e()
 
 
 // template constants
-#if __cplusplus >= 201402L
-	template<class T = double> const t_length_si<T> t_meters = get_one_meter<T>();
-	template<class T = double> const t_flux_si<T> t_teslas = T(1)*units::si::teslas;
-	template<class T = double> const t_time_si<T> t_seconds = T(1)*units::si::seconds;
-	template<class T = double> const t_temperature_si<T> t_kelvins = T(1)*units::si::kelvins;
-	template<class T = double> const t_area_si<T> t_barns = T(1e-28)*units::si::meters*units::si::meters;
-	template<class T = double> const t_angle_si<T> t_radians = T(1)*units::si::radians;
-	template<class T = double> const t_angle_si<T> t_degrees = get_pi<T>()/T(180)*units::si::radians;
+template<class T = double> const t_length_si<T> t_meters = get_one_meter<T>();
+template<class T = double> const t_flux_si<T> t_teslas = T(1)*units::si::teslas;
+template<class T = double> const t_time_si<T> t_seconds = T(1)*units::si::seconds;
+template<class T = double> const t_temperature_si<T> t_kelvins = T(1)*units::si::kelvins;
+template<class T = double> const t_area_si<T> t_barns = T(1e-28)*units::si::meters*units::si::meters;
+template<class T = double> const t_angle_si<T> t_radians = T(1)*units::si::radians;
+template<class T = double> const t_angle_si<T> t_degrees = get_pi<T>()/T(180)*units::si::radians;
 
-	template<class T = double> const t_energy_si<T> t_meV = get_one_meV<T>();
-	template<class T = double> const t_length_si<T> t_angstrom = get_one_angstrom<T>();
-#endif
+template<class T = double> const t_energy_si<T> t_meV = get_one_meV<T>();
+template<class T = double> const t_length_si<T> t_angstrom = get_one_angstrom<T>();
 
 
 // constants

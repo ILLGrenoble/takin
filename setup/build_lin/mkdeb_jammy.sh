@@ -48,7 +48,7 @@ mkdir -p ${INSTDIR}/DEBIAN
 
 
 # control file
-echo -e "Package: takin\nVersion: 2.8.5" > ${INSTDIR}/DEBIAN/control
+echo -e "Package: takin\nVersion: 2.9" > ${INSTDIR}/DEBIAN/control
 echo -e "Description: inelastic neutron scattering software" >> ${INSTDIR}/DEBIAN/control
 echo -e "Maintainer: n/a" >> ${INSTDIR}/DEBIAN/control
 echo -e "Architecture: $(dpkg --print-architecture)" >> ${INSTDIR}/DEBIAN/control
@@ -61,12 +61,11 @@ echo -e "Depends:" \
 	"libboost-regex1.74.0 (>=1.74.0)," \
 	"libboost-program-options1.74.0 (>=1.74.0)," \
 	"libboost-python1.74.0 (>=1.74.0)," \
-	"libqt5core5a (>=5.9.5)," \
-	"libqt5gui5 (>=5.9.5)," \
-	"libqt5opengl5 (>=5.9.5)," \
-	"libqt5svg5 (>=5.9.5)," \
-	"libqt5xml5 (>=5.9.5)," \
-	"libqwt-qt5-6 (>=6.1.3)," \
+	"libqt6core6 (>=6.0.0)," \
+	"libqt6gui6 (>=6.0.0)," \
+	"libqt6opengl6 (>=6.0.0)," \
+	"libqt6xml6 (>=6.0.0)," \
+	"libqt6svg6 (>=6.0.0)," \
 	"libpython3.10 (>=3.10.0)," \
 	"python3.10 (>=3.8.0)," \
 	"python3-numpy," \
@@ -85,6 +84,9 @@ echo -e "Depends:" \
 		>> ${INSTDIR}/DEBIAN/control
 
 # libqcustomplot2.0 is only needed by the external programs
+
+# once it exists:
+# "libqwt-qt6-6 (>=6.0.0)," \
 
 
 # copy program files
@@ -107,9 +109,9 @@ cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
 cp -v ../setup/build_lin/takin.desktop	${INSTDIR}/usr/share/applications
 cp -v /usr/local/lib/libMinuit2.so	${INSTDIR}/usr/local/lib
 cp -v /usr/local/lib/libMinuit2Math.so	${INSTDIR}/usr/local/lib
+cp -v /usr/local/qwt-6.3.0/lib/libqwt.so	${INSTDIR}/usr/local/lib
 
-# if we have the minuit so file (i.e. if it's not statically linked),
-# create some symbolic links
+# create some symbolic links for dynamically linked libraries
 pushd ${INSTDIR}/usr/local/lib
 if [ -e libMinuit2.so ]; then
 	ln -sf libMinuit2.so libMinuit2.so.0
@@ -120,6 +122,16 @@ if [ -e libMinuit2Math.so ]; then
 	ln -sf libMinuit2Math.so libMinuit2Math.so.0
 	ln -sf libMinuit2Math.so libMinuit2Math.so.0.0
 	ln -sf libMinuit2Math.so libMinuit2Math.so.0.0.0
+fi
+if [ -e libqwt.so ]; then
+	ln -sf libqwt.so libqwt.so.6
+	ln -sf libqwt.so libqwt.so.6.3
+	ln -sf libqwt.so libqwt.so.6.3.0
+fi
+if [ -e libqwt.so ]; then
+	ln -sf libqwt.so libqwt.so.6
+	ln -sf libqwt.so libqwt.so.6.3
+	ln -sf libqwt.so libqwt.so.6.3.0
 fi
 popd
 

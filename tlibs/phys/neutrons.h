@@ -61,10 +61,8 @@ template<typename T=double> T get_E2KSQ()
 }
 
 
-#if __cplusplus >= 201402L
-	template<class T=double> T t_KSQ2E = get_KSQ2E<T>();
-	template<class T=double> T t_E2KSQ = T(1)/t_KSQ2E<T>;
-#endif
+template<class T=double> T t_KSQ2E = get_KSQ2E<T>();
+template<class T=double> T t_E2KSQ = T(1)/t_KSQ2E<T>;
 
 
 // --------------------------------------------------------------------------------

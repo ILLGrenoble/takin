@@ -146,7 +146,7 @@ if ! wget https://git.savannah.gnu.org/cgit/gettext.git/plain/gettext-runtime/in
 fi
 
 # pcre
-if ! wget https://raw.githubusercontent.com/PCRE2Project/pcre2/master/LICENCE -O ${LICDIR}/pcre_license.txt; then
+if ! wget https://raw.githubusercontent.com/PCRE2Project/pcre2/refs/heads/master/LICENCE.md -O ${LICDIR}/pcre_license.txt; then
 	echo -e "Error: Cannot download pcre license.";
 fi
 
@@ -167,7 +167,7 @@ if ! wget https://raw.githubusercontent.com/gcc-mirror/gcc/master/libquadmath/CO
 fi
 
 # hdf5
-if ! wget https://raw.githubusercontent.com/HDFGroup/hdf5/develop/COPYING -O ${LICDIR}/hdf5_license.txt; then
+if ! wget https://raw.githubusercontent.com/HDFGroup/hdf5/refs/heads/develop/LICENSE -O ${LICDIR}/hdf5_license.txt; then
 	echo -e "Error: Cannot download hdf5 license.";
 fi
 
@@ -179,6 +179,26 @@ fi
 # libharfbuzz
 if ! wget https://raw.githubusercontent.com/harfbuzz/harfbuzz/main/COPYING -O ${LICDIR}/harfbuzz_license.txt; then
 	echo -e "Error: Cannot download harfbuzz license.";
+fi
+
+# libdouble-conversion
+if ! wget https://raw.githubusercontent.com/google/double-conversion/refs/heads/master/LICENSE -O ${LICDIR}/libdouble-conversion_license.txt; then
+	echo -e "Error: Cannot download libdouble-conversion license.";
+fi
+
+# graphite
+if ! wget https://raw.githubusercontent.com/silnrsi/graphite/refs/heads/master/LICENSE -O ${LICDIR}/graphite_license.txt; then
+	echo -e "Error: Cannot download graphite license.";
+fi
+
+# dbus
+if ! wget https://gitlab.freedesktop.org/dbus/dbus/-/raw/main/COPYING -O ${LICDIR}/dbus_license.txt; then
+	echo -e "Error: Cannot download dbus license.";
+fi
+
+# blake2
+if ! wget https://raw.githubusercontent.com/BLAKE2/BLAKE2/refs/heads/master/COPYING -O ${LICDIR}/blake2_license.txt; then
+	echo -e "Error: Cannot download blake2 license.";
 fi
 
 # libbzip2

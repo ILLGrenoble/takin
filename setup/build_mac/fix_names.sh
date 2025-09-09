@@ -33,22 +33,23 @@ PRG="takin.app"
 fix_libs=1
 
 NAME_TOOL=install_name_tool
-STRIP=strip
+STRIP=llvm-strip
 
 PY_VER=3.13
 echo -e "Py version: ${PY_VER}"
 
 # files whose linkage is to be changed
 declare -a filestochange=(
-	"${PRG}/Contents/Frameworks/QtCore.framework/Versions/5/QtCore"
-	"${PRG}/Contents/Frameworks/QtWidgets.framework/Versions/5/QtWidgets"
-	"${PRG}/Contents/Frameworks/QtGui.framework/Versions/5/QtGui"
-	"${PRG}/Contents/Frameworks/QtConcurrent.framework/Versions/5/QtConcurrent"
-	"${PRG}/Contents/Frameworks/QtOpenGL.framework/Versions/5/QtOpenGL"
-	"${PRG}/Contents/Frameworks/QtPrintSupport.framework/Versions/5/QtPrintSupport"
-	"${PRG}/Contents/Frameworks/QtDBus.framework/Versions/5/QtDBus"
-	"${PRG}/Contents/Frameworks/QtSvg.framework/Versions/5/QtSvg"
-	"${PRG}/Contents/Frameworks/QtXml.framework/Versions/5/QtXml"
+	"${PRG}/Contents/Frameworks/QtCore.framework/Versions/Current/QtCore"
+	"${PRG}/Contents/Frameworks/QtWidgets.framework/Versions/Current/QtWidgets"
+	"${PRG}/Contents/Frameworks/QtGui.framework/Versions/Current/QtGui"
+	"${PRG}/Contents/Frameworks/QtConcurrent.framework/Versions/Current/QtConcurrent"
+	"${PRG}/Contents/Frameworks/QtOpenGL.framework/Versions/Current/QtOpenGL"
+	"${PRG}/Contents/Frameworks/QtOpenGLWidgets.framework/Versions/Current/QtOpenGLWidgets"
+	"${PRG}/Contents/Frameworks/QtPrintSupport.framework/Versions/Current/QtPrintSupport"
+	"${PRG}/Contents/Frameworks/QtDBus.framework/Versions/Current/QtDBus"
+	"${PRG}/Contents/Frameworks/QtSvg.framework/Versions/Current/QtSvg"
+	"${PRG}/Contents/Frameworks/QtXml.framework/Versions/Current/QtXml"
 	"${PRG}/Contents/Frameworks/QtXmlPatterns.framework/Versions/5/QtXmlPatterns"
 	"${PRG}/Contents/Frameworks/qwt.framework/Versions/6/qwt"
 	"${PRG}/Contents/MacOS/takin"
@@ -72,17 +73,18 @@ declare -a filestochange=(
 
 # original symbols, pattern-matched
 declare -a changefrom=(
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtCore\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtGui\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtWidgets\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtOpenGL\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtConcurrent\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtXml\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtXmlPatterns\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtSvg\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtPrintSupport\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/QtDBus\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/qwt\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtCore\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtGui\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtWidgets\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtOpenGL \""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtOpenGLWidgets\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtConcurrent\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtXml\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtXmlPatterns\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtSvg\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtPrintSupport\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/QtDBus\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"[-_/@.a-zA-Z0-9]*/qwt\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/Python\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_system.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_filesystem.dylib\""
@@ -126,20 +128,26 @@ declare -a changefrom=(
 	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libqcustomplot[_a-zA-Z0-9]*.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libmd4c.0.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libgemmi_cpp.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libharfbuzz.0.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libgraphite2.3.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libdbus-1.3.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libdouble-conversion.3.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libb2.1.dylib\""
 )
 
 # symbols to change into
 declare -a changeto=(
-	"@executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore"
-	"@executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui"
-	"@executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets"
-	"@executable_path/../Frameworks/QtOpenGL.framework/Versions/5/QtOpenGL"
-	"@executable_path/../Frameworks/QtConcurrent.framework/Versions/5/QtConcurrent"
-	"@executable_path/../Frameworks/QtXml.framework/Versions/5/QtXml"
-	"@executable_path/../Frameworks/QtXmlPatterns.framework/Versions/5/QtXmlPatterns"
-	"@executable_path/../Frameworks/QtSvg.framework/Versions/5/QtSvg"
-	"@executable_path/../Frameworks/QtPrintSupport.framework/Versions/5/QtPrintSupport"
-	"@executable_path/../Frameworks/QtDBus.framework/Versions/5/QtDBus"
+	"@executable_path/../Frameworks/QtCore.framework/Versions/Current/QtCore"
+	"@executable_path/../Frameworks/QtGui.framework/Versions/Current/QtGui"
+	"@executable_path/../Frameworks/QtWidgets.framework/Versions/Current/QtWidgets"
+	"@executable_path/../Frameworks/QtOpenGL.framework/Versions/Current/QtOpenGL"
+	"@executable_path/../Frameworks/QtOpenGLWidgets.framework/Versions/Current/QtOpenGLWidgets"
+	"@executable_path/../Frameworks/QtConcurrent.framework/Versions/Current/QtConcurrent"
+	"@executable_path/../Frameworks/QtXml.framework/Versions/Current/QtXml"
+	"@executable_path/../Frameworks/QtXmlPatterns.framework/Versions/Current/QtXmlPatterns"
+	"@executable_path/../Frameworks/QtSvg.framework/Versions/Current/QtSvg"
+	"@executable_path/../Frameworks/QtPrintSupport.framework/Versions/Current/QtPrintSupport"
+	"@executable_path/../Frameworks/QtDBus.framework/Versions/Current/QtDBus"
 	"@executable_path/../Frameworks/qwt.framework/Versions/6/qwt"
 	"@executable_path/../Frameworks/Python.framework/Versions/${PY_VER}/Python"
 	"@executable_path/../Libraries/libboost_system.dylib"
@@ -184,6 +192,11 @@ declare -a changeto=(
 	"@executable_path/../Libraries/libqcustomplot.dylib"
 	"@executable_path/../Libraries/libmd4c.0.dylib"
 	"@executable_path/../Libraries/libgemmi_cpp.dylib"
+	"@executable_path/../Libraries/libharfbuzz.0.dylib"
+	"@executable_path/../Libraries/libgraphite2.3.dylib"
+	"@executable_path/../Libraries/libdbus-1.3.dylib"
+	"@executable_path/../Libraries/libdouble-conversion.3.dylib"
+	"@executable_path/../Libraries/libb2.1.dylib"
 )
 
 CNT=$(expr ${#changefrom[*]} - 1)

@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # creates a DEB distro
-# @author Tobias Weber <tobias.weber@tum.de>, Jens Krüger
+# @author Tobias Weber <tobias.weber@tum.de>
+# @author Jens Krüger
 # @date 3 february 2023
 # @license GPLv2
 # @note based on the mkdeb_jammy.sh script
@@ -49,7 +50,7 @@ mkdir -p ${INSTDIR}/DEBIAN
 
 
 # control file
-echo -e "Package: takin\nVersion: 2.8.5" > ${INSTDIR}/DEBIAN/control
+echo -e "Package: takin\nVersion: 2.9" > ${INSTDIR}/DEBIAN/control
 echo -e "Description: inelastic neutron scattering software" >> ${INSTDIR}/DEBIAN/control
 echo -e "Maintainer: n/a" >> ${INSTDIR}/DEBIAN/control
 echo -e "Architecture: $(dpkg --print-architecture)" >> ${INSTDIR}/DEBIAN/control
@@ -106,9 +107,9 @@ cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
 cp -v ../setup/build_lin/takin.desktop	${INSTDIR}/usr/share/applications
 # cp -v /usr/local/lib/libMinuit2.so 	${INSTDIR}/usr/local/lib
 # cp -v /usr/local/lib/libMinuit2Math.so  ${INSTDIR}/usr/local/lib
+# cp -v /usr/local/qwt-6.3.0/lib/libqwt.so   ${INSTDIR}/usr/local/lib
 
-# if we have the minuit so file (i.e. if it's not statically linked),
-# create some symbolic links
+# create some symbolic links for dynamically linked libraries
 pushd ${INSTDIR}/usr/local/lib
 if [ -e libMinuit2.so ]; then
 	ln -sf libMinuit2.so libMinuit2.so.0
@@ -119,6 +120,11 @@ if [ -e libMinuit2Math.so ]; then
 	ln -sf libMinuit2Math.so libMinuit2Math.so.0
 	ln -sf libMinuit2Math.so libMinuit2Math.so.0.0
 	ln -sf libMinuit2Math.so libMinuit2Math.so.0.0.0
+fi
+if [ -e libqwt.so ]; then
+	ln -sf libqwt.so libqwt.so.6
+	ln -sf libqwt.so libqwt.so.6.3
+	ln -sf libqwt.so libqwt.so.6.3.0
 fi
 popd
 

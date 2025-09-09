@@ -276,14 +276,21 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 		QObject::connect(pEdit, &QLineEdit::textEdited, this, &TazDlg::CalcPeaksRecip);
 	}
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+	QObject::connect(checkSenseM, &QCheckBox::checkStateChanged, this, &TazDlg::UpdateMonoSense);
+	QObject::connect(checkSenseS, &QCheckBox::checkStateChanged, this, &TazDlg::UpdateSampleSense);
+	QObject::connect(checkSenseA, &QCheckBox::checkStateChanged, this, &TazDlg::UpdateAnaSense);
+	QObject::connect(checkPowder, &QCheckBox::checkStateChanged, this, &TazDlg::CalcPeaks);
+#else
 	QObject::connect(checkSenseM, &QCheckBox::stateChanged, this, &TazDlg::UpdateMonoSense);
 	QObject::connect(checkSenseS, &QCheckBox::stateChanged, this, &TazDlg::UpdateSampleSense);
 	QObject::connect(checkSenseA, &QCheckBox::stateChanged, this, &TazDlg::UpdateAnaSense);
+	QObject::connect(checkPowder, &QCheckBox::stateChanged, this, &TazDlg::CalcPeaks);
+#endif
 
 	QObject::connect(editSpaceGroupsFilter, &QLineEdit::textEdited, this, &TazDlg::RepopulateSpaceGroups);
 	QObject::connect(comboSpaceGroups, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TazDlg::SetCrystalType);
 	QObject::connect(comboSpaceGroups, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TazDlg::CalcPeaks);
-	QObject::connect(checkPowder, &QCheckBox::stateChanged, this, &TazDlg::CalcPeaks);
 
 	QObject::connect(btnAtoms, &QPushButton::clicked, this, &TazDlg::ShowAtomsDlg);
 

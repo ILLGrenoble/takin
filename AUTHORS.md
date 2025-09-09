@@ -12,6 +12,13 @@ PRINCIPAL AUTHOR
 CONTRIBUTORS
 ------------
 
+**Christian Trageser**
+  - mail: c.tragser\<AT\>fz-juelich.de
+  - active: 2025
+  - contributions:
+    - migration Qt5 -> Qt6.
+
+
 **Victor Mecoli**
   - mail: mecoli\<AT\>ill.fr
   - active: 2025
@@ -23,4 +30,4 @@ CONTRIBUTORS
   - mail: jens.krueger\<AT\>frm2.tum.de
   - active: 2024
   - contributions:
-    - for setup: build scripts for more debian systems.
+    - build scripts for more debian systems.

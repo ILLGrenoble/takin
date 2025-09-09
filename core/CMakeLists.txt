@@ -26,26 +26,23 @@
 # ----------------------------------------------------------------------------
 #
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(takin)
 
 message("System name: ${CMAKE_SYSTEM_NAME}.")
 
 
 option(DEBUG "debug build" FALSE)
+option(USE_QT6 "use Qt6 instead of Qt5" TRUE)
 option(USE_PLUGINS "use the plugin system" TRUE)
-option(USE_STRIP "strip debug info from release binaries" TRUE)
 option(USE_GENTAB "build setup utilities" TRUE)
 option(USE_RtMp "use auxilliary libraries" TRUE)
 option(USE_Dl "use dl libraries" TRUE)
 option(USE_Py "search for python" TRUE)
-option(USE_LAPACKE "search for Lapacke" TRUE)
+option(USE_LAPACKE "search for Lapacke" OFF)
 option(USE_CUSTOM_THREADPOOL "use custom threadpool implementation" FALSE)
 option(USE_INTERPROC_EMUL "force shared memory emulation mode" FALSE)
 option(DISABLE_INTERPROC_XSI "disable xsi shared memory syscalls" FALSE)
-
-set(USE_TR1_FUNCS FALSE)
-set(BUILD_EXT_TOOLS FALSE)
 
 
 if(DEBUG)
@@ -73,15 +70,22 @@ else()
 	#set(Boost_USE_STATIC_LIBS TRUE)
 
 	add_definitions(-DNDEBUG -DQT_NO_DEBUG)
+	add_compile_options(-Wno-deprecated-declarations)
 	#add_compile_options(-Wno-narrowing)
 	#add_compile_options(-march=native -s)
 endif()
 
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-set(CMAKE_CXX_STANDARD 14)
-add_compile_options(-std=c++14)
-#add_compile_options(-fPIC)
+
+if(USE_QT6)
+	set(CMAKE_CXX_STANDARD 17)
+	add_compile_options(-std=c++17)
+else()
+	set(CMAKE_CXX_STANDARD 14)
+	add_compile_options(-std=c++14)
+endif()
+
 add_compile_options(-fvisibility=hidden)
 
 # for application plugins
@@ -106,7 +110,7 @@ endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	message("Setting Darwin options.")
 
-	add_compile_options(-mmacosx-version-min=10.10)
+	add_compile_options(-mmacosx-version-min=10.13)
 	set(USE_GENTAB FALSE)
 	set(USE_RtMp FALSE)
 	set(USE_Dl FALSE)
@@ -151,9 +155,6 @@ endif()
 set(BOOST_COMPS program_options${BOOST_SUFFIX} iostreams${BOOST_SUFFIX} filesystem${BOOST_SUFFIX} system${BOOST_SUFFIX})
 set(BOOST_OPT_COMPS)
 
-if(USE_TR1_FUNCS)
-	list(APPEND BOOST_COMPS regex)
-endif()
 
 if(USE_Py)
 	find_package(Python3 COMPONENTS Interpreter Development)
@@ -166,10 +167,17 @@ else()
 	set(Py_FOUND FALSE)
 endif()
 
-
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPS} OPTIONAL_COMPONENTS ${BOOST_OPT_COMPS})
 find_package(Threads REQUIRED)
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Svg) #OpenGL)
+
+if(USE_QT6)
+	message("Using Qt 6.")
+	find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Svg OpenGLWidgets HINTS)
+else()
+	message("Using Qt 5.")
+	find_package(Qt5 REQUIRED COMPONENTS Core Widgets Gui Svg HINTS)
+endif()
+
 find_package(Qwt REQUIRED)
 find_package(Minuit2 REQUIRED)
 find_package(PNG REQUIRED)
@@ -217,13 +225,22 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 find_package(Freetype)
 
+if(USE_QT6)
+	if("${QT_MOC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT_MOC_EXECUTABLE Qt6::moc IMPORTED_LOCATION)
+	endif()
 
-if("${QT_MOC_EXECUTABLE}" STREQUAL "")
-	get_target_property(QT_MOC_EXECUTABLE Qt5::moc IMPORTED_LOCATION)
-endif()
+	if("${QT_UIC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT_UIC_EXECUTABLE Qt6::uic IMPORTED_LOCATION)
+	endif()
+else()
+	if("${QT_MOC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT_MOC_EXECUTABLE Qt5::moc IMPORTED_LOCATION)
+	endif()
 
-if("${QT_UIC_EXECUTABLE}" STREQUAL "")
-	get_target_property(QT_UIC_EXECUTABLE Qt5::uic IMPORTED_LOCATION)
+	if("${QT_UIC_EXECUTABLE}" STREQUAL "")
+		get_target_property(QT_UIC_EXECUTABLE Qt5::uic IMPORTED_LOCATION)
+	endif()
 endif()
 
 #if("${QT_QCOLLECTIONGENERATOR_EXECUTABLE}" STREQUAL "")
@@ -235,7 +252,6 @@ message("Project source dir: ${PROJECT_SOURCE_DIR}")
 message("CMake source dir: ${CMAKE_SOURCE_DIR}")
 message("CMake binary dir: ${CMAKE_BINARY_DIR}")
 message("Install path prefix: ${CMAKE_INSTALL_PREFIX}")
-message("Using Qt version ${Qt5Core_VERSION}.")
 if(NOT "${QWT_MAJOR_VERSION}" STREQUAL "")
 	message("Using Qwt version ${QWT_MAJOR_VERSION}.")
 endif()
@@ -262,10 +278,6 @@ if(USE_PLUGINS)
 	add_definitions(-DUSE_PLUGINS)
 endif()
 
-if(USE_TR1_FUNCS)
-	add_definitions(-DUSE_BOOST_REX)
-endif()
-
 if(USE_LAPACKE)
 	find_package(GFortran)
 	find_package(Lapacke)
@@ -290,18 +302,24 @@ add_definitions(-DBOOST_MATH_FWD_HPP)
 #add_definitions("${QtGui_DEFINITIONS}")
 #add_definitions("${Qt5OpenGL_DEFINITIONS}")
 
-include_directories("${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/3rdparty")
 include_directories("." "./3rdparty")
-include_directories("${Boost_INCLUDE_DIRS}/..")
-include_directories("${PNG_INCLUDE_DIRS}")
-#include_directories("${JPEG_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS}")
-include_directories("${Qt5Core_INCLUDE_DIRS}" "${Qt5Gui_INCLUDE_DIRS}" "${Qt5Widgets_INCLUDE_DIRS}")
-include_directories("${QWT_INCLUDE_DIRS}")
-include_directories("${ZLIB_INCLUDE_DIRS}")
-include_directories("${BZIP2_INCLUDE_DIR}")
-include_directories("${Minuit2_INCLUDE_DIRS}")
+include_directories(SYSTEM "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/3rdparty")
+include_directories(SYSTEM "${Boost_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}/..")
+include_directories(SYSTEM "${PNG_INCLUDE_DIRS}")
+#include_directories(SYSTEM "${JPEG_INCLUDE_DIRS} ${TIFF_INCLUDE_DIRS}")
+if(USE_QT6)
+	include_directories(SYSTEM "${Qt6Core_INCLUDE_DIRS}" "${Qt6Gui_INCLUDE_DIRS}"
+		"${Qt6Widgets_INCLUDE_DIRS}" "${Qt6OpenGLWidgets_INCLUDE_DIRS}")
+else()
+	include_directories(SYSTEM "${Qt5Core_INCLUDE_DIRS}" "${Qt5Gui_INCLUDE_DIRS}"
+		"${Qt5Widgets_INCLUDE_DIRS}")
+endif()
+include_directories(SYSTEM "${QWT_INCLUDE_DIRS}")
+include_directories(SYSTEM "${ZLIB_INCLUDE_DIRS}")
+include_directories(SYSTEM "${BZIP2_INCLUDE_DIR}")
+include_directories(SYSTEM "${Minuit2_INCLUDE_DIRS}")
 if(USE_GENTAB)
-	include_directories("./3rdparty/clipper-master/clipper")
+	include_directories(SYSTEM "./3rdparty/clipper-master/clipper")
 endif()
 
 set(LIBS_FIT ${Minuit2_LIBRARIES})
@@ -309,7 +327,7 @@ set(LIBS_FIT ${Minuit2_LIBRARIES})
 
 if(HDF5_FOUND)
 	message("Using HDF5 version ${HDF5_VERSION}.")
-	include_directories("${HDF5_CXX_INCLUDE_DIRS}")
+	include_directories(SYSTEM "${HDF5_CXX_INCLUDE_DIRS}")
 	add_definitions(-DUSE_HDF5)
 else()
 	message("Disabling HDF5 file support.")
@@ -322,7 +340,7 @@ endif()
 if(Py_FOUND)
 	message("Enabling py scripting support.")
 	add_definitions(-DUSE_PY)
-	include_directories("${Python3_INCLUDE_DIRS}")
+	include_directories(SYSTEM "${Python3_INCLUDE_DIRS}")
 else()
 	message("Disabling py scripting support.")
 	add_definitions(-DNO_PY)
@@ -334,7 +352,7 @@ endif()
 if(Julia_FOUND)
 	message("Enabling jl scripting support.")
 	add_definitions(-DUSE_JL)
-	include_directories("${Julia_INCLUDE_DIRS}")
+	include_directories(SYSTEM "${Julia_INCLUDE_DIRS}")
 else()
 	message("Disabling jl scripting support.")
 	add_definitions(-DNO_JL)
@@ -347,7 +365,7 @@ if(Lapacke_FOUND)
 	message("Using Lapacke.")
 	add_definitions(-DUSE_LAPACK=1)
 	set(LIBS_LINALG ${Lapacke_LIBRARIES} ${Lapack_LIBRARIES} ${BLAS_LIBRARIES} ${GFortran_LIBRARIES})
-	include_directories("${Lapacke_INCLUDE_DIRS}")
+	include_directories(SYSTEM "${Lapacke_INCLUDE_DIRS}")
 else()
 	message("Disabling Lapacke support.")
 	set(LIBS_LINALG "")
@@ -360,13 +378,13 @@ endif()
 if(OPENGL_FOUND AND FREETYPE_FOUND)
 	message("Enabling 3D support. Inc: \"${OPENGL_INCLUDE_DIR}\".")
 
-	include_directories("${FREETYPE_INCLUDE_DIRS}")
+	include_directories(SYSTEM "${FREETYPE_INCLUDE_DIRS}")
 	if(NOT "${OPENGL_INCLUDE_DIR}" STREQUAL "")
-		include_directories("${OPENGL_INCLUDE_DIR}")
-		include_directories("${OPENGL_INCLUDE_DIR}/GL" "${OPENGL_INCLUDE_DIR}/OpenGL")
+		include_directories(SYSTEM "${OPENGL_INCLUDE_DIR}")
+		include_directories(SYSTEM "${OPENGL_INCLUDE_DIR}/GL" "${OPENGL_INCLUDE_DIR}/OpenGL" "${OPENGL_INCLUDE_DIR}/Headers")
 	else()
 		message("Empty OGL dirs, guessing some defaults.")
-		include_directories("/usr/include/GL" "/usr/include/OpenGL" "/usr/x86_64-w64-mingw32/sys-root/mingw/include/GL")
+		include_directories(SYSTEM "/usr/include/GL" "/usr/include/OpenGL" "/usr/x86_64-w64-mingw32/sys-root/mingw/include/GL")
 	endif()
 
 	set(SRCS_3D
@@ -392,6 +410,13 @@ set(CMAKE_AUTOUIC TRUE)
 set(CMAKE_AUTORCC FALSE)
 
 
+if(USE_QT6)
+	set(QtLibs Qt6::Core Qt6::Gui Qt6::Svg Qt6::OpenGLWidgets Qt6::Widgets)
+else()
+	set(QtLibs Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Svg)
+endif()
+
+
 
 # -----------------------------------------------------------------------------
 # gentab
@@ -414,7 +439,7 @@ if(USE_GENTAB)
 	)
 
 	target_link_libraries(gentab
-		Qt5::Core Qt5::Gui Qt5::Widgets
+		${QtLibs}
 		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
 		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
@@ -494,7 +519,8 @@ add_executable(takin
 	# libs
 	libs/spacegroups/spacegroup.cpp tools/sglist/SgListDlg.cpp
 	libs/globals.cpp libs/globals_qt.cpp libs/spacegroups/crystalsys.cpp
-	libs/formfactors/formfact.cpp libs/qt/qthelper.cpp libs/qt/qwthelper.cpp
+	libs/formfactors/formfact.cpp libs/qt/qthelper.cpp
+	libs/qt/qwthelper.cpp
 
 	${SRCS_3D}
 
@@ -509,9 +535,9 @@ add_executable(takin
 )
 
 target_link_libraries(takin
+	${QtLibs}
 	${LIBS_FIT} ${LIBS_LINALG}
 	${SOCK2}
-	Qt5::Core Qt5::Gui Qt5::Svg
 	${QWT_LIBRARIES}
 	${LIBS_3D}
 	${PNG_LIBRARIES}
@@ -521,14 +547,6 @@ target_link_libraries(takin
 	Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 	${HDF5_CXX_LIBRARIES}
 )
-
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-	add_custom_command(TARGET takin POST_BUILD
-		COMMAND strip -v $<TARGET_FILE:takin>
-		MAIN_DEPENDENCY takin
-	)
-endif()
 
 
 if(USE_GENTAB)
@@ -551,7 +569,6 @@ add_executable(takinmod_py
 	tlibs/math/rand.cpp
 )
 
-
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	target_link_options(takinmod_py
 		# create an __info_plist section in the binary
@@ -564,14 +581,6 @@ target_link_libraries(takinmod_py
 	${_BOOST_PY_TARGET} ${Python3_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 )
-
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-	add_custom_command(TARGET takinmod_py POST_BUILD
-		COMMAND strip -v $<TARGET_FILE:takinmod_py>
-		MAIN_DEPENDENCY takinmod_py
-	)
-endif()
 endif()
 
 
@@ -591,91 +600,5 @@ target_link_libraries(takinmod_jl
 	${Julia_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES}
 )
-
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-	add_custom_command(TARGET takinmod_jl POST_BUILD
-		COMMAND strip -v $<TARGET_FILE:takinmod_jl>
-		MAIN_DEPENDENCY takinmod_jl
-	)
-endif()
 endif()
 # -----------------------------------------------------------------------------
-
-
-
-if(BUILD_EXT_TOOLS)
-	add_definitions(-DCONVOFIT_STANDALONE)
-
-	# -----------------------------------------------------------------------------
-	# convofit, convoseries
-	# -----------------------------------------------------------------------------
-	add_executable(takin_convofit
-		tools/res/cn.cpp tools/res/pop.cpp tools/res/pop_cn.cpp
-		tools/res/eck.cpp tools/res/eck_ext.cpp
-		tools/res/vio.cpp
-		#tools/res/simple.cpp
-
-		tools/monteconvo/TASReso.cpp
-		tools/monteconvo/modules/kdtree.cpp
-		tools/monteconvo/modules/simple_magnon.cpp
-		tools/monteconvo/modules/simple_phonon.cpp
-		tools/monteconvo/modules/table1d.cpp
-		tools/monteconvo/modules/uniform_grid.cpp
-		tools/monteconvo/sqwbase.cpp tools/monteconvo/sqwfactory.cpp
-
-		tools/convofit/convofit.cpp tools/convofit/convofit_import.cpp
-		tools/convofit/model.cpp tools/convofit/scan.cpp
-		tools/convofit/convofit_cli.cpp tools/convofit/convofit_cli_main.cpp
-
-		# statically link tlibs externals
-		tlibs/log/log.cpp
-		tlibs/math/rand.cpp
-		tlibs/file/tmp.cpp
-		#tlibs/file/loadinstr.cpp
-		libs/globals.cpp
-	)
-
-	set_target_properties(takin_convofit PROPERTIES COMPILE_FLAGS "-DNO_QT")
-
-	target_link_libraries(takin_convofit
-		${LIBS_FIT} ${LIBS_LINALG}
-		${SOCK2}
-		Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
-		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
-		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
-	)
-
-	if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-		add_custom_command(TARGET takin_convofit POST_BUILD
-			COMMAND strip -v $<TARGET_FILE:takin_convofit>
-			MAIN_DEPENDENCY takin_convofit
-		)
-	endif()
-
-	# -----------------------------------------------------------------------------
-
-	add_executable(takin_convoseries
-		tools/convofit/scanseries.cpp
-
-		# statically link tlibs externals
-		tlibs/log/log.cpp
-	)
-
-	set_target_properties(takin_convoseries PROPERTIES COMPILE_FLAGS "-DNO_QT")
-
-	target_link_libraries(takin_convoseries
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
-		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
-		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
-	)
-
-	if(CMAKE_BUILD_TYPE STREQUAL "Release" AND USE_STRIP)
-		add_custom_command(TARGET takin_convoseries POST_BUILD
-			COMMAND strip -v $<TARGET_FILE:takin_convoseries>
-			MAIN_DEPENDENCY takin_convoseries
-	)
-	endif()
-	# -----------------------------------------------------------------------------
-endif()
