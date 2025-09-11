@@ -68,17 +68,19 @@ License: GNU GPL version 2 (see below)
 --------------------------------------------------------------------------------
 Qt
 URL: http://www.qt.io, http://code.qt.io/cgit/
-License URL: http://doc.qt.io/qt-5.6/licensing.html
+License URL: http://doc.qt.io/qt-6/licensing.html
 
-Copyright (C) 2015, 2016 by The Qt Company Ltd. and other contributors.
+Copyright (C) 2015 - 2025 by The Qt Company Ltd. and other contributors.
 Copyright (C) 2014 by Digia Plc and/or its subsidiary(-ies).
 
 License, Qt4: GNU LGPL version 2.1 (see below)
 License, Qt5: GNU LGPL version 3
+License, Qt6: GNU LGPL version 3
 
 Warning: After Qt 5.6, the /general/ Qt license options changed!
          Check remaining GPLv2 compatibility of /individual/ Qt modules here:
-         https://doc.qt.io/qt-5/qtmodules.html
+         https://doc.qt.io/qt-5/qtmodules.html or here:
+         https://doc.qt.io/qt-6/qtmodules.html
          before linking to them!)
 --------------------------------------------------------------------------------
 
