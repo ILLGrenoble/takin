@@ -7,7 +7,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -28,6 +28,7 @@
 #
 
 # distribution name
+# start the building process with, e.g.: ./build_lin/build.sh distri jammy
 distri=noble
 
 # individual building steps
@@ -50,9 +51,11 @@ for((arg_idx=1; arg_idx<=$#; ++arg_idx)); do
 		# get the argument's parameter
 		param_idx=$((arg_idx+1))
 		param="${!param_idx}"
+		arg_idx=$((arg_idx+1))
 
 		# set the argument to the given parameter
 		export $arg=${param}
+		#echo -e "Argument: $arg = $param"
 	fi
 done
 
@@ -68,7 +71,7 @@ BUILD_DIR=build
 echo -e "Takin root dir: \"${TAKIN_ROOT}\"."
 echo -e "Distribution name: \"${distri}\"."
 echo -e "Number of cores for building: ${NUM_CORES}."
-
+exit
 
 if [ $build_py_modules -ne 0 ]; then
 	__BUILD_PY_MODULES=True
@@ -165,7 +168,7 @@ if [ $build_magpie -ne 0 ]; then
 
 		if [ $build_externals -ne 0 ]; then
 			# build external libraries
-			if ! ./build_externals.sh; then
+			if ! ./build_externals.sh --skip-takin-libs; then
 				echo -e "Failed to build external libraries for magpie."
 				exit -1
 			fi
