@@ -21,7 +21,6 @@ Version 2.9.
 ## Software DOIs
 - *Takin 2.x*: [10.5281/zenodo.4117437](https://dx.doi.org/10.5281/zenodo.4117437).  
 - *Takin 1.x*: [10.5281/zenodo.3961491](https://dx.doi.org/10.5281/zenodo.3961491).  
-- *tlibs*: [10.5281/zenodo.5717779](https://doi.org/10.5281/zenodo.5717779).  
 - *Magpie*: [10.5281/zenodo.16180814](https://doi.org/10.5281/zenodo.16180814).  
 - *TAS-Paths*: [10.5281/zenodo.4625649](https://doi.org/10.5281/zenodo.4625649).  
 
