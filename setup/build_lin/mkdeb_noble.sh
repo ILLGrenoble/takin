@@ -74,7 +74,7 @@ echo -e "Depends:" \
 	"gnuplot," \
 	"gnuplot-qt," \
 	"libopengl0," \
-	"libgfortran5,"
+	"libgfortran5," \
 	"liblapacke," \
 	"libqhull-r8.0," \
 	"libqhullcpp8.0," \
