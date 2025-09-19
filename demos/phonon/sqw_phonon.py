@@ -97,8 +97,12 @@ g_offs = 0.           # energy gap
 g_HWHM = 0.02         # linewidth
 g_S0 = 1.             # intensity
 
-g_inc_sig = 0.02      # incoherent width
-g_inc_amp = 1.        # incoherent intensity
+g_inc_sig = 0.02      # incoherent-elastic width
+g_inc_amp = 1.        # incoherent-elastic intensity
+
+g_bragg_sig = 0.02    # coherent-elastic width (to simulate bragg tails)
+g_bragg_amp = 9999.   # coherent-elastic intensity
+g_bragg_eps = 0.001   # epsilon sphere for comparing Q and G
 
 g_T = 300.            # temperature
 g_bose_cut = 0.01     # lower cutoff energy for the Bose factor
@@ -155,7 +159,13 @@ def TakinSqw(h, k, l, E):
 		S = np.abs(DHO(E, g_T, Ep_peak, g_HWHM, g_S0*wp_peak))
 		incoh = gauss(E, 0., g_inc_sig, g_inc_amp)
 
-		S = S + incoh
+		bragg_tail = 0.
+		if np.abs(h - g_h) <= g_bragg_eps and \
+			np.abs(k - g_k) <= g_bragg_eps and \
+			np.abs(l - g_l) <= g_bragg_eps:
+			bragg_tail = gauss(E, 0., g_bragg_sig, g_bragg_amp)
+
+		S = S + incoh + bragg_tail
 #		print("S={0}".format(S))
 		return S
 	except ZeroDivisionError:
