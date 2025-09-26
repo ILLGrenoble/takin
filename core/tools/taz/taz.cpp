@@ -772,12 +772,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	pHelp->setShortcut(QKeySequence::HelpContents);
 	pMenuHelp->addAction(pHelp);
 
-	QAction *pDevelDoc = new QAction("Show Developer Help...", this);
-	if(find_resource("doc/html/index.html", 0) == "")
-		pDevelDoc->setEnabled(0);
-	pDevelDoc->setIcon(load_icon("res/icons/help-browser.svg"));
-	pMenuHelp->addAction(pDevelDoc);
-
 	pMenuHelp->addSeparator();
 	QAction *pLog = new QAction("Log...", this);
 	pMenuHelp->addAction(pLog);
@@ -896,7 +890,6 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 		QObject::connect(pFormfactor, &QAction::triggered, this, &TazDlg::ShowFormfactorDlg);
 
 	QObject::connect(pHelp, &QAction::triggered, this, &TazDlg::ShowHelp);
-	QObject::connect(pDevelDoc, &QAction::triggered, this, &TazDlg::ShowDevelDoc);
 	QObject::connect(pLog, &QAction::triggered, this, &TazDlg::ShowLog);
 	QObject::connect(pWebsite, &QAction::triggered, this, &TazDlg::ShowWebsite);
 	QObject::connect(pBugReport, &QAction::triggered, this, &TazDlg::ReportBug);
