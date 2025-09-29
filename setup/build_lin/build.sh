@@ -71,7 +71,7 @@ BUILD_DIR=build
 echo -e "Takin root dir: \"${TAKIN_ROOT}\"."
 echo -e "Distribution name: \"${distri}\"."
 echo -e "Number of cores for building: ${NUM_CORES}."
-exit
+
 
 if [ $build_py_modules -ne 0 ]; then
 	__BUILD_PY_MODULES=True
