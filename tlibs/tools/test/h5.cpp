@@ -27,14 +27,21 @@
  */
 
 // g++ -std=c++11 -I../.. -I /usr/include/hdf5/serial -o h5 h5.cpp -L /usr/lib/x86_64-linux-gnu/hdf5/serial/ -lhdf5_cpp -lhdf5
+// clang++ -std=c++11 -I../.. -I /usr/local/include -o h5 h5.cpp -L /usr/local/lib -lhdf5_cpp -lhdf5
 
 #include <iostream>
 #include <string>
 #include "file/h5.h"
 
-int main()
+int main(int argc, char** argv)
 {
-	H5::H5File h5file("/users/tw/Downloads/mail_tmp/thales.nxs", H5F_ACC_RDONLY);
+	if(argc < 2)
+	{
+		std::cerr << "Please give an h5 file." << std::endl;
+		return -1;
+	}
+
+	H5::H5File h5file(argv[1], H5F_ACC_RDONLY);
 
 	std::vector<std::string> entries;
 	tl::get_h5_entries(h5file, "/", entries);
@@ -47,7 +54,6 @@ int main()
 
 	std::cout << std::boolalpha << h5file.nameExists("entry0/data_scan") << std::endl;
 	std::cout << std::boolalpha << h5file.nameExists("entry0/data_scan/total_steps") << std::endl;
-	std::cout << std::boolalpha << h5file.nameExists("entry0/data_scan/total_steps123") << std::endl;
 
 	std::cout << std::endl;
 

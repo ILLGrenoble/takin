@@ -216,43 +216,83 @@ bool FileH5<t_real>::Load(const char* pcFile)
 		get_h5_string(h5file, entry + "/" + m_instrname + "/command_line/actual_command", m_scancommand);
 
 		// get polarisation infos
-		get_h5_string(h5file, entry + "/" + m_instrname + "/pal/pal_contents", m_palcommand);
-		if(!get_h5_scalar(h5file, entry + "/data_scan/pal_steps", m_numPolChannels))
-			m_numPolChannels = 0;
+		if(h5file.nameExists(entry + "/" + m_instrname + "/pal"))
+		{
+			get_h5_string(h5file, entry + "/" + m_instrname + "/pal/pal_contents", m_palcommand);
+			if(!get_h5_scalar(h5file, entry + "/data_scan/pal_steps", m_numPolChannels))
+				m_numPolChannels = 0;
+		}
 
 		// get user infos
-		get_h5_string(h5file, entry + "/user/name", m_username);
-		get_h5_string(h5file, entry + "/user/namelocalcontact", m_localname);
-		get_h5_string(h5file, entry + "/user/proposal", m_proposal);
+		if(h5file.nameExists(entry + "/user"))
+		{
+			get_h5_string(h5file, entry + "/user/name", m_username);
+			get_h5_string(h5file, entry + "/user/namelocalcontact", m_localname);
+			get_h5_string(h5file, entry + "/user/proposal", m_proposal);
+		}
 
 		// get instrument infos
 		t_real mono_sense = -1., ana_sense = -1., sample_sense = 1.;
 		t_real ki = 0., kf = 0.;
 		int fx = 2;
 
-		get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/d_spacing", m_dspacings[0]);
-		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/sense", mono_sense))
-			get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/sens", mono_sense);
-		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/ki", ki))
+		if(h5file.nameExists(entry + "/" + m_instrname + "/Monochromator"))
 		{
-			// if ki does not exist, try to convert from Ei
-			t_real Ei = 0.;
-			if(get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/ei", Ei))
-				ki = std::sqrt(get_E2KSQ<t_real>() * Ei);
+			get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/d_spacing", m_dspacings[0]);
+			if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/sense", mono_sense))
+				get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/sens", mono_sense);
+			if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/ki", ki))
+			{
+				// if ki does not exist, try to convert from Ei
+				t_real Ei = 0.;
+				if(get_h5_scalar(h5file, entry + "/" + m_instrname + "/Monochromator/ei", Ei))
+					ki = std::sqrt(get_E2KSQ<t_real>() * Ei);
+			}
 		}
-		get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/d_spacing", m_dspacings[1]);
-		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/sense", ana_sense))
-			get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/sens", ana_sense);
-		if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/kf", kf))
+
+		if(h5file.nameExists(entry + "/" + m_instrname + "/Analyser"))
 		{
-			// if kf does not exist, try to convert from Ef
-			t_real Ef = 0.;
-			if(get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/ef", Ef))
-				kf = std::sqrt(get_E2KSQ<t_real>() * Ef);
+			get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/d_spacing", m_dspacings[1]);
+			if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/sense", ana_sense))
+				get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/sens", ana_sense);
+			if(!get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/kf", kf))
+			{
+				// if kf does not exist, try to convert from Ef
+				t_real Ef = 0.;
+				if(get_h5_scalar(h5file, entry + "/" + m_instrname + "/Analyser/ef", Ef))
+					kf = std::sqrt(get_E2KSQ<t_real>() * Ef);
+			}
 		}
-		if(!get_h5_scalar(h5file, entry + "/sample/sense", sample_sense))
-			get_h5_scalar(h5file, entry + "/sample/sens", sample_sense);
-		get_h5_scalar(h5file, entry + "/sample/fx", fx);
+
+
+		if(h5file.nameExists(entry + "/sample"))
+		{
+			// get sample infos
+			if(!get_h5_scalar(h5file, entry + "/sample/sense", sample_sense))
+				get_h5_scalar(h5file, entry + "/sample/sens", sample_sense);
+			get_h5_scalar(h5file, entry + "/sample/fx", fx);
+
+			get_h5_scalar(h5file, entry + "/sample/unit_cell_a", m_lattice[0]);
+			get_h5_scalar(h5file, entry + "/sample/unit_cell_b", m_lattice[1]);
+			get_h5_scalar(h5file, entry + "/sample/unit_cell_c", m_lattice[2]);
+
+			get_h5_scalar(h5file, entry + "/sample/unit_cell_alpha", m_angles[0]);
+			get_h5_scalar(h5file, entry + "/sample/unit_cell_beta", m_angles[1]);
+			get_h5_scalar(h5file, entry + "/sample/unit_cell_gamma", m_angles[2]);
+
+			get_h5_scalar(h5file, entry + "/sample/ax", m_plane[0][0]);
+			get_h5_scalar(h5file, entry + "/sample/ay", m_plane[0][1]);
+			get_h5_scalar(h5file, entry + "/sample/az", m_plane[0][2]);
+
+			get_h5_scalar(h5file, entry + "/sample/bx", m_plane[1][0]);
+			get_h5_scalar(h5file, entry + "/sample/by", m_plane[1][1]);
+			get_h5_scalar(h5file, entry + "/sample/bz", m_plane[1][2]);
+
+			get_h5_scalar(h5file, entry + "/sample/qh", m_initialpos[0]);
+			get_h5_scalar(h5file, entry + "/sample/qk", m_initialpos[1]);
+			get_h5_scalar(h5file, entry + "/sample/ql", m_initialpos[2]);
+			get_h5_scalar(h5file, entry + "/sample/en", m_initialpos[3]);
+		}
 
 		m_senses[0] = mono_sense > 0.;
 		m_senses[1] = sample_sense > 0.;
@@ -260,28 +300,6 @@ bool FileH5<t_real>::Load(const char* pcFile)
 
 		m_iskifixed = (fx == 1);
 		m_kfix = (m_iskifixed ? ki : kf);
-
-		// get sample infos
-		get_h5_scalar(h5file, entry + "/sample/unit_cell_a", m_lattice[0]);
-		get_h5_scalar(h5file, entry + "/sample/unit_cell_b", m_lattice[1]);
-		get_h5_scalar(h5file, entry + "/sample/unit_cell_c", m_lattice[2]);
-
-		get_h5_scalar(h5file, entry + "/sample/unit_cell_alpha", m_angles[0]);
-		get_h5_scalar(h5file, entry + "/sample/unit_cell_beta", m_angles[1]);
-		get_h5_scalar(h5file, entry + "/sample/unit_cell_gamma", m_angles[2]);
-
-		get_h5_scalar(h5file, entry + "/sample/ax", m_plane[0][0]);
-		get_h5_scalar(h5file, entry + "/sample/ay", m_plane[0][1]);
-		get_h5_scalar(h5file, entry + "/sample/az", m_plane[0][2]);
-
-		get_h5_scalar(h5file, entry + "/sample/bx", m_plane[1][0]);
-		get_h5_scalar(h5file, entry + "/sample/by", m_plane[1][1]);
-		get_h5_scalar(h5file, entry + "/sample/bz", m_plane[1][2]);
-
-		get_h5_scalar(h5file, entry + "/sample/qh", m_initialpos[0]);
-		get_h5_scalar(h5file, entry + "/sample/qk", m_initialpos[1]);
-		get_h5_scalar(h5file, entry + "/sample/ql", m_initialpos[2]);
-		get_h5_scalar(h5file, entry + "/sample/en", m_initialpos[3]);
 
 		m_angles[0] = d2r(m_angles[0]);
 		m_angles[1] = d2r(m_angles[1]);
@@ -558,11 +576,17 @@ template<class t_real> std::string FileH5<t_real>::GetCountVar() const
 {
 	// try to match names
 	std::string strRet;
-	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector)REX", strRet))
+
+	// find counters that have counts
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector[0-9]*)REX", strRet))
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(cnts)REX", strRet))
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(det)REX", strRet))
+		return strRet;
+
+	// also include counters without counts
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector[0-9]*)REX", strRet, false, false))
 		return strRet;
 
 	return "";
@@ -632,11 +656,16 @@ template<class t_real> void FileH5<t_real>::SetAutoParsePolData(bool b)
 template<class t_real> std::string FileH5<t_real>::GetMonVar() const
 {
 	std::string strRet;
+
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(Monitor[0-9]*)REX", strRet))
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(m[0-9]+)REX", strRet))
 		return strRet;
 
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(Monitor[0-9]*)REX", strRet, false, false))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(m[0-9]+)REX", strRet, false, false))
+		return strRet;
 	return "";
 }
 

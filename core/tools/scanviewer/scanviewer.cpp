@@ -83,6 +83,9 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 		font.fromString(m_core_settings->value("main/font_gen", "").toString()))
 		setFont(font);
 
+	font.setStyleHint(QFont::Monospace);
+	textRawFile->setFont(font);
+
 	splitter->setStretchFactor(0, 1);
 	splitter->setStretchFactor(1, 2);
 

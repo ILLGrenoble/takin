@@ -42,14 +42,7 @@
 	#include "../file/comp.h"
 #endif
 
-#ifndef USE_BOOST_REX
-	#include <regex>
-	namespace rex = ::std;
-#else
-	#include <boost/tr1/regex.hpp>
-	namespace rex = ::boost;
-#endif
-
+#include <regex>
 #include <numeric>
 #include <fstream>
 
@@ -106,9 +99,9 @@ void FileFrm<t_real>::ReadHeader(std::istream& istr)
 				try
 				{
 					const std::string strRegex = R"REX(([a-z0-9]+)_responsible)REX";
-					rex::regex rx(strRegex, rex::regex::ECMAScript|rex::regex_constants::icase);
-					rex::smatch m;
-					if(rex::regex_search(pairLine.first, m, rx) && m.size()>=2)
+					std::regex rx(strRegex, std::regex::ECMAScript|std::regex_constants::icase);
+					std::smatch m;
+					if(std::regex_search(pairLine.first, m, rx) && m.size()>=2)
 						m_instrname = m[1];
 				}
 				catch(const std::exception& ex)
@@ -524,9 +517,9 @@ std::vector<std::string> FileFrm<t_real>::GetScannedVars() const
 
 		// try qscan/qcscan
 		const std::string strRegex = R"REX((qscan|qcscan)\((\[.*\])[, ]+(\[.*\]).*\))REX";
-		rex::regex rx(strRegex, rex::regex::ECMAScript|rex::regex_constants::icase);
-		rex::smatch m;
-		if(rex::regex_search(strInfo, m, rx) && m.size()>3)
+		std::regex rx(strRegex, std::regex::ECMAScript|std::regex_constants::icase);
+		std::smatch m;
+		if(std::regex_search(strInfo, m, rx) && m.size()>3)
 		{
 			const std::string& strSteps = m[3];
 			std::vector<t_real> vecSteps = get_py_array<std::string, std::vector<t_real>>(strSteps);
@@ -546,9 +539,9 @@ std::vector<std::string> FileFrm<t_real>::GetScannedVars() const
 		{
 			// try scan/cscan
 			const std::string strRegexDevScan = R"REX((scan|cscan)\(([a-z0-9_\.]+)[, ]+.*\))REX";
-			rex::regex rxDev(strRegexDevScan, rex::regex::ECMAScript|rex::regex_constants::icase);
-			rex::smatch mDev;
-			if(rex::regex_search(strInfo, mDev, rxDev) && mDev.size()>2)
+			std::regex rxDev(strRegexDevScan, std::regex::ECMAScript|std::regex_constants::icase);
+			std::smatch mDev;
+			if(std::regex_search(strInfo, mDev, rxDev) && mDev.size()>2)
 			{
 				std::string strDev = mDev[2];
 				if(std::find(m_vecQuantities.begin(), m_vecQuantities.end(), strDev) != m_vecQuantities.end())
@@ -575,8 +568,15 @@ template<class t_real>
 std::string FileFrm<t_real>::GetCountVar() const
 {
 	std::string strRet;
+
+	// find counters that have counts
 	if(FileInstrBase<t_real>::MatchColumn(R"REX((det[a-z]*[0-9])|(ctr[0-9])|(counter[0-9])|([a-z0-9\.]*roi))REX", strRet, true))
 		return strRet;
+
+	// also include counters that have no counts
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((det[a-z]*[0-9])|(ctr[0-9])|(counter[0-9])|([a-z0-9\.]*roi))REX", strRet, true, false))
+		return strRet;
+
 	return "";
 }
 
@@ -585,8 +585,15 @@ template<class t_real>
 std::string FileFrm<t_real>::GetMonVar() const
 {
 	std::string strRet;
+
+	// find counters that have counts
 	if(FileInstrBase<t_real>::MatchColumn(R"REX((mon[a-z]*[0-9]))REX", strRet, true))
 		return strRet;
+
+	// also include counters that have no counts
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((mon[a-z]*[0-9]))REX", strRet, true, false))
+		return strRet;
+
 	return "";
 }
 

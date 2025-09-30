@@ -52,14 +52,7 @@
 	#include "loadinstr_h5.h"
 #endif
 
-#ifndef USE_BOOST_REX
-	#include <regex>
-	namespace rex = ::std;
-#else
-	#include <boost/tr1/regex.hpp>
-	namespace rex = ::boost;
-#endif
-
+#include <regex>
 #include <numeric>
 #include <fstream>
 
@@ -229,15 +222,15 @@ bool FileInstrBase<t_real>::MatchColumn(const std::string& strRegex,
 	std::string& strColName, bool bSortByCounts, bool bFilterEmpty) const
 {
 	const FileInstrBase<t_real>::t_vecColNames& vecColNames = GetColNames();
-	rex::regex rx(strRegex, rex::regex::ECMAScript | rex::regex_constants::icase);
+	std::regex rx(strRegex, std::regex::ECMAScript | std::regex_constants::icase);
 
 	using t_pairCol = std::pair<std::string, t_real>;
 	std::vector<t_pairCol> vecMatchedCols;
 
 	for(const std::string& strCurColName : vecColNames)
 	{
-		rex::smatch m;
-		if(rex::regex_match(strCurColName, m, rx))
+		std::smatch m;
+		if(std::regex_match(strCurColName, m, rx))
 		{
 			const typename FileInstrBase<t_real>::t_vecVals& vecVals = GetCol(strCurColName);
 

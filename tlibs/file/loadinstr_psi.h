@@ -42,14 +42,7 @@
 	#include "../file/comp.h"
 #endif
 
-#ifndef USE_BOOST_REX
-	#include <regex>
-	namespace rex = ::std;
-#else
-	#include <boost/tr1/regex.hpp>
-	namespace rex = ::boost;
-#endif
-
+#include <regex>
 #include <numeric>
 #include <fstream>
 
@@ -176,11 +169,11 @@ void FilePsi<t_real>::GetInternalParams(const std::string& strAll,
 	if(fix_broken)
 	{
 		const std::string strRegex = R"REX(([a-zA-Z0-9]+)[ \t]*\=[ \t]*([+\-]?[0-9\.]+))REX";
-		rex::regex rx(strRegex, rex::regex::ECMAScript|rex::regex_constants::icase);
+		std::regex rx(strRegex, std::regex::ECMAScript|std::regex_constants::icase);
 
-		rex::smatch m;
+		std::smatch m;
 		std::string data = strAll;
-		while(rex::regex_search(data, m, rx))
+		while(std::regex_search(data, m, rx))
 		{
 			if(m.size() >= 3)
 			{
@@ -896,9 +889,9 @@ std::vector<std::string> FilePsi<t_real>::GetScannedVarsFromCommand(const std::s
 	if(!vecVars.size())
 	{
 		const std::string strRegex = R"REX((sc|scan|bs)[ \t]+([a-z0-9]+)[ \t]+[0-9\.-]+[ \t]+[d|D]([a-z0-9]+).*)REX";
-		rex::regex rx(strRegex, rex::regex::ECMAScript|rex::regex_constants::icase);
-		rex::smatch m;
-		if(rex::regex_search(cmd, m, rx) && m.size() > 3)
+		std::regex rx(strRegex, std::regex::ECMAScript|std::regex_constants::icase);
+		std::smatch m;
+		if(std::regex_search(cmd, m, rx) && m.size() > 3)
 		{
 			const std::string& strSteps = m[3];
 			vecVars.push_back(str_to_upper(strSteps));
@@ -953,11 +946,21 @@ std::string FilePsi<t_real>::GetCountVar() const
 {
 	// try to match names
 	std::string strRet;
+
+	// find counters that have counts
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(cnts)REX", strRet))
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(det)REX", strRet))
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector)REX", strRet))
+		return strRet;
+
+	// also include counters that have no counts
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(cnts)REX", strRet, false, false))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(det)REX", strRet, false, false))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector)REX", strRet, false, false))
 		return strRet;
 
 	return "";
@@ -968,10 +971,19 @@ template<class t_real>
 std::string FilePsi<t_real>::GetMonVar() const
 {
 	std::string strRet;
+
+	// find counters that have counts
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(m[0-9]+)REX", strRet))
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(Monitor[0-9]*)REX", strRet))
 		return strRet;
+
+	// also include counters that have no counts
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(m[0-9]+)REX", strRet, false, false))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(Monitor[0-9]*)REX", strRet, false, false))
+		return strRet;
+
 	return "";
 }
 

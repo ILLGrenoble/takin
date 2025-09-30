@@ -25,7 +25,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * ----------------------------------------------------------------------------
  */
-// gcc -I../.. -I. -DNO_IOSTR -o printscans ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp printscans.cpp -std=c++11 -lstdc++ -lm -lboost_system -lboost_filesystem
+
+// clang++ -I../.. -I. -I/usr/local/include -DNO_IOSTR -DUSE_HDF5 -o printscans ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp printscans.cpp -std=c++17 -L/usr/local/lib -lboost_filesystem -lhdf5_cpp -lhdf5
 
 #include <iostream>
 #include <fstream>

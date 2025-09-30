@@ -416,6 +416,8 @@ std::string FileTrisp<t_real>::GetCountVar() const
 	std::string strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(c[0-9])REX", strRet))
 		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(c[0-9])REX", strRet, false, false))
+		return strRet;
 	return "";
 }
 
@@ -425,6 +427,8 @@ std::string FileTrisp<t_real>::GetMonVar() const
 {
 	std::string strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(mon[a-z0-9]*)REX", strRet))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(mon[a-z0-9]*)REX", strRet, false, false))
 		return strRet;
 	return "";
 }
