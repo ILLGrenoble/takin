@@ -66,14 +66,14 @@ int main()
 	std::cout << "tl::eigenvec_sym, ok = " << sym_ok << "\n";
 	for(int i=0; i<evals.size(); ++i)
 		std::cout << "eval: " << evals[i] <<
-		", eval_check: " << evals_check[i] <<
-		", evec: " << (evecs[i]/ublas::norm_2(evecs[i])) <<
-		", len: " << ublas::norm_2(evecs[i]) << std::endl;
+			", eval_check: " << evals_check[i] <<
+			", evec: " << (evecs[i]/ublas::norm_2(evecs[i])) <<
+			", len: " << ublas::norm_2(evecs[i]) << std::endl;
 	std::cout << std::endl;
 	for(int i=0; i<evals.size(); ++i)
 		std::cout <<
-		"val*vec: " << evals[i]*evecs[i] <<
-		"\nmat*vec:" << ublas::prod(M, evecs[i]) << std::endl;
+			"val*vec: " << evals[i]*evecs[i] <<
+			"\nmat*vec: " << ublas::prod(M, evecs[i]) << std::endl;
 	std::cout << std::endl;
 
 	std::vector<ublas::vector<T>> evecs2;
@@ -83,8 +83,8 @@ int main()
 	std::cout << "tl::eigenvec_sym_simple, " << "ok = " << sym_simple_ok << "\n";
 	for(int i=0; i<evals2.size(); ++i)
 		std::cout << "eval: " << evals2[i] <<
-		", evec: " << (evecs2[i]/ublas::norm_2(evecs2[i])) <<
-		", len: " << ublas::norm_2(evecs2[i]) << std::endl;
+			", evec: " << (evecs2[i]/ublas::norm_2(evecs2[i])) <<
+			", len: " << ublas::norm_2(evecs2[i]) << std::endl;
 	std::cout << std::endl;
 
 	std::vector<ublas::vector<T>> evecs3;
@@ -93,8 +93,8 @@ int main()
 	std::cout << "tl::eigenvec_approxsym, ok = " << approx_sym_ok << "\n";
 	for(int i=0; i<evals3.size(); ++i)
 		std::cout << "eval: " << evals3[i] <<
-		", evec: " << (evecs3[i]/ublas::norm_2(evecs3[i])) <<
-		", len: " << ublas::norm_2(evecs3[i]) << std::endl;
+			", evec: " << (evecs3[i]/ublas::norm_2(evecs3[i])) <<
+			", len: " << ublas::norm_2(evecs3[i]) << std::endl;
 	std::cout << std::endl;
 
 	std::vector<ublas::vector<T>> evecs4;
@@ -104,8 +104,8 @@ int main()
 	std::cout << "tl::eigenvec_approxsym_simple, ok = " << approxsym_simple_ok << "\n";
 	for(int i=0; i<evals4.size(); ++i)
 		std::cout << "eval: " << evals4[i] <<
-		", evec: " << (evecs4[i]/ublas::norm_2(evecs4[i])) <<
-		", len: " << ublas::norm_2(evecs4[i]) << std::endl;
+			", evec: " << (evecs4[i]/ublas::norm_2(evecs4[i])) <<
+			", len: " << ublas::norm_2(evecs4[i]) << std::endl;
 	std::cout << std::endl;
 
 	std::vector<ublas::vector<T>> evecs2_r, evecs2_i;
@@ -116,12 +116,12 @@ int main()
 	std::cout << "tl::eigenvec\n";
 	for(int i=0; i<evals2_r.size(); ++i)
 		std::cout << "eval r: " << evals2_r[i] <<
-		", eval r check: " << evals2_r_check[i] <<
-		", evec r: " << evecs2_r[i] << std::endl;
+			", eval r check: " << evals2_r_check[i] <<
+			", evec r: " << evecs2_r[i] << std::endl;
 	for(int i=0; i<evals2_i.size(); ++i)
 		std::cout << "eval i: " << evals2_i[i] <<
-		", eval i check: " << evals2_i_check[i] <<
-		", evec i: " << evecs2_i[i] << std::endl;
+			", eval i check: " << evals2_i_check[i] <<
+			", evec i: " << evecs2_i[i] << std::endl;
 	std::cout << std::endl;
 
 
@@ -143,27 +143,27 @@ int main()
 	for(int i=0; i<evals_c.size(); ++i)
 	{
 		std::cout << "eval: " << evals_c[i] <<
-		", eval_check: " << evals_c_check[i] <<
-		", evec: " << evecs_c[i] << std::endl;
+			", eval_check: " << evals_c_check[i] <<
+			", evec: " << evecs_c[i] << std::endl;
 	}
 	std::cout << std::endl;
 	for(int i=0; i<evals_c.size(); ++i)
 		std::cout <<
-		"val*vec: " << evals_c[i]*evecs_c[i] <<
-		"\nmat*vec:" << ublas::prod(Mc, evecs_c[i]) << std::endl;
+			"val*vec: " << evals_c[i]*evecs_c[i] <<
+			"\nmat*vec: " << ublas::prod(Mc, evecs_c[i]) << std::endl;
 	std::cout << std::endl;
 
 	for(int i=0; i<evals_c_sel.size(); ++i)
 	{
 		std::cout << "eval_sel: " << evals_c_sel[i] <<
-		", evec_sel: " << evecs_c_sel[i] << std::endl;
+			", evec_sel: " << evecs_c_sel[i] << std::endl;
 	}
 	std::cout << std::endl;
 
 	for(int i=0; i<evals_c_sel.size(); ++i)
 		std::cout <<
 			"val*vec_sel: " << evals_c_sel[i]*evecs_c_sel[i] <<
-			"\nmat*vec_sel:" << ublas::prod(Mc, evecs_c_sel[i]) << std::endl;
+			"\nmat*vec_sel: " << ublas::prod(Mc, evecs_c_sel[i]) << std::endl;
 	std::cout << std::endl;
 
 
@@ -177,13 +177,13 @@ int main()
 	std::cout << "tl::eigenvec_cplx\n";
 	for(int i=0; i<evals_c2.size(); ++i)
 		std::cout << "eval: " << evals_c2[i] <<
-		", eval_check: " << evals_c2_check[i] <<
-		", evec: " << evecs_c2[i] << std::endl;
+			", eval_check: " << evals_c2_check[i] <<
+			", evec: " << evecs_c2[i] << std::endl;
 	std::cout << std::endl;
-	for(int i=0; i<evals_c.size(); ++i)
+	for(int i=0; i<evals_c2.size(); ++i)
 		std::cout <<
-		"val*vec: " << evals_c2[i]*evecs_c2[i] <<
-		"\nmat*vec:" << ublas::prod(Mc, evecs_c2[i]) << std::endl;
+			"val*vec: " << evals_c2[i]*evecs_c2[i] <<
+			"\nmat*vec: " << ublas::prod(Mc, evecs_c2[i]) << std::endl;
 	std::cout << std::endl;
 
 
