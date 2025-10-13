@@ -326,6 +326,20 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		sample_mosaic_v = eck.sample_mosaic;
 
 
+	// covariance matrix of component geometries, S, [pop75], Appendices 2 and 3
+	// uniform distribution variance = L^2/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
+	// circular distribution variance = R^2/4 = D^2/16, see: https://en.wikipedia.org/wiki/Wigner_semicircle_distribution
+	// these factors are used to approximate a uniform or circular variance by a gaussian variance
+	t_real var_uniform = /*fwhm2sig **/ std::sqrt(1. / 12.);
+	t_real var_circular = /*fwhm2sig **/ std::sqrt(1. / 16.);
+	t_real dMultSrc = eck.bSrcRect ? var_uniform : var_circular;
+	t_real dMultMono = var_uniform;
+	//t_real dMultSample = eck.bSampleCub ? var_uniform : var_circular;
+	t_real dMultAna = var_uniform;
+	t_real dMultDet = eck.bDetRect ? var_uniform : var_circular;
+	//t_real dMultMonitor = eck.bMonitorRect ? var_uniform : var_circular;
+
+
 	// sample position
 	t_vec sample_pos(3);
 	sample_pos[0] = eck.pos_x / angs;
@@ -339,8 +353,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	std::launch lpol = std::launch::async;
 	std::future<std::tuple<t_mat, t_mat, t_mat, t_real>> futMono
 		= std::async(lpol, get_mono_vals,
-			fwhm2sig * eck.src_w, fwhm2sig * eck.src_h,
-			fwhm2sig * eck.mono_w, fwhm2sig * eck.mono_h,
+			eck.src_w * dMultSrc, eck.src_h * dMultSrc,
+			eck.mono_w * dMultMono, eck.mono_h * dMultMono,
 			eck.dist_vsrc_mono,  eck.dist_hsrc_mono,
 			eck.dist_mono_sample,
 			eck.ki, thetam,
@@ -352,8 +366,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	std::future<std::tuple<t_mat, t_mat, t_mat, t_real>> futAna
 		= std::async(lpol, get_mono_vals,
-			fwhm2sig * eck.det_w, fwhm2sig * eck.det_h,
-			fwhm2sig * eck.ana_w, fwhm2sig * eck.ana_h,
+			eck.det_w * dMultDet, eck.det_h * dMultDet,
+			eck.ana_w * dMultAna, eck.ana_h * dMultAna,
 			eck.dist_ana_det, eck.dist_ana_det,
 			eck.dist_sample_ana,
 			eck.kf, -thetaa,

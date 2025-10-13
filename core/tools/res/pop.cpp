@@ -248,7 +248,9 @@ ResoResults calc_pop(const PopParams& pop)
 	t_real var_uniform = t_real(1. / 12.);
 	t_real var_circular = t_real(1. / 16.);
 	t_real dMultSrc = pop.bSrcRect ? var_uniform : var_circular;
+	t_real dMultMono = var_uniform;
 	t_real dMultSample = pop.bSampleCub ? var_uniform : var_circular;
+	t_real dMultAna = var_uniform;
 	t_real dMultDet = pop.bDetRect ? var_uniform : var_circular;
 	t_real dMultMonitor = pop.bMonitorRect ? var_uniform : var_circular;
 
@@ -256,17 +258,17 @@ ResoResults calc_pop(const PopParams& pop)
 	SI_geo(POP_SRC_Y, POP_SRC_Y) = dMultSrc * pop.src_w*pop.src_w /cm/cm;
 	SI_geo(POP_SRC_Z, POP_SRC_Z) = dMultSrc * pop.src_h*pop.src_h /cm/cm;
 
-	SI_geo(POP_MONO_X, POP_MONO_X) = var_uniform * pop.mono_thick*pop.mono_thick /cm/cm;
-	SI_geo(POP_MONO_Y, POP_MONO_Y) = var_uniform * pop.mono_w*pop.mono_w /cm/cm;
-	SI_geo(POP_MONO_Z, POP_MONO_Z) = var_uniform * pop.mono_h*pop.mono_h /cm/cm;
+	SI_geo(POP_MONO_X, POP_MONO_X) = dMultMono * pop.mono_thick*pop.mono_thick /cm/cm;
+	SI_geo(POP_MONO_Y, POP_MONO_Y) = dMultMono * pop.mono_w*pop.mono_w /cm/cm;
+	SI_geo(POP_MONO_Z, POP_MONO_Z) = dMultMono * pop.mono_h*pop.mono_h /cm/cm;
 
 	SI_geo(POP_SAMPLE_X, POP_SAMPLE_X) = dMultSample * pop.sample_w_perpq*pop.sample_w_perpq /cm/cm;
 	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = dMultSample * pop.sample_w_q*pop.sample_w_q /cm/cm;
 	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = var_uniform * pop.sample_h*pop.sample_h /cm/cm;
 
-	SI_geo(POP_ANA_X, POP_ANA_X) = var_uniform * pop.ana_thick*pop.ana_thick /cm/cm;
-	SI_geo(POP_ANA_Y, POP_ANA_Y) = var_uniform * pop.ana_w*pop.ana_w /cm/cm;
-	SI_geo(POP_ANA_Z, POP_ANA_Z) = var_uniform * pop.ana_h*pop.ana_h /cm/cm;
+	SI_geo(POP_ANA_X, POP_ANA_X) = dMultAna * pop.ana_thick*pop.ana_thick /cm/cm;
+	SI_geo(POP_ANA_Y, POP_ANA_Y) = dMultAna * pop.ana_w*pop.ana_w /cm/cm;
+	SI_geo(POP_ANA_Z, POP_ANA_Z) = dMultAna * pop.ana_h*pop.ana_h /cm/cm;
 
 	SI_geo(POP_DET_Y, POP_DET_Y) = dMultDet * pop.det_w*pop.det_w /cm/cm;
 	SI_geo(POP_DET_Z, POP_DET_Z) = dMultDet * pop.det_h*pop.det_h /cm/cm;
@@ -574,9 +576,9 @@ ResoResults calc_pop(const PopParams& pop)
 	SI_mono_geo(POP_SRC_Y, POP_SRC_Y) = dMultSrc * pop.src_w*pop.src_w /cm/cm;
 	SI_mono_geo(POP_SRC_Z, POP_SRC_Z) = dMultSrc * pop.src_h*pop.src_h /cm/cm;
 
-	SI_mono_geo(POP_MONO_X, POP_MONO_X) = var_uniform * pop.mono_thick*pop.mono_thick /cm/cm;
-	SI_mono_geo(POP_MONO_Y, POP_MONO_Y) = var_uniform * pop.mono_w*pop.mono_w /cm/cm;
-	SI_mono_geo(POP_MONO_Z, POP_MONO_Z) = var_uniform * pop.mono_h*pop.mono_h /cm/cm;
+	SI_mono_geo(POP_MONO_X, POP_MONO_X) = dMultMono * pop.mono_thick*pop.mono_thick /cm/cm;
+	SI_mono_geo(POP_MONO_Y, POP_MONO_Y) = dMultMono * pop.mono_w*pop.mono_w /cm/cm;
+	SI_mono_geo(POP_MONO_Z, POP_MONO_Z) = dMultMono * pop.mono_h*pop.mono_h /cm/cm;
 
 	// monitor in sample position of calculation
 	SI_mono_geo(POP_SAMPLE_X, POP_SAMPLE_X) = var_uniform * monitor_thick*monitor_thick /cm/cm;;
