@@ -167,6 +167,19 @@ REAL rand_norm(REAL dMu, REAL dSigma)
 
 
 /**
+ * generates Gaussian-distributed random numbers, including the normalising prefactor
+ */
+template<typename REAL>
+REAL rand_norm_normalised(REAL dMu, REAL dSigma)
+{
+	std::normal_distribution<REAL> dist(dMu, dSigma);
+	REAL prob = dist(get_randeng());
+	prob /= std::sqrt(REAL(2) * REAL(M_PI)) * dSigma;
+	return prob;
+}
+
+
+/**
  * generates lognormally-distributed random numbers
  */
 template<typename REAL>
