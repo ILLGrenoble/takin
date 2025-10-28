@@ -59,6 +59,7 @@ static const length angs = tl::get_one_angstrom<t_real>();
 static const energy meV = tl::get_one_meV<t_real>();
 static const t_time sec = tl::get_one_second<t_real>();
 static const length meter = tl::get_one_meter<t_real>();
+static const mass kg = tl::get_one_kg<t_real>();
 static const t_real pi = tl::get_pi<t_real>();
 
 
@@ -137,7 +138,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real sigE = std::sqrt(
 		std::inner_product(vecEderivs.begin(), vecEderivs.end(), vecsigs.begin(), t_real(0),
 		[](t_real r1, t_real r2)->t_real { return r1 + r2; },
-		[](const std::function<t_real()>& f1, t_real r2)->t_real { return f1()*f1()*r2*r2; } ));
+		[](const std::function<t_real()>& f1, t_real r2)->t_real { return f1()*f1()*r2*r2; }));
 	tl::log_debug("dE (Vanadium fwhm) = ", tl::get_SIGMA2FWHM<t_real>()*sigE);
 
 
@@ -336,7 +337,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 
 
 /**
- * re-implementation of function "length" from [mec25], l. 52ff
+ * re-implementation of the function "length" from [mec25], l. 52ff
  */
 template<class t_real = double>
 std::tuple<t_real, t_real, t_real, t_real, t_real, t_real, t_real, t_real>
@@ -401,6 +402,123 @@ static mc_length(t_real radS, t_real heiS,
 }
 
 
+/**
+ * re-implementation of the function "jacobTerms" from [mec25], l. 96ff
+ */
+template<class t_real = double>
+std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
+jacobian_terms(t_real v_i, t_real v_f,
+	t_real L_PM, t_real L_PMx, t_real L_PMy, t_real L_PMz,
+	t_real L_MS, t_real L_MSx, t_real L_MSy, t_real L_MSz,
+	t_real L_SD, t_real L_SDx, t_real L_SDy, t_real L_SDz)
+{
+	const t_real meV2J = meV * sec*sec / kg / meter / meter;
+	const t_real m_n = tl::get_m_n<t_real>() / kg;
+	const t_real hbar = tl::get_hbar<t_real>() * sec / kg / meter / meter;;
+
+	const t_real mn_div_lpm = m_n / L_PM;
+	const t_real inv_m2A_sq = 1. / 1e10 / 1e10;
+	const t_real mn_div_hbar = m_n / hbar;
+	const t_real mn_div_lsd = m_n / L_SD;
+
+	const t_real vi_sq = v_i * v_i;
+	const t_real vf_sq = v_f * v_f;
+	const t_real vi_cb = vi_sq * v_i;
+	const t_real vf_cb = vf_sq * v_f;
+	const t_real vf3_div_vi = vf_cb / v_i;
+	const t_real vf2_div_vi = vf_sq / v_i;
+
+	const t_real lms_div_lsd = L_MS / L_SD;
+	const t_real lpm_div_lsd = L_PM / L_SD;
+
+	const t_real lpmx_div_lrm = L_PMx / L_PM;
+	const t_real lpmy_div_lrm = L_PMy / L_PM;
+	const t_real lpmz_div_lrm = L_PMz / L_PM;
+
+	const t_real lsdx_div_lsd = L_SDx / L_SD;
+	const t_real lsdy_div_lsd = L_SDy / L_SD;
+	const t_real lsdz_div_lsd = L_SDz / L_SD;
+
+	const t_real lmsx_div_lms = L_MSx / L_MS;
+	const t_real lmsy_div_lms = L_MSy / L_MS;
+	const t_real lmsz_div_lms = L_MSz / L_MS;
+
+	// Qx
+	t_real dQxdPx = -mn_div_hbar/L_PM * (v_i + vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmx_div_lrm) * inv_m2A_sq;
+	t_real dQxdPy = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmy_div_lrm) * inv_m2A_sq;
+	t_real dQxdPz = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmz_div_lrm) * inv_m2A_sq;
+	t_real dQxdMx = mn_div_hbar/L_PM * (v_i + vf2_div_vi*( lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdx_div_lsd) * inv_m2A_sq;
+	t_real dQxdMy = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdx_div_lsd) * inv_m2A_sq;
+	t_real dQxdMz = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdx_div_lsd) * inv_m2A_sq;
+	t_real dQxdSx = mn_div_hbar/L_SD * (v_f - vf2_div_vi*lsdx_div_lsd*lmsx_div_lms) * inv_m2A_sq;
+	t_real dQxdSy = -mn_div_hbar/L_SD * (vf2_div_vi*lsdx_div_lsd*lmsy_div_lms) * inv_m2A_sq;
+	t_real dQxdSz = -mn_div_hbar/L_SD * (vf2_div_vi*lsdx_div_lsd*lmsz_div_lms) * inv_m2A_sq;
+	t_real dQxdDx = -mn_div_hbar/L_SD * v_f * inv_m2A_sq;
+	t_real dQxdDy = 0.;
+	t_real dQxdDz = 0.;
+	t_real dQxdtp = mn_div_hbar/L_PM * (vi_sq*lpmx_div_lrm + vf_sq*lms_div_lsd*lsdx_div_lsd) * inv_m2A_sq;
+	t_real dQxdtm = -mn_div_hbar/L_PM * (vi_sq*lpmx_div_lrm + vf_sq*( lpm_div_lsd + lms_div_lsd)*lsdx_div_lsd) * inv_m2A_sq;
+	t_real dQxdtd = mn_div_hbar/L_SD * vf_sq*lsdx_div_lsd * inv_m2A_sq;
+
+	// Qy
+	t_real dQydPx = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmx_div_lrm) * inv_m2A_sq;
+	t_real dQydPy = -mn_div_hbar/L_PM * (v_i + vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmy_div_lrm) * inv_m2A_sq;
+	t_real dQydPz = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmz_div_lrm) * inv_m2A_sq;
+	t_real dQydMx = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdy_div_lsd) * inv_m2A_sq;
+	t_real dQydMy = mn_div_hbar/L_PM * (v_i + vf2_div_vi*( lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdy_div_lsd) * inv_m2A_sq;
+	t_real dQydMz = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdy_div_lsd) * inv_m2A_sq;
+	t_real dQydSx = -mn_div_hbar/L_SD * (vf2_div_vi*lsdy_div_lsd*lmsx_div_lms) * inv_m2A_sq;
+	t_real dQydSy = mn_div_hbar/L_SD * (v_f - vf2_div_vi*lsdy_div_lsd*lmsy_div_lms) * inv_m2A_sq;
+	t_real dQydSz = -mn_div_hbar/L_SD * (vf2_div_vi*lsdy_div_lsd*lmsz_div_lms) * inv_m2A_sq;
+	t_real dQydDx = 0.;
+	t_real dQydDy = -mn_div_hbar/L_SD * v_f * inv_m2A_sq;
+	t_real dQydDz = 0.;
+	t_real dQydtp = mn_div_hbar/L_PM * (vi_sq*lpmy_div_lrm + vf_sq*lms_div_lsd*lsdy_div_lsd) * inv_m2A_sq;
+	t_real dQydtm = -mn_div_hbar/L_PM * (vi_sq*lpmy_div_lrm + vf_sq*( lpm_div_lsd + lms_div_lsd)*lsdy_div_lsd) * inv_m2A_sq;
+	t_real dQydtd = mn_div_hbar/L_SD * vf_sq*lsdy_div_lsd * inv_m2A_sq;
+
+	// Qz
+	t_real dQzdPx = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmx_div_lrm) * inv_m2A_sq;
+	t_real dQzdPy = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmy_div_lrm) * inv_m2A_sq;
+	t_real dQzdPz = -mn_div_hbar/L_PM * (v_i + vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmz_div_lrm) * inv_m2A_sq;
+	t_real dQzdMx = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdz_div_lsd) * inv_m2A_sq;
+	t_real dQzdMy = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdz_div_lsd) * inv_m2A_sq;
+	t_real dQzdMz = mn_div_hbar/L_PM * (v_i + vf2_div_vi*( lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdz_div_lsd) * inv_m2A_sq;
+	t_real dQzdSx = -mn_div_hbar/L_SD * (vf2_div_vi*lsdz_div_lsd*lmsx_div_lms) * inv_m2A_sq;
+	t_real dQzdSy = -mn_div_hbar/L_SD * (vf2_div_vi*lsdz_div_lsd*lmsy_div_lms) * inv_m2A_sq;
+	t_real dQzdSz = mn_div_hbar/L_SD * (v_f - vf2_div_vi*lsdz_div_lsd*lmsz_div_lms) * inv_m2A_sq;
+	t_real dQzdDx = 0.;
+	t_real dQzdDy = 0.;
+	t_real dQzdDz = -mn_div_hbar/L_SD * v_f * inv_m2A_sq;
+	t_real dQzdtp = mn_div_hbar/L_PM * (vi_sq*lpmz_div_lrm + vf_sq*lms_div_lsd*lsdz_div_lsd) * inv_m2A_sq;
+	t_real dQzdtm = -mn_div_hbar/L_PM * (vi_sq*lpmz_div_lrm + vf_sq*( lpm_div_lsd + lms_div_lsd)*lsdz_div_lsd) * inv_m2A_sq;
+	t_real dQzdtd = mn_div_hbar/L_SD * vf_sq*lsdz_div_lsd * inv_m2A_sq;
+
+	// E
+	t_real dEdPx = -mn_div_lpm * (vi_sq + vf3_div_vi*lms_div_lsd) * lpmx_div_lrm * inv_m2A_sq/meV2J;
+	t_real dEdPy = -mn_div_lpm * (vi_sq + vf3_div_vi*lms_div_lsd) * lpmy_div_lrm * inv_m2A_sq/meV2J;
+	t_real dEdPz = -mn_div_lpm * (vi_sq + vf3_div_vi*lms_div_lsd) * lpmz_div_lrm * inv_m2A_sq/meV2J;
+	t_real dEdMx = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmx_div_lrm + vf3_div_vi*lpm_div_lsd*lmsx_div_lms) * inv_m2A_sq/meV2J;
+	t_real dEdMy = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmy_div_lrm + vf3_div_vi*lpm_div_lsd*lmsy_div_lms) * inv_m2A_sq/meV2J;
+	t_real dEdMz = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmz_div_lrm + vf3_div_vi*lpm_div_lsd*lmsz_div_lms) * inv_m2A_sq/meV2J;
+	t_real dEdSx = mn_div_lsd * (vf_sq*lsdx_div_lsd - vf3_div_vi*lmsx_div_lms) * inv_m2A_sq/meV2J;
+	t_real dEdSy = mn_div_lsd * (vf_sq*lsdy_div_lsd - vf3_div_vi*lmsy_div_lms) * inv_m2A_sq/meV2J;
+	t_real dEdSz = mn_div_lsd * (vf_sq*lsdz_div_lsd - vf3_div_vi*lmsz_div_lms) * inv_m2A_sq/meV2J;
+	t_real dEdDx = -mn_div_lsd * vf_sq*lsdx_div_lsd * inv_m2A_sq/meV2J;
+	t_real dEdDy = -mn_div_lsd * vf_sq*lsdy_div_lsd * inv_m2A_sq/meV2J;
+	t_real dEdDz = -mn_div_lsd * vf_sq*lsdz_div_lsd * inv_m2A_sq/meV2J;
+	t_real dEdtp = mn_div_lpm * (vi_cb + vf_cb*lms_div_lsd) * inv_m2A_sq/meV2J;
+	t_real dEdtm = -mn_div_lpm * (vi_cb + vf_cb*( lpm_div_lsd + lms_div_lsd)) * inv_m2A_sq/meV2J;
+	t_real dEdtd = mn_div_lsd * vf_cb * inv_m2A_sq/meV2J;
+
+	return std::make_tuple(
+		std::vector<t_real>{dQxdPx, dQxdPy, dQxdPz, dQxdMx, dQxdMy, dQxdMz, dQxdSx, dQxdSy, dQxdSz, dQxdDx, dQxdDy, dQxdDz, dQxdtp, dQxdtm, dQxdtd},
+		std::vector<t_real>{dQydPx, dQydPy, dQydPz, dQydMx, dQydMy, dQydMz, dQydSx, dQydSy, dQydSz, dQydDx, dQydDy, dQydDz, dQydtp, dQydtm, dQydtd},
+		std::vector<t_real>{dQzdPx, dQzdPy, dQzdPz, dQzdMx, dQzdMy, dQzdMz, dQzdSx, dQzdSy, dQzdSz, dQzdDx, dQzdDy, dQzdDz, dQzdtp, dQzdtm, dQzdtd},
+		std::vector<t_real>{dEdPx, dEdPy, dEdPz, dEdMx, dEdMy, dEdMz, dEdSx, dEdSy, dEdSz, dEdDx, dEdDy, dEdDz, dEdtp, dEdtm, dEdtd});
+}
+
+
 // testing
 // g++ -std=c++17 -I../.. -o vio_ext vio_ext.cpp ../../tlibs/log/log.cpp ../../tlibs/math/rand.cpp
 int main(int argc, char** argv)
@@ -410,6 +528,25 @@ int main(int argc, char** argv)
 	t_real LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz;
 	std::tie(LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz) = mc_length<double>(1., 1., 1., 1., 1., 1., 1., 1., 1. ,1., 1.);
 	std::cout << LPM << " " << LPMx << " " << LPMy << " " << LPMz << " " << LMS << " " << LMSx << " " << LMSy << " " << LMSz << std::endl;
+
+	std::vector<t_real> Qx, Qy, Qz, E;
+	std::tie(Qx, Qy, Qz, E) = jacobian_terms<t_real>(1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1);
+	std::cout << "Qx = ";
+	for(t_real d : Qx)
+		std::cout << d << " ";
+	std::cout << std::endl;
+	std::cout << "Qy = ";
+	for(t_real d : Qy)
+		std::cout << d << " ";
+	std::cout << std::endl;
+	std::cout << "Qz = ";
+	for(t_real d : Qz)
+		std::cout << d << " ";
+	std::cout << std::endl;
+	std::cout << "E = ";
+	for(t_real d : E)
+		std::cout << d << " ";
+	std::cout << std::endl;
 
 	return 0;
 }
