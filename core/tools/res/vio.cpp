@@ -288,9 +288,9 @@ ResoResults calc_vio(const VioParams& params)
 
 	std::size_t N = matSigSq.size1();
 	t_mat matJacobiInstr(4, N, t_real(0));
-	for(std::size_t iDeriv=0; iDeriv<vecQderivs.size(); ++iDeriv)
+	for(std::size_t iDeriv = 0; iDeriv < vecQderivs.size(); ++iDeriv)
 		tl::set_column(matJacobiInstr, iDeriv, vecQderivs[iDeriv]());
-	for(std::size_t iDeriv=0; iDeriv<vecEderivs.size(); ++iDeriv)
+	for(std::size_t iDeriv = 0; iDeriv < vecEderivs.size(); ++iDeriv)
 		matJacobiInstr(3, iDeriv) = vecEderivs[iDeriv]();
 
 	t_mat matSigQE = tl::transform_inv(matSigSq, matJacobiInstr, true);

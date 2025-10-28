@@ -5,6 +5,7 @@
  * @license GPLv2
  *
  * @desc for extended method, see: [mec25] V. Mecoli, PhD thesis in preparation, https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/algos/vio_cov_ext2.py
+ * @desc for extended method, see: [mec25b] V. Mecoli, PhD thesis in preparation, https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/algos/vio_ext2.py
  * @desc for original method, see: [vio14] N. Violini et al., NIM A 736 (2014) pp. 31-39, doi: 10.1016/j.nima.2013.10.042
  *
  * ----------------------------------------------------------------------------
@@ -63,283 +64,9 @@ static const mass kg = tl::get_one_kg<t_real>();
 static const t_real pi = tl::get_pi<t_real>();
 
 
-ResoResults calc_vio_ext(const VioExtParams& params)
-{
-	ResoResults res;
-	res.Q_avg.resize(4);
-
-	const angle& tt = params.twotheta;
-	const wavenumber &ki = params.ki, &kf = params.kf;
-	const energy E = tl::get_energy_transfer(ki, kf);
-	const wavenumber Q = tl::get_sample_Q(ki, kf, tt);
-
-	res.Q_avg[0] = Q * angs;
-	res.Q_avg[1] = 0.;
-	res.Q_avg[2] = 0.;
-	res.Q_avg[3] = E / meV;
-
-	const velocity vi = tl::k2v(ki);
-	const velocity vf = tl::k2v(kf);
-
-	const length& lp = params.len_pulse_mono,
-		&lm = params.len_mono_sample,
-		&ls = params.len_sample_det;
-	const length& slp = params.sig_len_pulse_mono,
-		&slm = params.sig_len_mono_sample,
-		&sls = params.sig_len_sample_det;
-	const angle &tt_i = params.twotheta_i,
-		&ph_i = params.angle_outplane_i,
-		&ph_f = params.angle_outplane_f;
-
-	const t_time &sp = params.sig_pulse,
-		&sm = params.sig_mono,
-		&sd = params.sig_det;
-	const angle &s2ti = params.sig_twotheta_i,
-		&s2tf = params.sig_twotheta_f,
-		&sphi = params.sig_outplane_i,
-		&sphf = params.sig_outplane_f;
-	const t_time ti = lp / vi,
-		tf = ls / vf;
-
-#ifndef NDEBUG
-	tl::log_debug("ki = ", ki, ", kf = ", kf);
-	tl::log_debug("vi = ", vi, ", vf = ", vf);
-	tl::log_debug("ti = ", ti, ", tf = ", tf);
-	tl::log_debug("Q = ", Q, ", E = ", E);
-#endif
-
-	const mass mn = tl::get_m_n<t_real>();
-	const auto mn_hbar = mn / tl::get_hbar<t_real>();
-
-	// formulas 20 & 21 in [vio14]
-	const t_time st = tl::my_units_sqrt<t_time>(sp*sp + sm*sm);
-	const t_time stm = tl::my_units_sqrt<t_time>(sd*sd + sm*sm);
-
-	std::vector<t_real> vecsigs = { st/sec, stm/sec, slp/meter, slm/meter, sls/meter,
-		s2ti/rads, sphi/rads, s2tf/rads, sphf/rads };
-
-
-
-	// --------------------------------------------------------------------
-	// E formulas 14-18 in [vio14]
-
-	std::vector<std::function<t_real()>> vecEderivs =
-	{
-		/*1*/ [&]()->t_real { return (-mn*lp*lp/(ti*ti*ti) -mn*ls*ls/(tf*tf*tf)*lm/lp) /meV*sec; },
-		/*2*/ [&]()->t_real { return mn*ls*ls/(tf*tf*tf) /meV*sec; },
-		/*3*/ [&]()->t_real { return (mn*lp/(ti*ti) + mn*(ls*ls)/(tf*tf*tf)*ti/(lp*lp)*lm) /meV*meter; },
-		/*4*/ [&]()->t_real { return -mn*(ls*ls)/(tf*tf*tf) * ti/lp /meV*meter; },
-		/*5*/ [&]()->t_real { return -mn*ls/(tf*tf) /meV*meter; },
-	};
-
-
-#ifndef NDEBUG
-	// formula 19 in [vio14]
-	t_real sigE = std::sqrt(
-		std::inner_product(vecEderivs.begin(), vecEderivs.end(), vecsigs.begin(), t_real(0),
-		[](t_real r1, t_real r2)->t_real { return r1 + r2; },
-		[](const std::function<t_real()>& f1, t_real r2)->t_real { return f1()*f1()*r2*r2; }));
-	tl::log_debug("dE (Vanadium fwhm) = ", tl::get_SIGMA2FWHM<t_real>()*sigE);
-
-
-	// --------------------------------------------------------------------
-	// checking results against the E resolution formula from [ehl11], p. 6
-	auto vi3 = vi*vi*vi/lp; auto vf3 = vf*vf*vf/ls;
-	ublas::vector<energy> vecE2 = tl::make_vec<ublas::vector<energy>>(
-	{
-		mn * sp * (vi3 + vf3*lm/lp),
-		mn * sm * (vi3 + vf3*(lp+lm)/lp),
-		mn * sd * vf3
-	});
-	t_real sigE2 = tl::my_units_norm2<energy>(vecE2) / meV;
-	tl::log_debug("dE (Vanadium fwhm, check) = ", tl::get_SIGMA2FWHM<t_real>()*sigE2);
-	// --------------------------------------------------------------------
-
-#endif
-	// --------------------------------------------------------------------
-
-
-	// --------------------------------------------------------------------
-	// spherical: Q formulas in appendices A.1 and p. 34 of [vio14]
-	// cylindrical: Q formulas in appendices A.3 and p. 35 of [vio14]
-
-	t_real ctt_i = std::cos(tt_i/rads), stt_i = std::sin(tt_i/rads);
-	t_real ctt_f = std::cos(tt/rads), stt_f = std::sin(tt/rads);
-	t_real cph_i = std::cos(ph_i/rads), sph_i = std::sin(ph_i/rads);
-	t_real cph_f = std::cos(ph_f/rads), sph_f = std::sin(ph_f/rads);
-	t_real tph_f = std::tan(ph_f/rads), dtph_f = t_real(1) + std::pow(std::tan(ph_f/rads), t_real(2));
-
-	t_mat R, R_tt_f, R_ph_f;
-	t_mat R_tt_i = tl::make_mat(	// R derivs w.r.t the angles
-		{{ -stt_i*cph_i, t_real(0) },
-		{ ctt_i*cph_i, 	t_real(0) },
-		{ t_real(0), 	t_real(0) }});
-	t_mat R_ph_i = tl::make_mat(
-		{{ -ctt_i*sph_i, t_real(0) },
-		{ -stt_i*sph_i,  t_real(0) },
-		{ cph_i, 	 t_real(0) }});
-
-	if(params.det_shape == TofDetShape::SPH)
-	{
-		R = tl::make_mat<t_mat>(	// R: spherical coordinates
-			{{ ctt_i*cph_i,	-ctt_f*cph_f },
-			{ stt_i*cph_i, 	-stt_f*cph_f },
-			{ sph_i, 	-sph_f }});
-		R_tt_f = tl::make_mat(		// R derivs w.r.t the angles
-			{{ t_real(0),	stt_f*cph_f },
-			{  t_real(0),	-ctt_f*cph_f },
-			{  t_real(0),	t_real(0) }});
-		R_ph_f = tl::make_mat(
-			{{ t_real(0),	ctt_f*sph_f },
-			{  t_real(0), 	stt_f*sph_f },
-			{  t_real(0), 	-cph_f }});
-	}
-	else if(params.det_shape == TofDetShape::CYL)
-	{	// modified original formulas; TODO: check if still correct
-		R = tl::make_mat<t_mat>(	// R: cylindrical coordinates
-			{{ ctt_i*cph_i,	-ctt_f },
-			{ stt_i*cph_i, 	-stt_f },
-			{ sph_i, 	-tph_f }});
-		R_tt_f = tl::make_mat(		// R derivs w.r.t the angles
-			{{ t_real(0),	stt_f },
-			{  t_real(0),	-ctt_f },
-			{  t_real(0),	t_real(0) }});
-		R_ph_f = tl::make_mat(
-			{{ t_real(0),	t_real(0) },
-			{  t_real(0), 	t_real(0) },
-			{  t_real(0), 	-dtph_f }});
-	}
-	else
-	{
-		res.bOk = false;
-		res.strErr = "Unknown detector shape.";
-		return res;
-	}
-	//	tl::log_debug("R = ", R);
-
-	t_vec vecViVf = tl::make_vec<t_vec>({ mn_hbar*vi *angs, mn_hbar*vf *angs });
-	std::vector<std::function<t_vec()>> vecQderivs =
-	{
-		/*1*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
-			{ -mn_hbar*vi/ti *angs*sec, mn_hbar*vf/tf * lm/lp *angs*sec })); },
-		/*2*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
-			{ t_real(0), -mn_hbar*vf/tf *angs*sec })); },
-		/*3*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
-			{ mn_hbar/ti *angs*meter, -mn_hbar*vf/tf * lm/(vi*lp) *angs*meter })); },
-		/*4*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
-			{ t_real(0), mn_hbar*vf/tf / vi *angs*meter })); },
-		/*5*/ [&]()->t_vec { return ublas::prod(R, tl::make_vec<t_vec>(
-			{ t_real(0), mn_hbar/tf *angs*meter })); },
-
-		/*6*/ [&]()->t_vec { return ublas::prod(R_tt_i, vecViVf); },
-		/*7*/ [&]()->t_vec { return ublas::prod(R_ph_i, vecViVf); },
-		/*8*/ [&]()->t_vec { return ublas::prod(R_tt_f, vecViVf); },
-		/*9*/ [&]()->t_vec { return ublas::prod(R_ph_f, vecViVf); },
-	};
-
-
-#ifndef NDEBUG
-	t_vec vecQsq = std::inner_product(vecQderivs.begin(), vecQderivs.end(),
-		vecsigs.begin(), tl::make_vec<t_vec>({0,0,0}),
-		[](const t_vec& vec1, const t_vec& vec2) -> t_vec { return vec1 + vec2; },
-		[](const std::function<t_vec()>& f1, const t_real r2) -> t_vec
-		{
-			const t_vec vec1 = f1();
-			return ublas::element_prod(vec1, vec1) * r2*r2;
-		});
-
-	t_vec sigQ = tl::apply_fkt(vecQsq, static_cast<t_real(*)(t_real)>(std::sqrt));
-	tl::log_debug("dQ (Vanadium fwhm) = ", tl::get_SIGMA2FWHM<t_real>()*sigQ);
-
-
-	// --------------------------------------------------------------------
-	// checking results against the Q resolution formulas from [ehl11], pp. 6-7
-	auto vi2 = vi*vi/lp; auto vf2 = vf*vf/ls;
-	ublas::vector<wavenumber> vecQ2[] = {
-	tl::make_vec<ublas::vector<wavenumber>>(
-	{
-		mn_hbar * sp * (vi2 + vf2*lm/lp * ctt_f),
-		mn_hbar * sm * (vi2 + vf2*(lp+lm)/lp * ctt_f),
-		mn_hbar * sd * (vf2 * ctt_f),
-		mn_hbar * s2tf/rads * (vf * stt_f)
-	}),
-	tl::make_vec<ublas::vector<wavenumber>>(
-	{
-		mn_hbar * sp * (vf2*lm/lp * stt_f),
-		mn_hbar * sm * (vf2*(lp+lm)/lp * stt_f),
-		mn_hbar * sd * (vf2 * stt_f),
-		mn_hbar * s2tf/rads * (vf * ctt_f)
-	}) };
-
-	t_vec sigQ2 = tl::make_vec<t_vec>({
-		tl::my_units_norm2<wavenumber>(vecQ2[0]) * angs,
-		tl::my_units_norm2<wavenumber>(vecQ2[1]) * angs });
-	tl::log_debug("dQ (Vanadium fwhm, check) = ", tl::get_SIGMA2FWHM<t_real>()*sigQ2);
-	// --------------------------------------------------------------------
-
-#endif
-	// --------------------------------------------------------------------
-
-
-	// --------------------------------------------------------------------
-	// formulas 10 & 11 in [vio14]
-	t_mat matSigSq = tl::diag_matrix({
-		st*st /sec/sec, stm*stm /sec/sec,
-		slp*slp /meter/meter, slm*slm /meter/meter, sls*sls /meter/meter,
-		s2ti*s2ti /rads/rads, sphi*sphi /rads/rads,
-		s2tf*s2tf /rads/rads, sphf*sphf /rads/rads });
-
-	std::size_t N = matSigSq.size1();
-	t_mat matJacobiInstr(4, N, t_real(0));
-	for(std::size_t iDeriv=0; iDeriv<vecQderivs.size(); ++iDeriv)
-		tl::set_column(matJacobiInstr, iDeriv, vecQderivs[iDeriv]());
-	for(std::size_t iDeriv=0; iDeriv<vecEderivs.size(); ++iDeriv)
-		matJacobiInstr(3, iDeriv) = vecEderivs[iDeriv]();
-
-	t_mat matSigQE = tl::transform_inv(matSigSq, matJacobiInstr, true);
-	if(!tl::inverse(matSigQE, res.reso))
-	{
-		res.bOk = false;
-		res.strErr = "Jacobi matrix cannot be inverted.";
-		return res;
-	}
-
-#ifndef NDEBUG
-	tl::log_debug("J_instr = ", matJacobiInstr);
-	tl::log_debug("J_QE = ", matSigQE);
-	tl::log_debug("Reso = ", res.reso);
-#endif
-	// --------------------------------------------------------------------
-
-	// transform from  (ki, ki_perp, Q_z)  to  (Q_para, Q_perp, Q_z)  system
-	t_mat matKiQ = tl::rotation_matrix_2d(-params.angle_ki_Q / rads);
-	matKiQ.resize(4, 4, true);
-	matKiQ(2,2) = matKiQ(3,3) = 1.;
-	matKiQ(2,0) = matKiQ(2,1) = matKiQ(2,3) = matKiQ(3,0) = matKiQ(3,1) =
-	matKiQ(3,2) = matKiQ(0,2) = matKiQ(0,3) = matKiQ(1,2) = matKiQ(1,3) = 0.;
-
-	res.reso = tl::transform(res.reso, matKiQ, true);
-	//res.reso *= tl::get_SIGMA2FWHM<t_real>()*tl::get_SIGMA2FWHM<t_real>();
-
-	res.dResVol = tl::get_ellipsoid_volume(res.reso);
-	res.dR0 = 0.;   // TODO
-
-	// Bragg widths
-	const std::vector<t_real> vecFwhms = calc_bragg_fwhms(res.reso);
-	std::copy(vecFwhms.begin(), vecFwhms.end(), res.dBraggFWHMs);
-
-	res.reso_v = ublas::zero_vector<t_real>(4);
-	res.reso_s = 0.;
-
-	res.bOk = true;
-	return res;
-}
-
-
 /**
  * re-implementation of the function "length" from [mec25], l. 52ff
  */
-template<class t_real = double>
 std::tuple<t_real, t_real, t_real, t_real, t_real, t_real, t_real, t_real>
 static mc_length(t_real radS, t_real heiS,
 	t_real L_PE, t_real L_ME, t_real L_ES,
@@ -405,9 +132,7 @@ static mc_length(t_real radS, t_real heiS,
 /**
  * re-implementation of the function "jacobTerms" from [mec25], l. 96ff
  */
-template<class t_real = double>
-std::tuple<std::vector<t_real>, std::vector<t_real>, std::vector<t_real>, std::vector<t_real>>
-jacobian_terms(t_real v_i, t_real v_f,
+static t_mat jacobian(t_real v_i, t_real v_f,
 	t_real L_PM, t_real L_PMx, t_real L_PMy, t_real L_PMz,
 	t_real L_MS, t_real L_MSx, t_real L_MSy, t_real L_MSz,
 	t_real L_SD, t_real L_SDx, t_real L_SDy, t_real L_SDz)
@@ -511,11 +236,170 @@ jacobian_terms(t_real v_i, t_real v_f,
 	t_real dEdtm = -mn_div_lpm * (vi_cb + vf_cb*( lpm_div_lsd + lms_div_lsd)) * inv_m2A_sq/meV2J;
 	t_real dEdtd = mn_div_lsd * vf_cb * inv_m2A_sq/meV2J;
 
-	return std::make_tuple(
-		std::vector<t_real>{dQxdPx, dQxdPy, dQxdPz, dQxdMx, dQxdMy, dQxdMz, dQxdSx, dQxdSy, dQxdSz, dQxdDx, dQxdDy, dQxdDz, dQxdtp, dQxdtm, dQxdtd},
-		std::vector<t_real>{dQydPx, dQydPy, dQydPz, dQydMx, dQydMy, dQydMz, dQydSx, dQydSy, dQydSz, dQydDx, dQydDy, dQydDz, dQydtp, dQydtm, dQydtd},
-		std::vector<t_real>{dQzdPx, dQzdPy, dQzdPz, dQzdMx, dQzdMy, dQzdMz, dQzdSx, dQzdSy, dQzdSz, dQzdDx, dQzdDy, dQzdDz, dQzdtp, dQzdtm, dQzdtd},
-		std::vector<t_real>{dEdPx, dEdPy, dEdPz, dEdMx, dEdMy, dEdMz, dEdSx, dEdSy, dEdSz, dEdDx, dEdDy, dEdDz, dEdtp, dEdtm, dEdtd});
+	return tl::make_mat<t_mat>(
+	{
+		{ dQxdPx, dQxdPy, dQxdPz, dQxdMx, dQxdMy, dQxdMz, dQxdSx, dQxdSy, dQxdSz, dQxdDx, dQxdDy, dQxdDz, dQxdtp, dQxdtm, dQxdtd },
+		{ dQydPx, dQydPy, dQydPz, dQydMx, dQydMy, dQydMz, dQydSx, dQydSy, dQydSz, dQydDx, dQydDy, dQydDz, dQydtp, dQydtm, dQydtd },
+		{ dQzdPx, dQzdPy, dQzdPz, dQzdMx, dQzdMy, dQzdMz, dQzdSx, dQzdSy, dQzdSz, dQzdDx, dQzdDy, dQzdDz, dQzdtp, dQzdtm, dQzdtd },
+		{ dEdPx,   dEdPy,  dEdPz,  dEdMx,  dEdMy,  dEdMz,  dEdSx,  dEdSy,  dEdSz,  dEdDx,  dEdDy,  dEdDz,  dEdtp,  dEdtm,  dEdtd }
+	});
+}
+
+
+ResoResults calc_vio_ext(const VioExtParams& params)
+{
+	// beginning as in vio.cpp
+	ResoResults res;
+	res.Q_avg.resize(4);
+
+	const angle& tt = params.twotheta;
+	const wavenumber &ki = params.ki, &kf = params.kf;
+	const energy E = tl::get_energy_transfer(ki, kf);
+	const wavenumber Q = tl::get_sample_Q(ki, kf, tt);
+
+	res.Q_avg[0] = Q * angs;
+	res.Q_avg[1] = 0.;
+	res.Q_avg[2] = 0.;
+	res.Q_avg[3] = E / meV;
+
+	const t_real vi = tl::k2v(ki) * sec / meter;
+	const t_real vf = tl::k2v(kf) * sec / meter;
+
+
+	// --------------------------------------------------------------------------------
+	// [mec25b], l. 48ff
+	// --------------------------------------------------------------------------------
+	t_real c_thf = std::cos(tt / rads);  // TODO: check angle
+	t_real s_thf = std::sin(tt / rads);  // TODO: check angle
+
+	// TODO: get values
+	// sample
+	t_real v_rot = 1.;
+	t_real sample_rad = 1.;
+	t_real sample_height = 1.;
+
+	// pulse-shaping chopper
+	t_real chopperP_wnd_angle = 1.;
+	t_real chopperP_beam_angle = 1.;
+	t_real chopperP_width = 1.;
+
+	// monochromatising chopper
+	t_real chopperM_wnd_angle = 1.;
+	t_real chopperM_beam_angle = 1.;
+	t_real chopperM_width = 1.;
+
+	// guide dimensions
+	t_real endguide_yheight = 1.;
+	t_real endguide_zheight = 1.;
+
+	// detector geometry
+	t_real det_rad = 1.;
+	t_real det_height = 1.;
+	t_real det_tube_w = 1.;
+	t_real det_z = 1.;
+
+	// distances
+	t_real dist_chP_endguide = 1.;
+	t_real dist_chM_endguide = 1.;
+	t_real dist_endguide_sample = 1.;
+
+	const t_real Dr_sq = det_rad*det_rad;
+	const t_real Sr_sq = sample_rad*sample_rad;
+	const t_real Sh_sq = sample_height*sample_height;
+	const t_real Lpe_sq = dist_chP_endguide*dist_chP_endguide;
+	const t_real Lme_sq = dist_chM_endguide*dist_chM_endguide;
+	const t_real Les_sq = dist_endguide_sample*dist_endguide_sample;
+	const t_real Sr_sq3 = 3*Sr_sq;
+	const t_real Eyh_sq = endguide_yheight*endguide_yheight;
+	const t_real Ezh_sq = endguide_zheight*endguide_zheight;
+	const t_real Sr2_div_Les2 = Sr_sq / Les_sq;
+	const t_real c0 = std::sqrt(1. - Sr2_div_Les2);
+	const t_real c1 = 1. - c0;
+	const t_real c2 = 1./c0 - 1.;
+
+	t_real VarDr = det_tube_w*det_tube_w / 12.;
+	t_real Vartd = VarDr / (vf*vf);
+
+	t_real VarDtheta = std::pow(2.*det_tube_w*(det_rad - std::sqrt(Dr_sq - Sr_sq)) / Sr_sq, 2.);
+	t_real Vartp = (chopperP_wnd_angle*chopperP_wnd_angle + chopperP_beam_angle*chopperP_beam_angle) / (12.*std::pow(6.*v_rot, 2.));
+	t_real Vartm = (chopperM_wnd_angle*chopperM_wnd_angle + chopperM_beam_angle*chopperM_beam_angle) / (12.*std::pow(6.*v_rot, 2.));
+
+	t_real VarPx = std::pow(vi*std::sqrt(Vartp) - chopperP_width, 2.);
+	t_real VarPy = Eyh_sq/3. + Lpe_sq*(2.*Les_sq/Sr_sq*c1 - 1) + 4.*dist_chP_endguide*dist_endguide_sample/Sr_sq3*Eyh_sq*c1 + 2.*Lpe_sq/Sr_sq3*Eyh_sq*c2;
+	t_real VarPz = Ezh_sq/3. + Lpe_sq/Sr_sq3*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chP_endguide*dist_endguide_sample/Sr_sq3*Ezh_sq*c1;
+
+	t_real VarMx = std::pow(vi*std::sqrt(Vartm) - chopperM_width, 2.);
+	t_real VarMy = Eyh_sq/3. + Lme_sq*(2.*Les_sq/Sr_sq*c1 - 1.) + 4.*dist_chM_endguide*dist_endguide_sample/Sr_sq3*Eyh_sq*c1 + 2.*Lme_sq/Sr_sq3*Eyh_sq*c2;
+	t_real VarMz = Ezh_sq/3. + Lme_sq/Sr_sq3*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chM_endguide*dist_endguide_sample/Sr_sq3*Ezh_sq*c1;
+
+	t_real VarSx = Sr_sq/4.;
+	t_real VarSy = Sr_sq/4.;
+	t_real VarSz = Sh_sq/12.;
+
+	t_real VarDx = c_thf*c_thf*VarDr + Dr_sq*s_thf*s_thf*VarDtheta;
+	t_real VarDy = s_thf*s_thf*VarDr + Dr_sq*c_thf*c_thf*VarDtheta;
+	t_real VarDz = std::pow(det_height / 100., 2.);
+	t_real CovDxDy = c_thf*s_thf*VarDr - Dr_sq*c_thf*s_thf*VarDtheta;
+
+	t_mat covInstr = tl::diag_matrix(
+	{
+		VarPx, VarPy, VarPz,
+		VarMx, VarMy, VarMz,
+		VarSx, VarSy, VarSz,
+		VarDx, VarDy, VarDz,
+		Vartp, Vartm, Vartd
+	});
+	covInstr(9, 10) = covInstr(10, 9) = CovDxDy;
+
+	t_real LPM = 0., LPMx = 0., LPMy = 0., LPMz = 0., LMS = 0, LMSx = 0., LMSy = 0., LMSz = 0.;
+	std::tie(LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz) = mc_length(
+		sample_rad, sample_height,
+		dist_chP_endguide,  dist_chM_endguide, dist_endguide_sample,
+		endguide_yheight, endguide_zheight, -(dist_chP_endguide + dist_endguide_sample),
+		std::sqrt(VarPx), -dist_chM_endguide - dist_endguide_sample, std::sqrt(VarMx));
+	t_real LSD = det_rad;
+	t_real LSDz = det_z;
+	t_real LSDx = LSD*c_thf;
+	t_real LSDy = LSD*s_thf;
+
+	t_mat J = jacobian(vi, vf,
+		LPM, LPMx, LPMy, LPMz,
+		LMS, LMSx, LMSy, LMSz,
+		LSD, LSDx, LSDy, LSDz);
+	// --------------------------------------------------------------------------------
+
+
+	// rest as in vio.cpp
+	t_mat covQhw = tl::transform_inv(covInstr, J, true);
+	if(!tl::inverse(covQhw, res.reso))
+	{
+		res.bOk = false;
+		res.strErr = "Jacobi matrix cannot be inverted.";
+		return res;
+	}
+
+	// transform from  (ki, ki_perp, Q_z)  to  (Q_para, Q_perp, Q_z)  system
+	t_mat matKiQ = tl::rotation_matrix_2d(-params.angle_ki_Q / rads);
+	matKiQ.resize(4, 4, true);
+	matKiQ(2,2) = matKiQ(3,3) = 1.;
+	matKiQ(2,0) = matKiQ(2,1) = matKiQ(2,3) = matKiQ(3,0) = matKiQ(3,1) =
+	matKiQ(3,2) = matKiQ(0,2) = matKiQ(0,3) = matKiQ(1,2) = matKiQ(1,3) = 0.;
+
+	res.reso = tl::transform(res.reso, matKiQ, true);
+	//res.reso *= tl::get_SIGMA2FWHM<t_real>()*tl::get_SIGMA2FWHM<t_real>();
+
+	res.dResVol = tl::get_ellipsoid_volume(res.reso);
+	res.dR0 = 0.;   // TODO
+
+	// Bragg widths
+	const std::vector<t_real> vecFwhms = calc_bragg_fwhms(res.reso);
+	std::copy(vecFwhms.begin(), vecFwhms.end(), res.dBraggFWHMs);
+
+	res.reso_v = ublas::zero_vector<t_real>(4);
+	res.reso_s = 0.;
+
+	res.bOk = true;
+	return res;
 }
 
 
@@ -526,27 +410,12 @@ int main(int argc, char** argv)
 	tl::init_rand();
 
 	t_real LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz;
-	std::tie(LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz) = mc_length<double>(1., 1., 1., 1., 1., 1., 1., 1., 1. ,1., 1.);
+	std::tie(LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz) = mc_length(1., 1., 1., 1., 1., 1., 1., 1., 1. ,1., 1.);
 	std::cout << LPM << " " << LPMx << " " << LPMy << " " << LPMz << " " << LMS << " " << LMSx << " " << LMSy << " " << LMSz << std::endl;
 
 	std::vector<t_real> Qx, Qy, Qz, E;
-	std::tie(Qx, Qy, Qz, E) = jacobian_terms<t_real>(1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1);
-	std::cout << "Qx = ";
-	for(t_real d : Qx)
-		std::cout << d << " ";
-	std::cout << std::endl;
-	std::cout << "Qy = ";
-	for(t_real d : Qy)
-		std::cout << d << " ";
-	std::cout << std::endl;
-	std::cout << "Qz = ";
-	for(t_real d : Qz)
-		std::cout << d << " ";
-	std::cout << std::endl;
-	std::cout << "E = ";
-	for(t_real d : E)
-		std::cout << d << " ";
-	std::cout << std::endl;
+	t_mat J = jacobian(1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1);
+	std::cout << J << std::endl;
 
 	return 0;
 }
