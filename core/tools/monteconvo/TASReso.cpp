@@ -397,6 +397,8 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_algo = ResoAlgo::ECK_EXT;
 	else if(algo == "vio" || algo == "viol")
 		m_algo = ResoAlgo::VIO;
+	else if(algo == "vio_ext" || algo == "viol_ext")
+		m_algo = ResoAlgo::VIO_EXT;
 	else
 	{
 		// in former versions, an index was used
@@ -630,6 +632,11 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		{
 			//tl::log_info("Algorithm: Violini (TOF)");
 			resores_cur = calc_vio(m_tofreso);
+		}
+		else if(m_algo == ResoAlgo::VIO_EXT)
+		{
+			//tl::log_info("Algorithm: Extended Violini (TOF)");
+			resores_cur = calc_vio_ext(m_tofreso);
 		}
 		else
 		{

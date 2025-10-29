@@ -579,6 +579,8 @@ bool Convofit::run_job(const std::string& _strJob)
 			reso.SetAlgo(ResoAlgo::ECK_EXT);
 		else if(strResAlgo == "vio" || strResAlgo == "viol")
 			reso.SetAlgo(ResoAlgo::VIO);
+		else if(strResAlgo == "vio_ext" || strResAlgo == "viol_ext")
+			reso.SetAlgo(ResoAlgo::VIO_EXT);
 		else
 		{
 			tl::log_err("Invalid resolution algorithm selected: \"", strResAlgo, "\".");

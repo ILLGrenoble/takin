@@ -244,6 +244,7 @@ void ResoDlg::setupAlgos()
 	comboAlgo->addItem("TAS: Eckold-Sobolev (Extended)", static_cast<int>(ResoAlgo::ECK_EXT));
 	comboAlgo->insertSeparator(6);
 	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
+	comboAlgo->addItem("TOF: Violini (Extended)", static_cast<int>(ResoAlgo::VIO_EXT));
 	comboAlgo->insertSeparator(8);
 	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
 }
@@ -338,7 +339,7 @@ void ResoDlg::Calc()
 			return;
 
 		EckParams &tas = m_tasparams;
-		VioParams &tof = m_tofparams;
+		VioExtParams &tof = m_tofparams;
 		SimpleResoParams &simple = m_simpleparams;
 
 		ResoResults &res = m_res;
@@ -578,6 +579,7 @@ void ResoDlg::Calc()
 			case ResoAlgo::ECK: res = calc_eck(tas); break;
 			case ResoAlgo::ECK_EXT: res = calc_eck_ext(tas); break;
 			case ResoAlgo::VIO: res = calc_vio(tof); break;
+			case ResoAlgo::VIO_EXT: res = calc_vio_ext(tof); break;
 			case ResoAlgo::SIMPLE: res = calc_simplereso(simple); break;
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
 		}
@@ -1289,6 +1291,25 @@ void ResoDlg::AlgoChanged()
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2013.10.042>"
 				"NIM A 736, <br>pp. 31-39</a>,<br>\n";
 			strAlgo += "2014.";
+			break;
+		}
+		case ResoAlgo::VIO_EXT:
+		{
+			tabWidget->setTabEnabled(0,0);
+			tabWidget->setTabEnabled(1,0);
+			tabWidget->setTabEnabled(2,0);
+			tabWidget->setTabEnabled(3,1);
+			tabWidget->setTabEnabled(4,0);
+
+			strAlgo = "<b>N. Violini <i>et al.</i></b>,<br>\n";
+			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2013.10.042>"
+				"NIM A 736, <br>pp. 31-39</a>,<br>\n";
+			strAlgo += "2014.";
+
+			strAlgo += "<br><br><b>V. Mecoli</b>,<br>\n";
+			strAlgo += "personal communication,<br>\n";
+			strAlgo += "2025.";
+
 			break;
 		}
 		case ResoAlgo::SIMPLE:

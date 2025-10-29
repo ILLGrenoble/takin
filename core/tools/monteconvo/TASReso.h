@@ -30,7 +30,7 @@
 #define __DO_RESO_H__
 
 #include "../res/eck_ext.h"
-#include "../res/vio.h"
+#include "../res/vio_ext.h"
 #include "../res/ellipse.h"
 #include "../res/mc.h"
 
@@ -59,7 +59,7 @@ protected:
 
 	McNeutronOpts<ublas::matrix<t_real_reso>> m_opts;
 	EckParams m_reso;
-	VioParams m_tofreso;
+	VioExtParams m_tofreso;
 
 	// randomly smear out sample position if vector size >= 1
 	std::vector<ResoResults> m_res;

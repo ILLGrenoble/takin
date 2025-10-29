@@ -43,6 +43,7 @@
 #include <iostream>
 #include <numeric>
 
+
 typedef t_real_reso t_real;
 typedef ublas::matrix<t_real> t_mat;
 typedef ublas::vector<t_real> t_vec;
@@ -72,13 +73,13 @@ static mc_length(t_real radS, t_real heiS,
 	t_real L_PE, t_real L_ME, t_real L_ES,
 	t_real wEy, t_real wEz, t_real moyPx,
 	t_real sigPx, t_real moyMx, t_real sigMx,
-	std::size_t nb_pts = 100000)
+	std::size_t mc_points = 100000)
 {
 	t_real LPS = 0., LPSx = 0., LPSy = 0., LPSz = 0.;
 	t_real LMS = 0., LMSx = 0., LMSy = 0., LMSz = 0.;
 
 	// TODO: thread pool
-	for(std::size_t pt_idx = 0; pt_idx < nb_pts; ++pt_idx)
+	for(std::size_t pt_idx = 0; pt_idx < mc_points; ++pt_idx)
 	{
 		t_real Sr = radS*std::sqrt(tl::rand01<t_real>());
 		t_real theta = 2.*pi*tl::rand01<t_real>();
@@ -86,23 +87,15 @@ static mc_length(t_real radS, t_real heiS,
 		t_real Sx = Sr*std::cos(theta);
 		t_real Sy = Sr*std::sin(theta);
 
-		t_real Pymin = Sy + (L_PE + L_ES + Sx) / (L_ES + Sx) * (-wEy - Sy);
-		t_real Pymax = Sy + (L_PE + L_ES + Sx) / (L_ES + Sx) * (wEy - Sy);
-		t_real Pzmin = Sz + (L_PE + L_ES + Sx) / (L_ES + Sx) * (-wEz - Sz);
-		t_real Pzmax = Sz + (L_PE + L_ES + Sx) / (L_ES + Sx) * (wEz - Sz);
-
-		t_real Mymin = Sy + (L_ME + L_ES + Sx) / (L_ES + Sx) * (-wEy - Sy);
-		t_real Mymax = Sy + (L_ME + L_ES + Sx) / (L_ES + Sx) * (wEy - Sy);
-		t_real Mzmin = Sz + (L_ME + L_ES + Sx) / (L_ES + Sx) * (-wEz - Sz);
-		t_real Mzmax = Sz + (L_ME + L_ES + Sx) / (L_ES + Sx) * (wEz - Sz);
-
+		const t_real Pfact = (L_PE + L_ES + Sx) / (L_ES + Sx);
 		t_real Px = tl::rand_norm<t_real>(moyPx, sigPx);
-		t_real Py = tl::rand_minmax<t_real>(Pymin, Pymax);
-		t_real Pz = tl::rand_minmax<t_real>(Pzmin, Pzmax);
+		t_real Py = tl::rand_minmax<t_real>(Sy + Pfact * (-wEy - Sy), Sy + Pfact * (+wEy - Sy));
+		t_real Pz = tl::rand_minmax<t_real>(Sz + Pfact * (-wEz - Sz), Sz + Pfact * (+wEz - Sz));
 
+		const t_real Mfact = (L_ME + L_ES + Sx) / (L_ES + Sx);
 		t_real Mx = tl::rand_norm<t_real>(moyMx, sigMx);
-		t_real My = tl::rand_minmax<t_real>(Mymin, Mymax);
-		t_real Mz = tl::rand_minmax<t_real>(Mzmin, Mzmax);
+		t_real My = tl::rand_minmax<t_real>(Sy + Mfact * (-wEy - Sy), Sy + Mfact * (+wEy - Sy));
+		t_real Mz = tl::rand_minmax<t_real>(Sz + Mfact * (-wEz - Sz), Sz + Mfact * (+wEz - Sz));
 
 		LPS += std::sqrt(std::pow(Sx - Px, 2.) + std::pow(Sy - Py, 2.) + std::pow(Sz - Pz, 2.));
 		LPSx += Sx - Px;
@@ -115,15 +108,9 @@ static mc_length(t_real radS, t_real heiS,
 		LMSz += Sz - Mz;
 	}
 
-	LPS /= t_real(nb_pts);
-	LPSx /= t_real(nb_pts);
-	LPSy /= t_real(nb_pts);
-	LPSz /= t_real(nb_pts);
-
-	LMS /= t_real(nb_pts);
-	LMSx /= t_real(nb_pts);
-	LMSy /= t_real(nb_pts);
-	LMSz /= t_real(nb_pts);
+	// normalise
+	for(t_real *val : {&LPS, &LPSx, &LPSy, &LPSz, &LMS, &LMSx, &LMSy, &LMSz})
+		*val /= t_real(mc_points);
 
 	return std::make_tuple(LPS - LMS, LPSx - LMSx, LPSy - LMSy, LPSz - LMSz, LMS, LMSx, LMSy, LMSz);
 }
@@ -141,10 +128,10 @@ static t_mat jacobian(t_real v_i, t_real v_f,
 	const t_real m_n = tl::get_m_n<t_real>() / kg;
 	const t_real hbar = tl::get_hbar<t_real>() * sec / kg / meter / meter;;
 
-	const t_real mn_div_lpm = m_n / L_PM;
-	const t_real inv_m2A_sq = 1. / 1e10 / 1e10;
-	const t_real mn_div_hbar = m_n / hbar;
-	const t_real mn_div_lsd = m_n / L_SD;
+	const t_real mn_div_lpm = m_n / L_PM / meV2J;  // includes meV->J conversion factor
+	const t_real mn_div_lsd = m_n / L_SD / meV2J;  // includes meV->J conversion factor
+	const t_real mn_div_hbarlpm = m_n / hbar / L_PM;
+	const t_real mn_div_hbarlsd = m_n / hbar / L_SD;
 
 	const t_real vi_sq = v_i * v_i;
 	const t_real vf_sq = v_f * v_f;
@@ -169,72 +156,73 @@ static t_mat jacobian(t_real v_i, t_real v_f,
 	const t_real lmsz_div_lms = L_MSz / L_MS;
 
 	// Qx
-	t_real dQxdPx = -mn_div_hbar/L_PM * (v_i + vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmx_div_lrm) * inv_m2A_sq;
-	t_real dQxdPy = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmy_div_lrm) * inv_m2A_sq;
-	t_real dQxdPz = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmz_div_lrm) * inv_m2A_sq;
-	t_real dQxdMx = mn_div_hbar/L_PM * (v_i + vf2_div_vi*( lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdx_div_lsd) * inv_m2A_sq;
-	t_real dQxdMy = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdx_div_lsd) * inv_m2A_sq;
-	t_real dQxdMz = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdx_div_lsd) * inv_m2A_sq;
-	t_real dQxdSx = mn_div_hbar/L_SD * (v_f - vf2_div_vi*lsdx_div_lsd*lmsx_div_lms) * inv_m2A_sq;
-	t_real dQxdSy = -mn_div_hbar/L_SD * (vf2_div_vi*lsdx_div_lsd*lmsy_div_lms) * inv_m2A_sq;
-	t_real dQxdSz = -mn_div_hbar/L_SD * (vf2_div_vi*lsdx_div_lsd*lmsz_div_lms) * inv_m2A_sq;
-	t_real dQxdDx = -mn_div_hbar/L_SD * v_f * inv_m2A_sq;
+	t_real dQxdPx = -mn_div_hbarlpm * (v_i + vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmx_div_lrm);
+	t_real dQxdPy = -mn_div_hbarlpm * (vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmy_div_lrm);
+	t_real dQxdPz = -mn_div_hbarlpm * (vf2_div_vi*lms_div_lsd*lsdx_div_lsd*lpmz_div_lrm);
+	t_real dQxdMx = mn_div_hbarlpm * (v_i + vf2_div_vi*(lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdx_div_lsd);
+	t_real dQxdMy = mn_div_hbarlpm * (vf2_div_vi*(lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdx_div_lsd);
+	t_real dQxdMz = mn_div_hbarlpm * (vf2_div_vi*(lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdx_div_lsd);
+	t_real dQxdSx = mn_div_hbarlsd * (v_f - vf2_div_vi*lsdx_div_lsd*lmsx_div_lms);
+	t_real dQxdSy = -mn_div_hbarlsd * (vf2_div_vi*lsdx_div_lsd*lmsy_div_lms);
+	t_real dQxdSz = -mn_div_hbarlsd * (vf2_div_vi*lsdx_div_lsd*lmsz_div_lms);
+	t_real dQxdDx = -mn_div_hbarlsd * v_f;
 	t_real dQxdDy = 0.;
 	t_real dQxdDz = 0.;
-	t_real dQxdtp = mn_div_hbar/L_PM * (vi_sq*lpmx_div_lrm + vf_sq*lms_div_lsd*lsdx_div_lsd) * inv_m2A_sq;
-	t_real dQxdtm = -mn_div_hbar/L_PM * (vi_sq*lpmx_div_lrm + vf_sq*( lpm_div_lsd + lms_div_lsd)*lsdx_div_lsd) * inv_m2A_sq;
-	t_real dQxdtd = mn_div_hbar/L_SD * vf_sq*lsdx_div_lsd * inv_m2A_sq;
+	t_real dQxdtp = mn_div_hbarlpm * (vi_sq*lpmx_div_lrm + vf_sq*lms_div_lsd*lsdx_div_lsd);
+	t_real dQxdtm = -mn_div_hbarlpm * (vi_sq*lpmx_div_lrm + vf_sq*(lpm_div_lsd + lms_div_lsd)*lsdx_div_lsd);
+	t_real dQxdtd = mn_div_hbarlsd * vf_sq*lsdx_div_lsd;
 
 	// Qy
-	t_real dQydPx = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmx_div_lrm) * inv_m2A_sq;
-	t_real dQydPy = -mn_div_hbar/L_PM * (v_i + vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmy_div_lrm) * inv_m2A_sq;
-	t_real dQydPz = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmz_div_lrm) * inv_m2A_sq;
-	t_real dQydMx = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdy_div_lsd) * inv_m2A_sq;
-	t_real dQydMy = mn_div_hbar/L_PM * (v_i + vf2_div_vi*( lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdy_div_lsd) * inv_m2A_sq;
-	t_real dQydMz = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdy_div_lsd) * inv_m2A_sq;
-	t_real dQydSx = -mn_div_hbar/L_SD * (vf2_div_vi*lsdy_div_lsd*lmsx_div_lms) * inv_m2A_sq;
-	t_real dQydSy = mn_div_hbar/L_SD * (v_f - vf2_div_vi*lsdy_div_lsd*lmsy_div_lms) * inv_m2A_sq;
-	t_real dQydSz = -mn_div_hbar/L_SD * (vf2_div_vi*lsdy_div_lsd*lmsz_div_lms) * inv_m2A_sq;
+	t_real dQydPx = -mn_div_hbarlpm * (vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmx_div_lrm);
+	t_real dQydPy = -mn_div_hbarlpm * (v_i + vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmy_div_lrm);
+	t_real dQydPz = -mn_div_hbarlpm * (vf2_div_vi*lms_div_lsd*lsdy_div_lsd*lpmz_div_lrm);
+	t_real dQydMx = mn_div_hbarlpm * (vf2_div_vi*(lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdy_div_lsd);
+	t_real dQydMy = mn_div_hbarlpm * (v_i + vf2_div_vi*(lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdy_div_lsd);
+	t_real dQydMz = mn_div_hbarlpm * (vf2_div_vi*(lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdy_div_lsd);
+	t_real dQydSx = -mn_div_hbarlsd * (vf2_div_vi*lsdy_div_lsd*lmsx_div_lms);
+	t_real dQydSy = mn_div_hbarlsd * (v_f - vf2_div_vi*lsdy_div_lsd*lmsy_div_lms);
+	t_real dQydSz = -mn_div_hbarlsd * (vf2_div_vi*lsdy_div_lsd*lmsz_div_lms);
 	t_real dQydDx = 0.;
-	t_real dQydDy = -mn_div_hbar/L_SD * v_f * inv_m2A_sq;
+	t_real dQydDy = -mn_div_hbarlsd * v_f;
 	t_real dQydDz = 0.;
-	t_real dQydtp = mn_div_hbar/L_PM * (vi_sq*lpmy_div_lrm + vf_sq*lms_div_lsd*lsdy_div_lsd) * inv_m2A_sq;
-	t_real dQydtm = -mn_div_hbar/L_PM * (vi_sq*lpmy_div_lrm + vf_sq*( lpm_div_lsd + lms_div_lsd)*lsdy_div_lsd) * inv_m2A_sq;
-	t_real dQydtd = mn_div_hbar/L_SD * vf_sq*lsdy_div_lsd * inv_m2A_sq;
+	t_real dQydtp = mn_div_hbarlpm * (vi_sq*lpmy_div_lrm + vf_sq*lms_div_lsd*lsdy_div_lsd);
+	t_real dQydtm = -mn_div_hbarlpm * (vi_sq*lpmy_div_lrm + vf_sq*(lpm_div_lsd + lms_div_lsd)*lsdy_div_lsd);
+	t_real dQydtd = mn_div_hbarlsd * vf_sq*lsdy_div_lsd;
 
 	// Qz
-	t_real dQzdPx = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmx_div_lrm) * inv_m2A_sq;
-	t_real dQzdPy = -mn_div_hbar/L_PM * (vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmy_div_lrm) * inv_m2A_sq;
-	t_real dQzdPz = -mn_div_hbar/L_PM * (v_i + vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmz_div_lrm) * inv_m2A_sq;
-	t_real dQzdMx = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdz_div_lsd) * inv_m2A_sq;
-	t_real dQzdMy = mn_div_hbar/L_PM * (vf2_div_vi*( lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdz_div_lsd) * inv_m2A_sq;
-	t_real dQzdMz = mn_div_hbar/L_PM * (v_i + vf2_div_vi*( lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdz_div_lsd) * inv_m2A_sq;
-	t_real dQzdSx = -mn_div_hbar/L_SD * (vf2_div_vi*lsdz_div_lsd*lmsx_div_lms) * inv_m2A_sq;
-	t_real dQzdSy = -mn_div_hbar/L_SD * (vf2_div_vi*lsdz_div_lsd*lmsy_div_lms) * inv_m2A_sq;
-	t_real dQzdSz = mn_div_hbar/L_SD * (v_f - vf2_div_vi*lsdz_div_lsd*lmsz_div_lms) * inv_m2A_sq;
+	t_real dQzdPx = -mn_div_hbarlpm * (vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmx_div_lrm);
+	t_real dQzdPy = -mn_div_hbarlpm * (vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmy_div_lrm);
+	t_real dQzdPz = -mn_div_hbarlpm * (v_i + vf2_div_vi*lms_div_lsd*lsdz_div_lsd*lpmz_div_lrm);
+	t_real dQzdMx = mn_div_hbarlpm * (vf2_div_vi*(lpm_div_lsd*lmsx_div_lms + lms_div_lsd*lpmx_div_lrm)*lsdz_div_lsd);
+	t_real dQzdMy = mn_div_hbarlpm * (vf2_div_vi*(lpm_div_lsd*lmsy_div_lms + lms_div_lsd*lpmy_div_lrm)*lsdz_div_lsd);
+	t_real dQzdMz = mn_div_hbarlpm * (v_i + vf2_div_vi*(lpm_div_lsd*lmsz_div_lms + lms_div_lsd*lpmz_div_lrm)*lsdz_div_lsd);
+	t_real dQzdSx = -mn_div_hbarlsd * (vf2_div_vi*lsdz_div_lsd*lmsx_div_lms);
+	t_real dQzdSy = -mn_div_hbarlsd * (vf2_div_vi*lsdz_div_lsd*lmsy_div_lms);
+	t_real dQzdSz = mn_div_hbarlsd * (v_f - vf2_div_vi*lsdz_div_lsd*lmsz_div_lms);
 	t_real dQzdDx = 0.;
 	t_real dQzdDy = 0.;
-	t_real dQzdDz = -mn_div_hbar/L_SD * v_f * inv_m2A_sq;
-	t_real dQzdtp = mn_div_hbar/L_PM * (vi_sq*lpmz_div_lrm + vf_sq*lms_div_lsd*lsdz_div_lsd) * inv_m2A_sq;
-	t_real dQzdtm = -mn_div_hbar/L_PM * (vi_sq*lpmz_div_lrm + vf_sq*( lpm_div_lsd + lms_div_lsd)*lsdz_div_lsd) * inv_m2A_sq;
-	t_real dQzdtd = mn_div_hbar/L_SD * vf_sq*lsdz_div_lsd * inv_m2A_sq;
+	t_real dQzdDz = -mn_div_hbarlsd * v_f;
+	t_real dQzdtp = mn_div_hbarlpm * (vi_sq*lpmz_div_lrm + vf_sq*lms_div_lsd*lsdz_div_lsd);
+	t_real dQzdtm = -mn_div_hbarlpm * (vi_sq*lpmz_div_lrm + vf_sq*(lpm_div_lsd + lms_div_lsd)*lsdz_div_lsd);
+	t_real dQzdtd = mn_div_hbarlsd * vf_sq*lsdz_div_lsd;
 
 	// E
-	t_real dEdPx = -mn_div_lpm * (vi_sq + vf3_div_vi*lms_div_lsd) * lpmx_div_lrm * inv_m2A_sq/meV2J;
-	t_real dEdPy = -mn_div_lpm * (vi_sq + vf3_div_vi*lms_div_lsd) * lpmy_div_lrm * inv_m2A_sq/meV2J;
-	t_real dEdPz = -mn_div_lpm * (vi_sq + vf3_div_vi*lms_div_lsd) * lpmz_div_lrm * inv_m2A_sq/meV2J;
-	t_real dEdMx = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmx_div_lrm + vf3_div_vi*lpm_div_lsd*lmsx_div_lms) * inv_m2A_sq/meV2J;
-	t_real dEdMy = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmy_div_lrm + vf3_div_vi*lpm_div_lsd*lmsy_div_lms) * inv_m2A_sq/meV2J;
-	t_real dEdMz = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmz_div_lrm + vf3_div_vi*lpm_div_lsd*lmsz_div_lms) * inv_m2A_sq/meV2J;
-	t_real dEdSx = mn_div_lsd * (vf_sq*lsdx_div_lsd - vf3_div_vi*lmsx_div_lms) * inv_m2A_sq/meV2J;
-	t_real dEdSy = mn_div_lsd * (vf_sq*lsdy_div_lsd - vf3_div_vi*lmsy_div_lms) * inv_m2A_sq/meV2J;
-	t_real dEdSz = mn_div_lsd * (vf_sq*lsdz_div_lsd - vf3_div_vi*lmsz_div_lms) * inv_m2A_sq/meV2J;
-	t_real dEdDx = -mn_div_lsd * vf_sq*lsdx_div_lsd * inv_m2A_sq/meV2J;
-	t_real dEdDy = -mn_div_lsd * vf_sq*lsdy_div_lsd * inv_m2A_sq/meV2J;
-	t_real dEdDz = -mn_div_lsd * vf_sq*lsdz_div_lsd * inv_m2A_sq/meV2J;
-	t_real dEdtp = mn_div_lpm * (vi_cb + vf_cb*lms_div_lsd) * inv_m2A_sq/meV2J;
-	t_real dEdtm = -mn_div_lpm * (vi_cb + vf_cb*( lpm_div_lsd + lms_div_lsd)) * inv_m2A_sq/meV2J;
-	t_real dEdtd = mn_div_lsd * vf_cb * inv_m2A_sq/meV2J;
+	const t_real dEdPxyz = -mn_div_lpm * (vi_sq + vf3_div_vi*lms_div_lsd);
+	t_real dEdPx = dEdPxyz * lpmx_div_lrm;
+	t_real dEdPy = dEdPxyz * lpmy_div_lrm;
+	t_real dEdPz = dEdPxyz * lpmz_div_lrm;
+	t_real dEdMx = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmx_div_lrm + vf3_div_vi*lpm_div_lsd*lmsx_div_lms);
+	t_real dEdMy = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmy_div_lrm + vf3_div_vi*lpm_div_lsd*lmsy_div_lms);
+	t_real dEdMz = mn_div_lpm * ((vi_sq + vf3_div_vi*lms_div_lsd) * lpmz_div_lrm + vf3_div_vi*lpm_div_lsd*lmsz_div_lms);
+	t_real dEdSx = mn_div_lsd * (vf_sq*lsdx_div_lsd - vf3_div_vi*lmsx_div_lms);
+	t_real dEdSy = mn_div_lsd * (vf_sq*lsdy_div_lsd - vf3_div_vi*lmsy_div_lms);
+	t_real dEdSz = mn_div_lsd * (vf_sq*lsdz_div_lsd - vf3_div_vi*lmsz_div_lms);
+	t_real dEdDx = -mn_div_lsd * vf_sq*lsdx_div_lsd;
+	t_real dEdDy = -mn_div_lsd * vf_sq*lsdy_div_lsd;
+	t_real dEdDz = -mn_div_lsd * vf_sq*lsdz_div_lsd;
+	t_real dEdtp = mn_div_lpm * (vi_cb + vf_cb*lms_div_lsd);
+	t_real dEdtm = -mn_div_lpm * (vi_cb + vf_cb*(lpm_div_lsd + lms_div_lsd));
+	t_real dEdtd = mn_div_lsd * vf_cb;
 
 	return tl::make_mat<t_mat>(
 	{
@@ -242,7 +230,7 @@ static t_mat jacobian(t_real v_i, t_real v_f,
 		{ dQydPx, dQydPy, dQydPz, dQydMx, dQydMy, dQydMz, dQydSx, dQydSy, dQydSz, dQydDx, dQydDy, dQydDz, dQydtp, dQydtm, dQydtd },
 		{ dQzdPx, dQzdPy, dQzdPz, dQzdMx, dQzdMy, dQzdMz, dQzdSx, dQzdSy, dQzdSz, dQzdDx, dQzdDy, dQzdDz, dQzdtp, dQzdtm, dQzdtd },
 		{ dEdPx,   dEdPy,  dEdPz,  dEdMx,  dEdMy,  dEdMz,  dEdSx,  dEdSy,  dEdSz,  dEdDx,  dEdDy,  dEdDz,  dEdtp,  dEdtm,  dEdtd }
-	});
+	}) / 1e10 / 1e10 /* angstrom conversion factor */;
 }
 
 
@@ -262,46 +250,50 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = E / meV;
 
-	const t_real vi = tl::k2v(ki) * sec / meter;
-	const t_real vf = tl::k2v(kf) * sec / meter;
+	const t_real vi = tl::k2v(ki) * sec / angs;
+	const t_real vf = tl::k2v(kf) * sec / angs;
+	const t_real c_tt = std::cos(tt / rads);
+	const t_real s_tt = std::sin(tt / rads);
+
+	const t_real cm2A = 1e8;
 
 
 	// --------------------------------------------------------------------------------
 	// [mec25b], l. 48ff
 	// --------------------------------------------------------------------------------
-	t_real c_thf = std::cos(tt / rads);  // TODO: check angle
-	t_real s_thf = std::sin(tt / rads);  // TODO: check angle
-
-	// TODO: get values
+	// example values from: https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/instruments/params_in5.py
 	// sample
-	t_real v_rot = 1.;
-	t_real sample_rad = 1.;
-	t_real sample_height = 1.;
+	t_real sample_rad = 1.*cm2A;
+	t_real sample_height = 1.*cm2A;
 
 	// pulse-shaping chopper
-	t_real chopperP_wnd_angle = 1.;
-	t_real chopperP_beam_angle = 1.;
-	t_real chopperP_width = 1.;
+	t_real chopperP_wnd_angle = 9.;    // in deg
+	t_real chopperP_beam_angle = 8.5;  // in deg
+	t_real chopperP_width = 1.2*cm2A;
+	t_real chopperP_rpm = 2.*12000.;
 
 	// monochromatising chopper
-	t_real chopperM_wnd_angle = 1.;
-	t_real chopperM_beam_angle = 1.;
-	t_real chopperM_width = 1.;
+	t_real chopperM_wnd_angle = 3.25;  // in deg
+	t_real chopperM_beam_angle = 3.;   // in deg
+	t_real chopperM_width = 0.6*cm2A;
+	t_real chopperM_rpm = 2.*12000.;
 
 	// guide dimensions
-	t_real endguide_yheight = 1.;
-	t_real endguide_zheight = 1.;
+	t_real endguide_yheight = 1.4*cm2A / 2.;
+	t_real endguide_zheight = 5.4*cm2A / 2.;
 
 	// detector geometry
-	t_real det_rad = 1.;
-	t_real det_height = 1.;
-	t_real det_tube_w = 1.;
-	t_real det_z = 1.;
+	t_real det_rad = 400*cm2A;
+	t_real det_height = 300*cm2A;
+	t_real det_tube_w = 2.6*cm2A;
+	t_real det_z = 0.*cm2A;
 
 	// distances
-	t_real dist_chP_endguide = 1.;
-	t_real dist_chM_endguide = 1.;
-	t_real dist_endguide_sample = 1.;
+	t_real dist_chP_endguide = 906*cm2A;
+	t_real dist_chM_endguide = 111*cm2A;
+	t_real dist_endguide_sample = 17.*cm2A;
+
+	std::size_t mc_points = 100000;
 
 	const t_real Dr_sq = det_rad*det_rad;
 	const t_real Sr_sq = sample_rad*sample_rad;
@@ -309,11 +301,9 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	const t_real Lpe_sq = dist_chP_endguide*dist_chP_endguide;
 	const t_real Lme_sq = dist_chM_endguide*dist_chM_endguide;
 	const t_real Les_sq = dist_endguide_sample*dist_endguide_sample;
-	const t_real Sr_sq3 = 3*Sr_sq;
 	const t_real Eyh_sq = endguide_yheight*endguide_yheight;
 	const t_real Ezh_sq = endguide_zheight*endguide_zheight;
-	const t_real Sr2_div_Les2 = Sr_sq / Les_sq;
-	const t_real c0 = std::sqrt(1. - Sr2_div_Les2);
+	const t_real c0 = std::sqrt(1. - Sr_sq / Les_sq);
 	const t_real c1 = 1. - c0;
 	const t_real c2 = 1./c0 - 1.;
 
@@ -321,27 +311,27 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real Vartd = VarDr / (vf*vf);
 
 	t_real VarDtheta = std::pow(2.*det_tube_w*(det_rad - std::sqrt(Dr_sq - Sr_sq)) / Sr_sq, 2.);
-	t_real Vartp = (chopperP_wnd_angle*chopperP_wnd_angle + chopperP_beam_angle*chopperP_beam_angle) / (12.*std::pow(6.*v_rot, 2.));
-	t_real Vartm = (chopperM_wnd_angle*chopperM_wnd_angle + chopperM_beam_angle*chopperM_beam_angle) / (12.*std::pow(6.*v_rot, 2.));
+	t_real Vartp = (chopperP_wnd_angle*chopperP_wnd_angle + chopperP_beam_angle*chopperP_beam_angle) / (12.*std::pow(6.*chopperP_rpm, 2.));
+	t_real Vartm = (chopperM_wnd_angle*chopperM_wnd_angle + chopperM_beam_angle*chopperM_beam_angle) / (12.*std::pow(6.*chopperM_rpm, 2.));
 
 	t_real VarPx = std::pow(vi*std::sqrt(Vartp) - chopperP_width, 2.);
-	t_real VarPy = Eyh_sq/3. + Lpe_sq*(2.*Les_sq/Sr_sq*c1 - 1) + 4.*dist_chP_endguide*dist_endguide_sample/Sr_sq3*Eyh_sq*c1 + 2.*Lpe_sq/Sr_sq3*Eyh_sq*c2;
-	t_real VarPz = Ezh_sq/3. + Lpe_sq/Sr_sq3*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chP_endguide*dist_endguide_sample/Sr_sq3*Ezh_sq*c1;
+	t_real VarPy = Eyh_sq/3. + Lpe_sq*(2.*Les_sq/Sr_sq*c1 - 1) + 4.*dist_chP_endguide*dist_endguide_sample/(3.*Sr_sq)*Eyh_sq*c1 + 2.*Lpe_sq/(3.*Sr_sq)*Eyh_sq*c2;
+	t_real VarPz = Ezh_sq/3. + Lpe_sq/(3.*Sr_sq)*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chP_endguide*dist_endguide_sample/(3.*Sr_sq)*Ezh_sq*c1;
 
 	t_real VarMx = std::pow(vi*std::sqrt(Vartm) - chopperM_width, 2.);
-	t_real VarMy = Eyh_sq/3. + Lme_sq*(2.*Les_sq/Sr_sq*c1 - 1.) + 4.*dist_chM_endguide*dist_endguide_sample/Sr_sq3*Eyh_sq*c1 + 2.*Lme_sq/Sr_sq3*Eyh_sq*c2;
-	t_real VarMz = Ezh_sq/3. + Lme_sq/Sr_sq3*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chM_endguide*dist_endguide_sample/Sr_sq3*Ezh_sq*c1;
+	t_real VarMy = Eyh_sq/3. + Lme_sq*(2.*Les_sq/Sr_sq*c1 - 1.) + 4.*dist_chM_endguide*dist_endguide_sample/(3.*Sr_sq)*Eyh_sq*c1 + 2.*Lme_sq/(3.*Sr_sq)*Eyh_sq*c2;
+	t_real VarMz = Ezh_sq/3. + Lme_sq/(3.*Sr_sq)*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chM_endguide*dist_endguide_sample/(3.*Sr_sq)*Ezh_sq*c1;
 
 	t_real VarSx = Sr_sq/4.;
 	t_real VarSy = Sr_sq/4.;
 	t_real VarSz = Sh_sq/12.;
 
-	t_real VarDx = c_thf*c_thf*VarDr + Dr_sq*s_thf*s_thf*VarDtheta;
-	t_real VarDy = s_thf*s_thf*VarDr + Dr_sq*c_thf*c_thf*VarDtheta;
+	t_real VarDx = c_tt*c_tt*VarDr + Dr_sq*s_tt*s_tt*VarDtheta;
+	t_real VarDy = s_tt*s_tt*VarDr + Dr_sq*c_tt*c_tt*VarDtheta;
 	t_real VarDz = std::pow(det_height / 100., 2.);
-	t_real CovDxDy = c_thf*s_thf*VarDr - Dr_sq*c_thf*s_thf*VarDtheta;
+	t_real CovDxDy = c_tt*s_tt*VarDr - Dr_sq*c_tt*s_tt*VarDtheta;
 
-	t_mat covInstr = tl::diag_matrix(
+	t_mat cov = tl::diag_matrix(
 	{
 		VarPx, VarPy, VarPz,
 		VarMx, VarMy, VarMz,
@@ -349,18 +339,19 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 		VarDx, VarDy, VarDz,
 		Vartp, Vartm, Vartd
 	});
-	covInstr(9, 10) = covInstr(10, 9) = CovDxDy;
+	cov(9, 10) = cov(10, 9) = CovDxDy;
 
 	t_real LPM = 0., LPMx = 0., LPMy = 0., LPMz = 0., LMS = 0, LMSx = 0., LMSy = 0., LMSz = 0.;
 	std::tie(LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz) = mc_length(
 		sample_rad, sample_height,
 		dist_chP_endguide,  dist_chM_endguide, dist_endguide_sample,
 		endguide_yheight, endguide_zheight, -(dist_chP_endguide + dist_endguide_sample),
-		std::sqrt(VarPx), -dist_chM_endguide - dist_endguide_sample, std::sqrt(VarMx));
+		std::sqrt(VarPx), -dist_chM_endguide - dist_endguide_sample, std::sqrt(VarMx),
+		mc_points);
 	t_real LSD = det_rad;
 	t_real LSDz = det_z;
-	t_real LSDx = LSD*c_thf;
-	t_real LSDy = LSD*s_thf;
+	t_real LSDx = LSD*c_tt;
+	t_real LSDy = LSD*s_tt;
 
 	t_mat J = jacobian(vi, vf,
 		LPM, LPMx, LPMy, LPMz,
@@ -370,7 +361,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 
 
 	// rest as in vio.cpp
-	t_mat covQhw = tl::transform_inv(covInstr, J, true);
+	t_mat covQhw = tl::transform_inv(cov, J, true);
 	if(!tl::inverse(covQhw, res.reso))
 	{
 		res.bOk = false;
@@ -381,13 +372,11 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	// transform from  (ki, ki_perp, Q_z)  to  (Q_para, Q_perp, Q_z)  system
 	t_mat matKiQ = tl::rotation_matrix_2d(-params.angle_ki_Q / rads);
 	matKiQ.resize(4, 4, true);
-	matKiQ(2,2) = matKiQ(3,3) = 1.;
-	matKiQ(2,0) = matKiQ(2,1) = matKiQ(2,3) = matKiQ(3,0) = matKiQ(3,1) =
-	matKiQ(3,2) = matKiQ(0,2) = matKiQ(0,3) = matKiQ(1,2) = matKiQ(1,3) = 0.;
+	matKiQ(2, 2) = matKiQ(3, 3) = 1.;
+	matKiQ(2, 0) = matKiQ(2, 1) = matKiQ(2, 3) = matKiQ(3, 0) = matKiQ(3, 1) =
+	matKiQ(3, 2) = matKiQ(0, 2) = matKiQ(0, 3) = matKiQ(1, 2) = matKiQ(1, 3) = 0.;
 
 	res.reso = tl::transform(res.reso, matKiQ, true);
-	//res.reso *= tl::get_SIGMA2FWHM<t_real>()*tl::get_SIGMA2FWHM<t_real>();
-
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
 	res.dR0 = 0.;   // TODO
 
@@ -400,22 +389,4 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 
 	res.bOk = true;
 	return res;
-}
-
-
-// testing
-// g++ -std=c++17 -I../.. -o vio_ext vio_ext.cpp ../../tlibs/log/log.cpp ../../tlibs/math/rand.cpp
-int main(int argc, char** argv)
-{
-	tl::init_rand();
-
-	t_real LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz;
-	std::tie(LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz) = mc_length(1., 1., 1., 1., 1., 1., 1., 1., 1. ,1., 1.);
-	std::cout << LPM << " " << LPMx << " " << LPMy << " " << LPMz << " " << LMS << " " << LMSx << " " << LMSy << " " << LMSz << std::endl;
-
-	std::vector<t_real> Qx, Qy, Qz, E;
-	t_mat J = jacobian(1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1);
-	std::cout << J << std::endl;
-
-	return 0;
 }

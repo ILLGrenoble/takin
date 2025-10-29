@@ -46,6 +46,7 @@
 #include "eck.h"
 #include "eck_ext.h"
 #include "vio.h"
+#include "vio_ext.h"
 #include "simple.h"
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/prop.h"
@@ -124,7 +125,7 @@ protected:
 
 
 	EckParams m_tasparams;
-	VioParams m_tofparams;
+	VioExtParams m_tofparams;
 	SimpleResoParams m_simpleparams;
 
 	ResoResults m_res;
