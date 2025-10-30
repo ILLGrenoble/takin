@@ -261,7 +261,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	// [mec25b], l. 48ff
 	// --------------------------------------------------------------------------------
 	// sample
-	t_real sample_rad = params.sample_width / angs;
+	t_real sample_rad = params.sample_width / 2. / angs;
 	t_real sample_height = params.sample_height / angs;
 
 	// pulse-shaping chopper
