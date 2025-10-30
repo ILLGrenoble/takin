@@ -3453,7 +3453,7 @@
              <double>9999999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1000.000000000000000</double>
+             <double>100.000000000000000</double>
             </property>
             <property name="value">
              <double>12000.000000000000000</double>
@@ -3583,6 +3583,9 @@
             <property name="text">
              <string>Counter-Rotating</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>
@@ -3621,7 +3624,7 @@
              <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1.000000000000000</double>
+             <double>0.100000000000000</double>
             </property>
             <property name="value">
              <double>1.400000000000000</double>
@@ -3653,7 +3656,7 @@
              <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1.000000000000000</double>
+             <double>0.100000000000000</double>
             </property>
             <property name="value">
              <double>5.400000000000000</double>
@@ -3728,7 +3731,7 @@
              <double>9999999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1000.000000000000000</double>
+             <double>100.000000000000000</double>
             </property>
             <property name="value">
              <double>12000.000000000000000</double>
@@ -3858,6 +3861,9 @@
             <property name="text">
              <string>Counter-Rotating</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>
@@ -3896,7 +3902,7 @@
              <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1.000000000000000</double>
+             <double>0.100000000000000</double>
             </property>
             <property name="value">
              <double>2.560000000000000</double>
@@ -3963,7 +3969,7 @@
              <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1.000000000000000</double>
+             <double>0.100000000000000</double>
             </property>
             <property name="value">
              <double>0.000000000000000</double>
@@ -4164,7 +4170,7 @@
            <number>1</number>
           </property>
           <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="spinDistTof2SampleWidth">
+           <widget class="QDoubleSpinBox" name="spinTof2SampleWidth">
             <property name="suffix">
              <string> cm</string>
             </property>
@@ -4175,7 +4181,7 @@
              <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1.000000000000000</double>
+             <double>0.100000000000000</double>
             </property>
             <property name="value">
              <double>1.000000000000000</double>
@@ -4194,7 +4200,7 @@
              <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>1.000000000000000</double>
+             <double>0.100000000000000</double>
             </property>
             <property name="value">
              <double>1.000000000000000</double>
@@ -5320,7 +5326,7 @@
   <tabstop>spinTof2DetTubeWidth</tabstop>
   <tabstop>spinTof2DetHeight</tabstop>
   <tabstop>spinTof2DetZ</tabstop>
-  <tabstop>spinDistTof2SampleWidth</tabstop>
+  <tabstop>spinTof2SampleWidth</tabstop>
   <tabstop>spinTof2SampleHeight</tabstop>
   <tabstop>spinTof2MCLengths</tabstop>
   <tabstop>spinSigKi</tabstop>

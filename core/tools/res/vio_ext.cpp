@@ -57,6 +57,7 @@ using length = tl::t_length_si<t_real>;
 using mass = tl::t_mass_si<t_real>;
 
 static const auto rads = tl::get_one_radian<t_real>();
+static const auto degs = tl::get_one_deg<t_real>();
 static const length angs = tl::get_one_angstrom<t_real>();
 static const energy meV = tl::get_one_meV<t_real>();
 static const t_time sec = tl::get_one_second<t_real>();
@@ -73,13 +74,13 @@ static mc_length(t_real radS, t_real heiS,
 	t_real L_PE, t_real L_ME, t_real L_ES,
 	t_real wEy, t_real wEz, t_real moyPx,
 	t_real sigPx, t_real moyMx, t_real sigMx,
-	std::size_t mc_points = 100000)
+	unsigned int mc_points = 100000)
 {
 	t_real LPS = 0., LPSx = 0., LPSy = 0., LPSz = 0.;
 	t_real LMS = 0., LMSx = 0., LMSy = 0., LMSz = 0.;
 
 	// TODO: thread pool
-	for(std::size_t pt_idx = 0; pt_idx < mc_points; ++pt_idx)
+	for(unsigned int pt_idx = 0; pt_idx < mc_points; ++pt_idx)
 	{
 		t_real Sr = radS*std::sqrt(tl::rand01<t_real>());
 		t_real theta = 2.*pi*tl::rand01<t_real>();
@@ -255,45 +256,42 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	const t_real c_tt = std::cos(tt / rads);
 	const t_real s_tt = std::sin(tt / rads);
 
-	const t_real cm2A = 1e8;
-
 
 	// --------------------------------------------------------------------------------
 	// [mec25b], l. 48ff
 	// --------------------------------------------------------------------------------
-	// example values from: https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/instruments/params_in5.py
 	// sample
-	t_real sample_rad = 1.*cm2A;
-	t_real sample_height = 1.*cm2A;
+	t_real sample_rad = params.sample_width / angs;
+	t_real sample_height = params.sample_height / angs;
 
 	// pulse-shaping chopper
-	t_real chopperP_wnd_angle = 9.;    // in deg
-	t_real chopperP_beam_angle = 8.5;  // in deg
-	t_real chopperP_width = 1.2*cm2A;
-	t_real chopperP_rpm = 2.*12000.;
+	t_real ch_pulse_rpm_mult = params.ch_pulse_counterrot ? 2. : 1.;
+	t_real chopperP_wnd_angle = params.ch_pulse_angle_win / degs;
+	t_real chopperP_beam_angle = params.ch_pulse_angle_beam / degs;
+	t_real chopperP_width = params.ch_pulse_width / angs;
+	t_real chopperP_rpm = ch_pulse_rpm_mult * params.ch_pulse_rpm;
 
 	// monochromatising chopper
-	t_real chopperM_wnd_angle = 3.25;  // in deg
-	t_real chopperM_beam_angle = 3.;   // in deg
-	t_real chopperM_width = 0.6*cm2A;
-	t_real chopperM_rpm = 2.*12000.;
+	t_real ch_mono_rpm_mult = params.ch_mono_counterrot ? 2. : 1.;
+	t_real chopperM_wnd_angle = params.ch_mono_angle_win / degs;
+	t_real chopperM_beam_angle = params.ch_mono_angle_beam / degs;
+	t_real chopperM_width = params.ch_mono_width / angs;
+	t_real chopperM_rpm = ch_mono_rpm_mult * params.ch_mono_rpm;
 
 	// guide dimensions
-	t_real endguide_ywidth = 1.4*cm2A / 2.;
-	t_real endguide_zheight = 5.4*cm2A / 2.;
+	t_real endguide_ywidth = params.endguide_width / angs / 2.;
+	t_real endguide_zheight = params.endguide_height / angs / 2.;
 
 	// detector geometry
-	t_real det_height = 300*cm2A;
-	t_real det_tube_w = 2.6*cm2A;
-	t_real det_z = 0.*cm2A;
+	t_real det_height = params.det_height / angs;
+	t_real det_tube_w = params.det_tube_width / angs;
+	t_real det_z = params.det_z / angs;
 
 	// distances
-	t_real dist_chP_endguide = 906*cm2A;
-	t_real dist_chM_endguide = 111*cm2A;
-	t_real dist_endguide_sample = 17.*cm2A;
-	t_real dist_sample_det = 400*cm2A;
-
-	std::size_t mc_points = 100000;
+	t_real dist_chP_endguide = params.len_ch_pulse_guide / angs;
+	t_real dist_chM_endguide = params.len_ch_mono_guide / angs;
+	t_real dist_endguide_sample = params.len_guide_sample / angs;
+	t_real dist_sample_det = params.len_sample_det2 / angs;  // TODO: unite with len_sample_det
 
 	const t_real Dr_sq = dist_sample_det*dist_sample_det;
 	const t_real Sr_sq = sample_rad*sample_rad;
@@ -347,7 +345,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 		dist_chP_endguide,  dist_chM_endguide, dist_endguide_sample,
 		endguide_ywidth, endguide_zheight, -(dist_chP_endguide + dist_endguide_sample),
 		std::sqrt(VarPx), -dist_chM_endguide - dist_endguide_sample, std::sqrt(VarMx),
-		mc_points);
+		params.mc_lengths);
 	t_real LSDz = det_z;
 	t_real LSDx = dist_sample_det*c_tt;
 	t_real LSDy = dist_sample_det*s_tt;

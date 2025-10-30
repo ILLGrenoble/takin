@@ -190,7 +190,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 			version, "), whose settings may differ from the current version.");
 	}
 
-	// CN
+	// cn
 	m_reso.mono_d = xml.Query<t_real>((strXmlRoot + "reso/mono_d").c_str(), 0.) * angs;
 	m_reso.mono_mosaic = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/mono_mosaic").c_str(), 0.)) * rads;
 	m_reso.ana_d = xml.Query<t_real>((strXmlRoot + "reso/ana_d").c_str(), 0.) * angs;
@@ -278,7 +278,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.dsample_sense = (xml.Query<int>((strXmlRoot+"reso/sample_scatter_sense").c_str(), 1) ? +1. : -1.);
 
 
-	// Pop
+	// pop
 	m_reso.mono_w = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_w").c_str(), 0.)*cm;
 	m_reso.mono_h = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_h").c_str(), 0.)*cm;
 	m_reso.mono_thick = xml.Query<t_real>((strXmlRoot + "reso/pop_mono_thick").c_str(), 0.)*cm;
@@ -330,7 +330,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.dist_mono_monitor = xml.Query<t_real>((strXmlRoot + "reso/pop_dist_mono_monitor").c_str(), 0.)*cm;
 
 
-	// Eck
+	// eck
 	m_reso.mono_mosaic_v = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/eck_mono_mosaic_v").c_str(), 0.)) * rads;
 	m_reso.sample_mosaic_v = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/eck_sample_mosaic_v").c_str(), 0.)) * rads;
 	m_reso.ana_mosaic_v = tl::m2r(xml.Query<t_real>((strXmlRoot + "reso/eck_ana_mosaic_v").c_str(), 0.)) * rads;
@@ -351,7 +351,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.ana_numtiles_v = 1;
 
 
-	// TOF
+	// vio
 	m_tofreso.len_pulse_mono = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_pulse_mono").c_str(), 0.) * cm;
 	m_tofreso.len_mono_sample = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_mono_sample").c_str(), 0.) * cm;
 	m_tofreso.len_sample_det = xml.Query<t_real>((strXmlRoot + "reso/viol_dist_sample_det").c_str(), 0.) * cm;
@@ -383,6 +383,37 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_tofreso.det_shape = tofdet;
 
 
+	// vio_ext
+	m_tofreso.len_ch_pulse_guide = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_dist_pulse_guide").c_str(), 0.) * cm;
+	m_tofreso.len_ch_mono_guide = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_dist_mono_guide").c_str(), 0.) * cm;
+	m_tofreso.len_guide_sample = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_dist_guide_sample").c_str(), 0.) * cm;
+	m_tofreso.len_sample_det2 = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_dist_sample_det").c_str(), 0.) * cm;  // TODO: unite with len_sample_det
+
+	m_tofreso.ch_pulse_angle_win = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/vio_ext_pulse_chopper_win").c_str(), 0.)) * rads;
+	m_tofreso.ch_pulse_angle_beam = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/vio_ext_pulse_chopper_beam").c_str(), 0.)) * rads;
+	m_tofreso.ch_pulse_width = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_pulse_chopper_width").c_str(), 0.) * cm;
+	m_tofreso.ch_pulse_rpm = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_pulse_chopper_rpm").c_str(), 0.);
+	m_tofreso.ch_pulse_counterrot = xml.Query<unsigned int>((strXmlRoot + "reso/vio_ext_pulse_chopper_counterrot").c_str(), 0) != 0;
+
+	m_tofreso.ch_mono_angle_win = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/vio_ext_mono_chopper_win").c_str(), 0.)) * rads;
+	m_tofreso.ch_mono_angle_beam = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/vio_ext_mono_chopper_beam").c_str(), 0.)) * rads;
+	m_tofreso.ch_mono_width = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_mono_chopper_width").c_str(), 0.) * cm;
+	m_tofreso.ch_mono_rpm = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_mono_chopper_rpm").c_str(), 0.);
+	m_tofreso.ch_mono_counterrot = xml.Query<unsigned int>((strXmlRoot + "reso/vio_ext_mono_chopper_counterrot").c_str(), 0) != 0;
+
+	m_tofreso.endguide_width = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_guide_width").c_str(), 0.) * cm;
+	m_tofreso.endguide_height = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_guide_height").c_str(), 0.) * cm;
+
+	m_tofreso.det_tube_width = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_det_tube_width").c_str(), 0.) * cm;
+	m_tofreso.det_height = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_det_height").c_str(), 0.) * cm;
+	m_tofreso.det_z = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_det_z").c_str(), 0.) * cm;
+
+	m_tofreso.sample_width = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_sample_width").c_str(), 0.) * cm;
+	m_tofreso.sample_height = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_sample_height").c_str(), 0.) * cm;
+
+	m_tofreso.mc_lengths = xml.Query<unsigned int>((strXmlRoot + "reso/vio_ext_mc_lengths").c_str(), 100000);
+
+
 	// get selected reso algo
 	std::string algo = xml.Query<std::string>((strXmlRoot + "reso/algo").c_str(), "");
 	if(algo == "cn")
@@ -401,7 +432,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_algo = ResoAlgo::VIO_EXT;
 	else
 	{
-		// in former versions, an index was used
+		// in former versions an index was used
 		int algo_idx = xml.Query<int>((strXmlRoot + "reso/algo").c_str(), 0);
 		if(algo_idx == 0)
 			m_algo = ResoAlgo::CN;

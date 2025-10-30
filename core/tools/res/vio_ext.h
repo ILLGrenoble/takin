@@ -40,6 +40,34 @@
  */
 struct VioExtParams : public VioParams
 {
+	// instrument lengths
+	tl::t_length_si<t_real_reso> len_ch_pulse_guide,
+		len_ch_mono_guide, len_guide_sample;
+	tl::t_length_si<t_real_reso> len_sample_det2;  // TODO: unite with len_sample_det
+
+	// pulse chopper
+	tl::t_angle_si<t_real_reso> ch_pulse_angle_win, ch_pulse_angle_beam;
+	tl::t_length_si<t_real_reso> ch_pulse_width;
+	t_real_reso ch_pulse_rpm;
+	bool ch_pulse_counterrot;
+
+	// monochromatising chopper
+	tl::t_angle_si<t_real_reso> ch_mono_angle_win, ch_mono_angle_beam;
+	tl::t_length_si<t_real_reso> ch_mono_width;
+	t_real_reso ch_mono_rpm;
+	bool ch_mono_counterrot;
+
+	// guide
+	tl::t_length_si<t_real_reso> endguide_width, endguide_height;
+
+	// detector
+	tl::t_length_si<t_real_reso> det_tube_width, det_height, det_z;
+
+	// sample
+	tl::t_length_si<t_real_reso> sample_width, sample_height;
+
+	// mc points for length calculations
+	unsigned int mc_lengths;
 };
 
 

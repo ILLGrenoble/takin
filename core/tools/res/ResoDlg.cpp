@@ -129,7 +129,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinTof2MonoWin, spinTof2MonoBeam, spinTof2MonoWidth, spinTof2MonoRPM,
 		spinDistTof2GuideWidth, spinTof2GuideHeight,
 		spinTof2DetTubeWidth, spinTof2DetHeight, spinTof2DetZ,
-		spinDistTof2SampleWidth, spinTof2SampleHeight,
+		spinTof2SampleWidth, spinTof2SampleHeight,
 
 		// simple
 		spinSigKi, spinSigKi_perp, spinSigKi_z,
@@ -137,6 +137,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	};
 
 	m_vecSpinNames = {
+		// cn
 		"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
 		"reso/ana_mosaic", "reso/sample_mosaic",
 		"reso/h_coll_mono", "reso/h_coll_before_sample",
@@ -144,6 +145,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/v_coll_before_sample", "reso/v_coll_after_sample", "reso/v_coll_ana",
 		"reso/mono_refl", "reso/ana_effic",
 
+		// pop
 		"reso/pop_mono_w", "reso/pop_mono_h", "reso/pop_mono_thick", "reso/pop_mono_curvh", "reso/pop_mono_curvv",
 		"reso/pop_sample_wq", "reso/pop_sample_wperpq", "reso/pop_sample_h",
 		"reso/pop_ana_w", "reso/pop_ana_h", "reso/pop_ana_thick", "reso/pop_ana_curvh", "reso/pop_ana_curvv",
@@ -153,26 +155,31 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det",
 		"reso/pop_dist_vsrc_mono", "reso/pop_dist_hsrc_mono",
 
+		// pop
 		"reso/pop_monitor_w", "reso/pop_monitor_h", "reso/pop_monitor_thick",
 		"reso/pop_dist_mono_monitor",
 		"reso/scatter_kf_angle",
 
+		// eck
 		"reso/eck_mono_mosaic_v", "reso/eck_sample_mosaic_v", "reso/eck_ana_mosaic_v",
 		"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z",
 
+		// vio
 		"reso/viol_dist_pulse_mono", "reso/viol_dist_mono_sample", "reso/viol_dist_sample_det",
 		"reso/viol_dist_pulse_mono_sig", "reso/viol_dist_mono_sample_sig", "reso/viol_dist_sample_det_sig",
 		"reso/viol_time_pulse_sig", "reso/viol_time_mono_sig", "reso/viol_time_det_sig",
 		"reso/viol_angle_tt_i", "reso/viol_angle_ph_i", "reso/viol_angle_ph_f",
 		"reso/viol_angle_tt_i_sig", "reso/viol_angle_tt_f_sig", "reso/viol_angle_ph_i_sig", "reso/viol_angle_ph_f_sig",
 
+		// vio_ext
 		"reso/vio_ext_dist_pulse_guide", "reso/vio_ext_dist_mono_guide", "reso/vio_ext_dist_guide_sample", "reso/vio_ext_dist_sample_det",
-		"reso/vio_ext_pulse_win", "reso/vio_ext_pulse_beam", "reso/vio_ext_pulse_width", "reso/vio_ext_pulse_rpm",
-		"reso/vio_ext_mono_win", "reso/vio_ext_mono_beam", "reso/vio_ext_mono_width", "reso/vio_ext_mono_rpm",
+		"reso/vio_ext_pulse_chopper_win", "reso/vio_ext_pulse_chopper_beam", "reso/vio_ext_pulse_chopper_width", "reso/vio_ext_pulse_chopper_rpm",
+		"reso/vio_ext_mono_chopper_win", "reso/vio_ext_mono_chopper_beam", "reso/vio_ext_mono_chopper_width", "reso/vio_ext_mono_chopper_rpm",
 		"reso/vio_ext_guide_width", "reso/vio_ext_guide_height",
 		"reso/vio_ext_det_tube_width", "reso/vio_ext_det_height", "reso/vio_ext_det_z",
 		"reso/vio_ext_sample_width", "reso/vio_ext_sample_height",
 
+		// simple
 		"reso/simple_sig_ki", "reso/simple_sig_ki_perp", "reso/simple_sig_ki_z",
 		"reso/simple_sig_kf", "reso/simple_sig_kf_perp", "reso/simple_sig_kf_z",
 	};
@@ -198,7 +205,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/use_kfki", "reso/use_monki", "reso/use_mon", "reso/use_samplevol",
 		"reso/use_resvol",
 
-		"reso/vio_ext_pulse_counterrot", "reso/vio_ext_mono_counterrot",
+		"reso/vio_ext_pulse_chopper_counterrot", "reso/vio_ext_mono_chopper_counterrot",
 	};
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus, radioSampleScatterPlus,
@@ -570,6 +577,37 @@ void ResoDlg::Calc()
 		tof.sig_outplane_f = tl::d2r(t_real_reso(spinTofphFSig->value())) * rads;
 
 		tof.det_shape = radioTofDetSph->isChecked() ? TofDetShape::SPH : TofDetShape::CYL;
+
+
+		// alternate TOF parameters
+		tof.len_ch_pulse_guide = t_real_reso(spinDistTof2PulseGuide->value()) * cm;
+		tof.len_ch_mono_guide = t_real_reso(spinDistTof2MonoGuide->value()) * cm;
+		tof.len_guide_sample = t_real_reso(spinDistTof2GuideSample->value()) * cm;
+		tof.len_sample_det2 = t_real_reso(spinDistTof2SampleDet->value()) * cm;  // TODO: unite with len_sample_det
+
+		tof.ch_pulse_angle_win = tl::d2r(t_real_reso(spinTof2PulseWin->value())) * rads;
+		tof.ch_pulse_angle_beam = tl::d2r(t_real_reso(spinTof2PulseBeam->value())) * rads;
+		tof.ch_pulse_width = t_real_reso(spinTof2PulseWidth->value()) * cm;
+		tof.ch_pulse_rpm = t_real_reso(spinTof2PulseRPM->value());
+		tof.ch_pulse_counterrot = checkTof2PulseCounterRot->isChecked();
+
+		tof.ch_mono_angle_win = tl::d2r(t_real_reso(spinTof2MonoWin->value())) * rads;
+		tof.ch_mono_angle_beam = tl::d2r(t_real_reso(spinTof2MonoBeam->value())) * rads;
+		tof.ch_mono_width = t_real_reso(spinTof2MonoWidth->value()) * cm;
+		tof.ch_mono_rpm = t_real_reso(spinTof2MonoRPM->value());
+		tof.ch_mono_counterrot = checkTof2MonoCounterRot->isChecked();
+
+		tof.endguide_width = t_real_reso(spinDistTof2GuideWidth->value()) * cm;
+		tof.endguide_height = t_real_reso(spinTof2GuideHeight->value()) * cm;
+
+		tof.det_tube_width = t_real_reso(spinTof2DetTubeWidth->value()) * cm;
+		tof.det_height = t_real_reso(spinTof2DetHeight->value()) * cm;
+		tof.det_z = t_real_reso(spinTof2DetZ->value()) * cm;
+
+		tof.sample_width = t_real_reso(spinTof2SampleWidth->value()) * cm;
+		tof.sample_height = t_real_reso(spinTof2SampleHeight->value()) * cm;
+
+		tof.mc_lengths = spinTof2MCLengths->value();
 
 
 		// parameters for simple resolution model
