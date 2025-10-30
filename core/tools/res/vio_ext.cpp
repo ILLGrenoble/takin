@@ -279,11 +279,10 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real chopperM_rpm = 2.*12000.;
 
 	// guide dimensions
-	t_real endguide_yheight = 1.4*cm2A / 2.;
+	t_real endguide_ywidth = 1.4*cm2A / 2.;
 	t_real endguide_zheight = 5.4*cm2A / 2.;
 
 	// detector geometry
-	t_real det_rad = 400*cm2A;
 	t_real det_height = 300*cm2A;
 	t_real det_tube_w = 2.6*cm2A;
 	t_real det_z = 0.*cm2A;
@@ -292,16 +291,17 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real dist_chP_endguide = 906*cm2A;
 	t_real dist_chM_endguide = 111*cm2A;
 	t_real dist_endguide_sample = 17.*cm2A;
+	t_real dist_sample_det = 400*cm2A;
 
 	std::size_t mc_points = 100000;
 
-	const t_real Dr_sq = det_rad*det_rad;
+	const t_real Dr_sq = dist_sample_det*dist_sample_det;
 	const t_real Sr_sq = sample_rad*sample_rad;
 	const t_real Sh_sq = sample_height*sample_height;
 	const t_real Lpe_sq = dist_chP_endguide*dist_chP_endguide;
 	const t_real Lme_sq = dist_chM_endguide*dist_chM_endguide;
 	const t_real Les_sq = dist_endguide_sample*dist_endguide_sample;
-	const t_real Eyh_sq = endguide_yheight*endguide_yheight;
+	const t_real Eyh_sq = endguide_ywidth*endguide_ywidth;
 	const t_real Ezh_sq = endguide_zheight*endguide_zheight;
 	const t_real c0 = std::sqrt(1. - Sr_sq / Les_sq);
 	const t_real c1 = 1. - c0;
@@ -310,7 +310,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real VarDr = det_tube_w*det_tube_w / 12.;
 	t_real Vartd = VarDr / (vf*vf);
 
-	t_real VarDtheta = std::pow(2.*det_tube_w*(det_rad - std::sqrt(Dr_sq - Sr_sq)) / Sr_sq, 2.);
+	t_real VarDtheta = std::pow(2.*det_tube_w*(dist_sample_det - std::sqrt(Dr_sq - Sr_sq)) / Sr_sq, 2.);
 	t_real Vartp = (chopperP_wnd_angle*chopperP_wnd_angle + chopperP_beam_angle*chopperP_beam_angle) / (12.*std::pow(6.*chopperP_rpm, 2.));
 	t_real Vartm = (chopperM_wnd_angle*chopperM_wnd_angle + chopperM_beam_angle*chopperM_beam_angle) / (12.*std::pow(6.*chopperM_rpm, 2.));
 
@@ -345,18 +345,17 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	std::tie(LPM, LPMx, LPMy, LPMz, LMS, LMSx, LMSy, LMSz) = mc_length(
 		sample_rad, sample_height,
 		dist_chP_endguide,  dist_chM_endguide, dist_endguide_sample,
-		endguide_yheight, endguide_zheight, -(dist_chP_endguide + dist_endguide_sample),
+		endguide_ywidth, endguide_zheight, -(dist_chP_endguide + dist_endguide_sample),
 		std::sqrt(VarPx), -dist_chM_endguide - dist_endguide_sample, std::sqrt(VarMx),
 		mc_points);
-	t_real LSD = det_rad;
 	t_real LSDz = det_z;
-	t_real LSDx = LSD*c_tt;
-	t_real LSDy = LSD*s_tt;
+	t_real LSDx = dist_sample_det*c_tt;
+	t_real LSDy = dist_sample_det*s_tt;
 
 	t_mat J = jacobian(vi, vf,
 		LPM, LPMx, LPMy, LPMz,
 		LMS, LMSx, LMSy, LMSz,
-		LSD, LSDx, LSDy, LSDz);
+		dist_sample_det, LSDx, LSDy, LSDz);
 	// --------------------------------------------------------------------------------
 
 
