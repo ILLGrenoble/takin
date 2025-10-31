@@ -393,6 +393,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	t_mat& F = std::get<1>(tupAna);
 	t_mat& G = std::get<2>(tupAna);
 	const t_real& dReflA = std::get<3>(tupAna);
+	F = -F;  // thanks to M. Enderle for pointing this out
 
 	// vertical scattering in kf axis, formula from [eck20]
 	bool bKfVertical = (eck.angle_kf/rads > t_real(0));
@@ -475,8 +476,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// integrate last 2 vars -> equs 57 & 58 in [eck14]
 	//--------------------------------------------------------------------------
 	t_mat U2 = quadric_proj(U1, ECK_K_Z);
-	// careful: factor -0.5*... missing in U matrix compared to normal gaussian!
-	t_mat U = t_real(2) * quadric_proj(U2, ECK_K_Y);
+	t_mat U = quadric_proj(U2, ECK_K_Y);
 
 	// P matrix from equ. 2.21 in [end25]
 	// quadric_proj_mat() gives the same as equ. 2.21 in [end25]
@@ -512,15 +512,25 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	};
 
 	// sample mosaic, gives the same as equ. 4.3 in [end25]
+	// careful: factor -0.5*... missing in U matrix compared to normal gaussian!
 	t_mat mosaic = tl::submatrix_wnd(U, 2, 2, 1, 1);
-	mosaic(0, 0) += 1. / mos_Q_sq[0];  // horizontal
-	mosaic(1, 1) += 1. / mos_Q_sq[1];  // vertical
+	mosaic(0, 0) += 0.5 / mos_Q_sq[0];  // horizontal
+	mosaic(1, 1) += 0.5 / mos_Q_sq[1];  // vertical
+
+	t_mat mosaic_inv;
+	if(!tl::inverse(mosaic, mosaic_inv))
+	{
+		res.bOk = false;
+		res.strErr = "Mosaic matrix cannot be inverted.";
+		return res;
+	}
 
 	// equ. 4.4 in [end25]
 	Z *= pi*pi / std::sqrt(tl::determinant(mosaic));
 	Z *= fwhm2sig / std::sqrt(2. * pi * mos_Q_sq[0] * mos_Q_sq[1]);
 
-	for(int comp = 0; comp < 2; ++comp)  // horizontal and vertical components
+	// this ignores off-diagonals
+	/*for(int comp = 0; comp < 2; ++comp)  // horizontal and vertical components
 	{
 		t_vec Pvec = tl::get_row<t_vec>(matP, comp + 1);
 		t_vec Uvec = tl::get_column<t_vec>(U, comp + 1);
@@ -532,7 +542,18 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		matP -= ublas::outer_prod(Uvec, Pvec) / Mnorm;
 		// gives the same as equ. 4.6 in [end25]
 		U -= ublas::outer_prod(Uvec, Uvec) / Mnorm;
-	}
+	}*/
+
+	// equ. 4.4 in [end25]
+	t_mat matP12 = tl::submatrix_wnd(matP, 2, matP.size2(), 1, 0);
+	t_mat matU12 = tl::submatrix_wnd(U, 2, U.size2(), 1, 0);
+
+	t_mat P12invM = ublas::prod(ublas::trans(matP12), mosaic_inv);
+	t_mat U12invM = ublas::prod(ublas::trans(matU12), mosaic_inv);
+
+	matK -= 0.25 * ublas::prod(P12invM, matP12);
+	matP -= ublas::prod(U12invM, matP12);
+	U -= ublas::prod(U12invM, matU12);
 	//--------------------------------------------------------------------------
 
 
@@ -548,7 +569,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	if(!eck.bSampleCub)
 	{
 		// cylindrical sample integration, equ. 5.13 in [end25]
-		sample_var[0] = sample_var[1] = 6./pi / 0.5*0.5 /* diameter -> radius */;
+		//sample_var[0] = sample_var[1] = 6./pi / 0.5*0.5 /* diameter -> radius */;
+		sample_var[0] = sample_var[1] = 8.;
 		V_sample = pi * 0.5*eck.sample_w_perpq * 0.5*eck.sample_w_q * eck.sample_h;
 	}
 
@@ -561,13 +583,24 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		ublas::trans(T_E), true);
 
 	t_real detN = tl::determinant(matN);
-	t_mat Nadj = tl::adjugate(matN, true);
+	//t_mat Nadj = tl::adjugate(matN, true);
+	t_mat Ninv;
+	if(!tl::inverse(matN, Ninv))
+	{
+		res.bOk = false;
+		res.strErr = "Matrix N cannot be inverted.";
+		return res;
+	}
 
 	// page 15 in [end25]
-	U -= 0.25 / detN * tl::transform<t_mat>(Nadj, ublas::trans(matP), true);
-	t_mat NadjK = ublas::prod(Nadj, matK);
-	matP -= 1. / detN * ublas::prod(matP, NadjK);
-	matK -= 1. / detN * ublas::prod(matK, NadjK);
+	//U -= 0.25 / detN * tl::transform<t_mat>(Nadj, ublas::trans(matP), true);
+	//t_mat NadjK = ublas::prod(Nadj, matK);
+	//matP -= 1. / detN * ublas::prod(matP, NadjK);
+	//matK -= 1. / detN * ublas::prod(matK, NadjK);
+	U -= 0.25 * tl::transform<t_mat>(Ninv, ublas::trans(matP), true);
+	t_mat NinvK = ublas::prod(Ninv, matK);
+	matP -= ublas::prod(matP, NinvK);
+	matK -= ublas::prod(matK, NinvK);
 
 	// page 15 in [end25]
 	Z *= pi*pi*pi / detN;
@@ -580,10 +613,12 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 
 	// quadratic part of quadric (matrix U)
-	res.reso = U;
+	// careful: factor -0.5*... missing in U matrix compared to normal gaussian!
+	res.reso = 2. * U;
 	// linear and constant part of quadric (V and W in [eck14], equ. 2.2 in [end25])
-	res.reso_v = ublas::prod(matP, sample_pos);
-	res.reso_s = ublas::inner_prod(sample_pos, ublas::prod(matK, sample_pos));
+	t_vec sample_pos_rot = ublas::prod(ublas::trans(Dalph_i), sample_pos);  // thanks to M. Enderle for pointing this out
+	res.reso_v = ublas::prod(matP, sample_pos_rot);
+	res.reso_s = ublas::inner_prod(sample_pos_rot, ublas::prod(matK, sample_pos_rot));
 
 
 	// prefactor and volume

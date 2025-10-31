@@ -408,6 +408,7 @@ ResoResults calc_eck(const EckParams& eck)
 	const t_real& G = std::get<2>(tupAna);
 	const t_real& H = std::get<3>(tupAna);
 	const t_real& dReflA = std::get<4>(tupAna);
+	F = -F;  // thanks to M. Enderle for pointing this out
 
 	// vertical scattering in kf axis, formula from [eck20]
 	if(bKfVertical)

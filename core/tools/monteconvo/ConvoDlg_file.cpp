@@ -259,6 +259,8 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 			SetSelectedAlgo(ResoAlgo::ECK_EXT);
 		else if(*opAlgo == "vio" || *opAlgo == "viol")
 			SetSelectedAlgo(ResoAlgo::VIO);
+		else if(*opAlgo == "vio_ext" || *opAlgo == "viol_ext")
+			SetSelectedAlgo(ResoAlgo::VIO_EXT);
 		else if(*opAlgo == "simple")
 			SetSelectedAlgo(ResoAlgo::SIMPLE);
 	}
@@ -339,6 +341,7 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 		case ResoAlgo::ECK: algo_name = "eck"; break;
 		case ResoAlgo::ECK_EXT: algo_name = "eck_ext"; break;
 		case ResoAlgo::VIO: algo_name = "vio"; break;
+		case ResoAlgo::VIO_EXT: algo_name = "vio_ext"; break;
 		case ResoAlgo::SIMPLE: algo_name = "simple"; break;
 		default: tl::log_err("Unknown resolution algorithm selected."); break;
 	}
@@ -351,7 +354,8 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 	mapConf[strXmlRoot + "monteconvo/allow_scan_merging"] = allow_scan_merging ? "1" : "0";
 
 	const char* pcUser = std::getenv("USER");
-	if(!pcUser) pcUser = "";
+	if(!pcUser)
+		pcUser = "";
 	mapConf[strXmlRoot + "meta/timestamp"] = tl::var_to_str<t_real>(tl::epoch<t_real>());
 	mapConf[strXmlRoot + "meta/version"] = TAKIN_VER;
 	mapConf[strXmlRoot + "meta/info"] = "Created with Takin/Convo.";

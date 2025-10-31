@@ -41,6 +41,7 @@
 #include <iostream>
 #include <numeric>
 
+
 typedef t_real_reso t_real;
 typedef ublas::matrix<t_real> t_mat;
 typedef ublas::vector<t_real> t_vec;
@@ -288,9 +289,9 @@ ResoResults calc_vio(const VioParams& params)
 
 	std::size_t N = matSigSq.size1();
 	t_mat matJacobiInstr(4, N, t_real(0));
-	for(std::size_t iDeriv=0; iDeriv<vecQderivs.size(); ++iDeriv)
+	for(std::size_t iDeriv = 0; iDeriv < vecQderivs.size(); ++iDeriv)
 		tl::set_column(matJacobiInstr, iDeriv, vecQderivs[iDeriv]());
-	for(std::size_t iDeriv=0; iDeriv<vecEderivs.size(); ++iDeriv)
+	for(std::size_t iDeriv = 0; iDeriv < vecEderivs.size(); ++iDeriv)
 		matJacobiInstr(3, iDeriv) = vecEderivs[iDeriv]();
 
 	t_mat matSigQE = tl::transform_inv(matSigSq, matJacobiInstr, true);
@@ -311,15 +312,14 @@ ResoResults calc_vio(const VioParams& params)
 	// transform from  (ki, ki_perp, Q_z)  to  (Q_para, Q_perp, Q_z)  system
 	t_mat matKiQ = tl::rotation_matrix_2d(-params.angle_ki_Q / rads);
 	matKiQ.resize(4, 4, true);
-	matKiQ(2,2) = matKiQ(3,3) = 1.;
-	matKiQ(2,0) = matKiQ(2,1) = matKiQ(2,3) = matKiQ(3,0) = matKiQ(3,1) =
-	matKiQ(3,2) = matKiQ(0,2) = matKiQ(0,3) = matKiQ(1,2) = matKiQ(1,3) = 0.;
+	matKiQ(2, 2) = matKiQ(3, 3) = 1.;
+	matKiQ(2, 0) = matKiQ(2, 1) = matKiQ(2, 3) = matKiQ(3, 0) = matKiQ(3, 1) =
+	matKiQ(3, 2) = matKiQ(0, 2) = matKiQ(0, 3) = matKiQ(1, 2) = matKiQ(1, 3) = 0.;
 
 	res.reso = tl::transform(res.reso, matKiQ, true);
 	//res.reso *= tl::get_SIGMA2FWHM<t_real>()*tl::get_SIGMA2FWHM<t_real>();
-
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
-	res.dR0 = 0.;   // TODO
+	res.dR0 = 1.;   // TODO
 
 	// Bragg widths
 	const std::vector<t_real> vecFwhms = calc_bragg_fwhms(res.reso);

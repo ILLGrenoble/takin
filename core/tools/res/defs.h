@@ -91,8 +91,9 @@ enum class ResoAlgo
 	ECK_EXT    = 5,
 
 	VIO        = 6,
-	SIMPLE     = 100,
+	VIO_EXT    = 7,
 
+	SIMPLE     = 100,
 	MC         = 500,
 
 	UNKNOWN    = -1,

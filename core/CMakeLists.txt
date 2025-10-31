@@ -482,7 +482,8 @@ add_executable(takin
 	# reso
 	tools/res/cn.cpp tools/res/pop.cpp tools/res/pop_cn.cpp
 	tools/res/eck.cpp tools/res/eck_ext.cpp
-	tools/res/vio.cpp tools/res/simple.cpp
+	tools/res/vio.cpp tools/res/vio_ext.cpp
+	tools/res/simple.cpp
 	tools/res/ResoDlg.cpp tools/res/ResoDlg_file.cpp
 	tools/res/res_cli.cpp
 

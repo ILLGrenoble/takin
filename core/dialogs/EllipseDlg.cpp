@@ -360,6 +360,7 @@ void EllipseDlg::Calc()
 				case ResoAlgo::ECK: SetTitle("Eckold-Sobolev Algorithm (TAS)"); break;
 				case ResoAlgo::ECK_EXT: SetTitle("Extended Eckold-Sobolev Algorithm (TAS)"); break;
 				case ResoAlgo::VIO: SetTitle("Violini Algorithm (TOF)"); break;
+				case ResoAlgo::VIO_EXT: SetTitle("Extended Violini Algorithm (TOF)"); break;
 				case ResoAlgo::SIMPLE: SetTitle("Simple Algorithm"); break;
 				case ResoAlgo::MC: SetTitle("MC"); break;
 				default: SetTitle("Unknown Resolution Algorithm"); break;

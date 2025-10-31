@@ -333,7 +333,7 @@ t_wavenumber<Sys,Y> d2G(const t_length<Sys,Y>& d)
  * n dG = 2dk sin(th) + 2k cos(th) dth
  * dG/G = dk/k + cos(th)/sin(th) dth
  */
-template<class Sys, class Y=double>
+template<class Sys, class Y = double>
 Y bragg_diff(Y dDoverD, const t_angle<Sys,Y>& theta, Y dTheta)
 {
 	Y dLamOverLam = dDoverD + units::cos(theta)/units::sin(theta) * dTheta;
@@ -482,9 +482,8 @@ Y debye_waller_low_T(const t_temperature<Sys,Y>& T_D,
  */
 template<class Sys, class Y>
 t_angle<Sys,Y> get_angle_ki_Q(const t_wavenumber<Sys,Y>& ki,
-	const t_wavenumber<Sys,Y>& kf,
-	const t_wavenumber<Sys,Y>& Q,
-	bool bPosSense=1, bool bAngleOutsideTriag=0)
+	const t_wavenumber<Sys,Y>& kf, const t_wavenumber<Sys,Y>& Q,
+	bool bPosSense = true, bool bAngleOutsideTriag = false)
 {
 	t_angle<Sys,Y> angle;
 
@@ -514,9 +513,8 @@ t_angle<Sys,Y> get_angle_ki_Q(const t_wavenumber<Sys,Y>& ki,
  */
 template<class Sys, class Y>
 t_angle<Sys,Y> get_angle_kf_Q(const t_wavenumber<Sys,Y>& ki,
-	const t_wavenumber<Sys,Y>& kf,
-	const t_wavenumber<Sys,Y>& Q,
-	bool bPosSense=1, bool bAngleOutsideTriag=1)
+	const t_wavenumber<Sys,Y>& kf, const t_wavenumber<Sys,Y>& Q,
+	bool bPosSense = true, bool bAngleOutsideTriag = true)
 {
 	t_angle<Sys,Y> angle;
 
@@ -540,7 +538,7 @@ t_angle<Sys,Y> get_angle_kf_Q(const t_wavenumber<Sys,Y>& ki,
 
 template<class Sys, class Y>
 t_angle<Sys,Y> get_mono_twotheta(const t_wavenumber<Sys,Y>& k,
-	const t_length<Sys,Y>& d, bool bPosSense=1)
+	const t_length<Sys,Y>& d, bool bPosSense = true)
 {
 	const Y dOrder = Y(1.);
 	t_angle<Sys,Y> tt = bragg_real_twotheta(d, k2lam(k), dOrder);
@@ -552,7 +550,7 @@ t_angle<Sys,Y> get_mono_twotheta(const t_wavenumber<Sys,Y>& k,
 
 template<class Sys, class Y>
 t_wavenumber<Sys,Y> get_mono_k(const t_angle<Sys,Y>& _theta,
-	const t_length<Sys,Y>& d, bool bPosSense=1)
+	const t_length<Sys,Y>& d, bool bPosSense = true)
 {
 	t_angle<Sys,Y> theta = _theta;
 	if(!bPosSense)
@@ -571,7 +569,7 @@ t_wavenumber<Sys,Y> get_mono_k(const t_angle<Sys,Y>& _theta,
 template<class Sys, class Y>
 t_angle<Sys,Y> get_sample_twotheta(const t_wavenumber<Sys,Y>& ki,
 	const t_wavenumber<Sys,Y>& kf, const t_wavenumber<Sys,Y>& Q,
-	bool bPosSense=1)
+	bool bPosSense = true)
 {
 	t_dimensionless<Sys,Y> ttCos = (ki*ki + kf*kf - Q*Q)/(Y(2.)*ki*kf);
 	if(units::abs(ttCos) > Y(1.))
@@ -580,7 +578,8 @@ t_angle<Sys,Y> get_sample_twotheta(const t_wavenumber<Sys,Y>& ki,
 	t_angle<Sys,Y> tt;
 	tt = units::acos(ttCos);
 
-	if(!bPosSense) tt = -tt;
+	if(!bPosSense)
+		tt = -tt;
 	return tt;
 }
 
@@ -725,7 +724,7 @@ struct InelasticSpurion
 template<class Sys, class Y>
 std::vector<InelasticSpurion<Y>> check_inelastic_spurions(bool bConstEi,
 	t_energy<Sys,Y> Ei, t_energy<Sys,Y> Ef,
-	t_energy<Sys,Y> E, unsigned int iMaxOrder=5)
+	t_energy<Sys,Y> E, unsigned int iMaxOrder = 5)
 {
 	const Y dESensitivity = Y(0.25);	// meV
 
@@ -760,11 +759,11 @@ std::vector<InelasticSpurion<Y>> check_inelastic_spurions(bool bConstEi,
 
 struct ElasticSpurion
 {
-	bool bAType = 0;
-	bool bMType = 0;
+	bool bAType = false;
+	bool bMType = false;
 
-	bool bAKfSmallerKi = 0;
-	bool bMKfSmallerKi = 0;
+	bool bAKfSmallerKi = false;
+	bool bMKfSmallerKi = false;
 };
 
 
@@ -797,17 +796,17 @@ ElasticSpurion check_elastic_spurion(const ublas::vector<T>& ki,
 	T dAngleKfq = std::acos(inner(kf_norm, q_norm));
 	T dAngleKiq = std::acos(inner(ki_norm, q_norm));
 
-	bool bKiqParallel = 0, bkiqAntiParallel = 0;
-	bool bKfqParallel = 0, bKfqAntiParallel = 0;
+	bool bKiqParallel = false, bkiqAntiParallel = false;
+	bool bKfqParallel = false, bKfqAntiParallel = false;
 
 	if(float_equal<T>(dAngleKiq, 0., d2r(dAngleSensitivity)))
-		bKiqParallel = 1;
+		bKiqParallel = true;
 	else if(float_equal<T>(dAngleKiq, get_pi<T>(), d2r(dAngleSensitivity)))
-		bkiqAntiParallel = 1;
+		bkiqAntiParallel = true;
 	if(float_equal<T>(dAngleKfq, 0., d2r(dAngleSensitivity)))
-		bKfqParallel = 1;
+		bKfqParallel = true;
 	else if(float_equal<T>(dAngleKfq, get_pi<T>(), d2r(dAngleSensitivity)))
-		bKfqAntiParallel = 1;
+		bKfqAntiParallel = true;
 
 	// type A: q || kf, kf > ki
 	if(bKfqParallel)
@@ -816,8 +815,8 @@ ElasticSpurion check_elastic_spurion(const ublas::vector<T>& ki,
 
 		if(float_equal<T>(dApparentKf, dKi, dQSensitivity))
 		{
-			result.bAType = 1;
-			result.bAKfSmallerKi = 0;
+			result.bAType = true;
+			result.bAKfSmallerKi = false;
 		}
 	}
 	// type A: q || kf, kf < ki
@@ -827,8 +826,8 @@ ElasticSpurion check_elastic_spurion(const ublas::vector<T>& ki,
 
 		if(float_equal<T>(dApparentKf, dKi, dQSensitivity))
 		{
-			result.bAType = 1;
-			result.bAKfSmallerKi = 1;
+			result.bAType = true;
+			result.bAKfSmallerKi = true;
 		}
 	}
 
@@ -839,8 +838,8 @@ ElasticSpurion check_elastic_spurion(const ublas::vector<T>& ki,
 
 		if(float_equal<T>(dApparentKi, dKf, dQSensitivity))
 		{
-			result.bMType = 1;
-			result.bMKfSmallerKi = 0;
+			result.bMType = true;
+			result.bMKfSmallerKi = false;
 		}
 	}
 	// type M: q || ki, kf < ki
@@ -850,8 +849,8 @@ ElasticSpurion check_elastic_spurion(const ublas::vector<T>& ki,
 
 		if(float_equal<T>(dApparentKi, dKf, dQSensitivity))
 		{
-			result.bMType = 1;
-			result.bMKfSmallerKi = 1;
+			result.bMType = true;
+			result.bMKfSmallerKi = true;
 		}
 	}
 
@@ -1029,7 +1028,7 @@ t_length<Sys, Y> foc_curv(const t_length<Sys, Y>& lenBefore, const t_length<Sys,
 template<class Sys, class Y=double>
 t_time<Sys,Y> burst_time(const t_length<Sys,Y>& r,
 	const t_length<Sys,Y>& L, const t_freq<Sys,Y>& om, bool bCounterRot,
-	bool bSigma=1)
+	bool bSigma = true)
 {
 	const Y tSig = bSigma ? get_FWHM2SIGMA<Y>() : Y(1);
 	Y tScale = bCounterRot ? Y(2) : Y(1);
@@ -1040,7 +1039,7 @@ t_time<Sys,Y> burst_time(const t_length<Sys,Y>& r,
 template<class Sys, class Y=double>
 t_length<Sys,Y> burst_time_L(const t_length<Sys,Y>& r,
 	const t_time<Sys,Y>& dt, const t_freq<Sys,Y>& om, bool bCounterRot,
-	bool bSigma=1)
+	bool bSigma = true)
 {
 	const Y tSig = bSigma ? get_FWHM2SIGMA<Y>() : Y(1);
 	Y tScale = bCounterRot ? Y(2) : Y(1);
@@ -1051,7 +1050,7 @@ t_length<Sys,Y> burst_time_L(const t_length<Sys,Y>& r,
 template<class Sys, class Y=double>
 t_length<Sys,Y> burst_time_r(const t_time<Sys,Y>& dt,
 	const t_length<Sys,Y>& L, const t_freq<Sys,Y>& om, bool bCounterRot,
-	bool bSigma=1)
+	bool bSigma = true)
 {
 	const Y tSig = bSigma ? get_FWHM2SIGMA<Y>() : Y(1);
 	Y tScale = bCounterRot ? Y(2) : Y(1);
@@ -1062,7 +1061,7 @@ t_length<Sys,Y> burst_time_r(const t_time<Sys,Y>& dt,
 template<class Sys, class Y=double>
 t_freq<Sys,Y> burst_time_om(const t_length<Sys,Y>& r,
 	const t_length<Sys,Y>& L, const t_time<Sys,Y>& dt, bool bCounterRot,
-	bool bSigma=1)
+	bool bSigma = true)
 {
 	const Y tSig = bSigma ? get_FWHM2SIGMA<Y>() : Y(1);
 	Y tScale = bCounterRot ? Y(2) : Y(1);
@@ -1084,21 +1083,21 @@ t_freq<Sys,Y> burst_time_om(const t_length<Sys,Y>& r,
  * @see (Shirane 2002), Ch. 3.3
  */
 template<class Sys, class Y=double>
-t_angle<Sys,Y> colli_div(const t_length<Sys,Y>& L, const t_length<Sys,Y>& w, bool bSigma=1)
+t_angle<Sys,Y> colli_div(const t_length<Sys,Y>& L, const t_length<Sys,Y>& w, bool bSigma = true)
 {
 	const Y tSig = bSigma ? get_FWHM2SIGMA<Y>() : Y(1);
 	return units::atan(w/L) * tSig;
 }
 
 template<class Sys, class Y=double>
-t_length<Sys,Y> colli_div_L(const t_angle<Sys,Y>& ang, const t_length<Sys,Y>& w, bool bSigma=1)
+t_length<Sys,Y> colli_div_L(const t_angle<Sys,Y>& ang, const t_length<Sys,Y>& w, bool bSigma = true)
 {
 	const Y tSig = bSigma ? get_FWHM2SIGMA<Y>() : Y(1);
 	return w/units::tan(ang/tSig);
 }
 
 template<class Sys, class Y=double>
-t_length<Sys,Y> colli_div_w(const t_length<Sys,Y>& L, const t_angle<Sys,Y>& ang, bool bSigma=1)
+t_length<Sys,Y> colli_div_w(const t_length<Sys,Y>& L, const t_angle<Sys,Y>& ang, bool bSigma = true)
 {
 	const Y tSig = bSigma ? get_FWHM2SIGMA<Y>() : Y(1);
 	return units::tan(ang/tSig) * L;

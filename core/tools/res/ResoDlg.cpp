@@ -88,13 +88,16 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 	// -------------------------------------------------------------------------
 	// widgets
-	m_vecSpinBoxes = {spinMonod, spinMonoMosaic, spinAnad,
+	m_vecSpinBoxes = {
+		// cn
+		spinMonod, spinMonoMosaic, spinAnad,
 		spinAnaMosaic, spinSampleMosaic,
 		spinHCollMono, spinHCollBSample,
 		spinHCollASample, spinHCollAna, spinVCollMono,
 		spinVCollBSample, spinVCollASample, spinVCollAna,
 		spinMonoRefl, spinAnaEffic,
 
+		// pop
 		spinMonoW, spinMonoH, spinMonoThick, spinMonoCurvH, spinMonoCurvV,
 		spinSampleW_Q, spinSampleW_perpQ, spinSampleH,
 		spinAnaW, spinAnaH, spinAnaThick, spinAnaCurvH, spinAnaCurvV,
@@ -104,30 +107,45 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinDistMonoSample, spinDistSampleAna, spinDistAnaDet,
 		spinDistVSrcMono, spinDistHSrcMono,
 
+		// pop
 		spinMonitorW, spinMonitorH, spinMonitorThick,
 		spinDistMonoMonitor,
 		spinScatterKfAngle,
 
+		// eck
 		spinMonoMosaicV, spinSampleMosaicV, spinAnaMosaicV,
 		spinSamplePosX, spinSamplePosY, spinSamplePosZ,
 
+		// vio
 		spinDistTofPulseMono, spinDistTofMonoSample, spinDistTofSampleDet,
 		spinDistTofPulseMonoSig, spinDistTofMonoSampleSig, spinDistTofSampleDetSig,
 		spinTofPulseSig, spinTofMonoSig, spinTofDetSig,
 		spinTof2thI, spinTofphI, spinTofphF,
 		spinTof2thISig, spinTof2thFSig, spinTofphISig, spinTofphFSig,
 
+		// vio_ext
+		spinDistTof2PulseGuide, spinDistTof2MonoGuide, spinDistTof2GuideSample, spinDistTof2SampleDet,
+		spinTof2PulseWin, spinTof2PulseBeam, spinTof2PulseWidth, spinTof2PulseRPM,
+		spinTof2MonoWin, spinTof2MonoBeam, spinTof2MonoWidth, spinTof2MonoRPM,
+		spinDistTof2GuideWidth, spinTof2GuideHeight,
+		spinTof2DetTubeWidth, spinTof2DetHeight, spinTof2DetZ,
+		spinTof2SampleWidth, spinTof2SampleHeight,
+
+		// simple
 		spinSigKi, spinSigKi_perp, spinSigKi_z,
 		spinSigKf, spinSigKf_perp, spinSigKf_z,
 	};
 
-	m_vecSpinNames = {"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
+	m_vecSpinNames = {
+		// cn
+		"reso/mono_d", "reso/mono_mosaic", "reso/ana_d",
 		"reso/ana_mosaic", "reso/sample_mosaic",
 		"reso/h_coll_mono", "reso/h_coll_before_sample",
 		"reso/h_coll_after_sample", "reso/h_coll_ana", "reso/v_coll_mono",
 		"reso/v_coll_before_sample", "reso/v_coll_after_sample", "reso/v_coll_ana",
 		"reso/mono_refl", "reso/ana_effic",
 
+		// pop
 		"reso/pop_mono_w", "reso/pop_mono_h", "reso/pop_mono_thick", "reso/pop_mono_curvh", "reso/pop_mono_curvv",
 		"reso/pop_sample_wq", "reso/pop_sample_wperpq", "reso/pop_sample_h",
 		"reso/pop_ana_w", "reso/pop_ana_h", "reso/pop_ana_thick", "reso/pop_ana_curvh", "reso/pop_ana_curvv",
@@ -137,25 +155,37 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/pop_dist_mono_sample", "reso/pop_dist_sample_ana", "reso/pop_dist_ana_det",
 		"reso/pop_dist_vsrc_mono", "reso/pop_dist_hsrc_mono",
 
+		// pop
 		"reso/pop_monitor_w", "reso/pop_monitor_h", "reso/pop_monitor_thick",
 		"reso/pop_dist_mono_monitor",
 		"reso/scatter_kf_angle",
 
+		// eck
 		"reso/eck_mono_mosaic_v", "reso/eck_sample_mosaic_v", "reso/eck_ana_mosaic_v",
 		"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z",
 
+		// vio
 		"reso/viol_dist_pulse_mono", "reso/viol_dist_mono_sample", "reso/viol_dist_sample_det",
 		"reso/viol_dist_pulse_mono_sig", "reso/viol_dist_mono_sample_sig", "reso/viol_dist_sample_det_sig",
 		"reso/viol_time_pulse_sig", "reso/viol_time_mono_sig", "reso/viol_time_det_sig",
 		"reso/viol_angle_tt_i", "reso/viol_angle_ph_i", "reso/viol_angle_ph_f",
 		"reso/viol_angle_tt_i_sig", "reso/viol_angle_tt_f_sig", "reso/viol_angle_ph_i_sig", "reso/viol_angle_ph_f_sig",
 
+		// vio_ext
+		"reso/vio_ext_dist_pulse_guide", "reso/vio_ext_dist_mono_guide", "reso/vio_ext_dist_guide_sample", "reso/vio_ext_dist_sample_det",
+		"reso/vio_ext_pulse_chopper_win", "reso/vio_ext_pulse_chopper_beam", "reso/vio_ext_pulse_chopper_width", "reso/vio_ext_pulse_chopper_rpm",
+		"reso/vio_ext_mono_chopper_win", "reso/vio_ext_mono_chopper_beam", "reso/vio_ext_mono_chopper_width", "reso/vio_ext_mono_chopper_rpm",
+		"reso/vio_ext_guide_width", "reso/vio_ext_guide_height",
+		"reso/vio_ext_det_tube_width", "reso/vio_ext_det_height", "reso/vio_ext_det_z",
+		"reso/vio_ext_sample_width", "reso/vio_ext_sample_height",
+
+		// simple
 		"reso/simple_sig_ki", "reso/simple_sig_ki_perp", "reso/simple_sig_ki_z",
 		"reso/simple_sig_kf", "reso/simple_sig_kf_perp", "reso/simple_sig_kf_z",
 	};
 
-	m_vecIntSpinBoxes = { spinMCNeutronsLive, spinMCSampleLive };
-	m_vecIntSpinNames = { "reso/mc_live_neutrons", "reso/mc_live_sample_neutrons" };
+	m_vecIntSpinBoxes = { spinMCNeutronsLive, spinMCSampleLive, spinTof2MCLengths };
+	m_vecIntSpinNames = { "reso/mc_live_neutrons", "reso/mc_live_sample_neutrons", "reso/vio_ext_mc_lengths" };
 
 	m_vecEditBoxes = {editMonoRefl, editAnaEffic};
 	m_vecEditNames = {"reso/mono_refl_file", "reso/ana_effic_file"};
@@ -163,12 +193,20 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecPosEditBoxes = {editE, editQ, editKi, editKf};
 	m_vecPosEditNames = {"reso/E", "reso/Q", "reso/ki", "reso/kf"};
 
-	m_vecCheckBoxes = {checkUseAltR0, checkUseKi3, checkUseKf3,
+	m_vecCheckBoxes = {
+		checkUseAltR0, checkUseKi3, checkUseKf3,
 		checkUseKfKi, checkUseKi, checkUseMonitor, checkUseSampleVol,
-		checkUseResVol};
-	m_vecCheckNames = {"reso/use_alt_R0", "reso/use_ki3", "reso/use_kf3",
+		checkUseResVol,
+
+		checkTof2PulseCounterRot, checkTof2MonoCounterRot,
+	};
+	m_vecCheckNames = {
+		"reso/use_alt_R0", "reso/use_ki3", "reso/use_kf3",
 		"reso/use_kfki", "reso/use_monki", "reso/use_mon", "reso/use_samplevol",
-		"reso/use_resvol"};
+		"reso/use_resvol",
+
+		"reso/vio_ext_pulse_chopper_counterrot", "reso/vio_ext_mono_chopper_counterrot",
+	};
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus, radioSampleScatterPlus,
 		radioSampleCub, radioSrcRect, radioDetRect, radioMonitorRect,
@@ -244,6 +282,7 @@ void ResoDlg::setupAlgos()
 	comboAlgo->addItem("TAS: Eckold-Sobolev (Extended)", static_cast<int>(ResoAlgo::ECK_EXT));
 	comboAlgo->insertSeparator(6);
 	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
+	comboAlgo->addItem("TOF: Violini (Extended)", static_cast<int>(ResoAlgo::VIO_EXT));
 	comboAlgo->insertSeparator(8);
 	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
 }
@@ -338,7 +377,7 @@ void ResoDlg::Calc()
 			return;
 
 		EckParams &tas = m_tasparams;
-		VioParams &tof = m_tofparams;
+		VioExtParams &tof = m_tofparams;
 		SimpleResoParams &simple = m_simpleparams;
 
 		ResoResults &res = m_res;
@@ -540,6 +579,37 @@ void ResoDlg::Calc()
 		tof.det_shape = radioTofDetSph->isChecked() ? TofDetShape::SPH : TofDetShape::CYL;
 
 
+		// alternate TOF parameters
+		tof.len_ch_pulse_guide = t_real_reso(spinDistTof2PulseGuide->value()) * cm;
+		tof.len_ch_mono_guide = t_real_reso(spinDistTof2MonoGuide->value()) * cm;
+		tof.len_guide_sample = t_real_reso(spinDistTof2GuideSample->value()) * cm;
+		tof.len_sample_det2 = t_real_reso(spinDistTof2SampleDet->value()) * cm;  // TODO: unite with len_sample_det
+
+		tof.ch_pulse_angle_win = tl::d2r(t_real_reso(spinTof2PulseWin->value())) * rads;
+		tof.ch_pulse_angle_beam = tl::d2r(t_real_reso(spinTof2PulseBeam->value())) * rads;
+		tof.ch_pulse_width = t_real_reso(spinTof2PulseWidth->value()) * cm;
+		tof.ch_pulse_rpm = t_real_reso(spinTof2PulseRPM->value());
+		tof.ch_pulse_counterrot = checkTof2PulseCounterRot->isChecked();
+
+		tof.ch_mono_angle_win = tl::d2r(t_real_reso(spinTof2MonoWin->value())) * rads;
+		tof.ch_mono_angle_beam = tl::d2r(t_real_reso(spinTof2MonoBeam->value())) * rads;
+		tof.ch_mono_width = t_real_reso(spinTof2MonoWidth->value()) * cm;
+		tof.ch_mono_rpm = t_real_reso(spinTof2MonoRPM->value());
+		tof.ch_mono_counterrot = checkTof2MonoCounterRot->isChecked();
+
+		tof.endguide_width = t_real_reso(spinDistTof2GuideWidth->value()) * cm;
+		tof.endguide_height = t_real_reso(spinTof2GuideHeight->value()) * cm;
+
+		tof.det_tube_width = t_real_reso(spinTof2DetTubeWidth->value()) * cm;
+		tof.det_height = t_real_reso(spinTof2DetHeight->value()) * cm;
+		tof.det_z = t_real_reso(spinTof2DetZ->value()) * cm;
+
+		tof.sample_width = t_real_reso(spinTof2SampleWidth->value()) * cm;
+		tof.sample_height = t_real_reso(spinTof2SampleHeight->value()) * cm;
+
+		tof.mc_lengths = spinTof2MCLengths->value();
+
+
 		// parameters for simple resolution model
 		simple.sig_ki = t_real_reso(spinSigKi->value()) / angs;
 		simple.sig_kf = t_real_reso(spinSigKf->value()) / angs;
@@ -578,6 +648,7 @@ void ResoDlg::Calc()
 			case ResoAlgo::ECK: res = calc_eck(tas); break;
 			case ResoAlgo::ECK_EXT: res = calc_eck_ext(tas); break;
 			case ResoAlgo::VIO: res = calc_vio(tof); break;
+			case ResoAlgo::VIO_EXT: res = calc_vio_ext(tof); break;
 			case ResoAlgo::SIMPLE: res = calc_simplereso(simple); break;
 			default: tl::log_err("Unknown resolution algorithm selected."); return;
 		}
@@ -1206,11 +1277,12 @@ void ResoDlg::AlgoChanged()
 		case ResoAlgo::CN:
 		case ResoAlgo::POP_CN:
 		{
-			tabWidget->setTabEnabled(0,1);
-			tabWidget->setTabEnabled(1,0);
-			tabWidget->setTabEnabled(2,0);
-			tabWidget->setTabEnabled(3,0);
-			tabWidget->setTabEnabled(4,0);
+			tabWidget->setTabEnabled(0, 1);
+			tabWidget->setTabEnabled(1, 0);
+			tabWidget->setTabEnabled(2, 0);
+			tabWidget->setTabEnabled(3, 0);
+			tabWidget->setTabEnabled(4, 0);
+			tabWidget->setTabEnabled(5, 0);
 
 			strAlgo = "<b>M. J. Cooper and <br>R. Nathans</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1107/S0365110X67002816>"
@@ -1225,11 +1297,12 @@ void ResoDlg::AlgoChanged()
 		}
 		case ResoAlgo::POP:
 		{
-			tabWidget->setTabEnabled(0,1);
-			tabWidget->setTabEnabled(1,1);
-			tabWidget->setTabEnabled(2,1);
-			tabWidget->setTabEnabled(3,0);
-			tabWidget->setTabEnabled(4,0);
+			tabWidget->setTabEnabled(0, 1);
+			tabWidget->setTabEnabled(1, 1);
+			tabWidget->setTabEnabled(2, 1);
+			tabWidget->setTabEnabled(3, 0);
+			tabWidget->setTabEnabled(4, 0);
+			tabWidget->setTabEnabled(5, 0);
 
 			strAlgo = "<b>M. Popovici</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1107/S0567739475001088>"
@@ -1239,11 +1312,12 @@ void ResoDlg::AlgoChanged()
 		}
 		case ResoAlgo::ECK:
 		{
-			tabWidget->setTabEnabled(0,1);
-			tabWidget->setTabEnabled(1,1);
-			tabWidget->setTabEnabled(2,1);
-			tabWidget->setTabEnabled(3,0);
-			tabWidget->setTabEnabled(4,0);
+			tabWidget->setTabEnabled(0, 1);
+			tabWidget->setTabEnabled(1, 1);
+			tabWidget->setTabEnabled(2, 1);
+			tabWidget->setTabEnabled(3, 0);
+			tabWidget->setTabEnabled(4, 0);
+			tabWidget->setTabEnabled(5, 0);
 
 			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2014.03.019>"
@@ -1257,11 +1331,12 @@ void ResoDlg::AlgoChanged()
 		}
 		case ResoAlgo::ECK_EXT:
 		{
-			tabWidget->setTabEnabled(0,1);
-			tabWidget->setTabEnabled(1,1);
-			tabWidget->setTabEnabled(2,1);
-			tabWidget->setTabEnabled(3,0);
-			tabWidget->setTabEnabled(4,0);
+			tabWidget->setTabEnabled(0, 1);
+			tabWidget->setTabEnabled(1, 1);
+			tabWidget->setTabEnabled(2, 1);
+			tabWidget->setTabEnabled(3, 0);
+			tabWidget->setTabEnabled(4, 0);
+			tabWidget->setTabEnabled(5, 0);
 
 			strAlgo = "<b>G. Eckold and <br>O. Sobolev</b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2014.03.019>"
@@ -1279,11 +1354,12 @@ void ResoDlg::AlgoChanged()
 		}
 		case ResoAlgo::VIO:
 		{
-			tabWidget->setTabEnabled(0,0);
-			tabWidget->setTabEnabled(1,0);
-			tabWidget->setTabEnabled(2,0);
-			tabWidget->setTabEnabled(3,1);
-			tabWidget->setTabEnabled(4,0);
+			tabWidget->setTabEnabled(0, 0);
+			tabWidget->setTabEnabled(1, 0);
+			tabWidget->setTabEnabled(2, 0);
+			tabWidget->setTabEnabled(3, 1);
+			tabWidget->setTabEnabled(4, 0);
+			tabWidget->setTabEnabled(5, 0);
 
 			strAlgo = "<b>N. Violini <i>et al.</i></b>,<br>\n";
 			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2013.10.042>"
@@ -1291,13 +1367,34 @@ void ResoDlg::AlgoChanged()
 			strAlgo += "2014.";
 			break;
 		}
+		case ResoAlgo::VIO_EXT:
+		{
+			tabWidget->setTabEnabled(0, 0);
+			tabWidget->setTabEnabled(1, 0);
+			tabWidget->setTabEnabled(2, 0);
+			tabWidget->setTabEnabled(3, 0);
+			tabWidget->setTabEnabled(4, 1);
+			tabWidget->setTabEnabled(5, 0);
+
+			strAlgo = "<b>N. Violini <i>et al.</i></b>,<br>\n";
+			strAlgo += "<a href=http://dx.doi.org/10.1016/j.nima.2013.10.042>"
+				"NIM A 736, <br>pp. 31-39</a>,<br>\n";
+			strAlgo += "2014.";
+
+			strAlgo += "<br><br><b>V. Mecoli</b>,<br>\n";
+			strAlgo += "personal communication,<br>\n";
+			strAlgo += "2025.";
+
+			break;
+		}
 		case ResoAlgo::SIMPLE:
 		{
-			tabWidget->setTabEnabled(0,0);
-			tabWidget->setTabEnabled(1,0);
-			tabWidget->setTabEnabled(2,0);
-			tabWidget->setTabEnabled(3,0);
-			tabWidget->setTabEnabled(4,1);
+			tabWidget->setTabEnabled(0, 0);
+			tabWidget->setTabEnabled(1, 0);
+			tabWidget->setTabEnabled(2, 0);
+			tabWidget->setTabEnabled(3, 0);
+			tabWidget->setTabEnabled(4, 0);
+			tabWidget->setTabEnabled(5, 1);
 
 			strAlgo = "<b>Simple</b><br>\n";
 			break;

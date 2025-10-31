@@ -246,6 +246,8 @@ static ConvoConfig load_config(const tl::Prop<std::string>& xml)
 			cfg.algo = ResoAlgo::ECK_EXT;
 		else if(*algo == "vio"  || *algo == "3")
 			cfg.algo = ResoAlgo::VIO;
+		else if(*algo == "vio_ext")
+			cfg.algo = ResoAlgo::VIO_EXT;
 		else
 			tl::log_err("Unknown algorithm selected: \"", *algo, "\".");
 	}
