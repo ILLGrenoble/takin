@@ -517,11 +517,20 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	mosaic(0, 0) += 0.5 / mos_Q_sq[0];  // horizontal
 	mosaic(1, 1) += 0.5 / mos_Q_sq[1];  // vertical
 
+	t_mat mosaic_inv;
+	if(!tl::inverse(mosaic, mosaic_inv))
+	{
+		res.bOk = false;
+		res.strErr = "Mosaic matrix cannot be inverted.";
+		return res;
+	}
+
 	// equ. 4.4 in [end25]
 	Z *= pi*pi / std::sqrt(tl::determinant(mosaic));
 	Z *= fwhm2sig / std::sqrt(2. * pi * mos_Q_sq[0] * mos_Q_sq[1]);
 
-	for(int comp = 0; comp < 2; ++comp)  // horizontal and vertical components
+	// this ignores off-diagonals
+	/*for(int comp = 0; comp < 2; ++comp)  // horizontal and vertical components
 	{
 		t_vec Pvec = tl::get_row<t_vec>(matP, comp + 1);
 		t_vec Uvec = tl::get_column<t_vec>(U, comp + 1);
@@ -533,7 +542,18 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		matP -= ublas::outer_prod(Uvec, Pvec) / Mnorm;
 		// gives the same as equ. 4.6 in [end25]
 		U -= ublas::outer_prod(Uvec, Uvec) / Mnorm;
-	}
+	}*/
+
+	// equ. 4.4 in [end25]
+	t_mat matP12 = tl::submatrix_wnd(matP, 2, matP.size2(), 1, 0);
+	t_mat matU12 = tl::submatrix_wnd(U, 2, U.size2(), 1, 0);
+
+	t_mat P12invM = ublas::prod(ublas::trans(matP12), mosaic_inv);
+	t_mat U12invM = ublas::prod(ublas::trans(matU12), mosaic_inv);
+
+	matK -= 0.25 * ublas::prod(P12invM, matP12);
+	matP -= ublas::prod(U12invM, matP12);
+	U -= ublas::prod(U12invM, matU12);
 	//--------------------------------------------------------------------------
 
 
@@ -549,7 +569,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	if(!eck.bSampleCub)
 	{
 		// cylindrical sample integration, equ. 5.13 in [end25]
-		sample_var[0] = sample_var[1] = 6./pi / 0.5*0.5 /* diameter -> radius */;
+		//sample_var[0] = sample_var[1] = 6./pi / 0.5*0.5 /* diameter -> radius */;
+		sample_var[0] = sample_var[1] = 8.;
 		V_sample = pi * 0.5*eck.sample_w_perpq * 0.5*eck.sample_w_q * eck.sample_h;
 	}
 
