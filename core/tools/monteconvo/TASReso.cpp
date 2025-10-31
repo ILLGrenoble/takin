@@ -561,12 +561,18 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	//tl::log_debug("ki = ", m_reso.ki, " (fixed = ", m_bKiFix, "), kf = ", m_reso.kf, ".");
 
-	m_reso.thetam = units::abs(
-		tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d,
-			/*m_reso.dmono_sense>=0.*/true)*t_real(0.5));
-	m_reso.thetaa = units::abs(
-		tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d,
-			/*m_reso.dana_sense>=0.*/true)*t_real(0.5));
+	bool is_tof = m_algo == ResoAlgo::VIO || m_algo == ResoAlgo::VIO_EXT || m_algo == ResoAlgo::SIMPLE;
+
+	if(!is_tof)
+	{
+		// for TOF we don't use the monochromator and analyser crystals
+		m_reso.thetam = units::abs(
+			tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d,
+				/*m_reso.dmono_sense>=0.*/true)*t_real(0.5));
+		m_reso.thetaa = units::abs(
+			tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d,
+				/*m_reso.dana_sense>=0.*/true)*t_real(0.5));
+	}
 	m_tofreso.twotheta = m_reso.twotheta = units::abs(
 		tl::get_sample_twotheta(m_reso.ki, m_reso.kf, m_reso.Q,
 			/*m_reso.dsample_sense>=0.*/true));
@@ -580,7 +586,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 
 	// apply focusing overrides
-	if(m_foc != ResoFocus::FOC_UNCHANGED)
+	if(!is_tof && m_foc != ResoFocus::FOC_UNCHANGED)
 	{
 		if((unsigned(m_foc) & unsigned(ResoFocus::FOC_MONO_FLAT)) != 0)      // flat mono
 			m_reso.bMonoIsCurvedH = m_reso.bMonoIsCurvedV = false;

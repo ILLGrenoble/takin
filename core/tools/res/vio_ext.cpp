@@ -375,7 +375,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 
 	res.reso = tl::transform(res.reso, matKiQ, true);
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
-	res.dR0 = 0.;   // TODO
+	res.dR0 = 1.;   // TODO
 
 	// Bragg widths
 	const std::vector<t_real> vecFwhms = calc_bragg_fwhms(res.reso);

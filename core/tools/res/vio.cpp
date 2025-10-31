@@ -318,9 +318,8 @@ ResoResults calc_vio(const VioParams& params)
 
 	res.reso = tl::transform(res.reso, matKiQ, true);
 	//res.reso *= tl::get_SIGMA2FWHM<t_real>()*tl::get_SIGMA2FWHM<t_real>();
-
 	res.dResVol = tl::get_ellipsoid_volume(res.reso);
-	res.dR0 = 0.;   // TODO
+	res.dR0 = 1.;   // TODO
 
 	// Bragg widths
 	const std::vector<t_real> vecFwhms = calc_bragg_fwhms(res.reso);
