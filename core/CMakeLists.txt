@@ -78,13 +78,13 @@ endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
-if(USE_QT6)
+#if(USE_QT6)
 	set(CMAKE_CXX_STANDARD 17)
 	add_compile_options(-std=c++17)
-else()
-	set(CMAKE_CXX_STANDARD 14)
-	add_compile_options(-std=c++14)
-endif()
+#else()
+#	set(CMAKE_CXX_STANDARD 14)
+#	add_compile_options(-std=c++14)
+#endif()
 
 add_compile_options(-fvisibility=hidden)
 
