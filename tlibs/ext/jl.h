@@ -173,7 +173,7 @@ jl_array_t* make_jl_2darr(const t_cont<t_cont<T>>& vecvec)
 	jl_array_t *pArr = jl_alloc_array_2d(
 		jl_apply_array_type(reinterpret_cast<jl_value_t*>(jl_traits<T>::get_type()), 2), 
 		iRows, iCols);
-	T* pDat = reinterpret_cast<T*>(jl_array_data(pArr));
+	T* pDat = jl_array_data(pArr, T);
 
 	std::size_t iCurCol = 0;
 	for(const auto& vec : vecvec)
@@ -200,7 +200,7 @@ jl_array_t* make_jl_str_arr(const t_cont<t_str>& vecStr)
 {
 	jl_array_t *pArr = jl_alloc_array_1d(jl_apply_array_type(
 		reinterpret_cast<jl_value_t*>(jl_string_type), 1), vecStr.size());
-	jl_value_t** pDat = reinterpret_cast<jl_value_t**>(jl_array_data(pArr));
+	jl_value_t** pDat = jl_array_data(pArr, jl_value_t*);
 
 	std::size_t iIdx = 0;
 	for(const t_str& str : vecStr)
@@ -224,13 +224,10 @@ t_cont<t_val> from_jl_arr(jl_array_t *pArr, std::size_t iSkipFront = 0)
 	t_cont<t_val> vecRet;
 	vecRet.reserve(iSize);
 
-	for(std::size_t iElem=iSkipFront; iElem<iSize; ++iElem)
-	{
-		jl_value_t* pVal = jl_arrayref(pArr, iElem);
-		t_val val = jl_traits<t_val>::unbox(pVal);
+	const t_val *arr = jl_array_data(pArr, t_val);
 
-		vecRet.push_back(val);
-	}
+	for(std::size_t iElem = iSkipFront; iElem < iSize; ++iElem)
+		vecRet.push_back(arr[iElem]);
 
 	return vecRet;
 }
@@ -247,8 +244,8 @@ std::tuple<jl_array_t*, jl_array_t*> make_jl_strmap_arr(const t_cont<t_str, t_st
 	jl_array_t *pArrVal = jl_alloc_array_1d(
 		jl_apply_array_type(reinterpret_cast<jl_value_t*>(jl_string_type), 1), map.size());
 
-	jl_value_t** pDatKey = reinterpret_cast<jl_value_t**>(jl_array_data(pArrKey));
-	jl_value_t** pDatVal = reinterpret_cast<jl_value_t**>(jl_array_data(pArrVal));
+	jl_value_t** pDatKey = jl_array_data(pArrKey, jl_value_t*);
+	jl_value_t** pDatVal = jl_array_data(pArrVal, jl_value_t*);
 
 	std::size_t iIdx = 0;
 	for(const auto& pair : map)
@@ -300,7 +297,7 @@ class LibJulia
 				this->jl_string_ptr = m_lib.get<decltype(::jl_string_ptr)>("jl_string_ptr");
 				this->jl_cstr_to_string = m_lib.get<decltype(::jl_cstr_to_string)>("jl_cstr_to_string");
 
-				this->jl_arrayref = m_lib.get<decltype(::jl_arrayref)>("jl_arrayref");
+				this->jl_get_nth_field = m_lib.get<decltype(::jl_get_nth_field)>("jl_get_nth_field");
 
 				this->jl_box_int8 = m_lib.get<decltype(::jl_box_int8)>("jl_box_int8");
 				this->jl_box_int16 = m_lib.get<decltype(::jl_box_int16)>("jl_box_int16");
@@ -329,11 +326,11 @@ class LibJulia
 				this->jl_unbox_voidpointer = m_lib.get<decltype(::jl_unbox_voidpointer)>("jl_unbox_voidpointer");
 				this->jl_unbox_bool = m_lib.get<decltype(::jl_unbox_bool)>("jl_unbox_bool");
 
-				m_ok = 1;
+				m_ok = true;
 			}
 			catch(const std::exception& ex)
 			{
-				m_ok = 0;
+				m_ok = false;
 				throw;
 			}
 		}
@@ -346,7 +343,7 @@ class LibJulia
 
 
 	protected:
-		bool m_ok = 0;
+		bool m_ok = false;
 		boost::dll::shared_library m_lib;
 
 
@@ -368,7 +365,7 @@ class LibJulia
 		std::function<decltype(::jl_string_ptr)> jl_string_ptr = nullptr;
 		std::function<decltype(::jl_cstr_to_string)> jl_cstr_to_string = nullptr;
 
-		std::function<decltype(::jl_arrayref)> jl_arrayref = nullptr;
+		std::function<decltype(::jl_get_nth_field)> jl_get_nth_field = nullptr;
 
 		std::function<decltype(::jl_box_int8)> jl_box_int8 = nullptr;
 		std::function<decltype(::jl_box_int16)> jl_box_int16 = nullptr;

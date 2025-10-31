@@ -47,7 +47,7 @@ Please refer to the Takin help for more information and tutorials.)RAWSTR";
 #define MAX_PARAM_VAL_SIZE 128
 
 
-extern "C" void jl_init__threading();
+//extern "C" void jl_init__threading();
 
 
 SqwJl::SqwJl(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>())
@@ -66,7 +66,8 @@ SqwJl::SqwJl(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 	static bool bInited = false;
 	if(!bInited)
 	{
-		jl_init__threading();
+		//jl_init__threading();
+		jl_init();
 		std::string strJl = jl_ver_string();
 		tl::log_debug("Initialised Julia interpreter version ", strJl, ".");
 		bInited = true;
@@ -243,8 +244,8 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 			return std::make_tuple(vecE, vecW);
 		}
 
-		jl_array_t *parrE = reinterpret_cast<jl_array_t*>(jl_arrayref(pEW, 0));
-		jl_array_t *parrW = reinterpret_cast<jl_array_t*>(jl_arrayref(pEW, 1));
+		jl_array_t *parrE = jl_array_data(pEW, jl_array_t*)[0];
+		jl_array_t *parrW = jl_array_data(pEW, jl_array_t*)[1];
 
 		std::size_t iSizeE = jl_array_len(parrE);
 		std::size_t iSizeW = jl_array_len(parrW);
@@ -252,13 +253,13 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 		if(iSizeE != iSizeW)
 			tl::log_warn("Size mismatch between energies and weights array in Julia script.");
 
-		for(std::size_t iElem=0; iElem<std::min(iSizeE, iSizeW); ++iElem)
-		{
-			t_real dE = tl::jl_traits<t_real>::unbox(jl_arrayref(parrE, iElem));
-			t_real dW = tl::jl_traits<t_real>::unbox(jl_arrayref(parrE, iElem));
+		const t_real *Es = jl_array_data(parrE, t_real);
+		const t_real *Ws = jl_array_data(parrW, t_real);
 
-			vecE.push_back(dE);
-			vecW.push_back(dW);
+		for(std::size_t iElem = 0; iElem < std::min(iSizeE, iSizeW); ++iElem)
+		{
+			vecE.push_back(Es[iElem]);
+			vecW.push_back(Ws[iElem]);
 		}
 	}
 
