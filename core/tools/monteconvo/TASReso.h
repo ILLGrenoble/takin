@@ -29,8 +29,8 @@
 #ifndef __DO_RESO_H__
 #define __DO_RESO_H__
 
-#include "../res/eck_ext.h"
-#include "../res/vio_ext.h"
+#include "../res/algos/eck_ext.h"
+#include "../res/algos/vio_ext.h"
 #include "../res/ellipse.h"
 #include "../res/mc.h"
 

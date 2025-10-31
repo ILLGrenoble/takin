@@ -30,7 +30,7 @@
  */
 
 #include "vio.h"
-#include "ellipse.h"
+#include "../ellipse.h"
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/geo.h"

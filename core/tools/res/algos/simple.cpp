@@ -27,7 +27,7 @@
  */
 
 #include "simple.h"
-#include "ellipse.h"
+#include "../ellipse.h"
 
 #include "tlibs/math/linalg.h"
 #include "tlibs/math/geo.h"
@@ -36,6 +36,7 @@
 
 #include <string>
 #include <iostream>
+
 
 typedef t_real_reso t_real;
 typedef ublas::matrix<t_real> t_mat;

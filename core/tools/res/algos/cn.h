@@ -36,10 +36,12 @@
 #ifndef __TAKIN_CN_H__
 #define __TAKIN_CN_H__
 
-#include "defs.h"
-#include "refl_curve.h"
+#include "../defs.h"
+#include "../refl_curve.h"
+
 #include "tlibs/phys/neutrons.h"
 #include "tlibs/math/linalg.h"
+
 #include <tuple>
 #include <memory>
 

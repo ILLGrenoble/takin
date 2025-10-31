@@ -37,7 +37,7 @@
  */
 
 #include "cn.h"
-#include "ellipse.h"
+#include "../ellipse.h"
 
 #include "tlibs/math/geo.h"
 #include "tlibs/math/math.h"

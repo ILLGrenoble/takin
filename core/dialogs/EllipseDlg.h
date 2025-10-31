@@ -38,7 +38,7 @@
 
 #include "tlibs/math/linalg.h"
 #include "tools/res/ellipse.h"
-#include "tools/res/pop.h"
+#include "tools/res/defs.h"
 #include "ui/ui_ellipses.h"
 #include "libs/qt/qthelper.h"
 #include "libs/qt/qwthelper.h"

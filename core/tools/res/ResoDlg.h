@@ -41,13 +41,15 @@
 
 #include "ui/ui_reso.h"
 #include "ellipse.h"
-#include "cn.h"
-#include "pop.h"
-#include "eck.h"
-#include "eck_ext.h"
-#include "vio.h"
-#include "vio_ext.h"
-#include "simple.h"
+
+#include "algos/cn.h"
+#include "algos/pop.h"
+#include "algos/eck.h"
+#include "algos/eck_ext.h"
+#include "algos/vio.h"
+#include "algos/vio_ext.h"
+#include "algos/simple.h"
+
 #include "tlibs/math/linalg.h"
 #include "tlibs/file/prop.h"
 #ifndef NO_3D
