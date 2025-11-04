@@ -36,23 +36,23 @@
 		<vio_ext_det_tube_width>2.600000e+00</vio_ext_det_tube_width>
 		<vio_ext_det_z>0.000000e+00</vio_ext_det_z>
 		<vio_ext_dist_guide_sample>1.700000e+01</vio_ext_dist_guide_sample>
-		<vio_ext_dist_mono_guide>1.110000e+02</vio_ext_dist_mono_guide>
-		<vio_ext_dist_pulse_guide>9.060000e+02</vio_ext_dist_pulse_guide>
+		<vio_ext_dist_mono_guide>1.114300e+02</vio_ext_dist_mono_guide>
+		<vio_ext_dist_pulse_guide>9.064700e+02</vio_ext_dist_pulse_guide>
 		<vio_ext_dist_sample_det>4.000000e+02</vio_ext_dist_sample_det>
 		<vio_ext_guide_height>5.400000e+00</vio_ext_guide_height>
 		<vio_ext_guide_width>1.400000e+00</vio_ext_guide_width>
 		<vio_ext_mc_lengths>100000</vio_ext_mc_lengths>
 		<vio_ext_mono_chopper_beam>3.000000e+00</vio_ext_mono_chopper_beam>
 		<vio_ext_mono_chopper_counterrot>1</vio_ext_mono_chopper_counterrot>
-		<vio_ext_mono_chopper_rpm>1.200000e+04</vio_ext_mono_chopper_rpm>
+		<vio_ext_mono_chopper_rpm>1.600000e+04</vio_ext_mono_chopper_rpm>
 		<vio_ext_mono_chopper_width>6.000000e-01</vio_ext_mono_chopper_width>
 		<vio_ext_mono_chopper_win>3.250000e+00</vio_ext_mono_chopper_win>
 		<vio_ext_pulse_chopper_beam>8.500000e+00</vio_ext_pulse_chopper_beam>
 		<vio_ext_pulse_chopper_counterrot>1</vio_ext_pulse_chopper_counterrot>
-		<vio_ext_pulse_chopper_rpm>1.200000e+04</vio_ext_pulse_chopper_rpm>
+		<vio_ext_pulse_chopper_rpm>1.600000e+04</vio_ext_pulse_chopper_rpm>
 		<vio_ext_pulse_chopper_width>1.200000e+00</vio_ext_pulse_chopper_width>
 		<vio_ext_pulse_chopper_win>9.000000e+00</vio_ext_pulse_chopper_win>
-		<vio_ext_sample_height>1.000000e+00</vio_ext_sample_height>
-		<vio_ext_sample_width>2.000000e+00</vio_ext_sample_width>
+		<vio_ext_sample_height>1.000000e-01</vio_ext_sample_height>
+		<vio_ext_sample_width>1.000000e-01</vio_ext_sample_width>
 	</reso>
 </taz>
