@@ -648,7 +648,6 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 
 		const unsigned int iNumNeutrons = spinNeutrons->value();
 		const unsigned int iNumSampleSteps = spinSampleSteps->value();
-
 		const unsigned int iNumSteps = std::sqrt(spinStepCnt->value());
 		const t_real dStartHKL[] =
 		{
@@ -972,7 +971,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 
 			m_plotwrap2d->GetRaster()->SetPixel(iStep%iNumSteps, iStep/iNumSteps, t_real_qwt(dS));
 
-			bool bIsLastStep = (iStep == lstFuts.size()-1);
+			bool bIsLastStep = (iStep == lstFuts.size() - 1);
 
 			if(bLivePlots || bIsLastStep)
 			{
@@ -997,7 +996,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 				}
 			}
 
-			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep+1));
+			QMetaObject::invokeMethod(progress, "setValue", Q_ARG(int, iStep + 1));
 			QMetaObject::invokeMethod(editStopTime2d, "setText",
 				Q_ARG(const QString&, QString(
 					watch.GetEstStopTimeStr(t_real(iStep + 1)/t_real(iNumSteps*iNumSteps)).c_str())));

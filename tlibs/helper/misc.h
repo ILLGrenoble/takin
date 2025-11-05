@@ -113,8 +113,7 @@ INT tic_trafo_inv(INT iDim, T dMin, T dMax, bool bLog, T dVal)
 		dVal = std::log10(dVal);
 	}
 
-	INT ipix = INT((dVal-dMin)/(dMax-dMin) * T(iDim));
-	return ipix;
+	return INT((dVal - dMin)/(dMax - dMin) * T(iDim));
 }
 // -----------------------------------------------------------------------------
 
@@ -125,7 +124,7 @@ INT tic_trafo_inv(INT iDim, T dMin, T dMax, bool bLog, T dVal)
 template<typename T1, typename T2>
 void convert(T1* pDst, const T2* pSrc, std::size_t iSize)
 {
-	for(std::size_t i=0; i<iSize; ++i)
+	for(std::size_t i = 0; i < iSize; ++i)
 		pDst[i] = T1(pSrc[i]);
 }
 
@@ -143,7 +142,7 @@ typename vec_type::value_type sum_vec(const vec_type& vec)
 template<typename T>
 void apply_fkt(const T* pIn, T* pOut, T(*fkt)(T), std::size_t iSize)
 {
-	for(std::size_t i=0; i<iSize; ++i)
+	for(std::size_t i = 0; i < iSize; ++i)
 		pOut[i] = (*fkt)(pIn[i]);
 }
 
@@ -206,14 +205,14 @@ void sort_2(Iter begin1, Iter end1, Iter begin2)
 
 	const std::size_t N = end1-begin1;
 	sort_obj<T> *pObj = new sort_obj<T>[N];
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
 		pObj[i].vec.push_back(*(begin1+i));
 		pObj[i].vec.push_back(*(begin2+i));
 	}
 
 	std::stable_sort(pObj, pObj+N, comp_fkt<T>);
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
 		*(begin1+i) = pObj[i].vec[0];
 		*(begin2+i) = pObj[i].vec[1];
@@ -241,7 +240,7 @@ void sort_3(Iter begin1, Iter end1, Iter begin2, Iter begin3)
 	}
 
 	std::stable_sort(pObj, pObj+N, comp_fkt<T>);
-	for(std::size_t i=0; i<N; ++i)
+	for(std::size_t i = 0; i < N; ++i)
 	{
 		*(begin1+i) = pObj[i].vec[0];
 		*(begin2+i) = pObj[i].vec[1];
@@ -261,7 +260,7 @@ t_cont<std::size_t> sorted_idx(const t_cont<t_val>& vec, t_func fkt)
 {
 	t_cont<std::size_t> vecIdx;
 	vecIdx.reserve(vec.size());
-	for(std::size_t i=0; i<vec.size(); ++i)
+	for(std::size_t i = 0; i < vec.size(); ++i)
 		vecIdx.push_back(i);
 
 	std::stable_sort(vecIdx.begin(), vecIdx.end(),

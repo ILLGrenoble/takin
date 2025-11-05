@@ -62,7 +62,8 @@ protected:
 public:
 	void Init(std::size_t iW, std::size_t iH)
 	{
-		if(m_iW == iW && m_iH == iH) return;
+		if(m_iW == iW && m_iH == iH)
+			return;
 
 		m_iW = iW;
 		m_iH = iH;
@@ -71,7 +72,7 @@ public:
 		std::fill(m_pData.get(), m_pData.get()+m_iW*m_iH, t_real_qwt(0));
 	}
 
-	MyQwtRasterData(std::size_t iW=0, std::size_t iH=0)
+	MyQwtRasterData(std::size_t iW = 0, std::size_t iH = 0)
 	{
 		Init(iW, iH);
 	}
@@ -98,13 +99,14 @@ public:
 
 	void SetPixel(std::size_t iX, std::size_t iY, t_real_qwt dVal)
 	{
-		if(iX<m_iW && iY<m_iH)
+		if(iX < m_iW && iY < m_iH)
 			m_pData.get()[iY*m_iW + iX] = dVal;
 	}
 
 	t_real_qwt GetPixel(std::size_t iX, std::size_t iY) const
 	{
-		if(!m_pData) return t_real_qwt(0);
+		if(!m_pData)
+			return t_real_qwt(0);
 		return m_pData.get()[iY*m_iW + iX];
 	}
 

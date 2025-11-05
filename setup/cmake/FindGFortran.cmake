@@ -27,7 +27,9 @@
 
 find_library(GFortran_LIBRARIES
 	NAMES gfortran libgfortran.so.5
-	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/local/opt/gcc/lib/gcc/current /usr/local/Cellar/gcc/*/lib/gcc/current
+	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib
+		/usr/local/opt/gcc/lib/gcc/current /usr/local/Cellar/gcc/*/lib/gcc/current
+		/opt/homebrew/Cellar/gcc/*/lib/gcc/current/
 	DOC "GFortran libraries"
 )
 

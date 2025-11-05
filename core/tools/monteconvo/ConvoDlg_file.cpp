@@ -526,7 +526,8 @@ void ConvoDlg::showEvent(QShowEvent *pEvt)
 
 void ConvoDlg::accept()
 {
-	if(!m_pSett) return;
+	if(!m_pSett)
+		return;
 
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
 		m_pSett->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());

@@ -643,7 +643,7 @@ void QwtPlotWrapper::doUpdate()
 
 void MyQwtRasterData::SetXRange(t_real_qwt dMin, t_real_qwt dMax)
 {
-	t_real_qwt dOffs = 0.5*(dMax-dMin)/t_real_qwt(m_iW);
+	t_real_qwt dOffs = 0.5*(dMax - dMin)/t_real_qwt(m_iW);
 	dMin -= dOffs; dMax -= dOffs;
 
 	m_dXRange[0] = dMin; m_dXRange[1] = dMax;
@@ -655,7 +655,7 @@ void MyQwtRasterData::SetXRange(t_real_qwt dMin, t_real_qwt dMax)
 
 void MyQwtRasterData::SetYRange(t_real_qwt dMin, t_real_qwt dMax)
 {
-	t_real_qwt dOffs = 0.5*(dMax-dMin)/t_real_qwt(m_iH);
+	t_real_qwt dOffs = 0.5*(dMax - dMin)/t_real_qwt(m_iH);
 	dMin -= dOffs; dMax -= dOffs;
 
 	m_dYRange[0] = dMin; m_dYRange[1] = dMax;
@@ -694,11 +694,11 @@ t_real_qwt MyQwtRasterData::value(t_real_qwt dx, t_real_qwt dy) const
 	t_real_qwt dYMin = std::min(m_dYRange[0], m_dYRange[1]);
 	t_real_qwt dYMax = std::max(m_dYRange[0], m_dYRange[1]);
 
-	if(dx<dXMin || dy<dYMin || dx>=dXMax || dy>=dYMax)
+	if(dx < dXMin || dy < dYMin || dx >= dXMax || dy >= dYMax)
 		return t_real_qwt(0);
 
-	std::size_t iX = tl::tic_trafo_inv(m_iW, m_dXRange[0], m_dXRange[1], 0, dx);
-	std::size_t iY = tl::tic_trafo_inv(m_iH, m_dYRange[0], m_dYRange[1], 0, dy);
+	std::size_t iX = tl::tic_trafo_inv(m_iW, m_dXRange[0], m_dXRange[1], false, dx);
+	std::size_t iY = tl::tic_trafo_inv(m_iH, m_dYRange[0], m_dYRange[1], false, dy);
 
 	return GetPixel(iX, iY);
 }
@@ -768,7 +768,7 @@ QwtInterval MyQwtRasterData::interval(Qt::Axis ax) const
 {
 	if(ax == Qt::XAxis)
 		return QwtInterval(GetXMin(), GetXMax(), QwtInterval::ExcludeMaximum);
-	if(ax == Qt::XAxis)
+	else if(ax == Qt::YAxis)
 		return QwtInterval(GetYMin(), GetYMax(), QwtInterval::ExcludeMaximum);
 	else if(ax == Qt::ZAxis)
 		return range();
