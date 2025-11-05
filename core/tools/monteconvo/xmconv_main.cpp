@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
 	// find arguments
 	int iNextValidOption = -1;
-	for(int iArg=1; iArg<argc; ++iArg)
+	for(int iArg = 1; iArg < argc; ++iArg)
 	{
 		std::string strArg = argv[iArg];
 

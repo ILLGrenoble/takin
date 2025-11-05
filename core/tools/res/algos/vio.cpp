@@ -152,7 +152,6 @@ ResoResults calc_vio(const VioParams& params)
 	t_real sigE2 = tl::my_units_norm2<energy>(vecE2) / meV;
 	tl::log_debug("dE (Vanadium fwhm, check) = ", tl::get_SIGMA2FWHM<t_real>()*sigE2);
 	// --------------------------------------------------------------------
-
 #endif
 	// --------------------------------------------------------------------
 
@@ -170,42 +169,42 @@ ResoResults calc_vio(const VioParams& params)
 	t_mat R, R_tt_f, R_ph_f;
 	t_mat R_tt_i = tl::make_mat(	// R derivs w.r.t the angles
 		{{ -stt_i*cph_i, t_real(0) },
-		{ ctt_i*cph_i, 	t_real(0) },
-		{ t_real(0), 	t_real(0) }});
+		{   ctt_i*cph_i, t_real(0) },
+		{     t_real(0), t_real(0) }});
 	t_mat R_ph_i = tl::make_mat(
 		{{ -ctt_i*sph_i, t_real(0) },
-		{ -stt_i*sph_i,  t_real(0) },
-		{ cph_i, 	 t_real(0) }});
+		{  -stt_i*sph_i, t_real(0) },
+		{         cph_i, t_real(0) }});
 
 	if(params.det_shape == TofDetShape::SPH)
 	{
 		R = tl::make_mat<t_mat>(	// R: spherical coordinates
-			{{ ctt_i*cph_i,	-ctt_f*cph_f },
-			{ stt_i*cph_i, 	-stt_f*cph_f },
-			{ sph_i, 	-sph_f }});
+			{{ ctt_i*cph_i, -ctt_f*cph_f },
+			{  stt_i*cph_i, -stt_f*cph_f },
+			{        sph_i, -sph_f }});
 		R_tt_f = tl::make_mat(		// R derivs w.r.t the angles
 			{{ t_real(0),	stt_f*cph_f },
 			{  t_real(0),	-ctt_f*cph_f },
 			{  t_real(0),	t_real(0) }});
 		R_ph_f = tl::make_mat(
 			{{ t_real(0),	ctt_f*sph_f },
-			{  t_real(0), 	stt_f*sph_f },
-			{  t_real(0), 	-cph_f }});
+			{  t_real(0), stt_f*sph_f },
+			{  t_real(0), -cph_f }});
 	}
 	else if(params.det_shape == TofDetShape::CYL)
 	{	// modified original formulas; TODO: check if still correct
 		R = tl::make_mat<t_mat>(	// R: cylindrical coordinates
-			{{ ctt_i*cph_i,	-ctt_f },
-			{ stt_i*cph_i, 	-stt_f },
-			{ sph_i, 	-tph_f }});
+			{{ ctt_i*cph_i, -ctt_f },
+			{  stt_i*cph_i, -stt_f },
+			{        sph_i, -tph_f }});
 		R_tt_f = tl::make_mat(		// R derivs w.r.t the angles
 			{{ t_real(0),	stt_f },
 			{  t_real(0),	-ctt_f },
 			{  t_real(0),	t_real(0) }});
 		R_ph_f = tl::make_mat(
 			{{ t_real(0),	t_real(0) },
-			{  t_real(0), 	t_real(0) },
-			{  t_real(0), 	-dtph_f }});
+			{  t_real(0), t_real(0) },
+			{  t_real(0), -dtph_f }});
 	}
 	else
 	{
@@ -274,7 +273,6 @@ ResoResults calc_vio(const VioParams& params)
 		tl::my_units_norm2<wavenumber>(vecQ2[1]) * angs });
 	tl::log_debug("dQ (Vanadium fwhm, check) = ", tl::get_SIGMA2FWHM<t_real>()*sigQ2);
 	// --------------------------------------------------------------------
-
 #endif
 	// --------------------------------------------------------------------
 

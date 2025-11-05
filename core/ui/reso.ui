@@ -3618,7 +3618,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -3650,7 +3650,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -3896,7 +3896,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -3915,7 +3915,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -3963,7 +3963,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -4175,7 +4175,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -4194,7 +4194,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>

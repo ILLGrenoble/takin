@@ -466,7 +466,8 @@ void ConvoDlg::SaveResult(const QString* outfile)
 // loading & saving of recent configuration
 void ConvoDlg::LoadSettings()
 {
-	if(!m_pSett) return;
+	if(!m_pSett)
+		return;
 	m_bAllowSqwReinit = false;
 
 	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)

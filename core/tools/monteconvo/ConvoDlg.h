@@ -79,7 +79,7 @@ protected:
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap, m_plotwrap2d;
 
 	bool m_bUseScan = false;
-	Scan m_scan;
+	Scan m_scan{};
 
 	static const std::string s_strTitle;
 	std::string m_strLastFile;
