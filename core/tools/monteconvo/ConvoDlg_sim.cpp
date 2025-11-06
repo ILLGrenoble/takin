@@ -389,6 +389,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 		tp.Start();
 		auto iterTask = tp.GetTasks().begin();
 		unsigned int iStep = 0;
+		m_S_max = 0.;
 		for(auto &fut : lstFuts)
 		{
 			if(this->StopRequested())
@@ -413,6 +414,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 				dS = t_real(0);
 				tl::log_warn("S(Q,E) is invalid.");
 			}
+
+			m_S_max = std::max(m_S_max, dS);
 
 			const t_real dXVal = (*pVecScanX)[iStep];
 			t_real dSScale = dScale*(dS + dSlope*dXVal) + dOffs;
@@ -938,6 +941,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 		tp.Start();
 		auto iterTask = tp.GetTasks().begin();
 		unsigned int iStep = 0;
+		m_S_max = 0.;
 		for(auto &fut : lstFuts)
 		{
 			if(this->StopRequested())
@@ -963,6 +967,8 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 				tl::log_warn("S(Q,E) is invalid.");
 			}
 
+			m_S_max = std::max(m_S_max, dS);
+
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecL[iStep] << " "
@@ -975,9 +981,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 
 			if(bLivePlots || bIsLastStep)
 			{
-				m_plotwrap2d->GetRaster()->SetZRange();
-
-				QMetaObject::invokeMethod(m_plotwrap2d.get(), "scaleColorBar", connty);
+				QMetaObject::invokeMethod(this, "Set2dColourBar", connty, Q_ARG(bool, false));
 				QMetaObject::invokeMethod(m_plotwrap2d.get(), "doUpdate", connty);
 			}
 
@@ -1005,8 +1009,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 
 		// output elapsed time
 		watch.stop();
-		QMetaObject::invokeMethod(editStopTime2d, "setText",
-			Q_ARG(const QString&, QString(watch.GetStopTimeStr().c_str())));
+		QMetaObject::invokeMethod(editStopTime2d, "setText", Q_ARG(const QString&, QString(watch.GetStopTimeStr().c_str())));
 
 		if(strAutosave != "")
 		{
@@ -1174,7 +1177,8 @@ void ConvoDlg::StartDisp()
 		unsigned int iStep = 0;
 		for(auto &fut : lstFuts)
 		{
-			if(this->StopRequested()) break;
+			if(this->StopRequested())
+				break;
 
 			// deferred (in main thread), eval this task manually
 			if(iNumThreads == 0)
@@ -1184,7 +1188,8 @@ void ConvoDlg::StartDisp()
 			}
 
 			auto tupEW = fut.get();
-			if(!std::get<0>(tupEW)) break;
+			if(!std::get<0>(tupEW))
+				break;
 
 			ostrOut << std::left << std::setw(g_iPrec*2) << vecH[iStep] << " "
 				<< std::left << std::setw(g_iPrec*2) << vecK[iStep] << " "

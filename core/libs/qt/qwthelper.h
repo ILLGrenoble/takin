@@ -199,7 +199,7 @@ public:
 
 public slots:
 	void setAxisTitle(int iAxis, const QString& str);
-	void scaleColorBar();
+	void scaleColorBar(t_real_qwt min = -1., t_real_qwt max = -2.);
 	void setZoomBase(const QRectF&);
 	void ToggleLogY();
 	void doUpdate();

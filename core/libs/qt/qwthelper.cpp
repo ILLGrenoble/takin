@@ -611,18 +611,22 @@ void QwtPlotWrapper::setZoomBase(const QRectF& rect)
 }
 
 
-void QwtPlotWrapper::scaleColorBar()
+void QwtPlotWrapper::scaleColorBar(t_real_qwt min, t_real_qwt max)
 {
 	if(!m_pPlot || !m_pRaster)
 		return;
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
-	t_real_qwt dMin = m_pRaster->GetZMin();
-	t_real_qwt dMax = m_pRaster->GetZMax();
+	// if provided range is invalid, automatically determine the maximum range
+	if(max < min)
+	{
+		min = m_pRaster->GetZMin();
+		max = m_pRaster->GetZMax();
+	}
 
 	QwtScaleWidget *pRightAxis = m_pPlot->axisWidget(QwtPlot::yRight);
-	pRightAxis->setColorMap(QwtInterval(dMin, dMax), (QwtColorMap*)pRightAxis->colorMap());
-	m_pPlot->setAxisScale(QwtPlot::yRight, dMin, dMax);
+	pRightAxis->setColorMap(QwtInterval(min, max), (QwtColorMap*)pRightAxis->colorMap());
+	m_pPlot->setAxisScale(QwtPlot::yRight, min, max);
 }
 
 

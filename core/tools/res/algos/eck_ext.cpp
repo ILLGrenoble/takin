@@ -576,9 +576,9 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// equ. 5.4 in [end25]
 	t_mat matN = matK;
 	matN += tl::transform<t_mat>(tl::diag_matrix<t_mat>({
-		sample_var[0]/(eck.sample_w_perpq*eck.sample_w_perpq /angs/angs),
-		sample_var[1]/(eck.sample_w_q*eck.sample_w_q /angs/angs),
-		sample_var[2]/(eck.sample_h*eck.sample_h /angs/angs) }),
+		sample_var[0] / (eck.sample_w_perpq*eck.sample_w_perpq /angs/angs),
+		sample_var[1] / (eck.sample_w_q*eck.sample_w_q /angs/angs),
+		sample_var[2] / (eck.sample_h*eck.sample_h /angs/angs) }),
 		ublas::trans(T_E), true);
 
 	t_real detN = tl::determinant(matN);

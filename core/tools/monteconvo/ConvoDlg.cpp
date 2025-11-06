@@ -461,6 +461,11 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 			this, &ConvoDlg::UpdateCurFavPos);
 	}
 
+	connect(spinzMin2d, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		this, &ConvoDlg::Set2dColourBar);
+	connect(spinzMax2d, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+		this, &ConvoDlg::Set2dColourBar);
+
 	LoadSettings();
 
 
@@ -878,6 +883,37 @@ void ConvoDlg::scaleChanged()
 	m_plotwrap->GetPlot()->replot();
 }
 
+
+/**
+ * set the scale of the 2d convolution colourbar
+ */
+void ConvoDlg::Set2dColourBar(bool update)
+{
+	if(!m_plotwrap2d)
+		return;
+
+	t_real minPercent = spinzMin2d->value();
+	t_real maxPercent = spinzMax2d->value();
+
+	// ignore invalid ranges
+	if(minPercent > maxPercent)
+	{
+		minPercent = 0.;
+		maxPercent = 100.;
+	}
+
+	t_real_qwt min = minPercent/100. * m_S_max;
+	t_real_qwt max = maxPercent/100. * m_S_max;
+
+	m_plotwrap2d->GetRaster()->SetZRange(min, max);
+	m_plotwrap2d->scaleColorBar(min, max);
+
+	if(update)
+	{
+		//m_plotwrap2d->doUpdate();
+		m_plotwrap2d->GetPlot()->replot();
+	}
+}
 
 // -----------------------------------------------------------------------------
 

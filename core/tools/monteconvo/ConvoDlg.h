@@ -89,6 +89,7 @@ protected:
 	t_real_reso m_eps_rlu = EPS_RLU;
 
 	t_real_reso m_chi2 = 0.;
+	t_real_reso m_S_max = 0.;  // maximum S(Q, E)
 
 	// maps module identifiers to the corresponding module help texts
 	std::unordered_map<std::string, std::string> m_help_texts;
@@ -172,6 +173,7 @@ protected slots:
 	void scanCheckToggled(bool);
 	void coordFlipToggled(bool);
 	void scaleChanged();
+	void Set2dColourBar(bool update = true);
 
 	void SaveResult(const QString* outfile = nullptr);
 
