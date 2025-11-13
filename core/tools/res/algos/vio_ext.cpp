@@ -296,8 +296,9 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real dist_endguide_sample = params.len_guide_sample / angs;
 	t_real dist_sample_det = params.len_sample_det2 / angs;  // TODO: unite with len_sample_det
 
-	const t_real n_b = 0.000941;  // TODO: cite value and formula!
-	const t_real tanthetacrit = std::tan(M*std::asin((2.*pi/ki/angs)/10.*std::sqrt(n_b/pi)));
+	// scattering length density, Nb, of nickel and critical angle, see: J. Phys.: Conf. Ser. 528 012005 (2014)
+	const t_real Nb = 9.41e-4; 
+	const t_real tanthetacrit = std::tan(M*std::asin((2.*pi/ki/angs)/10.*std::sqrt(Nb/pi)));
 	const t_real tanthetacrit2 = std::pow(tanthetacrit, 2.);
 	const t_real Hcrit = endguide_zheight - dist_endguide_sample*tanthetacrit;
 	const t_real Hmax = endguide_zheight + dist_endguide_sample*tanthetacrit;
