@@ -24,6 +24,7 @@ CONTRIBUTORS
   - active: 2025
   - contributions:
     - cosmetic changes for the GUI.
+    - vio_ext algorithm.
 
 
 **Jens Krüger**
