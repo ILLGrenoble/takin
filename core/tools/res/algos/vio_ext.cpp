@@ -327,7 +327,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real Vartm = (chopperM_wnd_angle*chopperM_wnd_angle + chopperM_beam_angle*chopperM_beam_angle) / (12.*std::pow(6.*chopperM_rpm, 2.));
 
 	t_real VarPx = std::pow(vi*std::sqrt(Vartp) - chopperP_width, 2.);
-	t_real VarPy = 1./12.*( 3.*Sr_sq + pulse_sample_sq4_sr*tanthetacrit);
+	t_real VarPy = 1./12.*(3.*Sr_sq + pulse_sample_sq4_sr*tanthetacrit2);
 	t_real VarPz = 1.;
 
 	if(sample_height <= Hcrit)
@@ -380,7 +380,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	}
 
 	t_real VarMx = std::pow(vi*std::sqrt(Vartm) - chopperM_width, 2.);
-	t_real VarMy = 1./12.*(3.*Sr_sq + mono_sample_sq4_sr)*tanthetacrit;
+	t_real VarMy = 1./12.*(3.*Sr_sq + mono_sample_sq4_sr)*tanthetacrit2;
 	t_real VarMz = 1.;
 
 	if(sample_height <= Hcrit)
