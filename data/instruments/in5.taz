@@ -41,6 +41,7 @@
 		<vio_ext_dist_sample_det>4.000000e+02</vio_ext_dist_sample_det>
 		<vio_ext_guide_height>5.400000e+00</vio_ext_guide_height>
 		<vio_ext_guide_width>1.400000e+00</vio_ext_guide_width>
+		<vio_ext_guide_coating>3.5</vio_ext_guide_coating>
 		<vio_ext_mc_lengths>100000</vio_ext_mc_lengths>
 		<vio_ext_mono_chopper_beam>3.000000e+00</vio_ext_mono_chopper_beam>
 		<vio_ext_mono_chopper_counterrot>1</vio_ext_mono_chopper_counterrot>

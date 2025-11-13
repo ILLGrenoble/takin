@@ -59,6 +59,7 @@ struct VioExtParams : public VioParams
 
 	// guide
 	tl::t_length_si<t_real_reso> endguide_width, endguide_height;
+	t_real_reso endguide_coating;
 
 	// detector
 	tl::t_length_si<t_real_reso> det_tube_width, det_height, det_z;

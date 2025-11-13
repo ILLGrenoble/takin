@@ -127,7 +127,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		spinDistTof2PulseGuide, spinDistTof2MonoGuide, spinDistTof2GuideSample, spinDistTof2SampleDet,
 		spinTof2PulseWin, spinTof2PulseBeam, spinTof2PulseWidth, spinTof2PulseRPM,
 		spinTof2MonoWin, spinTof2MonoBeam, spinTof2MonoWidth, spinTof2MonoRPM,
-		spinDistTof2GuideWidth, spinTof2GuideHeight,
+		spinDistTof2GuideWidth, spinTof2GuideHeight, spinTof2GuideCoating,
 		spinTof2DetTubeWidth, spinTof2DetHeight, spinTof2DetZ,
 		spinTof2SampleWidth, spinTof2SampleHeight,
 
@@ -175,7 +175,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		"reso/vio_ext_dist_pulse_guide", "reso/vio_ext_dist_mono_guide", "reso/vio_ext_dist_guide_sample", "reso/vio_ext_dist_sample_det",
 		"reso/vio_ext_pulse_chopper_win", "reso/vio_ext_pulse_chopper_beam", "reso/vio_ext_pulse_chopper_width", "reso/vio_ext_pulse_chopper_rpm",
 		"reso/vio_ext_mono_chopper_win", "reso/vio_ext_mono_chopper_beam", "reso/vio_ext_mono_chopper_width", "reso/vio_ext_mono_chopper_rpm",
-		"reso/vio_ext_guide_width", "reso/vio_ext_guide_height",
+		"reso/vio_ext_guide_width", "reso/vio_ext_guide_height", "reso/vio_ext_guide_coating",
 		"reso/vio_ext_det_tube_width", "reso/vio_ext_det_height", "reso/vio_ext_det_z",
 		"reso/vio_ext_sample_width", "reso/vio_ext_sample_height",
 
@@ -599,6 +599,7 @@ void ResoDlg::Calc()
 
 		tof.endguide_width = t_real_reso(spinDistTof2GuideWidth->value()) * cm;
 		tof.endguide_height = t_real_reso(spinTof2GuideHeight->value()) * cm;
+		tof.endguide_coating = t_real_reso(spinTof2GuideCoating->value());
 
 		tof.det_tube_width = t_real_reso(spinTof2DetTubeWidth->value()) * cm;
 		tof.det_height = t_real_reso(spinTof2DetHeight->value()) * cm;

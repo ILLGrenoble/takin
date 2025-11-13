@@ -403,6 +403,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 
 	m_tofreso.endguide_width = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_guide_width").c_str(), 0.) * cm;
 	m_tofreso.endguide_height = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_guide_height").c_str(), 0.) * cm;
+	m_tofreso.endguide_coating = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_guide_coating").c_str(), 0.);
 
 	m_tofreso.det_tube_width = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_det_tube_width").c_str(), 0.) * cm;
 	m_tofreso.det_height = xml.Query<t_real>((strXmlRoot + "reso/vio_ext_det_height").c_str(), 0.) * cm;

@@ -242,10 +242,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	ResoResults res;
 	res.Q_avg.resize(4);
 
-	// TODO
-	//const t_real &M = params.M_coating, &n_b = params.n_b;
-	const t_real M = 3.5;
-	const t_real n_b = 0.000941;;
+	const t_real M = params.endguide_coating;
 
 	const angle& tt = params.twotheta;
 	const wavenumber &ki = params.ki, &kf = params.kf;
@@ -299,8 +296,8 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real dist_endguide_sample = params.len_guide_sample / angs;
 	t_real dist_sample_det = params.len_sample_det2 / angs;  // TODO: unite with len_sample_det
 
-	const t_real thetacrit = M*std::asin((2.*pi/ki/angs)/10.*std::sqrt(n_b/pi));
-	const t_real tanthetacrit = std::tan(thetacrit);
+	const t_real n_b = 0.000941;  // TODO: cite value and formula!
+	const t_real tanthetacrit = std::tan(M*std::asin((2.*pi/ki/angs)/10.*std::sqrt(n_b/pi)));
 	const t_real tanthetacrit2 = std::pow(tanthetacrit, 2.);
 	const t_real Hcrit = endguide_zheight - dist_endguide_sample*tanthetacrit;
 	const t_real Hmax = endguide_zheight + dist_endguide_sample*tanthetacrit;
@@ -335,7 +332,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 
 	if(sample_height <= Hcrit)
 	{
-		VarPz = 1./12. * ( Sh_sq + (4.*std::pow(dist_chP_endguide+dist_endguide_sample, 2.) + Sr_sq)*tanthetacrit2 );
+		VarPz = 1./12. * (Sh_sq + (4.*std::pow(dist_chP_endguide+dist_endguide_sample, 2.) + Sr_sq)*tanthetacrit2);
 	}
 	else if (sample_height <= Hmax)
 	{
