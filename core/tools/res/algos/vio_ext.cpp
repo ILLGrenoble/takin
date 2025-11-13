@@ -1,6 +1,7 @@
 /**
  * re-implementation of V. Mecoli's extension of Violini's TOF reso algorithm [mec25, mec25b]
  * @author Tobias Weber <tobias.weber@tum.de>
+ * @modif_by Victor Mecoli <mecoli@ill.fr> - nov-2025
  * @date oct-2025
  * @license GPLv2
  *
@@ -241,6 +242,8 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	ResoResults res;
 	res.Q_avg.resize(4);
 
+	const t_real M = params.endguide_coating;
+
 	const angle& tt = params.twotheta;
 	const wavenumber &ki = params.ki, &kf = params.kf;
 	const energy E = tl::get_energy_transfer(ki, kf);
@@ -293,17 +296,18 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real dist_endguide_sample = params.len_guide_sample / angs;
 	t_real dist_sample_det = params.len_sample_det2 / angs;  // TODO: unite with len_sample_det
 
+	// scattering length density, Nb, of nickel and critical angle, see: J. Phys.: Conf. Ser. 528 012005 (2014)
+	const t_real Nb = 9.41e-4; 
+	const t_real tanthetacrit = std::tan(M*std::asin((2.*pi/ki/angs)/10.*std::sqrt(Nb/pi)));
+	const t_real tanthetacrit2 = std::pow(tanthetacrit, 2.);
+	const t_real Hcrit = endguide_zheight - dist_endguide_sample*tanthetacrit;
+	const t_real Hmax = endguide_zheight + dist_endguide_sample*tanthetacrit;
+
 	const t_real Dr_sq = dist_sample_det*dist_sample_det;
 	const t_real Sr_sq = sample_rad*sample_rad;
 	const t_real Sh_sq = sample_height*sample_height;
-	const t_real Lpe_sq = dist_chP_endguide*dist_chP_endguide;
-	const t_real Lme_sq = dist_chM_endguide*dist_chM_endguide;
-	const t_real Les_sq = dist_endguide_sample*dist_endguide_sample;
-	const t_real Eyh_sq = endguide_ywidth*endguide_ywidth;
-	const t_real Ezh_sq = endguide_zheight*endguide_zheight;
-	const t_real c0 = std::sqrt(1. - Sr_sq / Les_sq);
-	const t_real c1 = 1. - c0;
-	const t_real c2 = 1./c0 - 1.;
+	const t_real mono_sample_sq4_sr = 4.*std::pow(dist_chM_endguide + dist_endguide_sample, 2.) + Sr_sq;
+	const t_real pulse_sample_sq4_sr = 4.*std::pow(dist_chP_endguide + dist_endguide_sample, 2.) + Sr_sq;
 
 	t_real VarDr = det_tube_w*det_tube_w / 12.;
 	t_real Vartd = VarDr / (vf*vf);
@@ -313,12 +317,67 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real Vartm = (chopperM_wnd_angle*chopperM_wnd_angle + chopperM_beam_angle*chopperM_beam_angle) / (12.*std::pow(6.*chopperM_rpm, 2.));
 
 	t_real VarPx = std::pow(vi*std::sqrt(Vartp) - chopperP_width, 2.);
-	t_real VarPy = Eyh_sq/3. + Lpe_sq*(2.*Les_sq/Sr_sq*c1 - 1) + 4.*dist_chP_endguide*dist_endguide_sample/(3.*Sr_sq)*Eyh_sq*c1 + 2.*Lpe_sq/(3.*Sr_sq)*Eyh_sq*c2;
-	t_real VarPz = Ezh_sq/3. + Lpe_sq/(3.*Sr_sq)*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chP_endguide*dist_endguide_sample/(3.*Sr_sq)*Ezh_sq*c1;
+	t_real VarPy = 1./12.*(3.*Sr_sq + pulse_sample_sq4_sr*tanthetacrit2);
+	t_real VarPz = 1.;
 
 	t_real VarMx = std::pow(vi*std::sqrt(Vartm) - chopperM_width, 2.);
-	t_real VarMy = Eyh_sq/3. + Lme_sq*(2.*Les_sq/Sr_sq*c1 - 1.) + 4.*dist_chM_endguide*dist_endguide_sample/(3.*Sr_sq)*Eyh_sq*c1 + 2.*Lme_sq/(3.*Sr_sq)*Eyh_sq*c2;
-	t_real VarMz = Ezh_sq/3. + Lme_sq/(3.*Sr_sq)*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chM_endguide*dist_endguide_sample/(3.*Sr_sq)*Ezh_sq*c1;
+	t_real VarMy = 1./12.*(3.*Sr_sq + mono_sample_sq4_sr)*tanthetacrit2;
+	t_real VarMz = 1.;
+
+	t_real eff_sample_height = sample_height;
+	t_real eff_sample_height2 = sample_height;
+	t_real eff_sample_height_fact = 2.;
+	bool calc_PzMz = true;
+
+	if(sample_height <= Hcrit)
+	{
+		VarPz = 1./12. * (Sh_sq + (4.*std::pow(dist_chP_endguide+dist_endguide_sample, 2.) + Sr_sq)*tanthetacrit2);
+		VarMz = 1./12. * (Sh_sq + mono_sample_sq4_sr)*tanthetacrit2;
+		calc_PzMz = false;
+	}
+	else if(sample_height > Hmax)
+	{
+		eff_sample_height2 = 2.*Hmax;
+		eff_sample_height = Hmax;
+		eff_sample_height_fact = 1.;
+	}
+
+	if(calc_PzMz)
+	{
+		auto get_z = [&](t_real dist_ch_endguide, t_real Lche_sq, t_real ch_sample_sq4_sr) -> t_real
+		{
+			const t_real Les_sq = dist_endguide_sample*dist_endguide_sample;
+			const t_real Les2_Sr2_sqrt = std::sqrt(Les_sq - Sr_sq);
+
+			const t_real crit_fact = 3.*Sr_sq*Les2_Sr2_sqrt
+				* (std::pow(2.*dist_chP_endguide+ 2.*dist_endguide_sample, 2.) + Sr_sq)
+				* tanthetacrit2;
+			const t_real crit_fact2 = 12.*tanthetacrit*endguide_zheight;
+
+			return 1./(eff_sample_height_fact*18.*sample_height)
+				*(1./(Sr_sq*Les2_Sr2_sqrt)*(eff_sample_height - eff_sample_height_fact*Hcrit)
+				*(
+					(3.*Hcrit*Hcrit + std::pow(Hcrit + eff_sample_height2, 2.))*
+					(2.*dist_ch_endguide*(Les_sq - Sr_sq + dist_ch_endguide*dist_endguide_sample)
+						- Les2_Sr2_sqrt*(2.*Lche_sq - Sr_sq + 2.*dist_ch_endguide*dist_endguide_sample))
+					+ 3.*endguide_zheight*(eff_sample_height2 + 2.*Hcrit)*
+					(2.*dist_ch_endguide*(Les_sq - Sr_sq - 2.*dist_ch_endguide*dist_endguide_sample)
+						+ Les2_Sr2_sqrt*(4.*Lche_sq + Sr_sq - 2.*dist_ch_endguide*dist_endguide_sample))
+					+ 12.*endguide_zheight*endguide_zheight*
+					(2.*dist_ch_endguide*(2.*Sr_sq - 2.*Les_sq + dist_ch_endguide*dist_endguide_sample)
+						+ Les2_Sr2_sqrt*(Sr_sq - 2.*Lche_sq + 4*dist_ch_endguide*dist_endguide_sample))
+					- 3.*tanthetacrit*(eff_sample_height2 + 2.*Hcrit)*
+					(2.*Lche_sq*(Les_sq - Sr_sq) + Les2_Sr2_sqrt*
+						(2.*dist_endguide_sample*Sr_sq + dist_ch_endguide*Sr_sq - 2.*Lche_sq*dist_endguide_sample))
+					- crit_fact2*(2.*Lche_sq*(Sr_sq - Les_sq) + Les2_Sr2_sqrt
+						*(2.*Lche_sq*dist_endguide_sample + dist_endguide_sample*Sr_sq + 2.*dist_ch_endguide*Sr_sq))
+					+ crit_fact
+				) + eff_sample_height_fact*3.*(4*std::pow(Hcrit, 3) + Hcrit*ch_sample_sq4_sr*tanthetacrit2));
+		};
+
+		VarPz = get_z(dist_chP_endguide, dist_chP_endguide*dist_chP_endguide, pulse_sample_sq4_sr);
+		VarMz = get_z(dist_chM_endguide, dist_chM_endguide*dist_chM_endguide, mono_sample_sq4_sr);
+	}
 
 	t_real VarSx = Sr_sq/4.;
 	t_real VarSy = Sr_sq/4.;
