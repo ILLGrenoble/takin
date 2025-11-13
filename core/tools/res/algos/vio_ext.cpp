@@ -1,6 +1,7 @@
 /**
  * re-implementation of V. Mecoli's extension of Violini's TOF reso algorithm [mec25, mec25b]
  * @author Tobias Weber <tobias.weber@tum.de>
+ * @modif_by Victor Mecoli <mecoli@ill.fr> - nov-2025
  * @date oct-2025
  * @license GPLv2
  *
@@ -241,6 +242,8 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	ResoResults res;
 	res.Q_avg.resize(4);
 
+	const t_real &M = params.M_coating, &n_b = params.n_b;
+
 	const angle& tt = params.twotheta;
 	const wavenumber &ki = params.ki, &kf = params.kf;
 	const energy E = tl::get_energy_transfer(ki, kf);
@@ -293,6 +296,10 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real dist_endguide_sample = params.len_guide_sample / angs;
 	t_real dist_sample_det = params.len_sample_det2 / angs;  // TODO: unite with len_sample_det
 
+	const t_real thetacrit = M*std::arcsin((2.*pi/ki)/10.*np.sqrt(n_b/pi));
+	const t_real Hcrit = endguide_zheight - dist_endguide_sample*std::tan(thetacrit);
+	const t_real Hmax = endguide_zheight + dist_endguide_sample*std::tan(thetacrit);
+
 	const t_real Dr_sq = dist_sample_det*dist_sample_det;
 	const t_real Sr_sq = sample_rad*sample_rad;
 	const t_real Sh_sq = sample_height*sample_height;
@@ -301,6 +308,9 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	const t_real Les_sq = dist_endguide_sample*dist_endguide_sample;
 	const t_real Eyh_sq = endguide_ywidth*endguide_ywidth;
 	const t_real Ezh_sq = endguide_zheight*endguide_zheight;
+
+	const t_real Hc_sq = Hcrit*Hcrit
+
 	const t_real c0 = std::sqrt(1. - Sr_sq / Les_sq);
 	const t_real c1 = 1. - c0;
 	const t_real c2 = 1./c0 - 1.;
@@ -313,10 +323,54 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real Vartm = (chopperM_wnd_angle*chopperM_wnd_angle + chopperM_beam_angle*chopperM_beam_angle) / (12.*std::pow(6.*chopperM_rpm, 2.));
 
 	t_real VarPx = std::pow(vi*std::sqrt(Vartp) - chopperP_width, 2.);
-	t_real VarPy = Eyh_sq/3. + Lpe_sq*(2.*Les_sq/Sr_sq*c1 - 1) + 4.*dist_chP_endguide*dist_endguide_sample/(3.*Sr_sq)*Eyh_sq*c1 + 2.*Lpe_sq/(3.*Sr_sq)*Eyh_sq*c2;
-	t_real VarPz = Ezh_sq/3. + Lpe_sq/(3.*Sr_sq)*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chP_endguide*dist_endguide_sample/(3.*Sr_sq)*Ezh_sq*c1;
+	t_real VarPy = 1./12.*( 3.*std::pow(Sr, 2.) + (4.*std::pow(dist_chP_endguide + dist_endguide_sample, 2.) + std::pow(Sr, 2.))*std::tan(thetacrit));
+	t_real VarPz = 1
+	if (sample_height <= Hcrit) {
+		VarPz = 1./12. * ( Sh_sq + (4.*std::pow(dist_chP_endguide+dist_endguide_sample, 2.) + Sr_sq)*std::pow(std::tan(thetacrit), 2.) )
+	} else if (sample_height <= Hmax) {
+		VarPz = 1./(36.*sample_height) * ( 1./(Sr_sq*std::sqrt(Les_sq-Sr_sq))*(sample_height-2.*Hcrit)*(
+        (3.*Hc_sq + std::pow(Hcrit + sample_height, 2.))*(2.*dist_chP_endguide*(Les_sq - Sr_sq + dist_chP_endguide*dist_endguide_sample) - std::sqrt(Les_sq - Sr_sq)*(2.*Lpe_sq - Sr_sq + 2.*dist_chP_endguide*dist_endguide_sample))
+        + 3.*endguide_zheight*(sample_height + 2.*Hcrit)*(2.*dist_chP_endguide*(Les_sq - Sr_sq - 2.*dist_chP_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(4.*Lpe_sq + Sr_sq - 2.*dist_chP_endguide*dist_endguide_sample))
+        + 12.*Ezh_sq*(2.*dist_chP_endguide*(2.*Sr_sq - 2.*Les_sq + dist_chP_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(Sr_sq - 2.*Lpe_sq + 4*dist_chP_endguide*dist_endguide_sample))
+        - 3.*std::tan(thetacrit)*(sample_height + 2.*Hcrit)*(2.*Lpe_sq*(Les_sq - Sr_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*dist_endguide_sample*Sr_sq + dist_chP_endguide*Sr_sq - 2.*Lpe_sq*dist_endguide_sample))
+        - 12.*std::tan(thetacrit)*endguide_zheight*(2.*Lpe_sq*(Sr_sq-Les_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*Lpe_sq*dist_endguide_sample + dist_endguide_sample*Sr_sq + 2.*dist_chP_endguide*Sr_sq))
+        + 3.*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+    + 6.*(4*std::pow(Hcrit, 3) + Hcrit*(4*std::pow(dist_chP_endguide + dist_endguide_sample, 2.) + Sr_sq)*std::pow(std::tan(thetacrit), 2.)))
+	} else {
+		VarPz = 1./(18.*sample_height) * ( 1./(Sr_sq*std::sqrt(Les_sq-Sr_sq))*(Hmax-Hcrit)*(
+        (3.*Hc_sq + std::pow(Hcrit + 2.*Hmax, 2.))*(2.*dist_chP_endguide*(Les_sq - Sr_sq + dist_chP_endguide*dist_endguide_sample) - std::sqrt(Les_sq - Sr_sq)*(2.*Lpe_sq - Sr_sq + 2.*dist_chP_endguide*dist_endguide_sample))
+        + 3.*endguide_zheight*(2.*Hmax + 2.*Hcrit)*(2.*dist_chP_endguide*(Les_sq - Sr_sq - 2.*dist_chP_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(4.*Lpe_sq + Sr_sq - 2.*dist_chP_endguide*dist_endguide_sample))
+        + 12.*Ezh_sq*(2.*dist_chP_endguide*(2.*Sr_sq - 2.*Les_sq + dist_chP_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(Sr_sq - 2.*Lpe_sq + 4*dist_chP_endguide*dist_endguide_sample))
+        - 3.*std::tan(thetacrit)*(2.*Hmax + 2.*Hcrit)*(2.*Lpe_sq*(Les_sq - Sr_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*dist_endguide_sample*Sr_sq + dist_chP_endguide*Sr_sq - 2.*Lpe_sq*dist_endguide_sample))
+        - 12.*std::tan(thetacrit)*endguide_zheight*(2.*Lpe_sq*(Sr_sq-Les_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*Lpe_sq*dist_endguide_sample + dist_endguide_sample*Sr_sq + 2.*dist_chP_endguide*Sr_sq))
+        + 3.*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+    + 3.*(4*std::pow(Hcrit, 3) + Hcrit*(4*std::pow(dist_chP_endguide + dist_endguide_sample, 2.) + Sr_sq)*std::pow(std::tan(thetacrit), 2.)))
+	}
 
 	t_real VarMx = std::pow(vi*std::sqrt(Vartm) - chopperM_width, 2.);
+	t_real VarMy = 1./12.*( 3.*std::pow(Sr, 2.) + (4.*std::pow(dist_chM_endguide + dist_endguide_sample, 2.) + std::pow(Sr, 2.))*std::tan(thetacrit));
+	t_real VarMz = 1
+	if (sample_height <= Hcrit) {
+		VarMz = 1./12. * ( Sh_sq + (4.*std::pow(dist_chM_endguide+dist_endguide_sample, 2.) + Sr_sq)*std::pow(std::tan(thetacrit), 2.) )
+	} else if (sample_height <= Hmax) {
+		VarMz = 1./(36.*sample_height) * ( 1./(Sr_sq*std::sqrt(Les_sq-Sr_sq))*(sample_height-2.*Hcrit)*(
+        (3.*Hc_sq + std::pow(Hcrit + sample_height, 2.))*(2.*dist_chM_endguide*(Les_sq - Sr_sq + dist_chM_endguide*dist_endguide_sample) - std::sqrt(Les_sq - Sr_sq)*(2.*Lme_sq - Sr_sq + 2.*dist_chM_endguide*dist_endguide_sample))
+        + 3.*endguide_zheight*(sample_height + 2.*Hcrit)*(2.*dist_chM_endguide*(Les_sq - Sr_sq - 2.*dist_chM_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(4.*Lme_sq + Sr_sq - 2.*dist_chM_endguide*dist_endguide_sample))
+        + 12.*Ezh_sq*(2.*dist_chM_endguide*(2.*Sr_sq - 2.*Les_sq + dist_chM_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(Sr_sq - 2.*Lme_sq + 4*dist_chM_endguide*dist_endguide_sample))
+        - 3.*std::tan(thetacrit)*(sample_height + 2.*Hcrit)*(2.*Lme_sq*(Les_sq - Sr_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*dist_endguide_sample*Sr_sq + dist_chM_endguide*Sr_sq - 2.*Lme_sq*dist_endguide_sample))
+        - 12.*std::tan(thetacrit)*endguide_zheight*(2.*Lme_sq*(Sr_sq-Les_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*Lme_sq*dist_endguide_sample + dist_endguide_sample*Sr_sq + 2.*dist_chM_endguide*Sr_sq))
+        + 3.*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+    + 6.*(4*std::pow(Hcrit, 3) + Hcrit*(4*std::pow(dist_chM_endguide + dist_endguide_sample, 2.) + Sr_sq)*std::pow(std::tan(thetacrit), 2.)))
+	} else {
+		VarMz = 1./(18.*sample_height) * ( 1./(Sr_sq*std::sqrt(Les_sq-Sr_sq))*(Hmax-Hcrit)*(
+        (3.*Hc_sq + std::pow(Hcrit + 2.*Hmax, 2.))*(2.*dist_chM_endguide*(Les_sq - Sr_sq + dist_chM_endguide*dist_endguide_sample) - std::sqrt(Les_sq - Sr_sq)*(2.*Lme_sq - Sr_sq + 2.*dist_chM_endguide*dist_endguide_sample))
+        + 3.*endguide_zheight*(2.*Hmax + 2.*Hcrit)*(2.*dist_chM_endguide*(Les_sq - Sr_sq - 2.*dist_chM_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(4.*Lme_sq + Sr_sq - 2.*dist_chM_endguide*dist_endguide_sample))
+        + 12.*Ezh_sq*(2.*dist_chM_endguide*(2.*Sr_sq - 2.*Les_sq + dist_chM_endguide*dist_endguide_sample) + std::sqrt(Les_sq - Sr_sq)*(Sr_sq - 2.*Lme_sq + 4*dist_chM_endguide*dist_endguide_sample))
+        - 3.*std::tan(thetacrit)*(2.*Hmax + 2.*Hcrit)*(2.*Lme_sq*(Les_sq - Sr_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*dist_endguide_sample*Sr_sq + dist_chM_endguide*Sr_sq - 2.*Lme_sq*dist_endguide_sample))
+        - 12.*std::tan(thetacrit)*endguide_zheight*(2.*Lme_sq*(Sr_sq-Les_sq) + std::sqrt(Les_sq - Sr_sq)*(2.*Lme_sq*dist_endguide_sample + dist_endguide_sample*Sr_sq + 2.*dist_chM_endguide*Sr_sq))
+        + 3.*np.square(Sr)*np.sqrt(np.square(Les) - np.square(Sr))*(np.square(2*Lpe + 2*Les)+np.square(Sr))*np.square(np.tan(thetacrit)))
+    + 3.*(4*std::pow(Hcrit, 3) + Hcrit*(4*std::pow(dist_chM_endguide + dist_endguide_sample, 2.) + Sr_sq)*std::pow(std::tan(thetacrit), 2.)))
+	}
 	t_real VarMy = Eyh_sq/3. + Lme_sq*(2.*Les_sq/Sr_sq*c1 - 1.) + 4.*dist_chM_endguide*dist_endguide_sample/(3.*Sr_sq)*Eyh_sq*c1 + 2.*Lme_sq/(3.*Sr_sq)*Eyh_sq*c2;
 	t_real VarMz = Ezh_sq/3. + Lme_sq/(3.*Sr_sq)*(Sh_sq/2. + 2.*Ezh_sq)*c2 + 4.*dist_chM_endguide*dist_endguide_sample/(3.*Sr_sq)*Ezh_sq*c1;
 
