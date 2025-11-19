@@ -126,6 +126,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 	editOffs->setEnabled(false);
 	btnStop->setEnabled(true);
 	tabWidget->setCurrentWidget(tabPlot);
+	spinzMin2d->setEnabled(false);
+	spinzMax2d->setEnabled(false);
 
 	Qt::ConnectionType connty = bForceDeferred
 		? Qt::ConnectionType::DirectConnection
@@ -147,6 +149,8 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 			QMetaObject::invokeMethod(editOffs, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStartFit, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(spinzMin2d, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(spinzMax2d, "setEnabled", Q_ARG(bool, true));
 		};
 
 		t_stopwatch watch;
@@ -623,7 +627,9 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 	editOffs->setEnabled(false);
 	btnStop->setEnabled(true);
 	tabWidget->setCurrentWidget(tabPlot2d);
-
+	spinzMin2d->setEnabled(false);
+	spinzMax2d->setEnabled(false);
+	
 	Qt::ConnectionType connty = bForceDeferred
 		? Qt::ConnectionType::DirectConnection
 		: Qt::ConnectionType::BlockingQueuedConnection;
@@ -644,6 +650,8 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 			QMetaObject::invokeMethod(editOffs, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStartFit, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(spinzMin2d, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(spinzMax2d, "setEnabled", Q_ARG(bool, true));
 		};
 
 		t_stopwatch watch;
@@ -1059,6 +1067,8 @@ void ConvoDlg::StartDisp()
 	editOffs->setEnabled(false);
 	btnStop->setEnabled(true);
 	tabWidget->setCurrentWidget(tabPlot);
+	spinzMin2d->setEnabled(false);
+	spinzMax2d->setEnabled(false);
 
 	bool bForceDeferred = false;
 	Qt::ConnectionType connty = bForceDeferred
@@ -1080,6 +1090,8 @@ void ConvoDlg::StartDisp()
 			QMetaObject::invokeMethod(editOffs, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStart, "setEnabled", Q_ARG(bool, true));
 			QMetaObject::invokeMethod(btnStartFit, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(spinzMin2d, "setEnabled", Q_ARG(bool, true));
+			QMetaObject::invokeMethod(spinzMax2d, "setEnabled", Q_ARG(bool, true));
 		};
 
 		t_stopwatch watch;
