@@ -44,7 +44,7 @@
 		<pop_ana_thick>2.000000e-01</pop_ana_thick>
 		<pop_ana_use_curvh>0</pop_ana_use_curvh>
 		<pop_ana_use_curvv>1</pop_ana_use_curvv>
-		<pop_ana_h>1.220000e+01</pop_ana_h>
+		<pop_ana_w>1.220000e+01</pop_ana_w>
 		<pop_ana_h>1.180000e+01</pop_ana_h>
 		<pop_det_w>5.000000e+00</pop_det_w>
 		<pop_det_h>1.200000e+01</pop_det_h>
