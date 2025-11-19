@@ -41,14 +41,14 @@
 		<mono_scatter_sense>0</mono_scatter_sense>
 		<pop_ana_curvh>0.000000e+00</pop_ana_curvh>
 		<pop_ana_curvv>1.400000e+02</pop_ana_curvv>
-		<pop_ana_h>1.180000e+01</pop_ana_h>
 		<pop_ana_thick>2.000000e-01</pop_ana_thick>
 		<pop_ana_use_curvh>0</pop_ana_use_curvh>
 		<pop_ana_use_curvv>1</pop_ana_use_curvv>
-		<pop_ana_w>1.220000e+01</pop_ana_w>
+		<pop_ana_h>1.220000e+01</pop_ana_h>
+		<pop_ana_w>1.180000e+01</pop_ana_w>
+		<pop_det_w>5.000000e+00</pop_det_w>
 		<pop_det_h>1.200000e+01</pop_det_h>
 		<pop_det_rect>1</pop_det_rect>
-		<pop_det_w>5.000000e+00</pop_det_w>
 		<pop_dist_ana_det>7.200000e+01</pop_dist_ana_det>
 		<pop_dist_hsrc_mono>1.800000e+02</pop_dist_hsrc_mono>
 		<pop_dist_mono_monitor>1.000000e+02</pop_dist_mono_monitor>
@@ -62,11 +62,11 @@
 		<pop_monitor_w>1.100000e+01</pop_monitor_w>
 		<pop_mono_curvh>0.000000e+00</pop_mono_curvh>
 		<pop_mono_curvv>1.200000e+02</pop_mono_curvv>
-		<pop_mono_h>1.600000e+01</pop_mono_h>
+		<pop_mono_h>2.000000e+01</pop_mono_h>
+		<pop_mono_w>1.600000e+01</pop_mono_w>
 		<pop_mono_thick>2.000000e-01</pop_mono_thick>
 		<pop_mono_use_curvh>0</pop_mono_use_curvh>
 		<pop_mono_use_curvv>1</pop_mono_use_curvv>
-		<pop_mono_w>2.000000e+01</pop_mono_w>
 		<pop_sample_cuboid>0</pop_sample_cuboid>
 		<pop_sample_h>1.000000e+00</pop_sample_h>
 		<pop_sample_wperpq>1.000000e+00</pop_sample_wperpq>
