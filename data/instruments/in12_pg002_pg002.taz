@@ -52,7 +52,7 @@
 		<pop_dist_ana_det>7.200000e+01</pop_dist_ana_det>
 		<pop_dist_hsrc_mono>1.800000e+02</pop_dist_hsrc_mono>
 		<pop_dist_mono_monitor>1.000000e+02</pop_dist_mono_monitor>
-		<pop_dist_mono_sample>2.470000e+02</pop_dist_mono_sample>
+		<pop_dist_mono_sample>1.80000e+02</pop_dist_mono_sample>
 		<pop_dist_sample_ana>1.460000e+02</pop_dist_sample_ana>
 		<pop_dist_src_mono>1.800000e+02</pop_dist_src_mono>
 		<pop_dist_vsrc_mono>1.800000e+02</pop_dist_vsrc_mono>
