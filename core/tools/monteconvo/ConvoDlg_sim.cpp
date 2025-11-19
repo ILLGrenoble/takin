@@ -328,6 +328,23 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 				if(this->StopRequested())
 					return std::make_pair(false, 0.);
 
+				try
+				{
+					// check if scattering triangle can be closed
+					if(!reso.SetHKLE(dCurH, dCurK, dCurL, dCurE))
+						return std::make_pair(false, 0.);
+				}
+				catch(const std::exception& ex)
+				{
+					std::ostringstream ostrErr;
+					ostrErr.precision(g_iPrec);
+					ostrErr << ex.what() << " Q = ("
+						<< dCurH << " " << dCurK << " " << dCurL << "), "
+						<< "E = " << dCurE << " meV.";
+					tl::log_err(ostrErr.str());
+					return std::make_pair(false, 0.);
+				}
+
 				t_real dS = 0.;
 				t_real dhklE_mean[4] = { 0., 0., 0., 0. };
 
@@ -388,7 +405,7 @@ void ConvoDlg::StartSim1D(bool bForceDeferred, unsigned int seed)
 				}
 				return std::make_pair(true, dS);
 			});
-		}
+		}  // scan step
 
 		tp.Start();
 		auto iterTask = tp.GetTasks().begin();
@@ -884,6 +901,23 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 				if(this->StopRequested())
 					return std::make_pair(false, 0.);
 
+				try
+				{
+					// check if scattering triangle can be closed
+					if(!reso.SetHKLE(dCurH, dCurK, dCurL, dCurE))
+						return std::make_pair(true, 0.);
+				}
+				catch(const std::exception& ex)
+				{
+					std::ostringstream ostrErr;
+					ostrErr.precision(g_iPrec);
+					ostrErr << ex.what() << " Q = ("
+						<< dCurH << " " << dCurK << " " << dCurL << "), "
+						<< "E = " << dCurE << " meV.";
+					tl::log_err(ostrErr.str());
+					return std::make_pair(true, 0.);
+				}
+
 				t_real dS = 0.;
 				t_real dhklE_mean[4] = { 0., 0., 0., 0. };
 
@@ -944,7 +978,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 				}
 				return std::make_pair(true, dS);
 			});
-		}
+		}  // pixel steps
 
 		tp.Start();
 		auto iterTask = tp.GetTasks().begin();
