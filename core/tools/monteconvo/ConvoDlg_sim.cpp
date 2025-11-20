@@ -904,8 +904,9 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 				try
 				{
 					// check if scattering triangle can be closed
-					if(!reso.SetHKLE(dCurH, dCurK, dCurL, dCurE))
-						return std::make_pair(true, 0.);
+					// returning true here because we want to continued with the 2d map
+					if(iNumNeutrons != 0 && !reso.SetHKLE(dCurH, dCurK, dCurL, dCurE))
+						return std::make_pair(true, -1.);
 				}
 				catch(const std::exception& ex)
 				{
@@ -915,7 +916,7 @@ void ConvoDlg::StartSim2D(bool bForceDeferred, unsigned int seed)
 						<< dCurH << " " << dCurK << " " << dCurL << "), "
 						<< "E = " << dCurE << " meV.";
 					tl::log_err(ostrErr.str());
-					return std::make_pair(true, 0.);
+					return std::make_pair(true, -1.);
 				}
 
 				t_real dS = 0.;
