@@ -2931,7 +2931,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -2957,7 +2957,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -2983,7 +2983,7 @@
              <string> cm</string>
             </property>
             <property name="decimals">
-             <number>2</number>
+             <number>3</number>
             </property>
             <property name="maximum">
              <double>99999.000000000000000</double>
@@ -3414,183 +3414,6 @@
        <property name="spacing">
         <number>1</number>
        </property>
-       <item row="0" column="1">
-        <widget class="QGroupBox" name="groupBox_32">
-         <property name="toolTip">
-          <string>Calculate either from collimation or from critical reflection angle of the guide.</string>
-         </property>
-         <property name="title">
-          <string>Pulse Chopper</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_41">
-          <property name="leftMargin">
-           <number>4</number>
-          </property>
-          <property name="topMargin">
-           <number>4</number>
-          </property>
-          <property name="rightMargin">
-           <number>4</number>
-          </property>
-          <property name="bottomMargin">
-           <number>4</number>
-          </property>
-          <property name="spacing">
-           <number>1</number>
-          </property>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2PulseRPM">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string> rpm</string>
-            </property>
-            <property name="decimals">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <double>9999999.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>100.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>12000.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_87">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Velocity:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2PulseWidth">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string> cm</string>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>99999.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>1.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.200000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2PulseWin">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string> °</string>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>360.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>9.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_86">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Beam Angle:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_85">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Window Angle:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2PulseBeam">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string> °</string>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>360.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>8.500000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_88">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Width:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QCheckBox" name="checkTof2PulseCounterRot">
-            <property name="text">
-             <string>Counter-Rotating</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_34">
          <property name="title">
@@ -3715,15 +3538,25 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QGroupBox" name="groupBox_33">
-         <property name="toolTip">
-          <string>Calculate either from collimation or from critical reflection angle of the guide.</string>
+       <item row="3" column="0" colspan="3">
+        <spacer name="verticalSpacer_14">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="2">
+        <widget class="QGroupBox" name="groupBox_37">
          <property name="title">
-          <string>Mono. Chopper</string>
+          <string>Sample</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_42">
+         <layout class="QGridLayout" name="gridLayout_46">
           <property name="leftMargin">
            <number>4</number>
           </property>
@@ -3739,46 +3572,8 @@
           <property name="spacing">
            <number>1</number>
           </property>
-          <item row="4" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2MonoRPM">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string> rpm</string>
-            </property>
-            <property name="decimals">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <double>9999999.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>100.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>12000.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_89">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Velocity:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2MonoWidth">
-            <property name="prefix">
-             <string/>
-            </property>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2SampleWidth">
             <property name="suffix">
              <string> cm</string>
             </property>
@@ -3789,85 +3584,47 @@
              <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
              <double>1.000000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.600000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2MonoWin">
-            <property name="prefix">
-             <string/>
-            </property>
-            <property name="suffix">
-             <string> °</string>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>360.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.010000000000000</double>
-            </property>
-            <property name="value">
-             <double>3.250000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_90">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Beam Angle:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="label_91">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Window Angle:</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2MonoBeam">
-            <property name="prefix">
-             <string/>
-            </property>
+           <widget class="QDoubleSpinBox" name="spinTof2SampleHeight">
             <property name="suffix">
-             <string> °</string>
+             <string> cm</string>
             </property>
             <property name="decimals">
              <number>3</number>
             </property>
             <property name="maximum">
-             <double>360.000000000000000</double>
+             <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>0.010000000000000</double>
+             <double>0.100000000000000</double>
             </property>
             <property name="value">
-             <double>3.000000000000000</double>
+             <double>1.000000000000000</double>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_92">
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_95">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Height:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_100">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -3879,13 +3636,45 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
-           <widget class="QCheckBox" name="checkTof2MonoCounterRot">
-            <property name="text">
-             <string>Counter-Rotating</string>
+          <item row="3" column="0" colspan="2">
+           <spacer name="verticalSpacer_11">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
-            <property name="checked">
-             <bool>true</bool>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_99">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>MC Points:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="spinTof2MCLengths">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>99999999</number>
+            </property>
+            <property name="singleStep">
+             <number>10000</number>
+            </property>
+            <property name="value">
+             <number>100000</number>
             </property>
            </widget>
           </item>
@@ -4171,12 +3960,15 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QGroupBox" name="groupBox_37">
-         <property name="title">
-          <string>Sample</string>
+       <item row="0" column="1">
+        <widget class="QGroupBox" name="groupBox_32">
+         <property name="toolTip">
+          <string>Calculate either from collimation or from critical reflection angle of the guide.</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_46">
+         <property name="title">
+          <string>Pulse Chopper</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_41">
           <property name="leftMargin">
            <number>4</number>
           </property>
@@ -4192,46 +3984,30 @@
           <property name="spacing">
            <number>1</number>
           </property>
-          <item row="0" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2SampleWidth">
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2PulseRPM">
+            <property name="prefix">
+             <string/>
+            </property>
             <property name="suffix">
-             <string> cm</string>
+             <string> rpm</string>
             </property>
             <property name="decimals">
-             <number>3</number>
+             <number>0</number>
             </property>
             <property name="maximum">
-             <double>99999.000000000000000</double>
+             <double>9999999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <double>0.100000000000000</double>
+             <double>100.000000000000000</double>
             </property>
             <property name="value">
-             <double>1.000000000000000</double>
+             <double>12000.000000000000000</double>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QDoubleSpinBox" name="spinTof2SampleHeight">
-            <property name="suffix">
-             <string> cm</string>
-            </property>
-            <property name="decimals">
-             <number>3</number>
-            </property>
-            <property name="maximum">
-             <double>99999.000000000000000</double>
-            </property>
-            <property name="singleStep">
-             <double>0.100000000000000</double>
-            </property>
-            <property name="value">
-             <double>1.000000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_95">
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_87">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -4239,12 +4015,104 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Height:</string>
+             <string>Velocity:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2PulseWidth">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> cm</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>99999.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.200000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2PulseWin">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> °</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>9.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_86">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Beam Angle:</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QLabel" name="label_100">
+           <widget class="QLabel" name="label_85">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Window Angle:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2PulseBeam">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> °</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>8.500000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_88">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -4256,21 +4124,67 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <spacer name="verticalSpacer_11">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="checkTof2PulseCounterRot">
+            <property name="text">
+             <string>Counter-Rotating</string>
             </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
+            <property name="checked">
+             <bool>true</bool>
             </property>
-           </spacer>
+           </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_99">
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QGroupBox" name="groupBox_33">
+         <property name="toolTip">
+          <string>Calculate either from collimation or from critical reflection angle of the guide.</string>
+         </property>
+         <property name="title">
+          <string>Mono. Chopper</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_42">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
+          <property name="spacing">
+           <number>1</number>
+          </property>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2MonoRPM">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> rpm</string>
+            </property>
+            <property name="decimals">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <double>9999999.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="value">
+             <double>12000.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_89">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -4278,41 +4192,137 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>MC Points:</string>
+             <string>Velocity:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QSpinBox" name="spinTof2MCLengths">
-            <property name="minimum">
-             <number>0</number>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2MonoWidth">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> cm</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
             </property>
             <property name="maximum">
-             <number>99999999</number>
+             <double>99999.000000000000000</double>
             </property>
             <property name="singleStep">
-             <number>10000</number>
+             <double>1.000000000000000</double>
             </property>
             <property name="value">
-             <number>100000</number>
+             <double>0.600000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2MonoWin">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> °</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>3.250000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_90">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Beam Angle:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_91">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Window Angle:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QDoubleSpinBox" name="spinTof2MonoBeam">
+            <property name="prefix">
+             <string/>
+            </property>
+            <property name="suffix">
+             <string> °</string>
+            </property>
+            <property name="decimals">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <double>360.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.010000000000000</double>
+            </property>
+            <property name="value">
+             <double>3.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_92">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Width:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="checkTof2MonoCounterRot">
+            <property name="text">
+             <string>Counter-Rotating</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
          </layout>
         </widget>
        </item>
-       <item row="2" column="0" colspan="3">
-        <spacer name="verticalSpacer_14">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="btnTOFSet">
+         <property name="toolTip">
+          <string>Sets the &quot;TOF&quot; parameters based on the corresponding &quot;Alt. TOF&quot; parameters.</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+         <property name="text">
+          <string>Set TOF Parameters</string>
          </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -5353,6 +5363,7 @@
   <tabstop>spinTof2SampleWidth</tabstop>
   <tabstop>spinTof2SampleHeight</tabstop>
   <tabstop>spinTof2MCLengths</tabstop>
+  <tabstop>btnTOFSet</tabstop>
   <tabstop>spinSigKi</tabstop>
   <tabstop>spinSigKi_perp</tabstop>
   <tabstop>spinSigKi_z</tabstop>

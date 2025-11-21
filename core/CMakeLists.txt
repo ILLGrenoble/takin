@@ -484,7 +484,8 @@ add_executable(takin
 	tools/res/algos/eck.cpp tools/res/algos/eck_ext.cpp
 	tools/res/algos/vio.cpp tools/res/algos/vio_ext.cpp
 	tools/res/algos/simple.cpp
-	tools/res/ResoDlg.cpp tools/res/ResoDlg_file.cpp
+	tools/res/ResoDlg.cpp tools/res/ResoDlg_calc.cpp
+	tools/res/ResoDlg_file.cpp
 	tools/res/res_cli.cpp
 
 	# monteconvo

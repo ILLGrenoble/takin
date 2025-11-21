@@ -164,6 +164,7 @@ protected slots:
 	void AlgoChanged();
 
 	void ShowTOFCalcDlg();
+	void ConvertVioExtParams();
 
 	void SaveRes();
 	void LoadRes();
