@@ -48,6 +48,10 @@
 
 namespace tl{
 
+
+/**
+ * loader for a simple column-based text format
+ */
 template<class t_real>
 bool FileRaw<t_real>::Load(const char* pcFile)
 {

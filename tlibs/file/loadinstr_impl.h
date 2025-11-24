@@ -49,7 +49,7 @@
 #include "loadinstr_macs.h"
 #include "loadinstr_trisp.h"
 #ifdef USE_HDF5
-	#include "loadinstr_h5.h"
+	#include "loadinstr_illh5.h"
 #endif
 
 #include <regex>
@@ -97,7 +97,7 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 	if(ext == "nxs" || ext == "hdf")
 	{
 #ifdef USE_HDF5
-		pDat = new FileH5<t_real>();
+		pDat = new FileILLH5<t_real>();
 #else
 		return nullptr;
 #endif

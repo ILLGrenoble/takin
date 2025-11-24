@@ -49,6 +49,10 @@
 
 namespace tl{
 
+
+/**
+ * loader for the ill and psi text file format
+ */
 template<class t_real>
 std::string FilePsi<t_real>::ReadData(std::istream& istr)
 {

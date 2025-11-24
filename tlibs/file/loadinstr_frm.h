@@ -49,6 +49,10 @@
 
 namespace tl{
 
+
+/**
+ * loader for the frm text file format
+ */
 template<class t_real>
 void FileFrm<t_real>::ReadHeader(std::istream& istr)
 {

@@ -601,10 +601,10 @@ class FileRaw : public FileInstrBase<_t_real>
 
 #ifdef USE_HDF5
 /**
- * hdf5 data files
+ * ill hdf5 data files
  */
 template<class _t_real = double>
-class FileH5 : public FileInstrBase<_t_real>
+class FileILLH5 : public FileInstrBase<_t_real>
 {
 	public:
 		using t_real = _t_real;
@@ -650,8 +650,8 @@ class FileH5 : public FileInstrBase<_t_real>
 		std::size_t m_numPolChannels = 0;
 
 	public:
-		FileH5() = default;
-		virtual ~FileH5() = default;
+		FileILLH5() = default;
+		virtual ~FileILLH5() = default;
 
 	public:
 		virtual bool Load(const char* pcFile) override;

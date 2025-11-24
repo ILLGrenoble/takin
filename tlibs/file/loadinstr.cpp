@@ -40,7 +40,7 @@ namespace tl
 	template class FileTrisp<double>;
 	template class FileRaw<double>;
 #ifdef USE_HDF5
-	template class FileH5<double>;
+	template class FileILLH5<double>;
 #endif
 
 
@@ -52,6 +52,6 @@ namespace tl
 	template class FileTrisp<float>;
 	template class FileRaw<float>;
 #ifdef USE_HDF5
-	template class FileH5<float>;
+	template class FileILLH5<float>;
 #endif
 }
