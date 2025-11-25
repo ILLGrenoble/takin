@@ -249,6 +249,9 @@ void ScanViewerDlg::FileSelected()
 		}
 	}
 
+	if(!m_instrs.size() || !m_instrs[0])
+		return;
+
 	std::vector<std::string> vecScanVars = m_instrs[0]->GetScannedVars();
 	std::string strCntVar = m_instrs[0]->GetCountVar();
 	std::string strMonVar = m_instrs[0]->GetMonVar();

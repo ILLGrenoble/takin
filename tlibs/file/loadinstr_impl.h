@@ -112,7 +112,8 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 
 #if !defined NO_IOSTR
 		std::shared_ptr<std::istream> ptrIstr = create_autodecomp_istream(ifstr);
-		if(!ptrIstr) return nullptr;
+		if(!ptrIstr)
+			return nullptr;
 		std::istream* pIstr = ptrIstr.get();
 #else
 		std::istream* pIstr = &ifstr;

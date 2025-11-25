@@ -466,13 +466,10 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 	connect(spinzMax2d, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
 		this, &ConvoDlg::Set2dColourBar);
 
-	LoadSettings();
-
-
 #if BOOST_OS_MACOS
 	// check if system python is available
 	if(!tl::dir_exists("/Library/Frameworks/Python.framework")
-		&& find_resource_dirs("Frameworks/Python.framework", false).size()==0)
+		&& find_resource_dirs("Frameworks/Python.framework", false).size() == 0)
 	{
 		QMessageBox::information(this, "Python Module",
 			"The <i>Python</i> S(Q,E) plugin module requires having the "
@@ -481,6 +478,8 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 			"<code>/Library/Frameworks/Python.framework/Versions/Current/bin/pip3 install numpy scipy</code>");
 	}
 #endif
+
+	LoadSettings();
 }
 
 

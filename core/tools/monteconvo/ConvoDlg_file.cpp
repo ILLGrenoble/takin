@@ -212,32 +212,32 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	m_bAllowSqwReinit = false;
 
 	// load the monteconvo configuration
-	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
+	for(std::size_t iCheck = 0; iCheck < m_vecCheckBoxes.size(); ++iCheck)
 	{
 		boost::optional<int> obChecked = xml.QueryOpt<int>(strXmlRoot+m_vecCheckNames[iCheck]);
 		if(obChecked) m_vecCheckBoxes[iCheck]->setChecked(*obChecked);
 	}
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		boost::optional<t_real> odSpinVal = xml.QueryOpt<t_real>(strXmlRoot+m_vecSpinNames[iSpinBox]);
 		if(odSpinVal) m_vecSpinBoxes[iSpinBox]->setValue(*odSpinVal);
 	}
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecIntSpinBoxes.size(); ++iSpinBox)
 	{
 		boost::optional<int> odSpinVal = xml.QueryOpt<int>(strXmlRoot+m_vecIntSpinNames[iSpinBox]);
 		if(odSpinVal) m_vecIntSpinBoxes[iSpinBox]->setValue(*odSpinVal);
 	}
-	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo = 0; iCombo < m_vecComboBoxes.size(); ++iCombo)
 	{
 		boost::optional<int> oiComboIdx = xml.QueryOpt<int>(strXmlRoot+m_vecComboNames[iCombo]);
 		if(oiComboIdx) m_vecComboBoxes[iCombo]->setCurrentIndex(*oiComboIdx);
 	}
-	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox = 0; iEditBox < m_vecEditBoxes.size(); ++iEditBox)
 	{
 		boost::optional<std::string> odEditVal = xml.QueryOpt<std::string>(strXmlRoot+m_vecEditNames[iEditBox]);
 		if(odEditVal) m_vecEditBoxes[iEditBox]->setText((*odEditVal).c_str());
 	}
-	for(std::size_t iEditBox=0; iEditBox<m_vecTextBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox = 0; iEditBox < m_vecTextBoxes.size(); ++iEditBox)
 	{
 		boost::optional<std::string> odEditVal = xml.QueryOpt<std::string>(strXmlRoot+m_vecTextNames[iEditBox]);
 		if(odEditVal) m_vecTextBoxes[iEditBox]->setPlainText((*odEditVal).c_str());
@@ -295,7 +295,7 @@ void ConvoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 
 void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		std::ostringstream ostrVal;
 		ostrVal.precision(g_iPrec);
@@ -304,7 +304,7 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 
 		mapConf[strXmlRoot + m_vecSpinNames[iSpinBox]] = ostrVal.str();
 	}
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecIntSpinBoxes.size(); ++iSpinBox)
 	{
 		std::ostringstream ostrVal;
 		ostrVal << std::scientific;
@@ -312,14 +312,14 @@ void ConvoDlg::Save(std::map<std::string, std::string>& mapConf, const std::stri
 
 		mapConf[strXmlRoot + m_vecIntSpinNames[iSpinBox]] = ostrVal.str();
 	}
-	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox = 0; iEditBox < m_vecEditBoxes.size(); ++iEditBox)
 	{
 		std::string strVal = m_vecEditBoxes[iEditBox]->text().toStdString();
 		mapConf[strXmlRoot + m_vecEditNames[iEditBox]] = strVal;
 	}
-	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo = 0; iCombo < m_vecComboBoxes.size(); ++iCombo)
 		mapConf[strXmlRoot + m_vecComboNames[iCombo]] = tl::var_to_str<int>(m_vecComboBoxes[iCombo]->currentIndex());
-	for(std::size_t iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
+	for(std::size_t iCheckBox = 0; iCheckBox < m_vecCheckBoxes.size(); ++iCheckBox)
 		mapConf[strXmlRoot + m_vecCheckNames[iCheckBox]] = (m_vecCheckBoxes[iCheckBox]->isChecked() ? "1" : "0");
 
 	if(m_pFavDlg)
@@ -470,19 +470,19 @@ void ConvoDlg::LoadSettings()
 		return;
 	m_bAllowSqwReinit = false;
 
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecSpinBoxes.size(); ++iSpinBox)
 	{
 		if(!m_pSett->contains(m_vecSpinNames[iSpinBox].c_str()))
 			continue;
 		m_vecSpinBoxes[iSpinBox]->setValue(m_pSett->value(m_vecSpinNames[iSpinBox].c_str()).value<t_real>());
 	}
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecIntSpinBoxes.size(); ++iSpinBox)
 	{
 		if(!m_pSett->contains(m_vecIntSpinNames[iSpinBox].c_str()))
 			continue;
 		m_vecIntSpinBoxes[iSpinBox]->setValue(m_pSett->value(m_vecIntSpinNames[iSpinBox].c_str()).value<int>());
 	}
-	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo = 0; iCombo < m_vecComboBoxes.size(); ++iCombo)
 	{
 		if(!m_pSett->contains(m_vecComboNames[iCombo].c_str()))
 			continue;
@@ -492,13 +492,13 @@ void ConvoDlg::LoadSettings()
 	if(m_pSett->contains("monteconvo/sqw"))
 		comboSqw->setCurrentIndex(comboSqw->findData(m_pSett->value("monteconvo/sqw").toString()));
 
-	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox = 0; iEditBox < m_vecEditBoxes.size(); ++iEditBox)
 	{
 		if(!m_pSett->contains(m_vecEditNames[iEditBox].c_str()))
 			continue;
 		m_vecEditBoxes[iEditBox]->setText(m_pSett->value(m_vecEditNames[iEditBox].c_str()).toString());
 	}
-	for(std::size_t iCheckBox=0; iCheckBox<m_vecCheckBoxes.size(); ++iCheckBox)
+	for(std::size_t iCheckBox = 0; iCheckBox < m_vecCheckBoxes.size(); ++iCheckBox)
 	{
 		if(!m_pSett->contains(m_vecCheckNames[iCheckBox].c_str()))
 			continue;
@@ -530,17 +530,17 @@ void ConvoDlg::accept()
 	if(!m_pSett)
 		return;
 
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecSpinBoxes.size(); ++iSpinBox)
 		m_pSett->setValue(m_vecSpinNames[iSpinBox].c_str(), m_vecSpinBoxes[iSpinBox]->value());
-	for(std::size_t iSpinBox=0; iSpinBox<m_vecIntSpinBoxes.size(); ++iSpinBox)
+	for(std::size_t iSpinBox = 0; iSpinBox < m_vecIntSpinBoxes.size(); ++iSpinBox)
 		m_pSett->setValue(m_vecIntSpinNames[iSpinBox].c_str(), m_vecIntSpinBoxes[iSpinBox]->value());
-	for(std::size_t iEditBox=0; iEditBox<m_vecEditBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox = 0; iEditBox < m_vecEditBoxes.size(); ++iEditBox)
 		m_pSett->setValue(m_vecEditNames[iEditBox].c_str(), m_vecEditBoxes[iEditBox]->text());
-	for(std::size_t iEditBox=0; iEditBox<m_vecTextBoxes.size(); ++iEditBox)
+	for(std::size_t iEditBox = 0; iEditBox < m_vecTextBoxes.size(); ++iEditBox)
 		m_pSett->setValue(m_vecTextNames[iEditBox].c_str(), m_vecTextBoxes[iEditBox]->toPlainText());
-	for(std::size_t iCombo=0; iCombo<m_vecComboBoxes.size(); ++iCombo)
+	for(std::size_t iCombo = 0; iCombo < m_vecComboBoxes.size(); ++iCombo)
 		m_pSett->setValue(m_vecComboNames[iCombo].c_str(), m_vecComboBoxes[iCombo]->currentIndex());
-	for(std::size_t iCheck=0; iCheck<m_vecCheckBoxes.size(); ++iCheck)
+	for(std::size_t iCheck = 0; iCheck < m_vecCheckBoxes.size(); ++iCheck)
 		m_pSett->setValue(m_vecCheckNames[iCheck].c_str(), m_vecCheckBoxes[iCheck]->isChecked());
 
 	m_pSett->setValue("monteconvo/sqw", comboSqw->itemData(comboSqw->currentIndex()).toString());
