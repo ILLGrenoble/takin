@@ -64,6 +64,7 @@ echo -e "Depends:" \
 	"libqt6core6t64 (>=6.4.0)," \
 	"libqt6gui6t64 (>=6.4.0)," \
 	"libqt6opengl6t64 (>=6.4.0)," \
+	"libqt6openglwidgets6t64 (>=6.4.0)," \
 	"libqt6xml6t64 (>=6.4.0)," \
 	"libqt6svg6 (>=6.4.0)," \
 	"libpython3.12 (>=3.12.0)," \
