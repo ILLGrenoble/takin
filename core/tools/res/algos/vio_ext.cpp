@@ -331,6 +331,12 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	const t_real Hcrit = endguide_zheight - dist_endguide_sample*tanthetacrit;
 	const t_real Hmax = endguide_zheight + dist_endguide_sample*tanthetacrit;
 
+	// if sample_height value, is too high, only consider the illuminated area
+	if(sample_height/2 > Hmax)
+	{
+		sample_height = 2*Hmax;
+	}
+
 	const t_real Dr_sq = dist_sample_det*dist_sample_det;
 	const t_real Sr_sq = sample_rad*sample_rad;
 	const t_real Sh_sq = sample_height*sample_height;
