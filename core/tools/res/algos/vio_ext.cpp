@@ -357,13 +357,13 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real eff_sample_height_fact = 2.;
 	bool calc_PzMz = true;
 
-	if(sample_height <= Hcrit)
+	if(sample_height/2 <= Hcrit)
 	{
 		VarPz = 1./12. * (Sh_sq + (4.*std::pow(dist_chP_endguide+dist_endguide_sample, 2.) + Sr_sq)*tanthetacrit2);
 		VarMz = 1./12. * (Sh_sq + mono_sample_sq4_sr)*tanthetacrit2;
 		calc_PzMz = false;
 	}
-	else if(sample_height > Hmax)
+	else if(sample_height/2 > Hmax)
 	{
 		eff_sample_height2 = 2.*Hmax;
 		eff_sample_height = Hmax;
