@@ -75,29 +75,57 @@ static mc_length(t_real radS, t_real heiS,
 	t_real L_PE, t_real L_ME, t_real L_ES,
 	t_real wEy, t_real wEz, t_real moyPx,
 	t_real sigPx, t_real moyMx, t_real sigMx,
+	t_real tanthetacrit,
 	unsigned int mc_points = 100000)
 {
 	t_real LPS = 0., LPSx = 0., LPSy = 0., LPSz = 0.;
 	t_real LMS = 0., LMSx = 0., LMSy = 0., LMSz = 0.;
+	t_real Hcrit = wEz - L_ES*tanthetacrit;
+	t_real Hmax = wEz + L_ES*tanthetacrit;
 
 	// TODO: thread pool
 	for(unsigned int pt_idx = 0; pt_idx < mc_points; ++pt_idx)
 	{
 		t_real Sr = radS*std::sqrt(tl::rand01<t_real>());
 		t_real theta = 2.*pi*tl::rand01<t_real>();
-		t_real Sz = tl::rand_minmax<t_real>(-heiS/2., heiS/2.);
 		t_real Sx = Sr*std::cos(theta);
 		t_real Sy = Sr*std::sin(theta);
+		t_real Sz = 0;
+		if(heiS/2 < Hmax)
+		{
+			Sz = tl::rand_minmax<t_real>(-heiS/2., heiS/2.);
+		}
+		else
+		{
+			Sz = tl::rand_minmax<t_real>(-Hmax/2., Hmax/2.);
+		}
 
 		const t_real Pfact = (L_PE + L_ES + Sx) / (L_ES + Sx);
-		t_real Px = tl::rand_norm<t_real>(moyPx, sigPx);
-		t_real Py = tl::rand_minmax<t_real>(Sy + Pfact * (-wEy - Sy), Sy + Pfact * (+wEy - Sy));
-		t_real Pz = tl::rand_minmax<t_real>(Sz + Pfact * (-wEz - Sz), Sz + Pfact * (+wEz - Sz));
-
 		const t_real Mfact = (L_ME + L_ES + Sx) / (L_ES + Sx);
+
+		t_real Px = tl::rand_norm<t_real>(moyPx, sigPx);
 		t_real Mx = tl::rand_norm<t_real>(moyMx, sigMx);
+
+		t_real Py = tl::rand_minmax<t_real>(Sy + Pfact * (-wEy - Sy), Sy + Pfact * (+wEy - Sy));
 		t_real My = tl::rand_minmax<t_real>(Sy + Mfact * (-wEy - Sy), Sy + Mfact * (+wEy - Sy));
-		t_real Mz = tl::rand_minmax<t_real>(Sz + Mfact * (-wEz - Sz), Sz + Mfact * (+wEz - Sz));
+		
+		t_real Pz = 0.;
+		t_real Mz = 0.;
+		if(Sz < -Hcrit)
+		{
+			Pz = tl::rand_minmax<t_real>(Sz + Pfact * (-wEz - Sz), Sz + (L_PE + L_ES + Sx) * tanthetacrit);
+			Mz = tl::rand_minmax<t_real>(Sz + Mfact * (-wEz - Sz), Sz + (L_ME + L_ES + Sx) * tanthetacrit);
+		}
+		else if(-Hcrit <= Sz && Sz < Hcrit)
+		{
+			Pz = tl::rand_minmax<t_real>(Sz - (L_PE + L_ES + Sx) * tanthetacrit, Sz + (L_PE + L_ES + Sx) * tanthetacrit);
+			Mz = tl::rand_minmax<t_real>(Sz - (L_ME + L_ES + Sx) * tanthetacrit, Sz + (L_ME + L_ES + Sx) * tanthetacrit);
+		}
+		else
+		{
+			Pz = tl::rand_minmax<t_real>(Sz - (L_PE + L_ES + Sx) * tanthetacrit, Sz + Pfact * (+wEz - Sz));
+			Mz = tl::rand_minmax<t_real>(Sz - (L_ME + L_ES + Sx) * tanthetacrit, Sz + Mfact * (+wEz - Sz));
+		}
 
 		LPS += std::sqrt(std::pow(Sx - Px, 2.) + std::pow(Sy - Py, 2.) + std::pow(Sz - Pz, 2.));
 		LPSx += Sx - Px;
@@ -404,7 +432,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 		dist_chP_endguide,  dist_chM_endguide, dist_endguide_sample,
 		endguide_ywidth, endguide_zheight, -(dist_chP_endguide + dist_endguide_sample),
 		std::sqrt(VarPx), -dist_chM_endguide - dist_endguide_sample, std::sqrt(VarMx),
-		params.mc_lengths);
+		tanthetacrit, params.mc_lengths);
 	t_real LSDz = det_z;
 	t_real LSDx = dist_sample_det*c_tt;
 	t_real LSDy = dist_sample_det*s_tt;
