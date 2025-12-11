@@ -602,10 +602,10 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	matK -= ublas::prod(matK, NinvK);
 
 	// page 15 in [end25]
-	Z *= pi*pi*pi / detN;
-	Z *= 6.*6.*6. / pi*pi*pi;
+	Z *= std::sqrt(pi*pi*pi / detN);
+	Z *= std::sqrt(6.*6.*6. / pi*pi*pi);
 
-	// normalise R0 to sample volume
+	// normalise R0 to sample volume (TODO: already taken care of?)
 	if(eck.flags & NORM_TO_SAMPLE)
 		Z /= V_sample*V_sample / units::pow<6>(angs);
 	//--------------------------------------------------------------------------
