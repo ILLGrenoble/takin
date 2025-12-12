@@ -1961,13 +1961,18 @@ typename matrix_type::value_type get_volume(const matrix_type& mat)
 }
 
 
+/**
+ * @see https://en.wikipedia.org/wiki/Volume_of_an_n-ball
+ */
 template<class matrix_type = ublas::matrix<double>>
 typename matrix_type::value_type get_ellipsoid_volume(const matrix_type& mat)
 {
 	typedef typename matrix_type::value_type T;
-	T tDet = std::abs(determinant<matrix_type>(mat));
 
-	return T(4./3.) * get_pi<T>() * std::sqrt(T(1)/tDet);
+	T det = std::abs(determinant<matrix_type>(mat));
+	T dim2 = T(mat.size1()) * 0.5;
+
+	return std::pow(get_pi<T>(), dim2) / std::tgamma(dim2 + 1.) * std::sqrt(T(1)/det);
 }
 
 

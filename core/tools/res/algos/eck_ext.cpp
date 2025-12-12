@@ -525,8 +525,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	}
 
 	// equ. 4.4 in [end25]
-	Z *= pi*pi / std::sqrt(tl::determinant(mosaic));
-	Z *= fwhm2sig / std::sqrt(2. * pi * mos_Q_sq[0] * mos_Q_sq[1]);
+	Z *= pi / std::sqrt(tl::determinant(mosaic));
+	Z *= fwhm2sig*fwhm2sig / (2.*pi * std::sqrt(mos_Q_sq[0] * mos_Q_sq[1]));
 
 	// this ignores off-diagonals
 	/*for(int comp = 0; comp < 2; ++comp)  // horizontal and vertical components
