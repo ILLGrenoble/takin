@@ -39,6 +39,7 @@
 #include <fstream>
 #include <iomanip>
 #include <memory>
+#include <cstdlib>
 
 #include <qwt_picker_machine.h>
 #include <qwt_plot_canvas.h>
@@ -344,11 +345,16 @@ void QwtPlotWrapper::SavePlot() const
 		return;
 	}
 
+	const char* pcUser = std::getenv("USER");
+	if(!pcUser)
+		pcUser = "";
+
 	t_real_qwt dEpoch = tl::epoch<t_real_qwt>();
 
 	ofstrDat.precision(g_iPrec);
 	ofstrDat << "#\n";
 	ofstrDat << "# comment: Created with Takin (https://dx.doi.org/10.5281/zenodo.4117437).\n";
+	ofstrDat << "# user: " << pcUser << "\n";
 	ofstrDat << "# timestamp: " << tl::var_to_str<t_real_qwt>(dEpoch)
 		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ").\n";
 	ofstrDat << "# title: " << m_pPlot->title().text().toStdString() << "\n";
@@ -446,11 +452,16 @@ void QwtPlotWrapper::ExportGpl() const
 		return;
 	}
 
+	const char* pcUser = std::getenv("USER");
+	if(!pcUser)
+		pcUser = "";
+
 	t_real_qwt dEpoch = tl::epoch<t_real_qwt>();
 
 	ofstrDat.precision(g_iPrec);
 	ofstrDat << "#\n";
 	ofstrDat << "# comment: Created with Takin (https://dx.doi.org/10.5281/zenodo.4117437).\n";
+	ofstrDat << "# user: " << pcUser << "\n";
 	ofstrDat << "# timestamp: " << tl::var_to_str<t_real_qwt>(dEpoch)
 		<< " (" << tl::epoch_to_str<t_real_qwt>(dEpoch) << ").\n";
 	ofstrDat << "#\n";
