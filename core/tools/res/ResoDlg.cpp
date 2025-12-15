@@ -804,6 +804,7 @@ void ResoDlg::ConvertVioExtParams()
 	const t_real_reso mu = 1e-6;
 	const t_real_reso vi = tl::k2v(ki) * mu*sec / cm;
 	const t_real_reso vf = tl::k2v(kf) * mu*sec / cm;
+	const t_real_reso lam = tl::k2lam(ki) / angs;
 	const t_real_reso cr_mult_pulse = checkTof2PulseCounterRot->isChecked() ? 2. : 1.;
 	const t_real_reso cr_mult_mono = checkTof2MonoCounterRot->isChecked() ? 2. : 1.;
 	const t_real_reso Nb = 9.41e-4;  // sld of nickel, see: J. Phys.: Conf. Ser. 528 012005 (2014)
@@ -830,7 +831,7 @@ void ResoDlg::ConvertVioExtParams()
 
 	// angular acceptances in deg
 	t_real_reso sample_w = spinTof2SampleWidth->value();
-	t_real_reso thetacrit = spinTof2GuideCoating->value()*std::asin((2.*pi/ki/angs)/10.*std::sqrt(Nb/pi));
+	t_real_reso thetacrit = spinTof2GuideCoating->value()*std::asin(lam/10.*std::sqrt(Nb/pi));
 	spinTof2thISig->setValue(tl::r2d(thetacrit));
 	spinTofphISig->setValue(tl::r2d(thetacrit));
 	spinTof2thFSig->setValue(tl::r2d(2.*det_tube_w/sample_w/sample_w
