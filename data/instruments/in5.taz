@@ -1,25 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <taz>
 	<meta>
-		<comment>Instrument parameters provided by V. Mecoli: https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/instruments/params_in5.py.</comments>
+		<comment>Instrument parameters provided by V. Mecoli: https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/instruments/params_in5.py.</comment>
 		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
 		<info>Created with Takin/Reso.</info>
 		<module>takin/res</module>
-		<timestamp>1761901766.208029</timestamp>
+		<timestamp>1765867349.540193</timestamp>
 		<url>https://github.com/ILLGrenoble/takin</url>
 		<user>tw</user>
 		<version>2.9</version>
 	</meta>
 	<reso>
 		<E>0</E>
-		<Q>1.06667</Q>
+		<Q>1.7278</Q>
 		<algo>vio_ext</algo>
 		<algo_idx>7</algo_idx>
-		<ana_d>3.355000e+00</ana_d>
-		<kf>1.13333</kf>
-		<ki>1.13333</ki>
+		<ana_scatter_sense>0</ana_scatter_sense>
+		<kf>1.5708</kf>
+		<ki>1.5708</ki>
 		<mc_live_neutrons>0</mc_live_neutrons>
 		<mc_live_sample_neutrons>1</mc_live_sample_neutrons>
+		<mono_scatter_sense>0</mono_scatter_sense>
 		<sample_mosaic>1.400000e+01</sample_mosaic>
 		<sample_scatter_sense>1</sample_scatter_sense>
 		<scatter_kf_angle>0.000000e+00</scatter_kf_angle>
@@ -39,9 +40,9 @@
 		<vio_ext_dist_mono_guide>1.114300e+02</vio_ext_dist_mono_guide>
 		<vio_ext_dist_pulse_guide>9.064700e+02</vio_ext_dist_pulse_guide>
 		<vio_ext_dist_sample_det>4.000000e+02</vio_ext_dist_sample_det>
+		<vio_ext_guide_coating>3.500000e+00</vio_ext_guide_coating>
 		<vio_ext_guide_height>5.400000e+00</vio_ext_guide_height>
 		<vio_ext_guide_width>1.400000e+00</vio_ext_guide_width>
-		<vio_ext_guide_coating>3.5</vio_ext_guide_coating>
 		<vio_ext_mc_lengths>100000</vio_ext_mc_lengths>
 		<vio_ext_mono_chopper_beam>3.000000e+00</vio_ext_mono_chopper_beam>
 		<vio_ext_mono_chopper_counterrot>1</vio_ext_mono_chopper_counterrot>
@@ -55,5 +56,22 @@
 		<vio_ext_pulse_chopper_win>9.000000e+00</vio_ext_pulse_chopper_win>
 		<vio_ext_sample_height>1.000000e-01</vio_ext_sample_height>
 		<vio_ext_sample_width>1.000000e-01</vio_ext_sample_width>
+		<viol_angle_ph_f>0.000000e+00</viol_angle_ph_f>
+		<viol_angle_ph_f_sig>4.300000e-01</viol_angle_ph_f_sig>
+		<viol_angle_ph_i>0.000000e+00</viol_angle_ph_i>
+		<viol_angle_ph_i_sig>1.388000e+00</viol_angle_ph_i_sig>
+		<viol_angle_tt_f_sig>3.720000e-01</viol_angle_tt_f_sig>
+		<viol_angle_tt_i>0.000000e+00</viol_angle_tt_i>
+		<viol_angle_tt_i_sig>1.388000e+00</viol_angle_tt_i_sig>
+		<viol_det_sph>0</viol_det_sph>
+		<viol_dist_mono_sample>1.284300e+02</viol_dist_mono_sample>
+		<viol_dist_mono_sample_sig>0.000000e+00</viol_dist_mono_sample_sig>
+		<viol_dist_pulse_mono>7.950400e+02</viol_dist_pulse_mono>
+		<viol_dist_pulse_mono_sig>2.680000e-01</viol_dist_pulse_mono_sig>
+		<viol_dist_sample_det>4.000000e+02</viol_dist_sample_det>
+		<viol_dist_sample_det_sig>1.104000e+00</viol_dist_sample_det_sig>
+		<viol_time_det_sig>1.116000e+01</viol_time_det_sig>
+		<viol_time_mono_sig>2.080000e+00</viol_time_mono_sig>
+		<viol_time_pulse_sig>5.750000e+00</viol_time_pulse_sig>
 	</reso>
 </taz>
