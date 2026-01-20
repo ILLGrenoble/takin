@@ -5,8 +5,11 @@
  * @date July 2012, Sep. 2014
  * @license GPLv2
  *
- * (based on Mcstas' 'mcresplot.pl' perl program: www.mcstas.org
- *  and the rescal5 matlab program: http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/)
+ * References:
+ *   - based on Mcstas' 'mcresplot.pl' perl program:
+ *        - www.mcstas.org, https://github.com/McStasMcXtrace/McCode/blob/master/tools/Legacy-Perl/mcresplot.pl
+ *        - 'mcresplot.pl' is first mentioned here: https://doi.org/10.1016/S0921-4526(99)01409-X
+ *   - also based on the rescal5 matlab program: http://www.ill.eu/en/instruments-support/computing-for-science/cs-software/all-software/matlab-ill/rescal-for-matlab/)
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
