@@ -820,7 +820,7 @@ void ResoDlg::ConvertVioExtParams()
 	t_real_reso det_tube_w = spinTof2DetTubeWidth->value();
 	spinTofPulseSig->setValue(c0 * spinTof2PulseWin->value() / (cr_mult_pulse*spinTof2PulseRPM->value() * 6.*mu) * fwhm2sig);
 	spinTofMonoSig->setValue(c0 * spinTof2MonoWin->value() / (cr_mult_mono*spinTof2MonoRPM->value() * 6.*mu) * fwhm2sig);
-	spinTofDetSig->setValue(det_tube_w / vf * fwhm2sig);
+	spinTofDetSig->setValue(det_tube_w / vf * fwhm2sig); // changer setValue : "setValue(std::sqrt(Vartd))" avec Vartd de vio_ext.cpp
 
 	// path length deviations in cm
 	spinDistTofMonoSampleSig->setValue(vi*spinTofMonoSig->value() - spinTof2MonoWidth->value() * fwhm2sig);
