@@ -344,7 +344,6 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	const t_real pulse_sample_sq4_sr = 4.*std::pow(dist_chP_endguide + dist_endguide_sample, 2.) + Sr_sq;
 
 	t_real VarDr = det_tube_w*det_tube_w / 12.;
-	t_real Vartd = VarDr / (vf*vf);
 
 	t_real VarDtheta = std::pow(2.*det_tube_w*(dist_sample_det - std::sqrt(Dr_sq - Sr_sq)) / Sr_sq, 2.);
 	t_real Vartp = (chopperP_wnd_angle*chopperP_wnd_angle + chopperP_beam_angle*chopperP_beam_angle) / (12.*std::pow(6.*chopperP_rpm, 2.));
@@ -420,6 +419,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real VarDx = c_tt*c_tt*VarDr + Dr_sq*s_tt*s_tt*VarDtheta;
 	t_real VarDy = s_tt*s_tt*VarDr + Dr_sq*c_tt*c_tt*VarDtheta;
 	t_real VarDz = std::pow(det_height / 100., 2.);
+	t_real Vartd = 1/(vf*vf*(dist_sample_det*dist_sample_det + det_z*det_z))*(dist_sample_det*dist_sample_det*VarDr + det_z*det_z*VarDz);
 	t_real CovDxDy = c_tt*s_tt*VarDr - Dr_sq*c_tt*s_tt*VarDtheta;
 
 	t_mat cov = tl::diag_matrix(
