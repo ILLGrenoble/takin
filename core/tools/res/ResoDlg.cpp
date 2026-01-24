@@ -818,9 +818,16 @@ void ResoDlg::ConvertVioExtParams()
 	// time bases in mus
 	const t_real_reso c0 = 1./2./std::sqrt(3.);
 	t_real_reso det_tube_w = spinTof2DetTubeWidth->value();
+	t_real_reso det_height = spinTof2DetHeight->value();
+	t_real_reso det_z = spinTof2DetZ->value();
+	t_real_reso VarDr = det_tube_w*det_tube_w / 12.;
+	t_real_reso VarDz = std::pow(det_height / 100., 2.);
 	spinTofPulseSig->setValue(c0 * spinTof2PulseWin->value() / (cr_mult_pulse*spinTof2PulseRPM->value() * 6.*mu) * fwhm2sig);
 	spinTofMonoSig->setValue(c0 * spinTof2MonoWin->value() / (cr_mult_mono*spinTof2MonoRPM->value() * 6.*mu) * fwhm2sig);
-	spinTofDetSig->setValue(det_tube_w / vf * fwhm2sig); // changer setValue : "setValue(std::sqrt(Vartd))" avec Vartd de vio_ext.cpp
+	//spinTofDetSig->setValue(det_tube_w / vf * fwhm2sig);
+	spinTofDetSig->setValue(fwhm2sig * std::sqrt(
+	    (dist_sample_det*dist_sample_det*VarDr + det_z*det_z*VarDz) /
+	    (vf*vf*(dist_sample_det*dist_sample_det + det_z*det_z)) ));
 
 	// path length deviations in cm
 	spinDistTofMonoSampleSig->setValue(vi*spinTofMonoSig->value() - spinTof2MonoWidth->value() * fwhm2sig);
@@ -836,7 +843,7 @@ void ResoDlg::ConvertVioExtParams()
 	spinTofphISig->setValue(tl::r2d(thetacrit));
 	spinTof2thFSig->setValue(tl::r2d(2.*det_tube_w/sample_w/sample_w
 		* (dist_sample_det - std::sqrt(dist_sample_det*dist_sample_det - sample_w*sample_w))));
-	spinTofphFSig->setValue(tl::r2d(std::atan2(spinTof2DetHeight->value()/100., dist_sample_det)));
+	spinTofphFSig->setValue(tl::r2d(std::atan2(det_height/100., dist_sample_det)));
 
 	radioTofDetCyl->setChecked(true);
 }

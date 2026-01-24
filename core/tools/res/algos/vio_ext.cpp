@@ -419,7 +419,8 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 	t_real VarDx = c_tt*c_tt*VarDr + Dr_sq*s_tt*s_tt*VarDtheta;
 	t_real VarDy = s_tt*s_tt*VarDr + Dr_sq*c_tt*c_tt*VarDtheta;
 	t_real VarDz = std::pow(det_height / 100., 2.);
-	t_real Vartd = 1/(vf*vf*(dist_sample_det*dist_sample_det + det_z*det_z))*(dist_sample_det*dist_sample_det*VarDr + det_z*det_z*VarDz);
+	t_real Vartd = (dist_sample_det*dist_sample_det*VarDr + det_z*det_z*VarDz) /
+		(vf*vf*(dist_sample_det*dist_sample_det + det_z*det_z));
 	t_real CovDxDy = c_tt*s_tt*VarDr - Dr_sq*c_tt*s_tt*VarDtheta;
 
 	t_mat cov = tl::diag_matrix(
