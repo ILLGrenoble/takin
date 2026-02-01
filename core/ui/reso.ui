@@ -4952,7 +4952,7 @@
           <item row="3" column="0" colspan="2">
            <widget class="QCheckBox" name="checkMCCenter">
             <property name="text">
-             <string>Center around (0,0,0,0)</string>
+             <string>Centre around (0,0,0,0)</string>
             </property>
            </widget>
           </item>

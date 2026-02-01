@@ -47,6 +47,7 @@
 
 static const auto angs = tl::get_one_angstrom<t_real_reso>();
 static const auto rads = tl::get_one_radian<t_real_reso>();
+static const auto degs = tl::get_one_deg<t_real_reso>();
 static const auto meV = tl::get_one_meV<t_real_reso>();
 static const auto cm = tl::get_one_centimeter<t_real_reso>();
 static const auto meters = tl::get_one_meter<t_real_reso>();
@@ -503,7 +504,87 @@ void ResoDlg::RefreshSimCmd()
 	std::ostringstream ostrCmd;
 	ostrCmd.precision(g_iPrec);
 
-	ostrCmd << "./templateTAS -n 1e6 verbose=1 ";
+	// ---------------------------------------------------------------------------
+	// using own TAS instrument
+	// ---------------------------------------------------------------------------
+	ostrCmd << "# simulation: https://github.com/ILLGrenoble/takin-pytools\n";
+	ostrCmd << "./TAS -n 1e7 ";
+
+	ostrCmd << "ki=" << t_real_reso(m_tasparams.ki * angs) << " ";
+	ostrCmd << "kf=" << t_real_reso(m_tasparams.kf * angs) << " ";
+	//ostrCmd << "Q=" << t_real_reso(m_tasparams.Q * angs) << " ";
+	ostrCmd << "sample_sc_angle=" << t_real_reso(m_tasparams.twotheta / degs) << " ";
+
+	ostrCmd << "dist_src_mono=" << t_real_reso(m_tasparams.dist_hsrc_mono / meters) << " ";
+	ostrCmd << "dist_mono_monitor=" << t_real_reso(m_tasparams.dist_mono_monitor / meters) << " ";
+	ostrCmd << "dist_mono_sample=" << t_real_reso(m_tasparams.dist_mono_sample / meters) << " ";
+	ostrCmd << "dist_sample_ana=" << t_real_reso(m_tasparams.dist_sample_ana / meters) << " ";
+	ostrCmd << "dist_ana_det=" << t_real_reso(m_tasparams.dist_ana_det / meters) << " ";
+
+	//ostrCmd << "SM=" << m_tasparams.dmono_sense << " ";
+	//ostrCmd << "SS=" << m_tasparams.dsample_sense << " ";
+	//ostrCmd << "SA=" << m_tasparams.dana_sense << " ";
+
+	ostrCmd << "mono_d=" << t_real_reso(m_tasparams.mono_d / angs) << " ";
+	ostrCmd << "ana_d=" << t_real_reso(m_tasparams.ana_d / angs) << " ";
+
+	if(!m_tasparams.bMonoIsCurvedH)
+		ostrCmd << "mono_curv_h=0 ";
+	else if(m_tasparams.bMonoIsOptimallyCurvedH)
+		ostrCmd << "mono_curv_h=-1 ";
+	else
+		ostrCmd << "mono_curv_h=" << t_real_reso(m_tasparams.mono_curvh / meters) << " ";
+
+	if(!m_tasparams.bMonoIsCurvedV)
+		ostrCmd << "mono_curv_v=0 ";
+	else if(m_tasparams.bMonoIsOptimallyCurvedV)
+		ostrCmd << "mono_curv_v=-1 ";
+	else
+		ostrCmd << "mono_curv_v=" << t_real_reso(m_tasparams.mono_curvv / meters) << " ";
+
+	if(!m_tasparams.bAnaIsCurvedH)
+		ostrCmd << "ana_curv_h=0 ";
+	if(m_tasparams.bAnaIsOptimallyCurvedH)
+		ostrCmd << "ana_curv_h=-1 ";
+	else
+		ostrCmd << "ana_curv_h=" << t_real_reso(m_tasparams.ana_curvh / meters) << " ";
+
+	if(!m_tasparams.bAnaIsCurvedV)
+		ostrCmd << "ana_curv_v=0 ";
+	if(m_tasparams.bAnaIsOptimallyCurvedV)
+		ostrCmd << "ana_curv_v=-1 ";
+	else
+		ostrCmd << "ana_curv_v=" << t_real_reso(m_tasparams.ana_curvv / meters) << " ";
+
+	ostrCmd << "mono_mosaic=" << t_real_reso(m_tasparams.mono_mosaic/rads/dMin) << " ";
+	ostrCmd << "ana_mosaic=" << t_real_reso(m_tasparams.ana_mosaic/rads/dMin) << " ";
+
+	ostrCmd << "coll_premono_div_h=" << t_real_reso(m_tasparams.coll_h_pre_mono/rads/dMin) << " ";
+	ostrCmd << "coll_presample_div_h=" << t_real_reso(m_tasparams.coll_h_pre_sample/rads/dMin) << " ";
+	ostrCmd << "coll_postsample_div_h=" << t_real_reso(m_tasparams.coll_h_post_sample/rads/dMin) << " ";
+	ostrCmd << "coll_postana_div_h=" << t_real_reso(m_tasparams.coll_h_post_ana/rads/dMin) << " ";
+	ostrCmd << "coll_premono_div_v=" << t_real_reso(m_tasparams.coll_v_pre_mono/rads/dMin) << " ";
+	ostrCmd << "coll_presample_div_v=" << t_real_reso(m_tasparams.coll_v_pre_sample/rads/dMin) << " ";
+	ostrCmd << "coll_postsample_div_v=" << t_real_reso(m_tasparams.coll_v_post_sample/rads/dMin) << " ";
+	ostrCmd << "coll_postana_div_v=" << t_real_reso(m_tasparams.coll_v_post_ana/rads/dMin) << " ";
+
+	ostrCmd << "mono_width=" << t_real_reso(m_tasparams.mono_w / meters) << " ";
+	ostrCmd << "mono_height=" << t_real_reso(m_tasparams.mono_h / meters) << " ";
+	ostrCmd << "ana_width=" << t_real_reso(m_tasparams.ana_w / meters) << " ";
+	ostrCmd << "ana_height=" << t_real_reso(m_tasparams.ana_h / meters) << " ";
+	ostrCmd << "sample_rad=" << t_real_reso(m_tasparams.sample_w_q / meters) << " ";
+	ostrCmd << "sample_height=" << t_real_reso(m_tasparams.sample_h / meters) << " ";
+
+	ostrCmd << "mono_slabs_h=" << m_tasparams.mono_numtiles_h << " ";
+	ostrCmd << "mono_slabs_v=" << m_tasparams.mono_numtiles_v << " ";
+	ostrCmd << "ana_slabs_h=" << m_tasparams.ana_numtiles_h << " ";
+	ostrCmd << "ana_slabs_v=" << m_tasparams.ana_numtiles_v;	
+	// ---------------------------------------------------------------------------
+
+	// ---------------------------------------------------------------------------
+	// using templateTAS instrument
+	// ---------------------------------------------------------------------------
+	ostrCmd << "\n\n./templateTAS -n 1e7 verbose=1 ";
 
 	ostrCmd << "KI=" << t_real_reso(m_tasparams.ki * angs) << " ";
 	ostrCmd << "KF=" << t_real_reso(m_tasparams.kf * angs) << " ";
@@ -549,6 +630,12 @@ void ResoDlg::RefreshSimCmd()
 	ostrCmd << "NHM=" << m_tasparams.mono_numtiles_h << " ";
 	ostrCmd << "NVA=" << m_tasparams.ana_numtiles_v << " ";
 	ostrCmd << "NHA=" << m_tasparams.ana_numtiles_h << " ";
+
+	// sample
+	ostrCmd << "radius=" << t_real_reso(m_tasparams.sample_w_q / meters) << " ";
+	ostrCmd << "height=" << t_real_reso(m_tasparams.sample_h / meters) << " ";
+	ostrCmd << "thickness=0";
+	// ---------------------------------------------------------------------------
 
 	editSim->setPlainText(ostrCmd.str().c_str());
 }
