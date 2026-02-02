@@ -508,8 +508,9 @@ void ResoDlg::RefreshSimCmd()
 	// using own TAS instrument
 	// ---------------------------------------------------------------------------
 	ostrCmd << "# simulation: https://github.com/ILLGrenoble/takin-pytools\n";
-	ostrCmd << "./TAS -n 1e7 ";
+	ostrCmd << "./tas.bin -n 1e7 ";
 
+	ostrCmd << "src_lam=" << t_real_reso(tl::k2lam(m_tasparams.ki) / angs) << " ";
 	ostrCmd << "ki=" << t_real_reso(m_tasparams.ki * angs) << " ";
 	ostrCmd << "kf=" << t_real_reso(m_tasparams.kf * angs) << " ";
 	//ostrCmd << "Q=" << t_real_reso(m_tasparams.Q * angs) << " ";
@@ -568,11 +569,12 @@ void ResoDlg::RefreshSimCmd()
 	ostrCmd << "coll_postsample_div_v=" << t_real_reso(m_tasparams.coll_v_post_sample/rads/dMin) << " ";
 	ostrCmd << "coll_postana_div_v=" << t_real_reso(m_tasparams.coll_v_post_ana/rads/dMin) << " ";
 
+	ostrCmd << "src_rad=" << t_real_reso(0.5*m_tasparams.src_w / meters) << " ";
 	ostrCmd << "mono_width=" << t_real_reso(m_tasparams.mono_w / meters) << " ";
 	ostrCmd << "mono_height=" << t_real_reso(m_tasparams.mono_h / meters) << " ";
 	ostrCmd << "ana_width=" << t_real_reso(m_tasparams.ana_w / meters) << " ";
 	ostrCmd << "ana_height=" << t_real_reso(m_tasparams.ana_h / meters) << " ";
-	ostrCmd << "sample_rad=" << t_real_reso(m_tasparams.sample_w_q / meters) << " ";
+	ostrCmd << "sample_rad=" << t_real_reso(0.5*m_tasparams.sample_w_q / meters) << " ";
 	ostrCmd << "sample_height=" << t_real_reso(m_tasparams.sample_h / meters) << " ";
 
 	ostrCmd << "mono_slabs_h=" << m_tasparams.mono_numtiles_h << " ";
@@ -584,7 +586,7 @@ void ResoDlg::RefreshSimCmd()
 	// ---------------------------------------------------------------------------
 	// using templateTAS instrument
 	// ---------------------------------------------------------------------------
-	ostrCmd << "\n\n./templateTAS -n 1e7 verbose=1 ";
+	ostrCmd << "\n\n./templateTAS.bin -n 1e7 verbose=1 ";
 
 	ostrCmd << "KI=" << t_real_reso(m_tasparams.ki * angs) << " ";
 	ostrCmd << "KF=" << t_real_reso(m_tasparams.kf * angs) << " ";
@@ -632,7 +634,7 @@ void ResoDlg::RefreshSimCmd()
 	ostrCmd << "NHA=" << m_tasparams.ana_numtiles_h << " ";
 
 	// sample
-	ostrCmd << "radius=" << t_real_reso(m_tasparams.sample_w_q / meters) << " ";
+	ostrCmd << "radius=" << t_real_reso(0.5*m_tasparams.sample_w_q / meters) << " ";
 	ostrCmd << "height=" << t_real_reso(m_tasparams.sample_h / meters) << " ";
 	ostrCmd << "thickness=0";
 	// ---------------------------------------------------------------------------
