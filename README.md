@@ -18,14 +18,7 @@ Version 2.9.
 - An overview of historic repositories can be found [here](https://github.com/ILLGrenoble/takin/wiki/History).
 
 
-## Software DOIs
-- *Takin 2.x*: [10.5281/zenodo.4117437](https://dx.doi.org/10.5281/zenodo.4117437).  
-- *Takin 1.x*: [10.5281/zenodo.3961491](https://dx.doi.org/10.5281/zenodo.3961491).  
-- *Magpie*: [10.5281/zenodo.16180814](https://doi.org/10.5281/zenodo.16180814).  
-- *TAS-Paths*: [10.5281/zenodo.4625649](https://doi.org/10.5281/zenodo.4625649).  
-
-
-## Paper DOIs
+## Takin Papers
 Please cite the paper that is closest to the version you have used:
 - *Takin 2.5* (2023): [10.1016/j.softx.2023.101471](https://doi.org/10.1016/j.softx.2023.101471).  
 - *Takin 2.0* (2021): [10.1016/j.softx.2021.100667](https://doi.org/10.1016/j.softx.2021.100667).  
