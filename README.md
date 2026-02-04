@@ -11,7 +11,7 @@ Version 2.9.
 
 
 ## Repositories
-- *Takin's* Python helper tools are [here](https://github.com/ILLGrenoble/takin-pytools).
+- *Takin's* Python helper tools are now [here](https://github.com/ILLGrenoble/takin-pytools).
 - *Magpie*, a magnon calculator, has now moved to [its own repository](https://github.com/ILLGrenoble/magpie).
 - *TAS-Paths*, a collision detection and motion planning tool, also has [its own repository](https://github.com/ILLGrenoble/taspaths).
 - *Takin's* main source code repository is available [here](https://github.com/ILLGrenoble/takin).
