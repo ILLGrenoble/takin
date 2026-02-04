@@ -4,6 +4,8 @@ Version 2.9.
 
 <img src="https://raw.githubusercontent.com/ILLGrenoble/takin/master/data/res/icons/takin.svg" width="10%" height="10%" title="Logo" alt="">
 
+(No AI is used in the application or its development.)
+
 
 ## Documentation
 - The software documentation is available [here](https://github.com/ILLGrenoble/takin/wiki).
