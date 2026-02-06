@@ -14,14 +14,14 @@ CONTRIBUTORS
 
 **Christian Trageser**
   - mail: c.tragser\<AT\>fz-juelich.de
-  - active: 2025
+  - active: 2025 - 2026
   - contributions:
     - migration Qt5 -> Qt6.
 
 
 **Victor Mecoli**
   - mail: mecoli\<AT\>ill.fr
-  - active: 2025
+  - active: 2025 - 2026
   - contributions:
     - cosmetic changes for the GUI.
     - vio_ext algorithm.
