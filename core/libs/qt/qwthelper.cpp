@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <fstream>
 #include <iomanip>
-#include <memory>
 #include <cstdlib>
 
 #include <qwt_picker_machine.h>
@@ -530,11 +529,24 @@ void QwtPlotWrapper::ExportGpl() const
 	}
 	else			// 1d plot(s)
 	{
+		// count the number of points in the curves
+		std::vector<std::size_t> num_points_left;
+		num_points_left.reserve(m_vecDataPtrs.size());
+		for(const auto& pairVecs : m_vecDataPtrs)
+		{
+			const std::vector<t_real_qwt>* pVecX = std::get<0>(pairVecs);
+			const std::vector<t_real_qwt>* pVecY = std::get<1>(pairVecs);
+
+			num_points_left.push_back(std::min(pVecX->size(), pVecY->size()));
+		}
+		for(int i = num_points_left.size() - 2; i >= 0; --i)
+			num_points_left[i] += num_points_left[i + 1];
+
 		ofstrDat << "scale = 1.\n";
 		ofstrDat << "plot \\\n";
 
 		const std::size_t iNumCurves = m_vecDataPtrs.size();
-		for(std::size_t iCurve=0; iCurve<iNumCurves; ++iCurve)
+		for(std::size_t iCurve = 0; iCurve < iNumCurves; ++iCurve)
 		{
 			// if no data points are available, skip the curve
 			const std::vector<t_real_qwt>* pVecX = std::get<0>(m_vecDataPtrs[iCurve]);
@@ -548,7 +560,7 @@ void QwtPlotWrapper::ExportGpl() const
 				== QwtPlotCurve::CurveStyle::Lines)
 			{
 				ofstrDat << "\t\"-\" using ($1):($2*scale) with lines title \"dataset "
-					<< (iCurve+1) << "\"";
+					<< (iCurve + 1) << "\"";
 			}
 			else
 			{
@@ -556,18 +568,18 @@ void QwtPlotWrapper::ExportGpl() const
 				{
 					ofstrDat << "\t\"-\" using ($1):($2*scale):($3*scale) "
 						<< "with yerrorbars pointtype 7 title \"dataset "
-						<< (iCurve+1) << "\"";
+						<< (iCurve + 1) << "\"";
 				}
 				else	// without errorbars
 				{
 					ofstrDat << "\t\"-\" using ($1):($2*scale) "
 						<< "with points pointtype 7 title \"dataset "
-						<< (iCurve+1) << "\"";
+						<< (iCurve + 1) << "\"";
 				}
 			}
 
-			// TODO: doesn't work if following curves are defined and empty
-			if(iCurve < iNumCurves-1) ofstrDat << ", \\";
+			if(iCurve < iNumCurves - 1 && num_points_left[iCurve + 1])
+				ofstrDat << ", \\";
 			ofstrDat << "\n";
 		}
 
@@ -582,7 +594,7 @@ void QwtPlotWrapper::ExportGpl() const
 			if(!iSize)
 				continue;
 
-			for(std::size_t iCur=0; iCur<iSize; ++iCur)
+			for(std::size_t iCur = 0; iCur < iSize; ++iCur)
 			{
 				ofstrDat << std::left << std::setw(g_iPrec*2)
 					<< pVecX->operator[](iCur) << " ";
