@@ -260,8 +260,8 @@ void ScanViewerDlg::FileSelected()
 	const std::wstring strPM = tl::get_spec_char_utf16("pm");  // +-
 
 	m_bDoUpdate = false;
-	int iIdxX = -1, iIdxY = -1, iIdxMon = -1, iCurIdx = 0;
-	int iAlternateX = 0;
+	int iIdxX = -1, iIdx2 = -1, iIdxY = -1, iIdxMon = -1, iCurIdx = 0;
+	int iAlternateX = 0, iAlternateX2 = 0;
 	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_instrs[0]->GetColNames();
 	for(const tl::FileInstrBase<t_real>::t_vecColNames::value_type& strCol : vecColNames)
 	{
@@ -282,14 +282,19 @@ void ScanViewerDlg::FileSelected()
 		_strCol += L")";
 
 		comboX->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
+		comboX2->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 		comboY->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
+		comboY2->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 		comboMon->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
+		comboMon2->addItem(QString::fromWCharArray(_strCol.c_str()), QString(strCol.c_str()));
 
 		std::string strFirstScanVar = vecScanVars.size() ? tl::str_to_lower(vecScanVars[0]) : "";
+		std::string strSecondScanVar = vecScanVars.size() > 1 ? tl::str_to_lower(vecScanVars[1]) : "";
 		std::string strColLower = tl::str_to_lower(strCol);
 
 		if(vecScanVars.size())
 		{
+			// indices for first curve
 			if(strFirstScanVar == strColLower)
 				iIdxX = iCurIdx;
 			else if(strFirstScanVar.substr(0, strCol.length()) == strColLower)
@@ -297,6 +302,15 @@ void ScanViewerDlg::FileSelected()
 			// sometimes the scanned variable is named "QH", but the data column "H"
 			else if(strFirstScanVar.substr(1) == strColLower)
 				iAlternateX = iCurIdx;
+
+			// indices for second curve
+			if(strSecondScanVar == strColLower)
+				iIdx2 = iCurIdx;
+			else if(strSecondScanVar.substr(0, strCol.length()) == strColLower)
+				iAlternateX2 = iCurIdx;
+			// sometimes the scanned variable is named "QH", but the data column "H"
+			else if(strSecondScanVar.substr(1) == strColLower)
+				iAlternateX2 = iCurIdx;
 		}
 
 		// count and monitor variables
@@ -310,9 +324,14 @@ void ScanViewerDlg::FileSelected()
 
 	if(iIdxX < 0 && iAlternateX >= 0)
 		iIdxX = iAlternateX;
+	if(iIdx2 < 0 && iAlternateX2 >= 0)
+		iIdx2 = iAlternateX2;
 	comboX->setCurrentIndex(iIdxX);
+	comboX2->setCurrentIndex(iIdx2);
 	comboY->setCurrentIndex(iIdxY);
+	comboY2->setCurrentIndex(iIdxY);
 	comboMon->setCurrentIndex(iIdxMon);
+	comboMon2->setCurrentIndex(iIdxMon);
 
 	CalcPol();
 

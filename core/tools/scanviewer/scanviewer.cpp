@@ -131,10 +131,12 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 	QObject::connect(checkNorm, static_cast<void (QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), pThis, &ScanViewerDlg::NormaliseStateChanged);
 	QObject::connect(checkMerge, static_cast<void (QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), pThis, &ScanViewerDlg::MergeStateChanged);
+	QObject::connect(checkCurve2, static_cast<void (QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), pThis, &ScanViewerDlg::Curve2Checked);
 #else
 	QObject::connect(checkNorm, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), pThis, &ScanViewerDlg::NormaliseStateChanged);
 	QObject::connect(checkMerge, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), pThis, &ScanViewerDlg::MergeStateChanged);
-#endif
+	QObject::connect(checkCurve2, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), pThis, &ScanViewerDlg::Curve2Checked);
+	#endif
 	QObject::connect(spinStart, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
 	QObject::connect(spinStop, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
 	QObject::connect(spinSkip, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), pThis, &ScanViewerDlg::StartOrSkipChanged);
@@ -213,7 +215,7 @@ void ScanViewerDlg::SetAbout()
 {
 	labelVersion->setText("Version " TAKIN_VER ".");
 	labelWritten->setText("Written by Tobias Weber <tweber@ill.fr>.");
-	labelYears->setText("Years: 2015 - 2025.");
+	labelYears->setText("Years: 2015 - 2026.");
 
 	std::string strCC = "Built";
 #ifdef BOOST_PLATFORM
@@ -280,9 +282,22 @@ void ScanViewerDlg::keyPressEvent(QKeyEvent* pEvt)
 void ScanViewerDlg::XAxisSelected(int) { PlotScan(); }
 void ScanViewerDlg::YAxisSelected(int) { PlotScan(); }
 void ScanViewerDlg::MonAxisSelected(int) { PlotScan(); }
-void ScanViewerDlg::NormaliseStateChanged(int iState) { PlotScan(); }
-void ScanViewerDlg::MergeStateChanged(int iState) { FileSelected(); }
+void ScanViewerDlg::NormaliseStateChanged(int) { PlotScan(); }
+void ScanViewerDlg::MergeStateChanged(int) { FileSelected(); }
 void ScanViewerDlg::StartOrSkipChanged(int) { PlotScan(); }
+
+
+/**
+ * enabling or disabling of secondary curve
+ */
+void ScanViewerDlg::Curve2Checked(int iState)
+{
+	bool show_curve2 = checkCurve2->isChecked();
+
+	comboX2->setEnabled(show_curve2);
+	comboY2->setEnabled(show_curve2);
+	comboMon2->setEnabled(show_curve2);
+}
 
 
 /**

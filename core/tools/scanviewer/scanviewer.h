@@ -121,9 +121,10 @@ protected slots:
 	void XAxisSelected(int);
 	void YAxisSelected(int);
 	void MonAxisSelected(int);
-	void NormaliseStateChanged(int iState);
-	void MergeStateChanged(int iState);
+	void NormaliseStateChanged(int state);
+	void MergeStateChanged(int state);
 	void StartOrSkipChanged(int);
+	void Curve2Checked(int state);
 
 	void ShowFitParams();
 	void FitGauss();

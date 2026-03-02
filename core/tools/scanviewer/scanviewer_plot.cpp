@@ -85,10 +85,10 @@ void ScanViewerDlg::SetupPlotter(unsigned int numCurves)
 		QPen penCurve;
 		penCurve.setColor(get_colour(curve, true));
 		penCurve.setWidth(2);
-		m_plotwrap->GetCurve(curve)->setPen(penCurve);
-		m_plotwrap->GetCurve(curve)->setStyle(QwtPlotCurve::CurveStyle::Lines);
-		m_plotwrap->GetCurve(curve)->setTitle("Curve");
-		m_plotwrap->GetCurve(curve)->setItemAttribute(QwtPlotCurve::Legend, false);
+		m_plotwrap->GetCurve(curve + 0)->setPen(penCurve);
+		m_plotwrap->GetCurve(curve + 0)->setStyle(QwtPlotCurve::CurveStyle::Lines);
+		m_plotwrap->GetCurve(curve + 0)->setTitle("Curve");
+		m_plotwrap->GetCurve(curve + 0)->setItemAttribute(QwtPlotCurve::Legend, false);
 
 		// odd indices are scan points
 		QPen penPoints;
@@ -141,9 +141,8 @@ void ScanViewerDlg::ClearPlot()
 	for(auto* pEdit : edits)
 		pEdit->setText("");
 
-	comboX->clear();
-	comboY->clear();
-	comboMon->clear();
+	for(QComboBox* combo : { comboX, comboX2, comboY, comboY2, comboMon, comboMon2 })
+		combo->clear();
 	textExportedFile->clear();
 	textRawFile->clear();
 	spinStart->setValue(0);
