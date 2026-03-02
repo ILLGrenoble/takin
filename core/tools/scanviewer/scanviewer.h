@@ -71,6 +71,7 @@ private:
 	std::vector<t_real_glob> m_vecFitX, m_vecFitY;
 	std::unique_ptr<QwtPlotWrapper> m_plotwrap;
 	std::string m_strX, m_strY, m_strMon, m_strCmd;
+	std::string m_strX2, m_strY2, m_strMon2;
 
 	FitParamDlg *m_pFitParamDlg = nullptr;
 
@@ -121,6 +122,9 @@ protected slots:
 	void XAxisSelected(int);
 	void YAxisSelected(int);
 	void MonAxisSelected(int);
+	void XAxis2Selected(int);
+	void YAxis2Selected(int);
+	void MonAxis2Selected(int);
 	void NormaliseStateChanged(int state);
 	void MergeStateChanged(int state);
 	void StartOrSkipChanged(int);

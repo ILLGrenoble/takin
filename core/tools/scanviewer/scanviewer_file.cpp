@@ -300,7 +300,7 @@ void ScanViewerDlg::FileSelected()
 			else if(strFirstScanVar.substr(0, strCol.length()) == strColLower)
 				iAlternateX = iCurIdx;
 			// sometimes the scanned variable is named "QH", but the data column "H"
-			else if(strFirstScanVar.substr(1) == strColLower)
+			else if(strFirstScanVar.size() > 0 && strFirstScanVar.substr(1) == strColLower)
 				iAlternateX = iCurIdx;
 
 			// indices for second curve
@@ -309,7 +309,7 @@ void ScanViewerDlg::FileSelected()
 			else if(strSecondScanVar.substr(0, strCol.length()) == strColLower)
 				iAlternateX2 = iCurIdx;
 			// sometimes the scanned variable is named "QH", but the data column "H"
-			else if(strSecondScanVar.substr(1) == strColLower)
+			else if(strSecondScanVar.size() > 0 && strSecondScanVar.substr(1) == strColLower)
 				iAlternateX2 = iCurIdx;
 		}
 

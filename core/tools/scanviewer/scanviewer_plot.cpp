@@ -29,6 +29,7 @@
 #include "scanviewer.h"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <algorithm>
 #include <iterator>
@@ -126,7 +127,8 @@ void ScanViewerDlg::ClearPlot()
 	for(unsigned int curve = 0; curve < m_plotwrap->GetNumCurves(); ++curve)
 		set_qwt_data<t_real>()(*m_plotwrap, dummy, dummy, curve, false);
 
-	m_strX = m_strY = m_strCmd = "";
+	m_strX = m_strY = m_strMon = m_strCmd = "";
+	m_strX2 = m_strY2 = m_strMon2 = "";
 	plot->setAxisTitle(QwtPlot::xBottom, "");
 	plot->setAxisTitle(QwtPlot::yLeft, "");
 	plot->setTitle("");
@@ -159,9 +161,9 @@ void ScanViewerDlg::PlotScan()
 	if(!m_bDoUpdate)
 		return;
 
-	SetupPlotter(m_instrs.size() * 2);  // curves and points
-
-	bool bNormalise = checkNorm->isChecked();
+	// sub-curves per scan
+	std::size_t num_sub_curves = checkCurve2->isChecked() ? 2 : 1;
+	SetupPlotter(m_instrs.size() * num_sub_curves * 2);  // curves and points
 
 	m_strX = comboX->itemData(comboX->currentIndex(), Qt::UserRole).toString().toStdString();
 	m_strY = comboY->itemData(comboY->currentIndex(), Qt::UserRole).toString().toStdString();
@@ -169,197 +171,236 @@ void ScanViewerDlg::PlotScan()
 	if(m_strX == "" || m_strY == "" || m_strMon == "")
 		return;
 
+	if(num_sub_curves > 1)
+	{
+		m_strX2 = comboX->itemData(comboX2->currentIndex(), Qt::UserRole).toString().toStdString();
+		m_strY2 = comboY->itemData(comboY2->currentIndex(), Qt::UserRole).toString().toStdString();
+		m_strMon2 = comboMon->itemData(comboMon2->currentIndex(), Qt::UserRole).toString().toStdString();
+	}
+
+	bool bNormalise = checkNorm->isChecked();
 	const int iStartIdx = spinStart->value();
 	const int iEndSkip = spinStop->value();
 	const int iSkipRows = spinSkip->value();
-	m_vecX.resize(m_instrs.size());
-	m_vecY.resize(m_instrs.size());
-	m_vecYErr.resize(m_instrs.size());
+	m_vecX.resize(m_instrs.size() * num_sub_curves);
+	m_vecY.resize(m_instrs.size() * num_sub_curves);
+	m_vecYErr.resize(m_instrs.size() * num_sub_curves);
 
-	for(std::size_t instr_idx = 0; instr_idx < m_instrs.size(); ++instr_idx)
+	// plot the individual scan files
+	for(std::size_t scanfile_idx = 0; scanfile_idx < m_instrs.size(); ++scanfile_idx)
 	{
-		const tl::FileInstrBase<t_real_glob> *instr = m_instrs[instr_idx];
+		const tl::FileInstrBase<t_real_glob> *instr = m_instrs[scanfile_idx];
 		if(!instr)
 			continue;
 
-		std::vector<t_real>& vecX = m_vecX[instr_idx];
-		std::vector<t_real>& vecY = m_vecY[instr_idx];
-		std::vector<t_real>& vecYErr = m_vecYErr[instr_idx];
-
-		// get the data vectors
-		vecX = GetCol(instr, m_strX);
-		vecY = GetCol(instr, m_strY);
-		std::vector<t_real> vecMon = GetCol(instr, m_strMon);
-
-		// TODO: sort the data vectors
-		//tl::sort_3(vecX.begin(), vecX.end(), vecY.begin(), vecMon.begin());
-
-		bool bYIsACountVar = (m_strY == instr->GetCountVar() || m_strY == instr->GetMonVar());
-		m_plotwrap->GetCurve(instr_idx*2 + 1)->SetShowErrors(bYIsACountVar);
-
-		// see if there's a corresponding error column for the selected counter or monitor
-		std::string ctr_err_col, mon_err_col;
-
-		// get counter error if defined
-		if(m_strY == instr->GetCountVar())
-			ctr_err_col = instr->GetCountErr();
-		else if(m_strY == instr->GetMonVar())
-			ctr_err_col = instr->GetMonErr();
-
-		if(ctr_err_col != "")
+		auto plot_data = [this, instr, bNormalise, iStartIdx, iEndSkip, iSkipRows, num_sub_curves](
+			std::size_t plot_idx, std::size_t plot_sub_idx,
+			const std::string& strX, const std::string& strY, const std::string& strMon)
 		{
-			// use given error column
-			vecYErr = GetCol(instr, ctr_err_col);
-		}
-		else
-		{
-			vecYErr.clear();
-			vecYErr.reserve(vecY.size());
+			std::vector<t_real>& vecX = m_vecX[plot_idx];
+			std::vector<t_real>& vecY = m_vecY[plot_idx];
+			std::vector<t_real>& vecYErr = m_vecYErr[plot_idx];
 
-			// calculate error
-			for(std::size_t iY = 0; iY < vecY.size(); ++iY)
+			// get the data vectors
+			vecX = GetCol(instr, strX);
+			vecY = GetCol(instr, strY);
+			std::vector<t_real> vecMon = GetCol(instr, strMon);
+
+			// TODO: sort the data vectors
+			//tl::sort_3(vecX.begin(), vecX.end(), vecY.begin(), vecMon.begin());
+
+			bool bYIsACountVar = (strY == instr->GetCountVar() || strY == instr->GetMonVar());
+			m_plotwrap->GetCurve(plot_idx*2 + 1)->SetShowErrors(bYIsACountVar);
+
+			// see if there's a corresponding error column for the selected counter or monitor
+			std::string ctr_err_col, mon_err_col;
+
+			// get counter error if defined
+			if(strY == instr->GetCountVar())
+				ctr_err_col = instr->GetCountErr();
+			else if(strY == instr->GetMonVar())
+				ctr_err_col = instr->GetMonErr();
+
+			if(ctr_err_col != "")
 			{
-				t_real err = tl::float_equal(vecY[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecY[iY]));
-				vecYErr.push_back(err);
+				// use given error column
+				vecYErr = GetCol(instr, ctr_err_col);
 			}
-		}
-
-		// get monitor error if defined
-		std::vector<t_real> vecMonErr;
-		if(m_strMon == instr->GetCountVar())
-			mon_err_col = instr->GetCountErr();
-		else if(m_strMon == instr->GetMonVar())
-			mon_err_col = instr->GetMonErr();
-
-		if(mon_err_col != "")
-		{
-			// use given error column
-			vecMonErr = GetCol(instr, mon_err_col);
-		}
-		else
-		{
-			vecMonErr.reserve(vecY.size());
-
-			// calculate error
-			for(std::size_t iY = 0; iY < vecMon.size(); ++iY)
-			{
-				t_real err = tl::float_equal(vecMon[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecMon[iY]));
-				vecMonErr.push_back(err);
-			}
-		}
-
-
-		// remove points from start
-		if(iStartIdx != 0)
-		{
-			if(std::size_t(iStartIdx) >= vecX.size())
-				vecX.clear();
 			else
-				vecX.erase(vecX.begin(), vecX.begin() + iStartIdx);
-
-			if(std::size_t(iStartIdx) >= vecY.size())
 			{
-				vecY.clear();
-				vecMon.clear();
 				vecYErr.clear();
-				vecMonErr.clear();
-			}
-			else
-			{
-				vecY.erase(vecY.begin(), vecY.begin() + iStartIdx);
-				vecMon.erase(vecMon.begin(), vecMon.begin() + iStartIdx);
-				vecYErr.erase(vecYErr.begin(), vecYErr.begin() + iStartIdx);
-				vecMonErr.erase(vecMonErr.begin(), vecMonErr.begin() + iStartIdx);
-			}
-		}
+				vecYErr.reserve(vecY.size());
 
-		// remove points from end
-		if(iEndSkip != 0)
-		{
-			if(std::size_t(iEndSkip) >= vecX.size())
-				vecX.clear();
-			else
-				vecX.erase(vecX.end() - iEndSkip, vecX.end());
-
-			if(std::size_t(iEndSkip) >= vecY.size())
-			{
-				vecY.clear();
-				vecMon.clear();
-				vecYErr.clear();
-				vecMonErr.clear();
-			}
-			else
-			{
-				vecY.erase(vecY.end() - iEndSkip, vecY.end());
-				vecMon.erase(vecMon.end() - iEndSkip, vecMon.end());
-				vecYErr.erase(vecYErr.end() - iEndSkip, vecYErr.end());
-				vecMonErr.erase(vecMonErr.end() - iEndSkip, vecMonErr.end());
-			}
-		}
-
-		// interleave rows
-		if(iSkipRows != 0)
-		{
-			std::vector<t_real> vecXNew, vecYNew, vecMonNew, vecYErrNew, vecMonErrNew;
-
-			for(std::size_t iRow = 0; iRow < std::min(vecX.size(), vecY.size()); ++iRow)
-			{
-				vecXNew.push_back(vecX[iRow]);
-				vecYNew.push_back(vecY[iRow]);
-				vecMonNew.push_back(vecMon[iRow]);
-				vecYErrNew.push_back(vecYErr[iRow]);
-				vecMonErrNew.push_back(vecMonErr[iRow]);
-
-				iRow += iSkipRows;
-			}
-
-			vecX = std::move(vecXNew);
-			vecY = std::move(vecYNew);
-			vecMon = std::move(vecMonNew);
-			vecYErr = std::move(vecYErrNew);
-			vecMonErr = std::move(vecMonErrNew);
-		}
-
-
-		// errors
-		if(vecMon.size() != vecY.size() || vecMonErr.size() != vecYErr.size())
-		{
-			bNormalise = false;
-			tl::log_err("Counter and monitor data count do not match, cannot normalise.");
-		}
-
-		// normalise to monitor?
-		if(bNormalise)
-		{
-			for(std::size_t iY = 0; iY < vecY.size(); ++iY)
-			{
-				if(tl::float_equal(vecMon[iY], t_real(0), g_dEps))
+				// calculate error
+				for(std::size_t iY = 0; iY < vecY.size(); ++iY)
 				{
-					tl::log_warn("Monitor counter is zero for point ", iY + 1, ".");
+					t_real err = tl::float_equal(vecY[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecY[iY]));
+					vecYErr.push_back(err);
+				}
+			}
 
-					vecY[iY] = 0.;
-					vecYErr[iY] = 1.;
+			// get monitor error if defined
+			std::vector<t_real> vecMonErr;
+			if(strMon == instr->GetCountVar())
+				mon_err_col = instr->GetCountErr();
+			else if(strMon == instr->GetMonVar())
+				mon_err_col = instr->GetMonErr();
+
+			if(mon_err_col != "")
+			{
+				// use given error column
+				vecMonErr = GetCol(instr, mon_err_col);
+			}
+			else
+			{
+				vecMonErr.reserve(vecY.size());
+
+				// calculate error
+				for(std::size_t iY = 0; iY < vecMon.size(); ++iY)
+				{
+					t_real err = tl::float_equal(vecMon[iY], t_real(0), g_dEps) ? t_real(1) : std::sqrt(std::abs(vecMon[iY]));
+					vecMonErr.push_back(err);
+				}
+			}
+
+
+			// remove points from start
+			if(iStartIdx != 0)
+			{
+				if(std::size_t(iStartIdx) >= vecX.size())
+					vecX.clear();
+				else
+					vecX.erase(vecX.begin(), vecX.begin() + iStartIdx);
+
+				if(std::size_t(iStartIdx) >= vecY.size())
+				{
+					vecY.clear();
+					vecMon.clear();
+					vecYErr.clear();
+					vecMonErr.clear();
 				}
 				else
 				{
-					std::tie(vecY[iY], vecYErr[iY]) = tl::norm_cnts_to_mon(
-						vecY[iY], vecYErr[iY], vecMon[iY], vecMonErr[iY]);
+					vecY.erase(vecY.begin(), vecY.begin() + iStartIdx);
+					vecMon.erase(vecMon.begin(), vecMon.begin() + iStartIdx);
+					vecYErr.erase(vecYErr.begin(), vecYErr.begin() + iStartIdx);
+					vecMonErr.erase(vecMonErr.begin(), vecMonErr.begin() + iStartIdx);
 				}
 			}
+
+			// remove points from end
+			if(iEndSkip != 0)
+			{
+				if(std::size_t(iEndSkip) >= vecX.size())
+					vecX.clear();
+				else
+					vecX.erase(vecX.end() - iEndSkip, vecX.end());
+
+				if(std::size_t(iEndSkip) >= vecY.size())
+				{
+					vecY.clear();
+					vecMon.clear();
+					vecYErr.clear();
+					vecMonErr.clear();
+				}
+				else
+				{
+					vecY.erase(vecY.end() - iEndSkip, vecY.end());
+					vecMon.erase(vecMon.end() - iEndSkip, vecMon.end());
+					vecYErr.erase(vecYErr.end() - iEndSkip, vecYErr.end());
+					vecMonErr.erase(vecMonErr.end() - iEndSkip, vecMonErr.end());
+				}
+			}
+
+			// interleave rows
+			if(iSkipRows != 0)
+			{
+				std::size_t new_size = std::min(vecX.size(), vecY.size());
+
+				std::vector<t_real> vecXNew, vecYNew, vecMonNew, vecYErrNew, vecMonErrNew;
+				vecXNew.reserve(new_size);
+				vecYNew.reserve(new_size);
+				vecMonNew.reserve(new_size);
+				vecYErrNew.reserve(new_size);
+				vecMonErrNew.reserve(new_size);
+
+				for(std::size_t iRow = 0; iRow < new_size; ++iRow)
+				{
+					vecXNew.push_back(vecX[iRow]);
+					vecYNew.push_back(vecY[iRow]);
+					vecMonNew.push_back(vecMon[iRow]);
+					vecYErrNew.push_back(vecYErr[iRow]);
+					vecMonErrNew.push_back(vecMonErr[iRow]);
+
+					iRow += iSkipRows;
+				}
+
+				vecX = std::move(vecXNew);
+				vecY = std::move(vecYNew);
+				vecMon = std::move(vecMonNew);
+				vecYErr = std::move(vecYErrNew);
+				vecMonErr = std::move(vecMonErrNew);
+			}
+
+
+			// errors
+			bool bNorm = bNormalise;
+			if(vecMon.size() != vecY.size() || vecMonErr.size() != vecYErr.size())
+			{
+				bNorm = false;
+				tl::log_err("Counter and monitor data count do not match, cannot normalise.");
+			}
+
+			// normalise to monitor?
+			if(bNorm)
+			{
+				for(std::size_t iY = 0; iY < vecY.size(); ++iY)
+				{
+					if(tl::float_equal(vecMon[iY], t_real(0), g_dEps))
+					{
+						tl::log_warn("Monitor counter is zero for point ", iY + 1, ".");
+
+						vecY[iY] = 0.;
+						vecYErr[iY] = 1.;
+					}
+					else
+					{
+						std::tie(vecY[iY], vecYErr[iY]) = tl::norm_cnts_to_mon(
+							vecY[iY], vecYErr[iY], vecMon[iY], vecMonErr[iY]);
+					}
+				}
+			}
+
+
+			// show fit (for first scan file)
+			if(m_vecFitX.size() && plot_idx == 0)
+				set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, plot_idx*2, false);
+			else
+				set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, plot_idx*2, false);
+			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, plot_idx*2 + 1, false, &vecYErr);
+
+			// legend
+			std::ostringstream ostrLegend;
+			ostrLegend << instr->GetScanNumber();
+			if(num_sub_curves > 1)
+				ostrLegend << " (" << plot_sub_idx + 1 << ")";
+			m_plotwrap->GetCurve(plot_idx*2 + 1)->setTitle(ostrLegend.str().c_str());
+			m_plotwrap->GetCurve(plot_idx*2 + 0)->setItemAttribute(QwtPlotCurve::Legend, false);
+			m_plotwrap->GetCurve(plot_idx*2 + 1)->setItemAttribute(QwtPlotCurve::Legend, num_sub_curves > 1);
+		};
+
+
+		// plot the individual sub-curves
+		std::size_t plot_idx = scanfile_idx * num_sub_curves;
+
+		for(std::size_t sub_idx = 0; sub_idx < num_sub_curves; ++sub_idx)
+		{
+			const std::string& strX = (sub_idx == 1 ? m_strX2 : m_strX);
+			const std::string& strY = (sub_idx == 1 ? m_strY2 : m_strY);
+			const std::string& strMon = (sub_idx == 1 ? m_strMon2 : m_strMon);
+
+			plot_data(plot_idx + sub_idx, sub_idx, strX, strY, strMon);
 		}
-
-
-		// show fit (for fist scan file)
-		if(m_vecFitX.size() && instr_idx == 0)
-			set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, instr_idx*2, false);
-		else
-			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2, false);
-		set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, instr_idx*2 + 1, false, &vecYErr);
-
-		// legend
-		m_plotwrap->GetCurve(instr_idx*2 + 1)->setTitle(instr->GetScanNumber().c_str());
-		m_plotwrap->GetCurve(instr_idx*2 + 0)->setItemAttribute(QwtPlotCurve::Legend, false);
-		m_plotwrap->GetCurve(instr_idx*2 + 1)->setItemAttribute(QwtPlotCurve::Legend, m_instrs.size() > 1);
 	}
 
 	// labels

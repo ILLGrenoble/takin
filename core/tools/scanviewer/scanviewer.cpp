@@ -128,6 +128,9 @@ ScanViewerDlg::ScanViewerDlg(QWidget* pParent, QSettings* core_settings)
 	QObject::connect(comboX, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxisSelected);
 	QObject::connect(comboY, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxisSelected);
 	QObject::connect(comboMon, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::MonAxisSelected);
+	QObject::connect(comboX2, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::XAxis2Selected);
+	QObject::connect(comboY2, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::YAxis2Selected);
+	QObject::connect(comboMon2, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), pThis, &ScanViewerDlg::MonAxis2Selected);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
 	QObject::connect(checkNorm, static_cast<void (QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), pThis, &ScanViewerDlg::NormaliseStateChanged);
 	QObject::connect(checkMerge, static_cast<void (QCheckBox::*)(Qt::CheckState)>(&QCheckBox::checkStateChanged), pThis, &ScanViewerDlg::MergeStateChanged);
@@ -282,6 +285,9 @@ void ScanViewerDlg::keyPressEvent(QKeyEvent* pEvt)
 void ScanViewerDlg::XAxisSelected(int) { PlotScan(); }
 void ScanViewerDlg::YAxisSelected(int) { PlotScan(); }
 void ScanViewerDlg::MonAxisSelected(int) { PlotScan(); }
+void ScanViewerDlg::XAxis2Selected(int) { PlotScan(); }
+void ScanViewerDlg::YAxis2Selected(int) { PlotScan(); }
+void ScanViewerDlg::MonAxis2Selected(int) { PlotScan(); }
 void ScanViewerDlg::NormaliseStateChanged(int) { PlotScan(); }
 void ScanViewerDlg::MergeStateChanged(int) { FileSelected(); }
 void ScanViewerDlg::StartOrSkipChanged(int) { PlotScan(); }
@@ -297,6 +303,8 @@ void ScanViewerDlg::Curve2Checked(int iState)
 	comboX2->setEnabled(show_curve2);
 	comboY2->setEnabled(show_curve2);
 	comboMon2->setEnabled(show_curve2);
+
+	PlotScan();
 }
 
 
