@@ -1,7 +1,7 @@
 /**
  * scan viewer
  * @author Tobias Weber <tweber@ill.fr>
- * @date mar-2015 - 2025
+ * @date mar-2015 - 2026
  * @license GPLv2
  *
  * ----------------------------------------------------------------------------

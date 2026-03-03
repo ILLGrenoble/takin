@@ -437,6 +437,23 @@ template<class t_real> std::string FileRaw<t_real>::GetMonVar() const
 }
 
 
+template<class t_real> std::string FileRaw<t_real>::GetTimerVar() const
+{
+	using t_map = typename FileInstrBase<t_real>::t_mapParams;
+	const t_map& params = GetAllParams();
+
+	std::string strColCtr;
+
+	{
+		typename t_map::const_iterator iter = params.find("col_timer");
+		if(iter != params.end())
+			strColCtr = iter->second;
+	}
+
+	return strColCtr;
+}
+
+
 template<class t_real> std::string FileRaw<t_real>::GetCountErr() const
 {
 	using t_map = typename FileInstrBase<t_real>::t_mapParams;

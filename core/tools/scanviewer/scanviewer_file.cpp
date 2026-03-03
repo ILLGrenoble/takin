@@ -255,12 +255,13 @@ void ScanViewerDlg::FileSelected()
 	std::vector<std::string> vecScanVars = m_instrs[0]->GetScannedVars();
 	std::string strCntVar = m_instrs[0]->GetCountVar();
 	std::string strMonVar = m_instrs[0]->GetMonVar();
+	std::string strTimerVar = m_instrs[0]->GetTimerVar();
 	//tl::log_info("Count var: ", strCntVar, ", mon var: ", strMonVar);
 
 	const std::wstring strPM = tl::get_spec_char_utf16("pm");  // +-
 
 	m_bDoUpdate = false;
-	int iIdxX = -1, iIdxX2 = -1, iIdxY = -1, iIdxMon = -1, iCurIdx = 0;
+	int iIdxX = -1, iIdxX2 = -1, iIdxY = -1, iIdxY2 = -1, iIdxMon = -1, iCurIdx = 0;
 	int iAlternateX = 0, iAlternateX2 = -1;
 	const tl::FileInstrBase<t_real>::t_vecColNames& vecColNames = m_instrs[0]->GetColNames();
 	for(const tl::FileInstrBase<t_real>::t_vecColNames::value_type& strCol : vecColNames)
@@ -318,6 +319,8 @@ void ScanViewerDlg::FileSelected()
 			iIdxY = iCurIdx;
 		if(tl::str_to_lower(strMonVar) == strColLower)
 			iIdxMon = iCurIdx;
+		if(tl::str_to_lower(strTimerVar) == strColLower)
+			iIdxY2 = iCurIdx;
 
 		++iCurIdx;
 	}
@@ -328,10 +331,12 @@ void ScanViewerDlg::FileSelected()
 		iIdxX2 = iAlternateX2;
 	if(iIdxX2 < 0 && iAlternateX2 < 0)
 		iIdxX2 = iIdxX;
+	if(iIdxY2 < 0)
+		iIdxY2 = iIdxY;
 	comboX->setCurrentIndex(iIdxX);
 	comboX2->setCurrentIndex(iIdxX2);
 	comboY->setCurrentIndex(iIdxY);
-	comboY2->setCurrentIndex(iIdxY);
+	comboY2->setCurrentIndex(iIdxY2);
 	comboMon->setCurrentIndex(iIdxMon);
 	comboMon2->setCurrentIndex(iIdxMon);
 

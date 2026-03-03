@@ -673,6 +673,15 @@ template<class t_real> std::string FileILLH5<t_real>::GetMonVar() const
 }
 
 
+template<class t_real> std::string FileILLH5<t_real>::GetTimerVar() const
+{
+	std::string strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(Time)REX", strRet))
+		return strRet;
+	return "";
+}
+
+
 template<class t_real> std::string FileILLH5<t_real>::GetTitle() const
 {
 	return m_title;

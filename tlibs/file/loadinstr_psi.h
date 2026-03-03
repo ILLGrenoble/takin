@@ -993,6 +993,16 @@ std::string FilePsi<t_real>::GetMonVar() const
 
 
 template<class t_real>
+std::string FilePsi<t_real>::GetTimerVar() const
+{
+	std::string strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(TIME)REX", strRet))
+		return strRet;
+	return "";
+}
+
+
+template<class t_real>
 std::string FilePsi<t_real>::GetScanCommand() const
 {
 	std::string strCmd;

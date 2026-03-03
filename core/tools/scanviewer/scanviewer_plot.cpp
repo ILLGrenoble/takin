@@ -131,6 +131,8 @@ void ScanViewerDlg::ClearPlot()
 	m_strX2 = m_strY2 = m_strMon2 = "";
 	plot->setAxisTitle(QwtPlot::xBottom, "");
 	plot->setAxisTitle(QwtPlot::yLeft, "");
+	plot->setAxisTitle(QwtPlot::xTop, "");
+	plot->setAxisTitle(QwtPlot::yRight, "");
 	plot->setTitle("");
 
 	auto edits = { editA, editB, editC,
@@ -151,6 +153,8 @@ void ScanViewerDlg::ClearPlot()
 	spinStop->setValue(0);
 	spinSkip->setValue(0);
 
+	m_plotwrap->GetPlot()->enableAxis(QwtPlot::yRight, false);
+	m_plotwrap->GetPlot()->enableAxis(QwtPlot::xTop, false);
 	m_plotwrap->GetPlot()->updateLegend();
 	m_plotwrap->GetPlot()->replot();
 }
@@ -176,6 +180,14 @@ void ScanViewerDlg::PlotScan()
 		m_strX2 = comboX->itemData(comboX2->currentIndex(), Qt::UserRole).toString().toStdString();
 		m_strY2 = comboY->itemData(comboY2->currentIndex(), Qt::UserRole).toString().toStdString();
 		m_strMon2 = comboMon->itemData(comboMon2->currentIndex(), Qt::UserRole).toString().toStdString();
+
+		m_plotwrap->GetPlot()->enableAxis(QwtPlot::yRight, true);
+		m_plotwrap->GetPlot()->enableAxis(QwtPlot::xTop, true);
+	}
+	else
+	{
+		m_plotwrap->GetPlot()->enableAxis(QwtPlot::yRight, false);
+		m_plotwrap->GetPlot()->enableAxis(QwtPlot::xTop, false);
 	}
 
 	bool bNormalise = checkNorm->isChecked();
@@ -378,7 +390,8 @@ void ScanViewerDlg::PlotScan()
 				set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, curve_idx, false);
 			else
 				set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, curve_idx, false);
-			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, datapts_idx, false, &vecYErr);
+			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, datapts_idx, false, &vecYErr,
+				QwtPlot::xBottom, plot_sub_idx % 2 ? QwtPlot::yRight : QwtPlot::yLeft);
 
 			// legend
 			std::ostringstream ostrLegend;
@@ -408,13 +421,26 @@ void ScanViewerDlg::PlotScan()
 
 	// labels
 	QString strY = m_strY.c_str();
+	QString strY2 = m_strY2.c_str();
 	if(bNormalise)
 	{
-		strY += " / ";
-		strY += m_strMon.c_str();
+		if(strY.length())
+		{
+			strY += " / ";
+			strY += m_strMon.c_str();
+		}
+
+		if(strY2.length())
+		{
+			strY2 += " / ";
+			strY2 += m_strMon.c_str();
+		}
 	}
+
 	plot->setAxisTitle(QwtPlot::xBottom, m_strX.c_str());
 	plot->setAxisTitle(QwtPlot::yLeft, strY);
+	plot->setAxisTitle(QwtPlot::xTop, m_strX2.c_str());
+	plot->setAxisTitle(QwtPlot::yRight, strY2);
 	plot->setTitle(m_strCmd.c_str());
 
 	// replot

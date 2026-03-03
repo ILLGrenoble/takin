@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -192,7 +192,8 @@ public:
 
 	void SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
 		unsigned int iCurve = 0, bool bReplot = true, bool bCopy = false,
-		const std::vector<t_real_qwt>* pvecYErr = nullptr);
+		const std::vector<t_real_qwt>* pvecYErr = nullptr,
+	int x_axis = QwtPlot::xBottom, int y_axis = QwtPlot::yLeft);
 
 	std::mutex& GetMutex() { return m_mutex; }
 
@@ -219,7 +220,8 @@ struct set_qwt_data
 	void operator()(QwtPlotWrapper& plot,
 		const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
 		unsigned int iCurve = 0, bool bReplot = true,
-		const std::vector<t_real>* pvecYErr = nullptr) {}
+		const std::vector<t_real>* pvecYErr = nullptr,
+		int x_axis = QwtPlot::xBottom, int y_axis = QwtPlot::yLeft) {}
 };
 
 // same types -> set data directly
@@ -229,10 +231,11 @@ struct set_qwt_data<t_real, 1>
 	void operator()(QwtPlotWrapper& plot,
 		const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
 		unsigned int iCurve = 0, bool bReplot = true,
-		const std::vector<t_real>* pvecYErr = nullptr)
+		const std::vector<t_real>* pvecYErr = nullptr,
+		int x_axis = QwtPlot::xBottom, int y_axis = QwtPlot::yLeft)
 	{
 		// copy pointers
-		plot.SetData(vecX, vecY, iCurve, bReplot, false, pvecYErr);
+		plot.SetData(vecX, vecY, iCurve, bReplot, false, pvecYErr, x_axis, y_axis);
 	}
 };
 
@@ -244,17 +247,20 @@ struct set_qwt_data<t_real, 0>
 	void operator()(QwtPlotWrapper& plot,
 		const std::vector<t_real>& vecX, const std::vector<t_real>& vecY,
 		unsigned int iCurve = 0, bool bReplot = true,
-		const std::vector<t_real>* pvecYErr = nullptr)
+		const std::vector<t_real>* pvecYErr = nullptr,
+		int x_axis = QwtPlot::xBottom, int y_axis = QwtPlot::yLeft)
 	{
 		std::vector<t_real_qwt> vecNewX, vecNewY;
 		vecNewX.reserve(vecX.size());
 		vecNewY.reserve(vecY.size());
 
-		for(t_real d : vecX) vecNewX.push_back(d);
-		for(t_real d : vecY) vecNewY.push_back(d);
+		for(t_real d : vecX)
+			vecNewX.push_back(d);
+		for(t_real d : vecY)
+			vecNewY.push_back(d);
 
 		// copy data
-		plot.SetData(vecNewX, vecNewY, iCurve, bReplot, true);
+		plot.SetData(vecNewX, vecNewY, iCurve, bReplot, true, nullptr, x_axis, y_axis);
 	}
 };
 

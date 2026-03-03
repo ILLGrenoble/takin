@@ -586,6 +586,16 @@ std::string FileFrm<t_real>::GetCountVar() const
 
 
 template<class t_real>
+std::string FileFrm<t_real>::GetTimerVar() const
+{
+	std::string strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(timer))REX", strRet, true))
+		return strRet;
+	return "";
+}
+
+
+template<class t_real>
 std::string FileFrm<t_real>::GetMonVar() const
 {
 	std::string strRet;

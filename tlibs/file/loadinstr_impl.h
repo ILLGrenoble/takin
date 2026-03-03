@@ -412,6 +412,13 @@ const std::vector<std::array<t_real, 6>>& FileInstrBase<t_real>::GetPolStates() 
 
 
 template<class t_real>
+std::string FileInstrBase<t_real>::GetTimerVar() const
+{
+	return "";
+}
+
+
+template<class t_real>
 std::string FileInstrBase<t_real>::GetCountErr() const
 {
 	return "";

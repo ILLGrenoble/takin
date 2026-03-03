@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -217,7 +217,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 	QwtText txt = m_pPlot->title();
 	txt.setFont(g_fontGfx);
 	m_pPlot->setTitle(txt);
-	for(QwtPlot::Axis ax : {QwtPlot::yLeft, QwtPlot::yRight, QwtPlot::xBottom, QwtPlot::xTop})
+	for(QwtPlot::Axis ax : { QwtPlot::yLeft, QwtPlot::yRight, QwtPlot::xBottom, QwtPlot::xTop })
 	{
 		txt = m_pPlot->axisTitle(ax);
 		txt.setFont(g_fontGfx);
@@ -261,11 +261,13 @@ void QwtPlotWrapper::ToggleLogY()
 	if(m_curYScaler == 0)
 	{
 		m_pPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLogScaleEngine{10});
+		m_pPlot->setAxisScaleEngine(QwtPlot::yRight, new QwtLogScaleEngine{10});
 		m_curYScaler = 1;
 	}
 	else if(m_curYScaler == 1)
 	{
 		m_pPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLinearScaleEngine{});
+		m_pPlot->setAxisScaleEngine(QwtPlot::yRight, new QwtLinearScaleEngine{});
 		m_curYScaler = 0;
 	}
 	m_pPlot->replot();
@@ -273,7 +275,8 @@ void QwtPlotWrapper::ToggleLogY()
 
 
 void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vector<t_real_qwt>& vecY,
-	unsigned int iCurve, bool bReplot, bool bCopy, const std::vector<t_real_qwt>* pvecYErr)
+	unsigned int iCurve, bool bReplot, bool bCopy, const std::vector<t_real_qwt>* pvecYErr,
+	int x_axis, int y_axis)
 {
 	std::lock_guard<decltype(m_mutex)> lock(m_mutex);
 
@@ -281,10 +284,12 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 	{
 		m_vecCurves[iCurve]->setRawSamples(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 		m_vecCurves[iCurve]->SetYErr(pvecYErr);
+		m_vecCurves[iCurve]->setXAxis(x_axis);
+		m_vecCurves[iCurve]->setYAxis(y_axis);
 
 		m_bHasDataPtrs = true;
 		if(iCurve >= m_vecDataPtrs.size())
-			m_vecDataPtrs.resize(iCurve+1);
+			m_vecDataPtrs.resize(iCurve + 1);
 
 		std::get<0>(m_vecDataPtrs[iCurve]) = &vecX;
 		std::get<1>(m_vecDataPtrs[iCurve]) = &vecY;
@@ -294,6 +299,8 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 	{
 		m_vecCurves[iCurve]->setSamples(vecX.data(), vecY.data(), std::min(vecX.size(), vecY.size()));
 		//m_vecCurves[iCurve]->SetYErr(pvecYErr);
+		m_vecCurves[iCurve]->setXAxis(x_axis);
+		m_vecCurves[iCurve]->setYAxis(y_axis);
 
 		m_bHasDataPtrs = false;
 		m_vecDataPtrs.clear();
@@ -318,6 +325,9 @@ void QwtPlotWrapper::SavePlotGraphics() const
 }
 
 
+/**
+ * save the data of the plot in a column-based format
+ */
 void QwtPlotWrapper::SavePlot() const
 {
 	if(!m_bHasDataPtrs && !m_pRaster)
@@ -425,6 +435,9 @@ void QwtPlotWrapper::SavePlot() const
 }
 
 
+/**
+ * export to gnuplot
+ */
 void QwtPlotWrapper::ExportGpl() const
 {
 	if(!m_bHasDataPtrs && !m_pRaster)
@@ -842,12 +855,12 @@ void MyQwtCurve::drawDots(QPainter* pPainter,
 			else	// poisson statistics is assumed
 				err = tl::float_equal<t_real_qwt>(pt.y(), t_real_qwt(0)) ? 1. : sqrt(pt.y());
 
-			QPointF ptUpper(scX.transform(pt.x()), scY.transform(pt.y()+err));
-			QPointF ptLower(scX.transform(pt.x()), scY.transform(pt.y()-err));
-			QPointF ptUpperLeft(scX.transform(pt.x())-4, scY.transform(pt.y()+err));
-			QPointF ptUpperRight(scX.transform(pt.x())+4, scY.transform(pt.y()+err));
-			QPointF ptLowerLeft(scX.transform(pt.x())-4, scY.transform(pt.y()-err));
-			QPointF ptLowerRight(scX.transform(pt.x())+4, scY.transform(pt.y()-err));
+			QPointF ptUpper(scX.transform(pt.x()), scY.transform(pt.y() + err));
+			QPointF ptLower(scX.transform(pt.x()), scY.transform(pt.y() - err));
+			QPointF ptUpperLeft(scX.transform(pt.x()) - 4, scY.transform(pt.y() + err));
+			QPointF ptUpperRight(scX.transform(pt.x()) + 4, scY.transform(pt.y() + err));
+			QPointF ptLowerLeft(scX.transform(pt.x()) - 4, scY.transform(pt.y() - err));
+			QPointF ptLowerRight(scX.transform(pt.x()) + 4, scY.transform(pt.y() - err));
 
 			pPainter->drawLine(QLineF(ptLower, ptUpper));
 			pPainter->drawLine(QLineF(ptUpperLeft, ptUpperRight));
