@@ -159,7 +159,8 @@ protected:
 	QwtPlot *m_pPlot = nullptr;
 	QwtPlotGrid *m_pGrid = nullptr;
 	QwtPlotPicker *m_pPicker = nullptr;
-	QwtPlotZoomer *m_pZoomer = nullptr;
+	// zoomers for curve 1 (xBottom, yLeft) and curve 2 (xTop, yRight)
+	QwtPlotZoomer *m_pZoomer = nullptr, *m_pZoomer2 = nullptr;
 	QwtPlotPanner *m_pPanner = nullptr;
 	QwtLegend *m_pLegend = nullptr;
 
@@ -186,6 +187,7 @@ public:
 	MyQwtCurve* GetCurve(unsigned int iCurve = 0) { return m_vecCurves[iCurve]; }
 	unsigned int GetNumCurves() const { return m_vecCurves.size(); }
 	QwtPlotZoomer* GetZoomer() { return m_pZoomer; }
+	QwtPlotZoomer* GetZoomer2() { return m_pZoomer2; }
 	QwtPlotPicker* GetPicker() { return m_pPicker; }
 	MyQwtRasterData* GetRaster() { return m_pRaster; }
 	bool HasTrackerSignal() const;
@@ -282,6 +284,13 @@ extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
 	bool bMetaCall = false, QwtPlotWrapper* pPlotWrap = nullptr,
 	bool bUseYErrs = false, const std::vector<std::vector<t_real_qwt>> *vecvecYErr = nullptr);
+
+extern void set_zoomer_base(QwtPlotZoomer *pZoomer, QwtPlotZoomer *pZoomer2,
+	const std::vector<std::vector<t_real_qwt>>& vecvecX,
+	const std::vector<std::vector<t_real_qwt>>& vecvecY,
+	bool bMetaCall = false, QwtPlotWrapper* pPlotWrap = nullptr,
+	bool bUseYErrs = false, const std::vector<std::vector<t_real_qwt>> *vecvecYErr = nullptr,
+	std::size_t num_curves_per_subcurve = 2);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX,

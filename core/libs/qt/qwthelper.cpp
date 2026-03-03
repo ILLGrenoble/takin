@@ -79,6 +79,14 @@ public:
 		QwtPlotZoomer::setEnabled(true);
 	}
 
+	template<class t_widget_or_canvas>
+	explicit MyQwtPlotZoomer(int x_axis, int y_axis, t_widget_or_canvas* ptr)
+		: QwtPlotZoomer(x_axis, y_axis, ptr)
+	{
+		QwtPlotZoomer::setMaxStackDepth(-1);
+		QwtPlotZoomer::setEnabled(true);
+	}
+
 	virtual ~MyQwtPlotZoomer() {}
 };
 
@@ -203,6 +211,7 @@ QwtPlotWrapper::QwtPlotWrapper(QwtPlot *pPlot,
 	m_pPanner->setMouseButton(Qt::MiddleButton);
 
 	m_pZoomer = new MyQwtPlotZoomer(m_pPlot->canvas());
+	m_pZoomer2 = new MyQwtPlotZoomer(QwtPlot::xTop, QwtPlot::yRight, m_pPlot->canvas());
 
 	m_pPicker = new MyQwtPlotPicker(this, bNoTrackerSignal);
 	m_pPlot->canvas()->setMouseTracking(true);
@@ -236,6 +245,7 @@ QwtPlotWrapper::~QwtPlotWrapper()
 	}
 	if(m_pGrid) { delete m_pGrid; m_pGrid = nullptr; }
 	if(m_pZoomer) { delete m_pZoomer; m_pZoomer = nullptr; }
+	if(m_pZoomer2) { delete m_pZoomer2; m_pZoomer2 = nullptr; }
 	if(m_pPanner) { delete m_pPanner; m_pPanner = nullptr; }
 	//if(m_pLegend) { delete m_pLegend; m_pLegend = nullptr; }
 
@@ -308,7 +318,11 @@ void QwtPlotWrapper::SetData(const std::vector<t_real_qwt>& vecX, const std::vec
 
 	if(bReplot)
 	{
-		set_zoomer_base(m_pZoomer, vecX, vecY, false, nullptr,
+		QwtPlotZoomer* zoomer = m_pZoomer;
+		if(x_axis == QwtPlot::xTop && y_axis == QwtPlot::yRight)
+			zoomer = m_pZoomer2;
+
+		set_zoomer_base(zoomer, vecX, vecY, false, nullptr,
 			m_vecCurves[iCurve]->GetShowErrors(), pvecYErr);
 		m_pPlot->replot();
 	}
@@ -1011,6 +1025,58 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer,
 
 	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap,
 		bUseYErrs, vecvecYErr ? &vecYErr : nullptr);
+}
+
+
+/**
+ * calculate zoom rectangle from sets of x and y data points
+ * assume interleaved data for two sub-curves: (xBottom, yLeft) and (xTop, yRight)
+ */
+void set_zoomer_base(QwtPlotZoomer *pZoomer, QwtPlotZoomer *pZoomer2,
+	const std::vector<std::vector<t_real_qwt>>& vecvecX,
+	const std::vector<std::vector<t_real_qwt>>& vecvecY,
+	bool bMetaCall, QwtPlotWrapper* pPlotWrap,
+	bool bUseYErrs, const std::vector<std::vector<t_real_qwt>> *vecvecYErr,
+	std::size_t num_curves_per_subcurve)
+{
+	if(!pZoomer || !vecvecX.size() || !vecvecY.size())
+		return;
+
+	std::vector<t_real_qwt> vecX, vecY, vecYErr;
+	std::vector<t_real_qwt> vecX2, vecY2, vecYErr2;
+
+	bool use_curve2 = false;
+	std::size_t sub_curve = 0;
+	for(std::size_t iVec = 0; iVec < vecvecX.size(); ++iVec)
+	{
+		std::vector<t_real_qwt> *pvecx = &vecX;
+		std::vector<t_real_qwt> *pvecy = &vecY;
+		std::vector<t_real_qwt> *pvecyerr = &vecYErr;
+
+		if(use_curve2)
+		{
+			pvecx = &vecX2;
+			pvecy = &vecY2;
+			pvecyerr = &vecYErr2;
+		}
+
+		pvecx->insert(pvecx->end(), vecvecX[iVec].begin(), vecvecX[iVec].end());
+		pvecy->insert(pvecy->end(), vecvecY[iVec].begin(), vecvecY[iVec].end());
+
+		if(vecvecYErr)
+			pvecyerr->insert(pvecyerr->end(), (*vecvecYErr)[iVec].begin(), (*vecvecYErr)[iVec].end());
+
+		if(++sub_curve >= num_curves_per_subcurve)
+		{
+			sub_curve = 0;
+			use_curve2 = !use_curve2;
+		}
+	}
+
+	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap,
+		bUseYErrs, vecvecYErr ? &vecYErr : nullptr);
+	set_zoomer_base(pZoomer2, vecX2, vecY2, bMetaCall, pPlotWrap,
+		bUseYErrs, vecvecYErr ? &vecYErr2 : nullptr);
 }
 
 

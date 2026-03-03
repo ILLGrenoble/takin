@@ -387,9 +387,14 @@ void ScanViewerDlg::PlotScan()
 
 			// show fit (for first scan file)
 			if(m_vecFitX.size() && plot_idx == 0)
+			{
 				set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, curve_idx, false);
+			}
 			else
-				set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, curve_idx, false);
+			{
+				set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, curve_idx, false, nullptr,
+					QwtPlot::xBottom, plot_sub_idx % 2 ? QwtPlot::yRight : QwtPlot::yLeft);
+			}
 			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, datapts_idx, false, &vecYErr,
 				QwtPlot::xBottom, plot_sub_idx % 2 ? QwtPlot::yRight : QwtPlot::yLeft);
 
@@ -444,7 +449,16 @@ void ScanViewerDlg::PlotScan()
 	plot->setTitle(m_strCmd.c_str());
 
 	// replot
-	set_zoomer_base(m_plotwrap->GetZoomer(), m_vecX, m_vecY, false, m_plotwrap.get(), true, &m_vecYErr);
+	if(num_sub_curves > 1)
+	{
+		set_zoomer_base(m_plotwrap->GetZoomer(), m_plotwrap->GetZoomer2(),
+			m_vecX, m_vecY, false, m_plotwrap.get(), true, &m_vecYErr, 2 /* points and curves */);
+	}
+	else
+	{
+		set_zoomer_base(m_plotwrap->GetZoomer(),
+			m_vecX, m_vecY, false, m_plotwrap.get(), true, &m_vecYErr);
+	}
 	m_plotwrap->GetPlot()->updateLegend();
 	m_plotwrap->GetPlot()->replot();
 
