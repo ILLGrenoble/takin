@@ -186,7 +186,7 @@ void ScanViewerDlg::PlotScan()
 	m_vecY.resize(m_instrs.size() * num_sub_curves);
 	m_vecYErr.resize(m_instrs.size() * num_sub_curves);
 
-	// plot the individual scan files
+	// iterate over the individual scan files
 	for(std::size_t scanfile_idx = 0; scanfile_idx < m_instrs.size(); ++scanfile_idx)
 	{
 		const tl::FileInstrBase<t_real_glob> *instr = m_instrs[scanfile_idx];
@@ -209,8 +209,11 @@ void ScanViewerDlg::PlotScan()
 			// TODO: sort the data vectors
 			//tl::sort_3(vecX.begin(), vecX.end(), vecY.begin(), vecMon.begin());
 
+			const std::size_t curve_idx = plot_idx*2 + 0;
+			const std::size_t datapts_idx = plot_idx*2 + 1;
+
 			bool bYIsACountVar = (strY == instr->GetCountVar() || strY == instr->GetMonVar());
-			m_plotwrap->GetCurve(plot_idx*2 + 1)->SetShowErrors(bYIsACountVar);
+			m_plotwrap->GetCurve(datapts_idx)->SetShowErrors(bYIsACountVar);
 
 			// see if there's a corresponding error column for the selected counter or monitor
 			std::string ctr_err_col, mon_err_col;
@@ -262,7 +265,6 @@ void ScanViewerDlg::PlotScan()
 					vecMonErr.push_back(err);
 				}
 			}
-
 
 			// remove points from start
 			if(iStartIdx != 0)
@@ -371,22 +373,23 @@ void ScanViewerDlg::PlotScan()
 				}
 			}
 
-
 			// show fit (for first scan file)
 			if(m_vecFitX.size() && plot_idx == 0)
-				set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, plot_idx*2, false);
+				set_qwt_data<t_real>()(*m_plotwrap, m_vecFitX, m_vecFitY, curve_idx, false);
 			else
-				set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, plot_idx*2, false);
-			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, plot_idx*2 + 1, false, &vecYErr);
+				set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, curve_idx, false);
+			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, datapts_idx, false, &vecYErr);
 
 			// legend
 			std::ostringstream ostrLegend;
 			ostrLegend << instr->GetScanNumber();
 			if(num_sub_curves > 1)
 				ostrLegend << " (" << plot_sub_idx + 1 << ")";
-			m_plotwrap->GetCurve(plot_idx*2 + 1)->setTitle(ostrLegend.str().c_str());
-			m_plotwrap->GetCurve(plot_idx*2 + 0)->setItemAttribute(QwtPlotCurve::Legend, false);
-			m_plotwrap->GetCurve(plot_idx*2 + 1)->setItemAttribute(QwtPlotCurve::Legend, num_sub_curves > 1);
+			m_plotwrap->GetCurve(datapts_idx)->setTitle(ostrLegend.str().c_str());
+			m_plotwrap->GetCurve(curve_idx)->setItemAttribute(
+				QwtPlotCurve::Legend, false);
+			m_plotwrap->GetCurve(datapts_idx)->setItemAttribute(
+				QwtPlotCurve::Legend, m_instrs.size() * num_sub_curves > 1);
 		};
 
 
