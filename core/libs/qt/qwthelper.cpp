@@ -1036,24 +1036,21 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer, QwtPlotZoomer *pZoomer2,
 	const std::vector<std::vector<t_real_qwt>>& vecvecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
 	bool bMetaCall, QwtPlotWrapper* pPlotWrap,
-	bool bUseYErrs, const std::vector<std::vector<t_real_qwt>> *vecvecYErr,
-	std::size_t num_curves_per_subcurve)
+	bool bUseYErrs, const std::vector<std::vector<t_real_qwt>> *vecvecYErr)
 {
-	if(!pZoomer || !vecvecX.size() || !vecvecY.size())
+	if(!pZoomer || !pZoomer2 || !vecvecX.size() || !vecvecY.size())
 		return;
 
 	std::vector<t_real_qwt> vecX, vecY, vecYErr;
 	std::vector<t_real_qwt> vecX2, vecY2, vecYErr2;
 
-	bool use_curve2 = false;
-	std::size_t sub_curve = 0;
 	for(std::size_t iVec = 0; iVec < vecvecX.size(); ++iVec)
 	{
 		std::vector<t_real_qwt> *pvecx = &vecX;
 		std::vector<t_real_qwt> *pvecy = &vecY;
 		std::vector<t_real_qwt> *pvecyerr = &vecYErr;
 
-		if(use_curve2)
+		if(iVec % 2)
 		{
 			pvecx = &vecX2;
 			pvecy = &vecY2;
@@ -1065,12 +1062,6 @@ void set_zoomer_base(QwtPlotZoomer *pZoomer, QwtPlotZoomer *pZoomer2,
 
 		if(vecvecYErr)
 			pvecyerr->insert(pvecyerr->end(), (*vecvecYErr)[iVec].begin(), (*vecvecYErr)[iVec].end());
-
-		if(++sub_curve >= num_curves_per_subcurve)
-		{
-			sub_curve = 0;
-			use_curve2 = !use_curve2;
-		}
 	}
 
 	set_zoomer_base(pZoomer, vecX, vecY, bMetaCall, pPlotWrap,

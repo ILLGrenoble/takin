@@ -289,8 +289,7 @@ extern void set_zoomer_base(QwtPlotZoomer *pZoomer, QwtPlotZoomer *pZoomer2,
 	const std::vector<std::vector<t_real_qwt>>& vecvecX,
 	const std::vector<std::vector<t_real_qwt>>& vecvecY,
 	bool bMetaCall = false, QwtPlotWrapper* pPlotWrap = nullptr,
-	bool bUseYErrs = false, const std::vector<std::vector<t_real_qwt>> *vecvecYErr = nullptr,
-	std::size_t num_curves_per_subcurve = 2);
+	bool bUseYErrs = false, const std::vector<std::vector<t_real_qwt>> *vecvecYErr = nullptr);
 
 extern void set_zoomer_base(QwtPlotZoomer *pZoomer,
 	const std::vector<t_real_qwt>& vecX,

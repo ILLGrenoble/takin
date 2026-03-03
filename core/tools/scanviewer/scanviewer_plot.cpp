@@ -393,10 +393,12 @@ void ScanViewerDlg::PlotScan()
 			else
 			{
 				set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, curve_idx, false, nullptr,
-					QwtPlot::xBottom, plot_sub_idx % 2 ? QwtPlot::yRight : QwtPlot::yLeft);
+					plot_sub_idx % 2 ? QwtPlot::xTop : QwtPlot::xBottom,
+					plot_sub_idx % 2 ? QwtPlot::yRight : QwtPlot::yLeft);
 			}
 			set_qwt_data<t_real>()(*m_plotwrap, vecX, vecY, datapts_idx, false, &vecYErr,
-				QwtPlot::xBottom, plot_sub_idx % 2 ? QwtPlot::yRight : QwtPlot::yLeft);
+				plot_sub_idx % 2 ? QwtPlot::xTop : QwtPlot::xBottom,
+				plot_sub_idx % 2 ? QwtPlot::yRight : QwtPlot::yLeft);
 
 			// legend
 			std::ostringstream ostrLegend;
@@ -452,7 +454,7 @@ void ScanViewerDlg::PlotScan()
 	if(num_sub_curves > 1)
 	{
 		set_zoomer_base(m_plotwrap->GetZoomer(), m_plotwrap->GetZoomer2(),
-			m_vecX, m_vecY, false, m_plotwrap.get(), true, &m_vecYErr, 2 /* points and curves */);
+			m_vecX, m_vecY, false, m_plotwrap.get(), true, &m_vecYErr);
 	}
 	else
 	{
