@@ -91,6 +91,7 @@ public:
 };
 
 
+
 // ----------------------------------------------------------------------------
 
 
@@ -692,7 +693,10 @@ void QwtPlotWrapper::doUpdate()
 	QCoreApplication::processEvents(QEventLoop::AllEvents);
 }
 
+
+
 // ----------------------------------------------------------------------------
+
 
 
 void MyQwtRasterData::SetXRange(t_real_qwt dMin, t_real_qwt dMax)
@@ -899,6 +903,7 @@ void MyQwtCurve::drawDots(QPainter* pPainter,
 	pPainter->setBrush(oldbrush);
 	pPainter->setPen(oldpen);
 }
+
 
 
 // ----------------------------------------------------------------------------

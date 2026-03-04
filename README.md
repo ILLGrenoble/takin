@@ -1,5 +1,5 @@
 # Takin - an inelastic neutron scattering suite.
-Version 2.9. (No AI is used in this application or its development.)
+Version 2.9.5. (No AI is used in this application or its development.)
 
 <img src="https://raw.githubusercontent.com/ILLGrenoble/takin/master/data/res/icons/takin.svg" width="10%" height="10%" title="Logo" alt="">
 
