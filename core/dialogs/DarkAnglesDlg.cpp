@@ -289,7 +289,7 @@ void DarkAnglesDlg::AddAnglesToList()
 
 	if(angles.size() == 0)
 	{
-		QMessageBox::critical(this, "Error", "No angles defined. Please define one using \"Add Angle\".");
+		QMessageBox::critical(this, "Error", "No dark angles defined. Please define at least one using \"Add Angle\".");
 		return;
 	}
 
