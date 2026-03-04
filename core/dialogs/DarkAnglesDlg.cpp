@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -111,7 +111,7 @@ DarkAnglesDlg::~DarkAnglesDlg()
 void DarkAnglesDlg::RemoveAngle()
 {
 	const bool bSort = tableAngles->isSortingEnabled();
-	tableAngles->setSortingEnabled(0);
+	tableAngles->setSortingEnabled(false);
 
 	bool bNothingRemoved = true;
 
