@@ -261,7 +261,7 @@ void DarkAnglesDlg::AddAnglesToList(const std::vector<DarkAngle<t_real>>& _angle
 	std::wostringstream ostrCaption;
 	ostrCaption.precision(g_iPrecGfx);
 
-	for(std::size_t angle_idx=0; angle_idx<_angles.size(); ++angle_idx)
+	for(std::size_t angle_idx = 0; angle_idx < _angles.size(); ++angle_idx)
 	{
 		t_real start = _angles[angle_idx].dAngleStart;
 		t_real end = _angles[angle_idx].dAngleEnd;
@@ -286,6 +286,13 @@ void DarkAnglesDlg::AddAnglesToList(const std::vector<DarkAngle<t_real>>& _angle
 void DarkAnglesDlg::AddAnglesToList()
 {
 	std::vector<DarkAngle<t_real>> angles = GetDarkAngles();
+
+	if(angles.size() == 0)
+	{
+		QMessageBox::critical(this, "Error", "No angles defined. Please define one using \"Add Angle\".");
+		return;
+	}
+
 	AddAnglesToList(angles);
 }
 
