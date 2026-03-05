@@ -105,7 +105,7 @@ cp -v *.txt			${INSTDIR}/usr/local/share/takin
 cp -v ../LICENSE		${INSTDIR}/usr/local/share/takin/LICENSE.txt
 cp -v ../LICENSES		${INSTDIR}/usr/local/share/takin/LICENSES.txt
 cp -v ../LITERATURE		${INSTDIR}/usr/local/share/takin/LITERATURE.txt
-cp -v ../AUTHORS		${INSTDIR}/usr/local/share/takin/AUTHORS.txt
+cp -v ../AUTHORS.md		${INSTDIR}/usr/local/share/takin/AUTHORS.txt
 cp -rv 3rdparty_licenses/*	${INSTDIR}/usr/local/share/takin/3rdparty_licenses/
 cp -v ../setup/build_lin/takin.desktop	${INSTDIR}/usr/share/applications
 cp -v /usr/local/lib/libMinuit2.so	${INSTDIR}/usr/local/lib
