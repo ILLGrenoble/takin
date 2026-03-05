@@ -81,7 +81,7 @@ echo -e "Depends:" \
 	"libqhullcpp8.0," \
 	"libhdf5-103-1t64," \
 	"libhdf5-cpp-103-1t64," \
-	"libqcustomplot2.1\n" \
+	"libqcustomplot2.1-qt6\n" \
 		>> ${INSTDIR}/DEBIAN/control
 
 # libqcustomplot2.0 is only needed by the external programs
