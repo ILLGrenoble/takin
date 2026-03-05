@@ -221,7 +221,7 @@ cp -v *.txt "${PRG}/Contents/Resources/"
 cp -v ../LICENSE "${PRG}/Contents/Resources/LICENSE.txt"
 cp -v ../LICENSES "${PRG}/Contents/Resources/LICENSES.txt"
 cp -v ../LITERATURE "${PRG}/Contents/Resources/LITERATURE.txt"
-cp -v ../AUTHORS "${PRG}/Contents/Resources/AUTHORS.txt"
+cp -v ../AUTHORS.md "${PRG}/Contents/Resources/AUTHORS.txt"
 
 cp -rv data/instruments "${PRG}/Contents/Resources/"
 cp -rv data/samples "${PRG}/Contents/Resources/"
