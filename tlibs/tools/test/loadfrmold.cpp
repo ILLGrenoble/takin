@@ -1,12 +1,12 @@
 /**
- * Loads instrument-specific data files
- * @author Tobias Weber <tobias.weber@tum.de>
- * @date feb-2015
+ * tlibs test file
+ * @author Tobias Weber <tweber@ill.fr>
+ * @date 6-mar-2026
  * @license GPLv2 or GPLv3
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2021  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -26,34 +26,32 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "loadinstr.h"
-#include "loadinstr_impl.h"
+// clang++ -std=c++17 -DNO_IOSTR -I.. -o loadfrmold ../../log/log.cpp ../../file/loadinstr.cpp loadfrmold.cpp -lboost_iostreams
+
+#include <iostream>
+#include "../file/loadinstr.h"
 
 
-namespace tl
+int main(int argc, char **argv)
 {
-	template FileInstrBase<double>* FileInstrBase<double>::LoadInstr(const char* pcFile);
+	if(argc < 2)
+	{
+		std::cerr << "Please give a file name." << std::endl;
+		return -1;
+	}
 
-	template class FilePsi<double>;
-	template class FileFrm<double>;
-	template class FileFrmOld<double>;
-	template class FileMacs<double>;
-	template class FileTrisp<double>;
-	template class FileRaw<double>;
-#ifdef USE_HDF5
-	template class FileILLH5<double>;
-#endif
+	tl::FileFrmOld<double> dat;
 
+	if(!dat.Load(argv[1]))
+	{
+		std::cerr << "Could not load \"" << argv[1] << "\"." << std::endl;
+		return -2;
+	}
 
-	template FileInstrBase<float>* FileInstrBase<float>::LoadInstr(const char* pcFile);
+	const auto& col = dat.GetCol("E");
+	for(auto val : col)
+		std::cout << val << " ";
+	std::cout << std::endl;
 
-	template class FilePsi<float>;
-	template class FileFrm<float>;
-	template class FileFrmOld<float>;
-	template class FileMacs<float>;
-	template class FileTrisp<float>;
-	template class FileRaw<float>;
-#ifdef USE_HDF5
-	template class FileILLH5<float>;
-#endif
+	return 0;
 }

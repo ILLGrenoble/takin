@@ -34,7 +34,7 @@
 namespace tl {
 
 template<class t_str=std::string, class t_cont=std::vector<double>>
-t_cont get_py_array(const t_str& str)
+t_cont get_py_array(const t_str& str, bool need_brackets = true, bool allow_nocommas = false)
 {
 	typedef typename t_cont::value_type t_elems;
 	t_cont vecArr;
@@ -43,18 +43,18 @@ t_cont get_py_array(const t_str& str)
 	std::size_t iEnd = str.find(']');
 
 	// search for list instead
-	if(iStart==t_str::npos || iEnd==t_str::npos)
+	if(iStart == t_str::npos || iEnd == t_str::npos)
 	{
 		iStart = str.find('(');
 		iEnd = str.find(')');
 	}
 
 	// invalid array
-	if(iStart==t_str::npos || iEnd==t_str::npos || iEnd<iStart)
+	if(need_brackets && (iStart == t_str::npos || iEnd == t_str::npos || iEnd < iStart))
 		return vecArr;
 
-	t_str strArr = str.substr(iStart+1, iEnd-iStart-1);
-	tl::get_tokens<t_elems, t_str>(strArr, ",", vecArr);
+	t_str strArr = str.substr(iStart + 1, iEnd-iStart - 1);
+	tl::get_tokens<t_elems, t_str>(strArr, allow_nocommas ? ", \t" : ",", vecArr);
 
 	return vecArr;
 }
@@ -67,10 +67,10 @@ t_str get_py_string(const t_str& str)
 	std::size_t iEnd = str.find_last_of("\'\"");
 
 	// invalid string
-	if(iStart==t_str::npos || iEnd==t_str::npos || iEnd<iStart)
+	if(iStart == t_str::npos || iEnd == t_str::npos || iEnd < iStart)
 		return "";
 
-	return str.substr(iStart+1, iEnd-iStart-1);
+	return str.substr(iStart + 1, iEnd-iStart - 1);
 }
 
 }

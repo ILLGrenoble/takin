@@ -44,6 +44,7 @@
 #include "saveinstr.h"
 #include "loadinstr_psi.h"
 #include "loadinstr_frm.h"
+#include "loadinstr_frmold.h"
 #include "loadinstr_raw.h"
 #include "loadinstr_tax.h"
 #include "loadinstr_macs.h"
@@ -140,6 +141,8 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 		const std::string strPsi("tas data");
 		const std::string strPsiOld("instr:");
 		const std::string strTax("scan =");
+		const std::string strFrmOld("filename");
+		const std::string strTrisp("scan start");
 
 		if(strLine.find(strNicos) != std::string::npos)
 		{ // frm file
@@ -153,7 +156,7 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 			//log_debug(pcFile, " is a macs file.");
 			pDat = new FileMacs<t_real>();
 		}
-		else if(strLine2.find("scan start") != std::string::npos)
+		else if(strLine2.find(strTrisp) != std::string::npos)
 		{ // trisp file
 			//log_debug(pcFile, " is a trisp file.");
 			pDat = new FileTrisp<t_real>();
@@ -173,6 +176,11 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 		{ // tax file
 			//log_debug(pcFile, " is a tax file.");
 			pDat = new FileTax<t_real>();
+		}
+		else if(strLine.find(strFrmOld) != std::string::npos)
+		{ // old frm file
+			//log_debug(pcFile, " is an old frm file.");
+			pDat = new FileFrmOld<t_real>();
 		}
 		else
 		{ // raw file

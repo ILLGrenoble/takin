@@ -317,6 +317,80 @@ class FileFrm : public FileInstrBase<_t_real>
 
 
 /**
+ * old frm files (nicos 1?)
+ */
+template<class _t_real = double>
+class FileFrmOld : public FileInstrBase<_t_real>
+{
+public:
+	using t_real = _t_real;
+	using t_mapParams = typename FileInstrBase<t_real>::t_mapParams;
+	using t_vecColNames = typename FileInstrBase<t_real>::t_vecColNames;
+	using t_vecVals = typename FileInstrBase<t_real>::t_vecVals;
+	using t_vecDat = typename FileInstrBase<t_real>::t_vecDat;
+
+protected:
+	t_mapParams m_mapParams;
+	t_vecColNames m_vecQuantities, m_vecUnits;
+	t_vecDat m_vecData;
+	std::string m_command;
+
+public:
+	FileFrmOld() = default;
+	virtual ~FileFrmOld() = default;
+
+protected:
+	void ReadHeader(std::istream& istr);
+	void ReadData(std::istream& istr);
+
+public:
+	virtual bool Load(const char* pcFile) override;
+
+	virtual std::array<t_real, 3> GetSampleLattice() const override;
+	virtual std::array<t_real, 3> GetSampleAngles() const override;
+	virtual std::array<t_real, 2> GetMonoAnaD() const override;
+
+	virtual std::array<bool, 3> GetScatterSenses() const override;
+	virtual std::array<t_real, 3> GetScatterPlane0() const override;
+	virtual std::array<t_real, 3> GetScatterPlane1() const override;
+
+	virtual std::array<t_real, 4> GetPosHKLE() const override;  // zero pos.
+
+	virtual t_real GetKFix() const override;
+	virtual bool IsKiFixed() const override;
+
+	virtual std::size_t GetScanCount() const override;
+	virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
+	virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
+
+	virtual const t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) const override;
+	virtual t_vecVals& GetCol(const std::string& strName, std::size_t *pIdx = nullptr) override;
+
+	virtual std::string GetTitle() const override;
+	virtual std::string GetProposal() const override;
+	virtual std::string GetUser() const override;
+	virtual std::string GetInstrument() const override;
+	virtual std::string GetLocalContact() const override;
+	virtual std::string GetScanNumber() const override;
+	virtual std::string GetSampleName() const override;
+	virtual std::string GetSpacegroup() const override;
+	virtual std::string GetTimestamp() const override;
+
+	virtual const t_vecDat& GetData() const override { return m_vecData; }
+	virtual t_vecDat& GetData() override { return m_vecData; }
+	virtual const t_vecColNames& GetColNames() const override { return m_vecQuantities; }
+	virtual const t_mapParams& GetAllParams() const override { return m_mapParams; }
+
+	virtual std::vector<std::string> GetScannedVars() const override;
+	virtual std::string GetCountVar() const override;
+	virtual std::string GetMonVar() const override;
+	virtual std::string GetTimerVar() const override;
+
+	virtual std::string GetScanCommand() const override;
+};
+
+
+/**
  * macs files
  */
 template<class _t_real = double>

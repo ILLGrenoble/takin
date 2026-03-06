@@ -1,12 +1,12 @@
 /**
  * Loads instrument-specific data files
- * @author Tobias Weber <tobias.weber@tum.de>
- * @date feb-2015 - 2023
+ * @author Tobias Weber <tweber@ill.fr>
+ * @date feb-2015 - 2026
  * @license GPLv2 or GPLv3
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------------
  */
 
-#ifndef __TLIBS_LOADINST_FRM_IMPL_H__
-#define __TLIBS_LOADINST_FRM_IMPL_H__
+#ifndef __TLIBS_LOADINST_FRMOLD_IMPL_H__
+#define __TLIBS_LOADINST_FRMOLD_IMPL_H__
 
 #include "loadinstr.h"
 
@@ -54,32 +54,20 @@ namespace tl{
  * loader for the frm text file format
  */
 template<class t_real>
-void FileFrm<t_real>::ReadHeader(std::istream& istr)
+void FileFrmOld<t_real>::ReadHeader(std::istream& istr)
 {
+	std::string section;
+
 	while(!istr.eof())
 	{
 		std::string strLine;
 		std::getline(istr, strLine);
 		trim(strLine);
-		if(strLine.length() == 0 || strLine[0] != '#')
+
+		if(strLine.length() == 0)
 			continue;
-		if(strLine.length() >= 3 && strLine[0] == '#' && strLine[1] == '#' && strLine[2] == '#')
-		{
-			std::string strCreatedAt("created at");
-			std::size_t iPosCreated = strLine.find(strCreatedAt);
-			if(iPosCreated != std::string::npos)
-			{
-				iPosCreated += strCreatedAt.length();
-				std::string strDate = strLine.substr(iPosCreated);
-				trim(strDate);
-
-				m_mapParams["file_timestamp"] = strDate;
-			}
-
+		if(strLine.length() > 0 && strLine[0] == '*')
 			continue;
-		}
-
-		strLine = strLine.substr(1);
 
 		std::pair<std::string, std::string> pairLine =
 			split_first<std::string>(strLine, ":", true);
@@ -87,55 +75,47 @@ void FileFrm<t_real>::ReadHeader(std::istream& istr)
 		if(pairLine.first == "")
 			continue;
 
+		pairLine.first = str_to_lower(pairLine.first);
+
+		// start of a new section in the file
+		if(pairLine.second == "")
+		{
+			section = pairLine.first;
+			continue;
+		}
+
+		// add file section name to field
+		if(section != "")
+			pairLine.first = section + " / " + pairLine.first;
+
 		typename t_mapParams::iterator iter = m_mapParams.find(pairLine.first);
 
 		if(iter == m_mapParams.end())
 			m_mapParams.insert(pairLine);
 		else
 			iter->second += ", " + pairLine.second;
-
-		// try to find instrument name
-		if(m_instrname == "")
-		{
-			try
-			{
-				const std::string strRegex = R"REX(([a-z0-9]+)_responsible)REX";
-				std::regex rx(strRegex, std::regex::ECMAScript|std::regex_constants::icase);
-				std::smatch m;
-				if(std::regex_search(pairLine.first, m, rx) && m.size()>=2)
-					m_instrname = m[1];
-			}
-			catch(const std::exception& ex)
-			{
-				log_warn(ex.what());
-			}
-		}
 	}
 }
 
 
 template<class t_real>
-void FileFrm<t_real>::ReadData(std::istream& istr)
+void FileFrmOld<t_real>::ReadData(std::istream& istr)
 {
-	skip_after_line<char>(istr, "### scan data", true, false);
+	skip_after_line<char>(istr, "scan data:", true, false);
+
+	// scan command
+	std::getline(istr, m_command);
 
 	// column headers
-	skip_after_char<char>(istr, '#');
 	std::string strLineQuantities;
 	std::getline(istr, strLineQuantities);
 	get_tokens<std::string, std::string, t_vecColNames>
-		(strLineQuantities, " \t", m_vecQuantities);
-	for(std::string& _str : m_vecQuantities)
-	{
-		find_all_and_replace<std::string>(_str, "\n", "");
-		find_all_and_replace<std::string>(_str, "\r", "");
-	}
+		(strLineQuantities, " \t;", m_vecQuantities);
 
-	skip_after_char<char>(istr, '#');
 	std::string strLineUnits;
 	std::getline(istr, strLineUnits);
 	get_tokens<std::string, std::string, t_vecColNames>
-		(strLineQuantities, " \t", m_vecUnits);
+		(strLineQuantities, " \t;", m_vecUnits);
 
 
 	m_vecData.resize(m_vecQuantities.size());
@@ -146,15 +126,17 @@ void FileFrm<t_real>::ReadData(std::istream& istr)
 		std::string strLine;
 		std::getline(istr, strLine);
 		trim(strLine);
-		if(strLine.length()==0 || strLine[0]=='#')
+		if(strLine.length() == 0 || strLine[0] == '#')
 			continue;
+		if(strLine.length() > 0 & strLine[0] == '*')
+			break;
 
 		std::vector<t_real> vecToks;
-		get_tokens<t_real, std::string>(strLine, " \t", vecToks);
+		get_tokens<t_real, std::string>(strLine, " \t;", vecToks);
 
 		if(vecToks.size() != m_vecQuantities.size())
 		{
-			log_warn("Loader: Line size mismatch.");
+			log_warn("Loader: Line size mismatch in line: \"", strLine, "\".");
 
 			// add zeros
 			while(m_vecQuantities.size() > vecToks.size())
@@ -170,9 +152,9 @@ void FileFrm<t_real>::ReadData(std::istream& istr)
 
 
 template<class t_real>
-bool FileFrm<t_real>::Load(const char* pcFile)
+bool FileFrmOld<t_real>::Load(const char* pcFile)
 {
-	for(int iStep : { 0,1 })
+	for(int iStep : { 0, 1 })
 	{
 		std::ifstream ifstr(pcFile);
 		if(!ifstr.is_open())
@@ -180,7 +162,8 @@ bool FileFrm<t_real>::Load(const char* pcFile)
 
 #if !defined NO_IOSTR
 		std::shared_ptr<std::istream> ptrIstr = create_autodecomp_istream(ifstr);
-		if(!ptrIstr) return false;
+		if(!ptrIstr)
+			return false;
 		std::istream *pIstr = ptrIstr.get();
 #else
 		std::istream *pIstr = &ifstr;
@@ -198,15 +181,15 @@ bool FileFrm<t_real>::Load(const char* pcFile)
 
 template<class t_real>
 const typename FileInstrBase<t_real>::t_vecVals&
-FileFrm<t_real>::GetCol(const std::string& strName, std::size_t *pIdx) const
+FileFrmOld<t_real>::GetCol(const std::string& strName, std::size_t *pIdx) const
 {
-	return const_cast<FileFrm*>(this)->GetCol(strName, pIdx);
+	return const_cast<FileFrmOld*>(this)->GetCol(strName, pIdx);
 }
 
 
 template<class t_real>
 typename FileInstrBase<t_real>::t_vecVals&
-FileFrm<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
+FileFrmOld<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
 {
 	static std::vector<t_real> vecNull;
 
@@ -229,31 +212,31 @@ FileFrm<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
 
 
 template<class t_real>
-std::array<t_real, 3> FileFrm<t_real>::GetSampleLattice() const
+std::array<t_real, 3> FileFrmOld<t_real>::GetSampleLattice() const
 {
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Sample_lattice");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("sample information / a,b,c (a)");
 	if(iter == m_mapParams.end())
-		return std::array<t_real,3>{{ 0.,0.,0. }};
+		return std::array<t_real,3>{{ 0., 0., 0. }};
 
-	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second);
+	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second, false);
 	if(vec.size() != 3)
 	{
 		log_err("Invalid lattice array size.");
-		return std::array<t_real,3>{{ 0.,0.,0. }};
+		return std::array<t_real,3>{{ 0., 0., 0. }};
 	}
 
-	return std::array<t_real,3>{{vec[0], vec[1], vec[2]}};
+	return std::array<t_real,3>{{vec[0],vec[1],vec[2]}};
 }
 
 
 template<class t_real>
-std::array<t_real, 3> FileFrm<t_real>::GetSampleAngles() const
+std::array<t_real, 3> FileFrmOld<t_real>::GetSampleAngles() const
 {
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Sample_angles");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("sample information / alpha,beta,gamma (deg)");
 	if(iter == m_mapParams.end())
 		return std::array<t_real,3>{{ 0., 0., 0. }};
 
-	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second);
+	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second, false);
 	if(vec.size() != 3)
 	{
 		log_err("Invalid angle array size.");
@@ -265,10 +248,11 @@ std::array<t_real, 3> FileFrm<t_real>::GetSampleAngles() const
 
 
 template<class t_real>
-std::array<t_real, 2> FileFrm<t_real>::GetMonoAnaD() const
+std::array<t_real, 2> FileFrmOld<t_real>::GetMonoAnaD() const
 {
-	typename t_mapParams::const_iterator iterM = m_mapParams.find("mono_dvalue");
-	typename t_mapParams::const_iterator iterA = m_mapParams.find("ana_dvalue");
+	// TODO
+	typename t_mapParams::const_iterator iterM = m_mapParams.find("monochromator / d- value (A)");
+	typename t_mapParams::const_iterator iterA = m_mapParams.find("analyser / d- value (A)");
 
 	t_real m = (iterM!=m_mapParams.end() ? str_to_var<t_real>(iterM->second) : 3.355);
 	t_real a = (iterA!=m_mapParams.end() ? str_to_var<t_real>(iterA->second) : 3.355);
@@ -278,14 +262,14 @@ std::array<t_real, 2> FileFrm<t_real>::GetMonoAnaD() const
 
 
 template<class t_real>
-std::array<bool, 3> FileFrm<t_real>::GetScatterSenses() const
+std::array<bool, 3> FileFrmOld<t_real>::GetScatterSenses() const
 {
 	std::vector<int> vec;
 
 	typename t_mapParams::const_iterator iter;
 	for(iter=m_mapParams.begin(); iter!=m_mapParams.end(); ++iter)
 	{
-		if(iter->first.find("scatteringsense") != std::string::npos)
+		if(iter->first.find("instrument distances / scattering sense") != std::string::npos)
 		{
 			vec = get_py_array<std::string, std::vector<int>>(iter->second);
 			break;
@@ -303,44 +287,45 @@ std::array<bool, 3> FileFrm<t_real>::GetScatterSenses() const
 
 
 template<class t_real>
-std::array<t_real, 3> FileFrm<t_real>::GetScatterPlane0() const
+std::array<t_real, 3> FileFrmOld<t_real>::GetScatterPlane0() const
 {
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Sample_orient1");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("sample information / 1st orientation reflection");
 	if(iter == m_mapParams.end())
-		return std::array<t_real,3>{{ 0.,0.,0. }};
+		return std::array<t_real,3>{{ 0., 0., 0. }};
 
-	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second);
+	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second, true, true);
 	if(vec.size() != 3)
 	{
 		log_err("Invalid sample peak 1 array size.");
-		return std::array<t_real,3>{{ 0.,0.,0. }};
+		return std::array<t_real,3>{{ 0., 0., 0. }};
 	}
 	return std::array<t_real,3>{{ vec[0], vec[1], vec[2] }};
 }
 
 
 template<class t_real>
-std::array<t_real, 3> FileFrm<t_real>::GetScatterPlane1() const
+std::array<t_real, 3> FileFrmOld<t_real>::GetScatterPlane1() const
 {
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Sample_orient2");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("sample information / 2nd orientation reflection");
 	if(iter == m_mapParams.end())
-		return std::array<t_real,3>{{ 0.,0.,0. }};
+		return std::array<t_real,3>{{ 0., 0., 0. }};
 
-	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second);
+	std::vector<t_real> vec = get_py_array<std::string, std::vector<t_real>>(iter->second, true, true);
 	if(vec.size() != 3)
 	{
 		log_err("Invalid sample peak 2 array size.");
-		return std::array<t_real,3>{{ 0.,0.,0. }};
+		return std::array<t_real,3>{{ 0., 0., 0. }};
 	}
-	return std::array<t_real,3>{{ -vec[0],-vec[1],-vec[2] }};	// LH -> RH
+	return std::array<t_real,3>{{ -vec[0], -vec[1], -vec[2] }};  // LH -> RH
 }
 
 
 template<class t_real>
-std::array<t_real, 4> FileFrm<t_real>::GetPosHKLE() const
+std::array<t_real, 4> FileFrmOld<t_real>::GetPosHKLE() const
 {
+	// TODO
 	typename t_mapParams::const_iterator iter = m_mapParams.find(
-		m_instrname + "_value");
+		GetInstrument() + "_value");
 	if(iter == m_mapParams.end())
 		return std::array<t_real,4>{{ 0, 0, 0, 0 }};
 
@@ -354,8 +339,9 @@ std::array<t_real, 4> FileFrm<t_real>::GetPosHKLE() const
 
 
 template<class t_real>
-t_real FileFrm<t_real>::GetKFix() const
+t_real FileFrmOld<t_real>::GetKFix() const
 {
+	// TODO
 	std::string strKey = (IsKiFixed() ? "ki_value" : "kf_value");
 
 	typename t_mapParams::const_iterator iter = m_mapParams.find(strKey);
@@ -364,8 +350,9 @@ t_real FileFrm<t_real>::GetKFix() const
 
 
 template<class t_real>
-bool FileFrm<t_real>::IsKiFixed() const
+bool FileFrmOld<t_real>::IsKiFixed() const
 {
+	// TODO
 	std::string strScanMode = "ckf";
 
 	typename t_mapParams::const_iterator iter;
@@ -386,7 +373,7 @@ bool FileFrm<t_real>::IsKiFixed() const
 
 
 template<class t_real>
-std::size_t FileFrm<t_real>::GetScanCount() const
+std::size_t FileFrmOld<t_real>::GetScanCount() const
 {
 	if(m_vecData.size() < 1)
 		return 0;
@@ -395,14 +382,14 @@ std::size_t FileFrm<t_real>::GetScanCount() const
 
 
 template<class t_real>
-std::array<t_real, 5> FileFrm<t_real>::GetScanHKLKiKf(std::size_t i) const
+std::array<t_real, 5> FileFrmOld<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
 	return FileInstrBase<t_real>::GetScanHKLKiKf("h", "k", "l", "E", i);
 }
 
 
 template<class t_real>
-bool FileFrm<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
+bool FileFrmOld<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch)
 {
 	if(!FileInstrBase<t_real>::MergeWith(pDat, allow_col_mismatch))
 		return false;
@@ -410,8 +397,8 @@ bool FileFrm<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_co
 	std::string strNr = pDat->GetScanNumber();
 	if(strNr.length() != 0)
 	{
-		// include merged scan number
-		typename t_mapParams::iterator iter = m_mapParams.find("number");
+		// include merged scan filename
+		typename t_mapParams::iterator iter = m_mapParams.find("filename");
 		if(iter != m_mapParams.end())
 			iter->second += std::string(" + ") + strNr;
 	}
@@ -421,10 +408,10 @@ bool FileFrm<t_real>::MergeWith(const FileInstrBase<t_real>* pDat, bool allow_co
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetTitle() const
+std::string FileFrmOld<t_real>::GetTitle() const
 {
 	std::string strTitle;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Exp_title");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("title");
 	if(iter != m_mapParams.end())
 		strTitle = iter->second;
 	return strTitle;
@@ -432,10 +419,10 @@ std::string FileFrm<t_real>::GetTitle() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetProposal() const
+std::string FileFrmOld<t_real>::GetProposal() const
 {
 	std::string strTitle;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Exp_proposal");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("proposal");
 	if(iter != m_mapParams.end())
 		strTitle = iter->second;
 	return strTitle;
@@ -443,10 +430,10 @@ std::string FileFrm<t_real>::GetProposal() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetUser() const
+std::string FileFrmOld<t_real>::GetUser() const
 {
 	std::string strUser;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Exp_users");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("user");
 	if(iter != m_mapParams.end())
 		strUser = iter->second;
 	return strUser;
@@ -454,17 +441,21 @@ std::string FileFrm<t_real>::GetUser() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetInstrument() const
+std::string FileFrmOld<t_real>::GetInstrument() const
 {
-	return m_instrname;
+	std::string strInstr;
+	typename t_mapParams::const_iterator iter = m_mapParams.find("instrument");
+	if(iter != m_mapParams.end())
+		strInstr = iter->second;
+	return strInstr;
 }
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetLocalContact() const
+std::string FileFrmOld<t_real>::GetLocalContact() const
 {
 	std::string strUser;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Exp_localcontact");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("responsable");
 	if(iter != m_mapParams.end())
 		strUser = iter->second;
 	return strUser;
@@ -472,10 +463,10 @@ std::string FileFrm<t_real>::GetLocalContact() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetScanNumber() const
+std::string FileFrmOld<t_real>::GetScanNumber() const
 {
 	std::string strTitle;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("number");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("filename");
 	if(iter != m_mapParams.end())
 		strTitle = iter->second;
 	return strTitle;
@@ -483,10 +474,10 @@ std::string FileFrm<t_real>::GetScanNumber() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetSampleName() const
+std::string FileFrmOld<t_real>::GetSampleName() const
 {
 	std::string strName;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Sample_samplename");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("name");
 	if(iter != m_mapParams.end())
 		strName = iter->second;
 	return strName;
@@ -494,10 +485,10 @@ std::string FileFrm<t_real>::GetSampleName() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetSpacegroup() const
+std::string FileFrmOld<t_real>::GetSpacegroup() const
 {
 	std::string strSG;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("Sample_spacegroup");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("sample information / spacegroup");
 	if(iter != m_mapParams.end())
 		strSG = iter->second;
 	return strSG;
@@ -505,48 +496,40 @@ std::string FileFrm<t_real>::GetSpacegroup() const
 
 
 template<class t_real>
-std::vector<std::string> FileFrm<t_real>::GetScannedVars() const
+std::vector<std::string> FileFrmOld<t_real>::GetScannedVars() const
 {
 	std::vector<std::string> vecVars;
 
-	// scan command
-	typename t_mapParams::const_iterator iter = m_mapParams.find("info");
-	if(iter != m_mapParams.end())
+	// try qscan/qcscan command
+	const std::string strRegex = R"REX((qscan|qcscan)\((.*)\))REX";
+	std::regex rx(strRegex, std::regex::ECMAScript|std::regex_constants::icase);
+	std::smatch m;
+	if(std::regex_search(m_command, m, rx) && m.size() > 2)
 	{
-		const std::string& strInfo = iter->second;
+		const std::string& strSteps = m[2];
+		std::vector<t_real> vecSteps = get_py_array<std::string, std::vector<t_real>>(strSteps, false);
 
-		// try qscan/qcscan
-		const std::string strRegex = R"REX((qscan|qcscan)\((\[.*\])[, ]+(\[.*\]).*\))REX";
-		std::regex rx(strRegex, std::regex::ECMAScript|std::regex_constants::icase);
-		std::smatch m;
-		if(std::regex_search(strInfo, m, rx) && m.size()>3)
+		if(vecSteps.size() > 4 && !float_equal<t_real>(vecSteps[4], 0.))
+			vecVars.push_back("h");
+		if(vecSteps.size() > 5 && !float_equal<t_real>(vecSteps[5], 0.))
+			vecVars.push_back("k");
+		if(vecSteps.size() > 6 && !float_equal<t_real>(vecSteps[6], 0.))
+			vecVars.push_back("l");
+		if(vecSteps.size() > 7 && !float_equal<t_real>(vecSteps[7], 0.))
+			vecVars.push_back("E");
+	}
+
+	if(vecVars.size() == 0)
+	{
+		// try scan/cscan
+		const std::string strRegexDevScan = R"REX((scan|cscan)\(([a-z0-9_\.]+)[, ]+.*\))REX";
+		std::regex rxDev(strRegexDevScan, std::regex::ECMAScript|std::regex_constants::icase);
+		std::smatch mDev;
+		if(std::regex_search(m_command, mDev, rxDev) && mDev.size() > 2)
 		{
-			const std::string& strSteps = m[3];
-			std::vector<t_real> vecSteps = get_py_array<std::string, std::vector<t_real>>(strSteps);
-
-			if(vecSteps.size()>0 && !float_equal<t_real>(vecSteps[0], 0.))
-				vecVars.push_back("h");
-			if(vecSteps.size()>1 && !float_equal<t_real>(vecSteps[1], 0.))
-				vecVars.push_back("k");
-			if(vecSteps.size()>2 && !float_equal<t_real>(vecSteps[2], 0.))
-				vecVars.push_back("l");
-			if(vecSteps.size()>3 && !float_equal<t_real>(vecSteps[3], 0.))
-				vecVars.push_back("E");
-		}
-
-
-		if(vecVars.size() == 0)
-		{
-			// try scan/cscan
-			const std::string strRegexDevScan = R"REX((scan|cscan)\(([a-z0-9_\.]+)[, ]+.*\))REX";
-			std::regex rxDev(strRegexDevScan, std::regex::ECMAScript|std::regex_constants::icase);
-			std::smatch mDev;
-			if(std::regex_search(strInfo, mDev, rxDev) && mDev.size()>2)
-			{
-				std::string strDev = mDev[2];
-				if(std::find(m_vecQuantities.begin(), m_vecQuantities.end(), strDev) != m_vecQuantities.end())
-					vecVars.push_back(strDev);
-			}
+			std::string strDev = mDev[2];
+			if(std::find(m_vecQuantities.begin(), m_vecQuantities.end(), strDev) != m_vecQuantities.end())
+				vecVars.push_back(strDev);
 		}
 	}
 
@@ -565,7 +548,7 @@ std::vector<std::string> FileFrm<t_real>::GetScannedVars() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetCountVar() const
+std::string FileFrmOld<t_real>::GetCountVar() const
 {
 	std::string strRet;
 
@@ -582,17 +565,17 @@ std::string FileFrm<t_real>::GetCountVar() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetTimerVar() const
+std::string FileFrmOld<t_real>::GetTimerVar() const
 {
 	std::string strRet;
-	if(FileInstrBase<t_real>::MatchColumn(R"REX(timer))REX", strRet, true))
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(time)REX", strRet, true))
 		return strRet;
 	return "";
 }
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetMonVar() const
+std::string FileFrmOld<t_real>::GetMonVar() const
 {
 	std::string strRet;
 
@@ -609,21 +592,17 @@ std::string FileFrm<t_real>::GetMonVar() const
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetScanCommand() const
+std::string FileFrmOld<t_real>::GetScanCommand() const
 {
-	std::string strCmd;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("info");
-	if(iter != m_mapParams.end())
-		strCmd = iter->second;
-	return strCmd;
+	return m_command;
 }
 
 
 template<class t_real>
-std::string FileFrm<t_real>::GetTimestamp() const
+std::string FileFrmOld<t_real>::GetTimestamp() const
 {
 	std::string strDate;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("file_timestamp");
+	typename t_mapParams::const_iterator iter = m_mapParams.find("created at");
 	if(iter != m_mapParams.end())
 		strDate = iter->second;
 	return strDate;
