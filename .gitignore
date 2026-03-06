@@ -60,3 +60,5 @@ data/res/fonts/**
 !data/res/doc/.dir
 !data/res/fonts/.dir
 !data/res/conf/tools.xml
+
+takin.app

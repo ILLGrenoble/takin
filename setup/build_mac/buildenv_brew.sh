@@ -30,3 +30,5 @@
 #
 # TODO: brew install packages
 #
+
+brew install llvm cmake boost makeicns
