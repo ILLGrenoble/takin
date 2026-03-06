@@ -54,7 +54,7 @@ namespace tl{
  * loader for the frm text file format
  */
 template<class t_real>
-void FileFrmOld<t_real>::ReadHeader(std::istream& istr)
+bool FileFrmOld<t_real>::ReadHeader(std::istream& istr)
 {
 	std::string section;
 
@@ -81,6 +81,9 @@ void FileFrmOld<t_real>::ReadHeader(std::istream& istr)
 		if(pairLine.second == "")
 		{
 			section = pairLine.first;
+
+			if(section == "scan data")
+				return true;
 			continue;
 		}
 
@@ -95,13 +98,15 @@ void FileFrmOld<t_real>::ReadHeader(std::istream& istr)
 		else
 			iter->second += ", " + pairLine.second;
 	}
+
+	return false;
 }
 
 
 template<class t_real>
 void FileFrmOld<t_real>::ReadData(std::istream& istr)
 {
-	skip_after_line<char>(istr, "scan data:", true, false);
+	//skip_after_line<char>(istr, "scan data:", true, false);
 
 	// scan command
 	std::getline(istr, m_command);
@@ -154,26 +159,25 @@ void FileFrmOld<t_real>::ReadData(std::istream& istr)
 template<class t_real>
 bool FileFrmOld<t_real>::Load(const char* pcFile)
 {
-	for(int iStep : { 0, 1 })
-	{
-		std::ifstream ifstr(pcFile);
-		if(!ifstr.is_open())
-			return false;
+	std::ifstream ifstr(pcFile);
+	if(!ifstr.is_open())
+		return false;
 
 #if !defined NO_IOSTR
-		std::shared_ptr<std::istream> ptrIstr = create_autodecomp_istream(ifstr);
-		if(!ptrIstr)
-			return false;
-		std::istream *pIstr = ptrIstr.get();
+	std::shared_ptr<std::istream> ptrIstr = create_autodecomp_istream(ifstr);
+	if(!ptrIstr)
+		return false;
+	std::istream *pIstr = ptrIstr.get();
 #else
-		std::istream *pIstr = &ifstr;
+	std::istream *pIstr = &ifstr;
 #endif
 
-		if(iStep == 0)
-			ReadHeader(*pIstr);
-		else if(iStep == 1)
-			ReadData(*pIstr);
+	if(!ReadHeader(*pIstr))
+	{
+		log_warn("Loader: No scan data found.");
+		return false;
 	}
+	ReadData(*pIstr);
 
 	return true;
 }
@@ -250,12 +254,11 @@ std::array<t_real, 3> FileFrmOld<t_real>::GetSampleAngles() const
 template<class t_real>
 std::array<t_real, 2> FileFrmOld<t_real>::GetMonoAnaD() const
 {
-	// TODO
 	typename t_mapParams::const_iterator iterM = m_mapParams.find("monochromator / d- value (A)");
 	typename t_mapParams::const_iterator iterA = m_mapParams.find("analyser / d- value (A)");
 
-	t_real m = (iterM!=m_mapParams.end() ? str_to_var<t_real>(iterM->second) : 3.355);
-	t_real a = (iterA!=m_mapParams.end() ? str_to_var<t_real>(iterA->second) : 3.355);
+	t_real m = (iterM != m_mapParams.end() ? str_to_var<t_real>(iterM->second) : 3.355);
+	t_real a = (iterA != m_mapParams.end() ? str_to_var<t_real>(iterA->second) : 3.355);
 
 	return std::array<t_real,2>{{ m, a }};
 }
@@ -267,9 +270,9 @@ std::array<bool, 3> FileFrmOld<t_real>::GetScatterSenses() const
 	std::vector<int> vec;
 
 	typename t_mapParams::const_iterator iter;
-	for(iter=m_mapParams.begin(); iter!=m_mapParams.end(); ++iter)
+	for(iter = m_mapParams.begin(); iter != m_mapParams.end(); ++iter)
 	{
-		if(iter->first.find("instrument distances / scattering sense") != std::string::npos)
+		if(iter->first.find("scattering sense") != std::string::npos)
 		{
 			vec = get_py_array<std::string, std::vector<int>>(iter->second);
 			break;
@@ -323,52 +326,49 @@ std::array<t_real, 3> FileFrmOld<t_real>::GetScatterPlane1() const
 template<class t_real>
 std::array<t_real, 4> FileFrmOld<t_real>::GetPosHKLE() const
 {
-	// TODO
-	typename t_mapParams::const_iterator iter = m_mapParams.find(
-		GetInstrument() + "_value");
-	if(iter == m_mapParams.end())
-		return std::array<t_real,4>{{ 0, 0, 0, 0 }};
+	const t_vecVals& hs = GetCol("h");
+	const t_vecVals& ks = GetCol("k");
+	const t_vecVals& ls = GetCol("l");
+	const t_vecVals& Es = GetCol("E");
 
-	std::vector<t_real> vecPos = get_py_array<std::string, std::vector<t_real>>(
-		iter->second);
-	if(vecPos.size() < 4)
-		return std::array<t_real,4>{{ 0, 0, 0, 0 }};
+	// get first position
+	t_real h = hs.size() ? hs[0] : 0.;
+	t_real k = ks.size() ? ks[0] : 0.;
+	t_real l = ls.size() ? ls[0] : 0.;
+	t_real E = Es.size() ? Es[0] : 0.;
 
-	return std::array<t_real,4>{{ vecPos[0], vecPos[1], vecPos[2], vecPos[3] }};
+	return std::array<t_real,4>{{ h, k, l, E }};
 }
 
 
 template<class t_real>
 t_real FileFrmOld<t_real>::GetKFix() const
 {
-	// TODO
-	std::string strKey = (IsKiFixed() ? "ki_value" : "kf_value");
-
-	typename t_mapParams::const_iterator iter = m_mapParams.find(strKey);
-	return (iter!=m_mapParams.end() ? str_to_var<t_real>(iter->second) : 0.);
+	if(IsKiFixed())
+	{
+		const t_vecVals& kis = GetCol("mono");
+		return tl::mean_value(kis);
+	}
+	else
+	{
+		const t_vecVals& kfs = GetCol("ana");
+		return tl::mean_value(kfs);
+	}
 }
 
 
 template<class t_real>
 bool FileFrmOld<t_real>::IsKiFixed() const
 {
-	// TODO
-	std::string strScanMode = "ckf";
+	const t_vecVals& kis = GetCol("mono");
+	const t_vecVals& kfs = GetCol("ana");
+	if(kis.size() == 0 || kfs.size() == 0)
+		return false;  // assume kf = const.
 
-	typename t_mapParams::const_iterator iter;
-	for(iter=m_mapParams.begin(); iter!=m_mapParams.end(); ++iter)
-	{
-		if(iter->first.find("scanmode") != std::string::npos)
-		{
-			strScanMode = str_to_lower(iter->second);
-			trim(strScanMode);
-			break;
-		}
-	}
+	t_real dki = tl::std_dev(kis);
+	t_real dkf = tl::std_dev(kfs);
 
-	if(strScanMode == "cki")
-		return true;
-	return false;
+	return dki < dkf;
 }
 
 
@@ -443,10 +443,18 @@ std::string FileFrmOld<t_real>::GetUser() const
 template<class t_real>
 std::string FileFrmOld<t_real>::GetInstrument() const
 {
+	std::string strInst;
+	typename t_mapParams::const_iterator iterInst = m_mapParams.find("installation");
+	if(iterInst != m_mapParams.end())
+		strInst = iterInst->second;
+
 	std::string strInstr;
-	typename t_mapParams::const_iterator iter = m_mapParams.find("instrument");
-	if(iter != m_mapParams.end())
-		strInstr = iter->second;
+	typename t_mapParams::const_iterator iterInstr = m_mapParams.find("instrument");
+	if(iterInstr != m_mapParams.end())
+		strInstr = iterInstr->second;
+
+	if(strInst != "")
+		return strInst + " / " + strInstr;
 	return strInstr;
 }
 

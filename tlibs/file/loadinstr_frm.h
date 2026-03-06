@@ -270,8 +270,8 @@ std::array<t_real, 2> FileFrm<t_real>::GetMonoAnaD() const
 	typename t_mapParams::const_iterator iterM = m_mapParams.find("mono_dvalue");
 	typename t_mapParams::const_iterator iterA = m_mapParams.find("ana_dvalue");
 
-	t_real m = (iterM!=m_mapParams.end() ? str_to_var<t_real>(iterM->second) : 3.355);
-	t_real a = (iterA!=m_mapParams.end() ? str_to_var<t_real>(iterA->second) : 3.355);
+	t_real m = (iterM != m_mapParams.end() ? str_to_var<t_real>(iterM->second) : 3.355);
+	t_real a = (iterA != m_mapParams.end() ? str_to_var<t_real>(iterA->second) : 3.355);
 
 	return std::array<t_real,2>{{ m, a }};
 }

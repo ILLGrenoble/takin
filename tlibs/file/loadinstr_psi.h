@@ -579,11 +579,11 @@ std::array<t_real,3> FilePsi<t_real>::GetSampleLattice() const
 	typename t_mapIParams::const_iterator iterB = m_mapParameters.find("BS");
 	typename t_mapIParams::const_iterator iterC = m_mapParameters.find("CS");
 
-	t_real a = (iterA!=m_mapParameters.end() ? iterA->second : 0.);
-	t_real b = (iterB!=m_mapParameters.end() ? iterB->second : 0.);
-	t_real c = (iterC!=m_mapParameters.end() ? iterC->second : 0.);
+	t_real a = (iterA != m_mapParameters.end() ? iterA->second : 0.);
+	t_real b = (iterB != m_mapParameters.end() ? iterB->second : 0.);
+	t_real c = (iterC != m_mapParameters.end() ? iterC->second : 0.);
 
-	return std::array<t_real,3>{{a,b,c}};
+	return std::array<t_real,3>{{ a, b, c }};
 }
 
 
@@ -594,11 +594,11 @@ std::array<t_real,3> FilePsi<t_real>::GetSampleAngles() const
 	typename t_mapIParams::const_iterator iterB = m_mapParameters.find("BB");
 	typename t_mapIParams::const_iterator iterC = m_mapParameters.find("CC");
 
-	t_real alpha = (iterA!=m_mapParameters.end() ? d2r(iterA->second) : get_pi<t_real>()/2.);
-	t_real beta = (iterB!=m_mapParameters.end() ? d2r(iterB->second) : get_pi<t_real>()/2.);
-	t_real gamma = (iterC!=m_mapParameters.end() ? d2r(iterC->second) : get_pi<t_real>()/2.);
+	t_real alpha = (iterA != m_mapParameters.end() ? d2r(iterA->second) : get_pi<t_real>()/2.);
+	t_real beta = (iterB != m_mapParameters.end() ? d2r(iterB->second) : get_pi<t_real>()/2.);
+	t_real gamma = (iterC != m_mapParameters.end() ? d2r(iterC->second) : get_pi<t_real>()/2.);
 
-	return std::array<t_real,3>{{alpha, beta, gamma}};
+	return std::array<t_real,3>{{ alpha, beta, gamma }};
 }
 
 
@@ -608,10 +608,10 @@ std::array<t_real,2> FilePsi<t_real>::GetMonoAnaD() const
 	typename t_mapIParams::const_iterator iterM = m_mapParameters.find("DM");
 	typename t_mapIParams::const_iterator iterA = m_mapParameters.find("DA");
 
-	t_real m = (iterM!=m_mapParameters.end() ? iterM->second : 3.355);
-	t_real a = (iterA!=m_mapParameters.end() ? iterA->second : 3.355);
+	t_real m = (iterM != m_mapParameters.end() ? iterM->second : 3.355);
+	t_real a = (iterA != m_mapParameters.end() ? iterA->second : 3.355);
 
-	return std::array<t_real,2>{{m, a}};
+	return std::array<t_real,2>{{ m, a }};
 }
 
 
@@ -622,11 +622,11 @@ std::array<bool, 3> FilePsi<t_real>::GetScatterSenses() const
 	typename t_mapIParams::const_iterator iterS = m_mapParameters.find("SS");
 	typename t_mapIParams::const_iterator iterA = m_mapParameters.find("SA");
 
-	bool m = (iterM!=m_mapParameters.end() ? (iterM->second>0) : 0);
-	bool s = (iterS!=m_mapParameters.end() ? (iterS->second>0) : 1);
-	bool a = (iterA!=m_mapParameters.end() ? (iterA->second>0) : 0);
+	bool m = (iterM != m_mapParameters.end() ? (iterM->second>0) : 0);
+	bool s = (iterS != m_mapParameters.end() ? (iterS->second>0) : 1);
+	bool a = (iterA != m_mapParameters.end() ? (iterA->second>0) : 0);
 
-	return std::array<bool,3>{{m, s, a}};
+	return std::array<bool,3>{{ m, s, a }};
 }
 
 
@@ -637,11 +637,11 @@ std::array<t_real, 3> FilePsi<t_real>::GetScatterPlane0() const
 	typename t_mapIParams::const_iterator iterY = m_mapParameters.find("AY");
 	typename t_mapIParams::const_iterator iterZ = m_mapParameters.find("AZ");
 
-	t_real x = (iterX!=m_mapParameters.end() ? iterX->second : 1.);
-	t_real y = (iterY!=m_mapParameters.end() ? iterY->second : 0.);
-	t_real z = (iterZ!=m_mapParameters.end() ? iterZ->second : 0.);
+	t_real x = (iterX != m_mapParameters.end() ? iterX->second : 1.);
+	t_real y = (iterY != m_mapParameters.end() ? iterY->second : 0.);
+	t_real z = (iterZ != m_mapParameters.end() ? iterZ->second : 0.);
 
-	return std::array<t_real,3>{{x,y,z}};
+	return std::array<t_real,3>{{ x, y, z }};
 }
 
 
@@ -652,11 +652,11 @@ std::array<t_real, 3> FilePsi<t_real>::GetScatterPlane1() const
 	typename t_mapIParams::const_iterator iterY = m_mapParameters.find("BY");
 	typename t_mapIParams::const_iterator iterZ = m_mapParameters.find("BZ");
 
-	t_real x = (iterX!=m_mapParameters.end() ? iterX->second : 0.);
-	t_real y = (iterY!=m_mapParameters.end() ? iterY->second : 1.);
-	t_real z = (iterZ!=m_mapParameters.end() ? iterZ->second : 0.);
+	t_real x = (iterX != m_mapParameters.end() ? iterX->second : 0.);
+	t_real y = (iterY != m_mapParameters.end() ? iterY->second : 1.);
+	t_real z = (iterZ != m_mapParameters.end() ? iterZ->second : 0.);
 
-	return std::array<t_real,3>{{x,y,z}};
+	return std::array<t_real,3>{{ x, y, z }};
 }
 
 
@@ -664,7 +664,7 @@ template<class t_real>
 t_real FilePsi<t_real>::GetKFix() const
 {
 	typename t_mapIParams::const_iterator iterK = m_mapParameters.find("KFIX");
-	t_real k = (iterK!=m_mapParameters.end() ? iterK->second : 0.);
+	t_real k = (iterK != m_mapParameters.end() ? iterK->second : 0.);
 
 	return k;
 }
@@ -678,10 +678,10 @@ std::array<t_real, 4> FilePsi<t_real>::GetPosHKLE() const
 	typename t_mapIParams::const_iterator iterL = m_mapPosHkl.find("QL");
 	typename t_mapIParams::const_iterator iterE = m_mapPosHkl.find("EN");
 
-	t_real h = (iterH!=m_mapPosHkl.end() ? iterH->second : 0.);
-	t_real k = (iterK!=m_mapPosHkl.end() ? iterK->second : 0.);
-	t_real l = (iterL!=m_mapPosHkl.end() ? iterL->second : 0.);
-	t_real E = (iterE!=m_mapPosHkl.end() ? iterE->second : 0.);
+	t_real h = (iterH != m_mapPosHkl.end() ? iterH->second : 0.);
+	t_real k = (iterK != m_mapPosHkl.end() ? iterK->second : 0.);
+	t_real l = (iterL != m_mapPosHkl.end() ? iterL->second : 0.);
+	t_real E = (iterE != m_mapPosHkl.end() ? iterE->second : 0.);
 
 	return std::array<t_real,4>{{ h, k, l, E }};
 }
@@ -702,10 +702,10 @@ std::array<t_real, 4> FilePsi<t_real>::GetDeltaHKLE() const
 	typename t_mapIParams::const_iterator iterE = m_mapScanSteps.find("DEN");
 	if(iterE==m_mapScanSteps.end()) iterE = m_mapScanSteps.find("EN");
 
-        t_real h = (iterH!=m_mapScanSteps.end() ? iterH->second : 0.);
-        t_real k = (iterK!=m_mapScanSteps.end() ? iterK->second : 0.);
-        t_real l = (iterL!=m_mapScanSteps.end() ? iterL->second : 0.);
-        t_real E = (iterE!=m_mapScanSteps.end() ? iterE->second : 0.);
+        t_real h = (iterH != m_mapScanSteps.end() ? iterH->second : 0.);
+        t_real k = (iterK != m_mapScanSteps.end() ? iterK->second : 0.);
+        t_real l = (iterL != m_mapScanSteps.end() ? iterL->second : 0.);
+        t_real E = (iterE != m_mapScanSteps.end() ? iterE->second : 0.);
 
         return std::array<t_real,4>{{ h, k, l, E }};
 }

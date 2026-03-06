@@ -340,7 +340,7 @@ public:
 	virtual ~FileFrmOld() = default;
 
 protected:
-	void ReadHeader(std::istream& istr);
+	bool ReadHeader(std::istream& istr);
 	void ReadData(std::istream& istr);
 
 public:
