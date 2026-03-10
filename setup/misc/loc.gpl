@@ -7,7 +7,7 @@
 #
 
 $loc << ENDDATA
-# date     takin    tlibs  mag-core    tlibs2   plugins      paths
+# date     takin    tlibs    magpie    tlibs2   plugins      paths
 03/2014     5745        0         0         0         0          0
 06/2014    11654        0         0         0         0          0
 12/2014    16667        0         0         0         0          0
@@ -32,6 +32,7 @@ $loc << ENDDATA
 01/2024    68828    33806     25031     25771      6673      28708
 09/2024    70201    33847     26978     27597      7372      28726
 11/2024    70386    34004     30036     29447      7409      28732
+03/2026    81369    34744     33989     32811      7140      28489
 ENDDATA
 
 
@@ -43,7 +44,7 @@ col_plug = "#5500aa00"
 col_paths = "#55aaaa00"
 col_total = "#00000000"
 
-ymax = 210000
+ymax = 220000
 
 set timefmt "%m/%Y"
 set xdata time
@@ -54,7 +55,7 @@ set ylabel "Lines of code"
 
 set xtics rotate by 45 right
 
-set xrange [ "03/2014" : "12/2024" ]
+set xrange [ "03/2014" : "04/2026" ]
 set yrange [0 : ymax]
 
 # Version 1
@@ -81,10 +82,10 @@ set term pdf color enhanced font "NimbusSans-Regular, 64" size 20, 15
 set output "loc.pdf"
 
 plot \
-    "$loc" u 1:($2) w filledcurve y1=0 fc rgb col_tak title "core", \
-    "$loc" u 1:($2+$4):($2) w filledcurve fc rgb col_tak2 title "mag-core", \
+    "$loc" u 1:($2) w filledcurve y1=0 fc rgb col_tak title "Takin", \
+    "$loc" u 1:($2+$4):($2) w filledcurve fc rgb col_tak2 title "Magpie", \
     "$loc" u 1:($2+$4 + $3):($2 + $4) w filledcurve lw 2 fc rgb col_tl title "tlibs", \
     "$loc" u 1:($2+$4 + $3+$5):($2+$4 + $3) w filledcurve lw 2 fc rgb col_tl2 title "tlibs2", \
     "$loc" u 1:($2+$4 + $3+$5 +$6):($2+$4 + $3+$5) w filledcurve lw 2 fc rgb col_plug title "plugins", \
-    "$loc" u 1:($2+$4 + $3+$5 +$6+$7):($2+$4 + $3+$5 +$6) w filledcurve lw 2 fc rgb col_paths title "tas-paths", \
+    "$loc" u 1:($2+$4 + $3+$5 +$6+$7):($2+$4 + $3+$5 +$6) w filledcurve lw 2 fc rgb col_paths title "TAS-Paths", \
     "$loc" u 1:($2+$4 + $3+$5 +$6+$7) w lines lw 2 lc rgb col_total notitle
