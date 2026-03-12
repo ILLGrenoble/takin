@@ -75,6 +75,8 @@ class MagnonMod : public SqwBase
 		// temperature
 		t_real m_T{300};
 
+		bool m_uc_01{false};
+
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		// for quickly flipping coordinates
 		std::vector<t_real> m_Qsigns = { 1., 1., 1. };

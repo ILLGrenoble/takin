@@ -188,6 +188,10 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"B_align_spins", "int", tl::var_to_str((int)field.align_spins)});
 	vars.push_back(SqwBase::t_var{
 		"silent", "real", tl::var_to_str((int)m_dyn.GetSilent())});
+	vars.push_back(SqwBase::t_var{
+		"checks", "int", tl::var_to_str((int)m_dyn.GetPerformChecks())});
+	vars.push_back(SqwBase::t_var{
+		"uc_01", "int", tl::var_to_str((int)m_uc_01)});
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
@@ -281,6 +285,16 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 		}
 		else if(strVar == "silent")
 			m_dyn.SetSilent(tl::str_to_var<int>(strVal) != 0);
+		else if(strVar == "checks")
+			m_dyn.SetPerformChecks(tl::str_to_var<int>(strVal) != 0);
+		else if(strVar == "uc_01")
+		{
+			m_uc_01 = tl::str_to_var<int>(strVal) != 0;
+			if(m_uc_01)
+				m_dyn.SetUnitCellExtents(0., 1.);
+			else
+				m_dyn.SetUnitCellExtents(-0.5, 0.5);
+		}
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{
