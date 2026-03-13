@@ -119,7 +119,7 @@ void FileFrm<t_real>::ReadData(std::istream& istr)
 {
 	skip_after_line<char>(istr, "### scan data", true, false);
 
-	// column headers
+	// column headers: quantities
 	skip_after_char<char>(istr, '#');
 	std::string strLineQuantities;
 	std::getline(istr, strLineQuantities);
@@ -131,12 +131,18 @@ void FileFrm<t_real>::ReadData(std::istream& istr)
 		find_all_and_replace<std::string>(_str, "\r", "");
 	}
 
+	// column headers: units
 	skip_after_char<char>(istr, '#');
 	std::string strLineUnits;
 	std::getline(istr, strLineUnits);
 	get_tokens<std::string, std::string, t_vecColNames>
-		(strLineQuantities, " \t", m_vecUnits);
+		(strLineUnits, " \t", m_vecUnits);
 
+	bool using_THz = false;
+	std::size_t E_idx = 0;
+	GetCol("E", &E_idx);
+	if(E_idx < m_vecUnits.size() && m_vecUnits[E_idx] == "THz")
+		using_THz = true;
 
 	m_vecData.resize(m_vecQuantities.size());
 
@@ -146,7 +152,7 @@ void FileFrm<t_real>::ReadData(std::istream& istr)
 		std::string strLine;
 		std::getline(istr, strLine);
 		trim(strLine);
-		if(strLine.length()==0 || strLine[0]=='#')
+		if(strLine.length() == 0 || strLine[0] == '#')
 			continue;
 
 		std::vector<t_real> vecToks;
@@ -162,7 +168,13 @@ void FileFrm<t_real>::ReadData(std::istream& istr)
 		}
 
 		for(std::size_t iTok = 0; iTok < vecToks.size(); ++iTok)
-			m_vecData[iTok].push_back(vecToks[iTok]);
+		{
+			t_real tok = vecToks[iTok];
+			if(using_THz && iTok == E_idx)
+				tok *= tl::get_h<t_real>() / tl::get_one_picosecond<t_real>() / tl::get_one_meV<t_real>();
+			
+			m_vecData[iTok].push_back(tok);
+		}
 	}
 
 	FileInstrBase<t_real>::RenameDuplicateCols();

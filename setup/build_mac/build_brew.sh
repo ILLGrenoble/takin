@@ -152,9 +152,9 @@ if [ $build_magpie -ne 0 ]; then
 
 		# copy py modules
 		if [ $build_py_modules -ne 0 ]; then
-			cp -v tools_py/magdyn/_magdyn_py.dylib "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/magdyn/_magdyn_py.so "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/magdyn/magdyn.py "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/_magpy.dylib "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/_magpy.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/magpy.py "${TAKIN_ROOT}"/core/pymods/
 
 			cp -v tools_py/instr/_instr_py.dylib "${TAKIN_ROOT}"/core/pymods/
 			cp -v tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/

@@ -111,17 +111,24 @@ void FileFrmOld<t_real>::ReadData(std::istream& istr)
 	// scan command
 	std::getline(istr, m_command);
 
-	// column headers
+	// column headers: quantities
 	std::string strLineQuantities;
 	std::getline(istr, strLineQuantities);
 	get_tokens<std::string, std::string, t_vecColNames>
 		(strLineQuantities, " \t;", m_vecQuantities);
 
+	// column headers: units
 	std::string strLineUnits;
 	std::getline(istr, strLineUnits);
 	get_tokens<std::string, std::string, t_vecColNames>
-		(strLineQuantities, " \t;", m_vecUnits);
+		(strLineUnits, " \t;", m_vecUnits);
 
+	// convert THz units
+	bool using_THz = false;
+	std::size_t E_idx = 0;
+	GetCol("E", &E_idx);
+	if(E_idx < m_vecUnits.size() && m_vecUnits[E_idx] == "THz")
+		using_THz = true;
 
 	m_vecData.resize(m_vecQuantities.size());
 
@@ -149,7 +156,13 @@ void FileFrmOld<t_real>::ReadData(std::istream& istr)
 		}
 
 		for(std::size_t iTok = 0; iTok < vecToks.size(); ++iTok)
-			m_vecData[iTok].push_back(vecToks[iTok]);
+		{
+			t_real tok = vecToks[iTok];
+			if(using_THz && iTok == E_idx)
+				tok *= tl::get_h<t_real>() / tl::get_one_picosecond<t_real>() / tl::get_one_meV<t_real>();
+			
+			m_vecData[iTok].push_back(tok);
+		}
 	}
 
 	FileInstrBase<t_real>::RenameDuplicateCols();
