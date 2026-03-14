@@ -1,5 +1,5 @@
 /**
- * re-implementation of V. Mecoli's extension of Violini's TOF reso algorithm [mec25, mec25b]
+ * re-implementation of V. Mecoli's extension of Violini's TOF reso algorithm [mec25]
  * @author Tobias Weber <tobias.weber@tum.de>
  * @modif_by Victor Mecoli <mecoli@ill.fr> - nov-2025
  * @date oct-2025
