@@ -5,8 +5,7 @@
  * @date oct-2025
  * @license GPLv2
  *
- * @desc for extended method, see: [mec25] V. Mecoli, PhD thesis in preparation, https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/algos/vio_cov_ext2.py
- * @desc for extended method, see: [mec25b] V. Mecoli, PhD thesis in preparation, https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/algos/vio_ext2.py
+ * @desc for extended method, see: [mec25] V. Mecoli, PhD thesis in preparation, https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/algos/vio_ext.py
  * @desc for original method, see: [vio14] N. Violini et al., NIM A 736 (2014) pp. 31-39, doi: 10.1016/j.nima.2013.10.042
  *
  * ----------------------------------------------------------------------------
@@ -289,7 +288,7 @@ ResoResults calc_vio_ext(const VioExtParams& params)
 
 
 	// --------------------------------------------------------------------------------
-	// [mec25b], l. 48ff
+	// [mec25], l. 48ff
 	// --------------------------------------------------------------------------------
 	// sample
 	t_real sample_rad = params.sample_width / 2. / angs;
