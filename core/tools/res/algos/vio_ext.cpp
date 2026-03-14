@@ -1,6 +1,6 @@
 /**
  * re-implementation of V. Mecoli's extension of Violini's TOF reso algorithm [mec25]
- * @author Tobias Weber <tobias.weber@tum.de>
+ * @author Tobias Weber <tweber@ill.fr>
  * @modif_by Victor Mecoli <mecoli@ill.fr> - nov-2025
  * @date oct-2025
  * @license GPLv2
@@ -10,7 +10,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2025  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
