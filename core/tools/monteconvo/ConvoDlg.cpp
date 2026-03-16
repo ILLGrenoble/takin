@@ -135,9 +135,9 @@ ConvoDlg::ConvoDlg(QWidget* pParent, QSettings* pSett)
 		"convofit/recycle_neutrons"
 	};
 
-	m_vecCheckBoxes = { checkScan, check2dMap, checkNorm, checkFlip };
+	m_vecCheckBoxes = { checkScan, check2dMap, checkNorm, checkFlip, checkRel };
 	m_vecCheckNames = { "monteconvo/has_scanfile", "monteconvo/scan_2d",
-		"convofit/normalise", "convofit/flip_coords"
+		"convofit/normalise", "convofit/flip_coords", "convofit/rel_paths"
 	};
 	// -------------------------------------------------------------------------
 
