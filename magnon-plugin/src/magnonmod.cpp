@@ -50,6 +50,9 @@ MagnonMod::MagnonMod()
 
 MagnonMod::MagnonMod(const std::string& cfg_file) : MagnonMod()
 {
+	// at the beginning, assume the config file is correct (checks can be enabled by the user later)
+	m_dyn.SetPerformChecks(false);
+
 	if(cfg_file == "")
 	{
 		tl::log_info("No config file given for magnon module.");
