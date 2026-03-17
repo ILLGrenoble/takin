@@ -63,9 +63,6 @@ void SqwPhonon::create()
 		m_vecLA = tl::make_vec({1., 0., 0.});
 		m_vecTA1 = tl::make_vec({0., 1., 0.});
 		m_vecTA2 = tl::make_vec({0., 0., 1.});
-
-		//m_bOk = 0;
-		//return;
 	}
 
 	m_vecLA /= ublas::norm_2(m_vecLA);
@@ -77,7 +74,8 @@ void SqwPhonon::create()
 	tl::log_info("TA2: ", m_vecTA2);
 
 	std::list<std::vector<t_real>> lst;
-	for(t_real dq=-1.; dq<1.; dq+=1./t_real(m_iNumqs))
+	// generate qs for one brillouin zone
+	for(t_real dq =- 1.; dq < 1.; dq += 1./t_real(m_iNumqs))
 	{
 		ublas::vector<t_real> vecQLA = dq*m_vecLA;
 		ublas::vector<t_real> vecQTA1 = dq*m_vecTA1;
@@ -106,29 +104,47 @@ void SqwPhonon::create()
 		}
 
 		// only generate exact phonon branches, no arcs
-		if(m_iNumArc==0 || m_iNumArc==1)
+		if(m_iNumArc == 0 || m_iNumArc == 1)
 		{
-			lst.push_back(std::vector<t_real>({vecQLA[0]+m_vecBragg[0], vecQLA[1]+m_vecBragg[1], vecQLA[2]+m_vecBragg[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
-			lst.push_back(std::vector<t_real>({vecQTA1[0]+m_vecBragg[0], vecQTA1[1]+m_vecBragg[1], vecQTA1[2]+m_vecBragg[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
-			lst.push_back(std::vector<t_real>({vecQTA2[0]+m_vecBragg[0], vecQTA2[1]+m_vecBragg[1], vecQTA2[2]+m_vecBragg[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
+			lst.push_back(std::vector<t_real>({
+				vecQLA[0] + m_vecBragg[0],
+				vecQLA[1] + m_vecBragg[1],
+				vecQLA[2] + m_vecBragg[2],
+				dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
+			lst.push_back(std::vector<t_real>({
+				vecQTA1[0] + m_vecBragg[0],
+				vecQTA1[1] + m_vecBragg[1],
+				vecQTA1[2] + m_vecBragg[2],
+				dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
+			lst.push_back(std::vector<t_real>({
+				vecQTA2[0] + m_vecBragg[0],
+				vecQTA2[1] + m_vecBragg[1],
+				vecQTA2[2] + m_vecBragg[2],
+				dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 		}
 		else
 		{
 			const t_real dArcMax = std::abs(tl::d2r(m_dArcMax));
-			for(t_real dph=-dArcMax; dph<=dArcMax; dph+=1./t_real(m_iNumArc))
-			for(t_real dth=-dArcMax; dth<=dArcMax; dth+=1./t_real(m_iNumArc))
+			for(t_real dph = -dArcMax; dph <= dArcMax; dph += 1./t_real(m_iNumArc))
+			for(t_real dth = -dArcMax; dth <= dArcMax; dth += 1./t_real(m_iNumArc))
 			{
 				// ta2
 				ublas::vector<t_real> vecArcTA2 = tl::sph_shell(vecQTA2, dph, dth) + m_vecBragg;;
-				lst.push_back(std::vector<t_real>({vecArcTA2[0], vecArcTA2[1], vecArcTA2[2], dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
+				lst.push_back(std::vector<t_real>({
+					vecArcTA2[0], vecArcTA2[1], vecArcTA2[2],
+					dETA2, dTA2_S0, dTA2_E_HWHM, dTA2_q_HWHM}));
 
 				// ta1
 				ublas::vector<t_real> vecArcTA1 = tl::sph_shell(vecQTA1, dph, dth) + m_vecBragg;;
-				lst.push_back(std::vector<t_real>({vecArcTA1[0], vecArcTA1[1], vecArcTA1[2], dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
+				lst.push_back(std::vector<t_real>({
+					vecArcTA1[0], vecArcTA1[1], vecArcTA1[2],
+					dETA1, dTA1_S0, dTA1_E_HWHM, dTA1_q_HWHM}));
 
 				// la
 				ublas::vector<t_real> vecArcLA = tl::sph_shell(vecQLA, dph, dth) + m_vecBragg;;
-				lst.push_back(std::vector<t_real>({vecArcLA[0], vecArcLA[1], vecArcLA[2], dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
+				lst.push_back(std::vector<t_real>({
+					vecArcLA[0], vecArcLA[1], vecArcLA[2],
+					dELA, dLA_S0, dLA_E_HWHM, dLA_q_HWHM}));
 			}
 		}
 	}
@@ -142,7 +158,7 @@ void SqwPhonon::create()
 	tl::log_info("Generated k-d tree.");
 #endif
 
-	m_bOk = 1;
+	m_bOk = true;
 }
 
 
@@ -201,9 +217,6 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 
 			if(vecToks.size() == 0) continue;
 
-			//for(const auto& tok : vecToks) std::cout << tok << ", ";
-			//std::cout << std::endl;
-
 			if(vecToks[0] == "num_qs") m_iNumqs = tl::str_to_var<unsigned int>(vecToks[1]);
 			if(vecToks[0] == "num_arc") m_iNumArc = tl::str_to_var<unsigned int>(vecToks[1]);
 			if(vecToks[0] == "arc_max") m_dArcMax = tl::str_to_var_parse<t_real>(vecToks[1]);
@@ -232,6 +245,7 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 
 			else if(vecToks[0] == "inc_amp") m_dIncAmp = tl::str_to_var_parse<t_real>(vecToks[1]);
 			else if(vecToks[0] == "inc_sig") m_dIncSig = tl::str_to_var_parse<t_real>(vecToks[1]);
+			else if(vecToks[0] == "use_q_distr") m_bUseQDistr = (tl::str_to_var<unsigned int>(vecToks[1]) != 0);
 
 			else if(vecToks[0] == "T") m_dT = tl::str_to_var_parse<t_real>(vecToks[1]);
 		}
@@ -241,14 +255,25 @@ SqwPhonon::SqwPhonon(const char* pcFile)
 }
 
 
+/**
+ * TODO: dispersion E(Q)
+ */
+/*std::tuple<std::vector<t_real>, std::vector<t_real>>
+SqwPhonon::disp(t_real dh, t_real dk, t_real dl) const
+{
+}*/
+
+
 t_real SqwPhonon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 {
-	std::vector<t_real> vechklE = {dh, dk, dl, dE};
+	std::vector<t_real> vechklE = { dh, dk, dl, dE };
 #ifdef USE_RTREE
-	if(!m_rt->IsPointInGrid(vechklE)) return 0.;
+	if(!m_rt->IsPointInGrid(vechklE))
+		return 0.;
 	std::vector<t_real> vec = m_rt->GetNearestNode(vechklE);
 #else
-	if(!m_kd->IsPointInGrid(vechklE)) return 0.;
+	if(!m_kd->IsPointInGrid(vechklE))
+		return 0.;
 	std::vector<t_real> vec = m_kd->GetNearestNode(vechklE);
 #endif
 
@@ -261,43 +286,48 @@ t_real SqwPhonon::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 	// index, not value
 	if(dE_HWHM < 0.)
 	{
-		if(tl::float_equal<t_real>(dE_HWHM, -1., 0.1))		// TA1
+		if(tl::float_equal<t_real>(dE_HWHM, -1., 0.1))      // TA1
 			dE_HWHM = m_dTA1_E_HWHM;
-		else if(tl::float_equal<t_real>(dE_HWHM, -2., 0.1))	// TA2
+		else if(tl::float_equal<t_real>(dE_HWHM, -2., 0.1)) // TA2
 			dE_HWHM = m_dTA2_E_HWHM;
-		else if(tl::float_equal<t_real>(dE_HWHM, -3., 0.1))	// LA
+		else if(tl::float_equal<t_real>(dE_HWHM, -3., 0.1)) // LA
 			dE_HWHM = m_dLA_E_HWHM;
 	}
 	if(dQ_HWHM < 0.)
 	{
-		if(tl::float_equal<t_real>(dQ_HWHM, -1., 0.1))		// TA1
+		if(tl::float_equal<t_real>(dQ_HWHM, -1., 0.1))      // TA1
 			dQ_HWHM = m_dTA1_q_HWHM;
-		else if(tl::float_equal<t_real>(dQ_HWHM, -2., 0.1))	// TA2
+		else if(tl::float_equal<t_real>(dQ_HWHM, -2., 0.1)) // TA2
 			dQ_HWHM = m_dTA2_q_HWHM;
-		else if(tl::float_equal<t_real>(dQ_HWHM, -3., 0.1))	// LA
+		else if(tl::float_equal<t_real>(dQ_HWHM, -3., 0.1)) // LA
 			dQ_HWHM = m_dLA_q_HWHM;
 	}
 	if(dS < 0.)
 	{
-		if(tl::float_equal<t_real>(dS, -1., 0.1))		// TA1
+		if(tl::float_equal<t_real>(dS, -1., 0.1))           // TA1
 			dS = m_dTA1_S0;
-		else if(tl::float_equal<t_real>(dS, -2., 0.1))	// TA2
+		else if(tl::float_equal<t_real>(dS, -2., 0.1))      // TA2
 			dS = m_dTA2_S0;
-		else if(tl::float_equal<t_real>(dS, -3., 0.1))	// LA
+		else if(tl::float_equal<t_real>(dS, -3., 0.1))      // LA
 			dS = m_dLA_S0;
 	}
 
-	t_real dqDist = std::sqrt(std::pow(vec[0]-vechklE[0], 2.)
-		+ std::pow(vec[1]-vechklE[1], 2.)
-		+ std::pow(vec[2]-vechklE[2], 2.));
+	// distribution for the distances between the wanted and the available qs
+	t_real dq_distr = 1.;
+	if(m_bUseQDistr)
+	{
+		t_real dqDist = std::sqrt(
+			std::pow(vec[0] - vechklE[0], 2.) +
+			std::pow(vec[1] - vechklE[1], 2.) +
+			std::pow(vec[2] - vechklE[2], 2.));
+		dq_distr = tl::gauss_model/*_amp*/<t_real>(dqDist, 0., dQ_HWHM*tl::get_HWHM2SIGMA<t_real>(), 1., 0.);
+	}
 
 	t_real dInc = 0.;
 	if(!tl::float_equal<t_real>(m_dIncAmp, 0.))
 		dInc = tl::gauss_model<t_real>(dE, 0., m_dIncSig, m_dIncAmp, 0.);
 
-	return dS * std::abs(tl::DHO_model<t_real>(dE, dT, dE0, dE_HWHM, 1., 0.))
-		* tl::gauss_model<t_real>(dqDist, 0., dQ_HWHM*tl::get_HWHM2SIGMA<t_real>(), 1., 0.)
-		+ dInc;
+	return dInc + dS * std::abs(tl::DHO_model<t_real>(dE, dT, dE0, dE_HWHM, 1., 0.)) * dq_distr;
 }
 
 
@@ -333,6 +363,7 @@ std::vector<SqwBase::t_var> SqwPhonon::GetVars() const
 
 	vecVars.push_back(SqwBase::t_var{"inc_amp", "real", tl::var_to_str(m_dIncAmp)});
 	vecVars.push_back(SqwBase::t_var{"inc_sig", "real", tl::var_to_str(m_dIncSig)});
+	vecVars.push_back(SqwBase::t_var{"use_q_distr", "uint", tl::var_to_str(m_bUseQDistr)});
 
 	vecVars.push_back(SqwBase::t_var{"T", "real", tl::var_to_str(m_dT)});
 
@@ -378,11 +409,12 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 
 		else if(strVar == "inc_amp") m_dIncAmp = tl::str_to_var<decltype(m_dIncAmp)>(strVal);
 		else if(strVar == "inc_sig") m_dIncSig = tl::str_to_var<decltype(m_dIncSig)>(strVal);
+		else if(strVar == "use_q_distr") m_bUseQDistr = (tl::str_to_var<unsigned int>(strVal) != 0);
 
 		else if(strVar == "T") m_dT = tl::str_to_var<decltype(m_dT)>(strVal);
 	}
 
-	bool bRecreateTree = 0;
+	bool bRecreateTree = false;
 
 	for(const SqwBase::t_var& var : vecVars)
 	{
@@ -390,7 +422,7 @@ void SqwPhonon::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 		if(strVar != "T" && strVar.find("HWHM") == std::string::npos &&
 			strVar.find("inc") == std::string::npos &&
 			strVar.find("S0") == std::string::npos)
-			bRecreateTree = 1;
+			bRecreateTree = true;
 	}
 
 	if(bRecreateTree)
@@ -437,6 +469,7 @@ SqwBase* SqwPhonon::shallow_copy() const
 
 	pCpy->m_dIncAmp = m_dIncAmp;
 	pCpy->m_dIncSig = m_dIncSig;
+	pCpy->m_bUseQDistr = m_bUseQDistr;
 
 	pCpy->m_dT = m_dT;
 	return pCpy;
@@ -474,9 +507,16 @@ SqwPhononSingleBranch::SqwPhononSingleBranch(const char* pcFile)
 			tl::get_tokens<std::string>(strLine, std::string("=,"), vecToks);
 			std::for_each(vecToks.begin(), vecToks.end(), [](std::string& str) {tl::trim(str); });
 
-			if(vecToks.size() == 0) continue;
+			if(vecToks.size() == 0)
+				continue;
 
-			if(vecToks[0] == "G") m_vecBragg = tl::make_vec({tl::str_to_var_parse<t_real>(vecToks[1]), tl::str_to_var_parse<t_real>(vecToks[2]), tl::str_to_var_parse<t_real>(vecToks[3])});
+			if(vecToks[0] == "G")
+			{
+				m_vecBragg = tl::make_vec({
+					tl::str_to_var_parse<t_real>(vecToks[1]),
+					tl::str_to_var_parse<t_real>(vecToks[2]),
+					tl::str_to_var_parse<t_real>(vecToks[3])});
+			}
 
 			else if(vecToks[0] == BRANCH_PREFIX"amp") m_damp = tl::str_to_var_parse<t_real>(vecToks[1]);
 			else if(vecToks[0] == BRANCH_PREFIX"freq") m_dfreq = tl::str_to_var_parse<t_real>(vecToks[1]);
@@ -490,11 +530,11 @@ SqwPhononSingleBranch::SqwPhononSingleBranch(const char* pcFile)
 		}
 	}
 
-	// just use 100 if nothing else is defined
+	// just use (100) if nothing else is defined
 	if(m_vecBragg.size() < 3)
 		m_vecBragg = tl::make_vec({1., 0., 0.});
 
-	m_bOk = 1;
+	m_bOk = true;
 }
 
 

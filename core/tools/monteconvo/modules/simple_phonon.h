@@ -80,12 +80,13 @@ protected:
 	ublas::vector<t_real_reso> m_vecTA1;
 	ublas::vector<t_real_reso> m_vecTA2;
 
-	t_real_reso m_dLA_amp=20., m_dLA_freq=M_PI/2., m_dLA_E_HWHM=0.1, m_dLA_q_HWHM=0.1, m_dLA_S0=1.;
-	t_real_reso m_dTA1_amp=15., m_dTA1_freq=M_PI/2., m_dTA1_E_HWHM=0.1, m_dTA1_q_HWHM=0.1, m_dTA1_S0=1.;
-	t_real_reso m_dTA2_amp=10., m_dTA2_freq=M_PI/2., m_dTA2_E_HWHM=0.1, m_dTA2_q_HWHM=0.1, m_dTA2_S0=1.;
+	t_real_reso m_dLA_amp=20., m_dLA_freq=M_PI, m_dLA_E_HWHM=0.1, m_dLA_q_HWHM=0.1, m_dLA_S0=1.;
+	t_real_reso m_dTA1_amp=15., m_dTA1_freq=M_PI, m_dTA1_E_HWHM=0.1, m_dTA1_q_HWHM=0.1, m_dTA1_S0=1.;
+	t_real_reso m_dTA2_amp=10., m_dTA2_freq=M_PI, m_dTA2_E_HWHM=0.1, m_dTA2_q_HWHM=0.1, m_dTA2_S0=1.;
 
 	t_real_reso m_dIncAmp=0., m_dIncSig=0.1;
 	t_real_reso m_dT = 100.;
+	bool m_bUseQDistr = true;
 
 public:
 	SqwPhonon(const ublas::vector<t_real_reso>& vecBragg,
@@ -99,8 +100,9 @@ public:
 
 	virtual ~SqwPhonon() = default;
 
+	//virtual std::tuple<std::vector<t_real_reso>, std::vector<t_real_reso>>
+	//	disp(t_real_reso dh, t_real_reso dk, t_real_reso dl) const override;
 	virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const override;
-
 
 	const ublas::vector<t_real_reso>& GetBragg() const { return m_vecBragg; }
 	const ublas::vector<t_real_reso>& GetLA() const { return m_vecLA; }
@@ -128,7 +130,7 @@ protected:
 protected:
 	ublas::vector<t_real_reso> m_vecBragg;
 
-	t_real_reso m_damp=20., m_dfreq=M_PI/2., m_dHWHM=0.1, m_dS0=1.;
+	t_real_reso m_damp=20., m_dfreq=M_PI, m_dHWHM=0.1, m_dS0=1.;
 	t_real_reso m_dIncAmp=0., m_dIncSig=0.1;
 	t_real_reso m_dT = 100.;
 

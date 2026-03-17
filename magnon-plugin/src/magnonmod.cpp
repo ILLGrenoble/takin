@@ -368,6 +368,7 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_channel = this->m_channel;
 	mod->m_use_model_bose = this->m_use_model_bose;
 	mod->m_T = this->m_T;
+	mod->m_uc_01 = this->m_uc_01;
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;
 #endif
