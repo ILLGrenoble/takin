@@ -51,13 +51,14 @@ enum ResoFlags : std::size_t
 	CALC_KF3        = 1<<1,  // ana efficiency factor
 
 	CALC_KFKI       = 1<<2,  // kf/ki factor
-	CALC_MONKI      = 1<<3,  // monitor 1/ki factor
-	CALC_MON        = 1<<4,  // monitor in ki axis
+	CALC_KF         = 1<<3,  // only kf part of kf/ki factor
+	CALC_MONKI      = 1<<4,  // monitor 1/ki factor
+	CALC_MON        = 1<<5,  // monitor in ki axis
 
-	CALC_ALT_R0     = 1<<5,  // alternative R0 normalisation
+	CALC_ALT_R0     = 1<<6,  // alternative R0 normalisation
 
-	NORM_TO_SAMPLE  = 1<<6,  // normalise by sample volume
-	NORM_TO_RESVOL  = 1<<7,  // normalise r0 by resolution volume
+	NORM_TO_SAMPLE  = 1<<7,  // normalise by sample volume
+	NORM_TO_RESVOL  = 1<<8,  // normalise r0 by resolution volume
 };
 
 

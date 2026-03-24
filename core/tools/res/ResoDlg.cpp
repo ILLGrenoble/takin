@@ -208,6 +208,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 
 		"reso/vio_ext_pulse_chopper_counterrot", "reso/vio_ext_mono_chopper_counterrot",
 	};
+	// TODO: reso/use_kf
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus, radioSampleScatterPlus,
 		radioSampleCub, radioSrcRect, radioDetRect, radioMonitorRect,
