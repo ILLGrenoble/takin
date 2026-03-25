@@ -98,7 +98,7 @@ struct CNParams
 	std::shared_ptr<ReflCurve<t_real_reso>> mono_refl_curve;
 	std::shared_ptr<ReflCurve<t_real_reso>> ana_effic_curve;
 
-	std::size_t flags = CALC_KI3 | CALC_KF3 | CALC_KFKI | CALC_MONKI;
+	std::size_t flags = CALC_KI3 | CALC_KF3 | CALC_KI | CALC_KF | CALC_MONKI;
 };
 
 

@@ -50,10 +50,11 @@ enum ResoFlags : std::size_t
 	CALC_KI3        = 1<<0,  // mono efficiency factor
 	CALC_KF3        = 1<<1,  // ana efficiency factor
 
-	CALC_KFKI       = 1<<2,  // kf/ki factor
-	CALC_KF         = 1<<3,  // only kf part of kf/ki factor
+	CALC_KI         = 1<<2,  // 1/ki part of the kf/ki factor
+	CALC_KF         = 1<<3,  // kf part of the kf/ki factor
+
 	CALC_MONKI      = 1<<4,  // monitor 1/ki factor
-	CALC_MON        = 1<<5,  // monitor in ki axis
+	CALC_MON        = 1<<5,  // R0 factor for the monitor in the ki axis
 
 	CALC_ALT_R0     = 1<<6,  // alternative R0 normalisation
 

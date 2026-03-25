@@ -88,8 +88,8 @@ template<class t_real>
 void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins, std::ostream& ostr = std::cout)
 {
 	t_real range = 6. * sigma;
-	//range = 1.;
-	t_real bin_density = static_cast<t_real>(bins) / range;
+	//range = 15.;
+	t_real bin_width = static_cast<t_real>(bins) / range;
 
 	auto histo_axis = std::vector<boost::histogram::axis::regular<t_real>>
 	{
@@ -122,10 +122,9 @@ void tst_norm(t_real sigma, t_real mu, unsigned int iters, unsigned int bins, st
 	for(const auto& val : boost::histogram::indexed(histo))
 	{
 		t_real x = val.bin().lower() + 0.5*(val.bin().upper() - val.bin().lower());
-		t_real yMC = *val / static_cast<t_real>(iters);
-		//yMC *= bin_density * 8. * sigma / M_PI;  // amp normalisation
-		//yMC *= bin_density * 8. / M_PI / std::sqrt(2. * M_PI);  // area normalisation
-		yMC *= bin_density * std::sqrt(32. / M_PI/M_PI/M_PI);  // area normalisation
+		t_real yMC = *val * bin_width / static_cast<t_real>(iters);
+		//yMC *= 8./M_PI * sigma;  // amp normalisation
+		yMC *= 8./M_PI / std::sqrt(2. * M_PI);  // area normalisation
 		t_real yModel_amp = tl::gauss_model_amp<t_real>(x, mu, sigma, 1., 0.);
 		t_real yModel_area = tl::gauss_model<t_real>(x, mu, sigma, 1., 0.);
 

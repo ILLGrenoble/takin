@@ -128,15 +128,15 @@ void ResoDlg::Calc()
 			tas.flags |= CALC_KF3;
 		else
 			tas.flags &= ~CALC_KF3;
-		/*if(checkUseKf->isChecked())
+		if(checkUseKf->isChecked())
 			tas.flags |= CALC_KF;
 		else
-			tas.flags &= ~CALC_KF;*/
-		if(checkUseKfKi->isChecked())
-			tas.flags |= CALC_KFKI;
-		else
-			tas.flags &= ~CALC_KFKI;
+			tas.flags &= ~CALC_KF;
 		if(checkUseKi->isChecked())
+			tas.flags |= CALC_KI;
+		else
+			tas.flags &= ~CALC_KI;
+		if(checkUseMonKi->isChecked())
 			tas.flags |= CALC_MONKI;
 		else
 			tas.flags &= ~CALC_MONKI;

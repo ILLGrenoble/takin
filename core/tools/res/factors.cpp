@@ -67,16 +67,18 @@ std::tuple<t_real, t_real, t_real, t_real> get_scatter_factors(
 	t_real dSqwToXSec = t_real(1);
 	t_real dmonitor = t_real(1);
 
-	if(flags & CALC_KI3)
+	if(flags & CALC_KI3)         // monochromator reflectivity factor
 		dmono *= tl::ana_effic_factor(ki, units::abs(thetam));
-	if(flags & CALC_KF3)
+	if(flags & CALC_KF3)         // analyser reflectivity factor
 		dana *= tl::ana_effic_factor(kf, units::abs(thetaa));
 	if(flags & CALC_KF)
-		dSqwToXSec *= kf * angs;  // only kf part of the kf/ki factor, see Shirane, equ. (2.7)
-	if(flags & CALC_KFKI)
-		dSqwToXSec *= kf/ki;      // kf/ki factor, see Shirane, equ. (2.7)
+		dSqwToXSec *= kf * angs;   // kf part of the kf/ki factor, see Shirane, equ. (2.7)
+	if(flags & CALC_KI)
+		dSqwToXSec *= t_real(1)/ki / angs; // 1/ki part of the kf/ki factor, see Shirane, equ. (2.7)
+//	if(flags & CALC_KFKI)
+//		dSqwToXSec *= kf/ki;     // kf/ki factor, see Shirane, equ. (2.7)
 	if(flags & CALC_MONKI)
-		dmonitor *= ki*angs;      // monitor 1/ki factor, see [zhe07], p. 10
+		dmonitor *= ki*angs;       // monitor 1/ki factor, see [zhe07], p. 10
 
 	return std::make_tuple(dmono, dana, dSqwToXSec, dmonitor);
 }

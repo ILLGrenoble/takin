@@ -483,6 +483,14 @@ void ResoDlg::Load(tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 	if(obGroupVal)
 		groupGuide->setChecked(*obGroupVal);
 
+	// for compatibility with previous version
+	boost::optional<int> obUseKfKi = xml.QueryOpt<int>(strXmlRoot + "reso/use_kfki");
+	if(obUseKfKi)
+	{
+		checkUseKf->setChecked(*obUseKfKi);
+		checkUseKi->setChecked(*obUseKfKi);
+	}
+
 	textComment->setText(xml.Query<std::string>(strXmlRoot+"meta/comment").c_str());
 	t_real_reso dTimestamp = xml.Query<t_real_reso>(strXmlRoot+"meta/timestamp");
 	editTimestamp->setText(tl::epoch_to_str(dTimestamp).c_str());

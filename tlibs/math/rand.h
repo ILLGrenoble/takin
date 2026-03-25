@@ -283,7 +283,7 @@ struct _rand_nd
 	using t_func = std::function<_t_func>;
 
 	t_func m_func;
-	bool m_bUseThreads = 0;
+	bool m_bUseThreads = false;
 
 	_rand_nd(const t_func& func) : m_func(func) {}
 
@@ -301,9 +301,10 @@ struct _rand_nd
 			vecIters.push_back(vec.begin());
 
 		std::launch lpol = std::launch::deferred;
-		if(m_bUseThreads) lpol |= std::launch::async;
+		if(m_bUseThreads)
+			lpol |= std::launch::async;
 
-		while(1)
+		while(true)
 		{
 			t_vec<t_real> vecArgs;
 			for(t_iter iter : vecIters)
@@ -322,7 +323,7 @@ struct _rand_nd
 				break;
 		}
 
-		for(std::size_t i=0; i<iDim; ++i)
+		for(std::size_t i = 0; i < iDim; ++i)
 			vecRet[i] = vecFut[i].get();
 
 		return vecRet;

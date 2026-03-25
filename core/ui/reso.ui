@@ -668,23 +668,10 @@
           <property name="spacing">
            <number>1</number>
           </property>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="checkUseKi">
-            <property name="toolTip">
-             <string>Monitor factor. In kf=const mode, this and the kf/ki factor cancel out, and are not needed.</string>
-            </property>
-            <property name="text">
-             <string>Use 1/ki Factor</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
+          <item row="0" column="1">
            <widget class="QCheckBox" name="checkUseKf3">
             <property name="toolTip">
-             <string>Analyser factor. Not needed for kf=const mode.</string>
+             <string>Analyser reflectivity factor. Not needed for kf=const.</string>
             </property>
             <property name="text">
              <string>Use kf³ Factor</string>
@@ -694,13 +681,26 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QCheckBox" name="checkUseKfKi">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="checkUseKi3">
             <property name="toolTip">
-             <string>Factor in conversion from dynamical structure factor S(Q,E) to double-differential scattering cross-section. Not needed if a monitor counter is used in the ki axis.</string>
+             <string>Monochromator reflectivity factor. Not needed if a monitor counter is used in the ki axis.</string>
             </property>
             <property name="text">
-             <string>Use kf/ki Factor</string>
+             <string>Use ki³ Factor</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QCheckBox" name="checkUseKf">
+            <property name="toolTip">
+             <string>Kf part of the kf/ki conversion factor from dynamical structure factor S(Q,E) to double-differential scattering cross-section.</string>
+            </property>
+            <property name="text">
+             <string>Use kf Factor</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -708,25 +708,38 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QCheckBox" name="checkUseKi3">
+           <widget class="QCheckBox" name="checkUseKi">
             <property name="toolTip">
-             <string>Monochromator factor. Not needed if a monitor counter is used in the ki axis.</string>
+             <string>1/ki part of the kf/ki conversion factor from dynamical structure factor S(Q,E) to double-differential scattering cross-section. Not needed if a monitor counter is used in the ki axis.</string>
             </property>
             <property name="text">
-             <string>Use ki³ Factor</string>
+             <string>Use 1/ki Factor</string>
             </property>
             <property name="checked">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="checkUseMonitor">
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkUseMonKi">
             <property name="toolTip">
-             <string>Normalise R0 to the incoming resolution volume.</string>
+             <string>Monitor efficiency factor. In kf=const mode, this and the kf/ki factor cancel out, and are not needed.</string>
             </property>
             <property name="text">
-             <string>Monitor Counter in ki Axis</string>
+             <string>Use Monitor ki Factor</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkUseMonitor">
+            <property name="toolTip">
+             <string>Normalise R0 to the incoming R0 at the monitor.</string>
+            </property>
+            <property name="text">
+             <string>Use Monitor R0 Factor</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -5271,8 +5284,9 @@
   <tabstop>checkUseKi3</tabstop>
   <tabstop>checkUseKf3</tabstop>
   <tabstop>checkUseKi</tabstop>
+  <tabstop>checkUseKf</tabstop>
+  <tabstop>checkUseMonKi</tabstop>
   <tabstop>checkUseMonitor</tabstop>
-  <tabstop>checkUseKfKi</tabstop>
   <tabstop>spinMonoW</tabstop>
   <tabstop>spinMonoH</tabstop>
   <tabstop>spinMonoThick</tabstop>
