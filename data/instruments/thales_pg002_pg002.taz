@@ -54,8 +54,8 @@
 		<pop_dist_mono_sample>200</pop_dist_mono_sample>
 		<pop_dist_sample_ana>126.630</pop_dist_sample_ana>
 		<pop_dist_src_mono>200</pop_dist_src_mono>
-		<pop_guide_divh>36</pop_guide_divh>
-		<pop_guide_divv>36</pop_guide_divv>
+		<pop_guide_divh>30</pop_guide_divh>
+		<pop_guide_divv>30</pop_guide_divv>
 		<pop_monitor_h>11</pop_monitor_h>
 		<pop_monitor_w>11</pop_monitor_w>
 		<pop_mono_curvh>0</pop_mono_curvh>
@@ -77,11 +77,11 @@
 		<scatter_kf_vert>0</scatter_kf_vert>
 		<use_general_R0>1</use_general_R0>
 		<use_guide>1</use_guide>
-		<use_kf3>0</use_kf3>
-		<use_kfki>0</use_kfki>
+		<use_kf3>1</use_kf3>
 		<use_ki3>0</use_ki3>
+		<use_kfki>1</use_kfki>
 		<use_mon>1</use_mon>
-		<use_monki>0</use_monki>
+		<use_monki>1</use_monki>
 		<v_coll_after_sample>9999</v_coll_after_sample>
 		<v_coll_ana>9999</v_coll_ana>
 		<v_coll_before_sample>9999</v_coll_before_sample>

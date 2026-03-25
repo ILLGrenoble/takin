@@ -1093,6 +1093,9 @@
             <property name="singleStep">
              <double>0.100000000000000</double>
             </property>
+            <property name="toolTip">
+             <string>For nickel-coated guides this is 10 times the m-value.</string>
+            </property>
            </widget>
           </item>
           <item row="0" column="0">
@@ -1140,6 +1143,9 @@
             </property>
             <property name="singleStep">
              <double>0.100000000000000</double>
+            </property>
+            <property name="toolTip">
+             <string>For nickel-coated guides this is 10 times the m-value.</string>
             </property>
            </widget>
           </item>

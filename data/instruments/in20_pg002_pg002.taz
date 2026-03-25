@@ -79,11 +79,11 @@
 		<scatter_kf_vert>0</scatter_kf_vert>
 		<use_general_R0>1</use_general_R0>
 		<use_guide>0</use_guide>
-		<use_kf3>0</use_kf3>
-		<use_kfki>0</use_kfki>
+		<use_kf3>1</use_kf3>
 		<use_ki3>0</use_ki3>
+		<use_kfki>1</use_kfki>
 		<use_mon>1</use_mon>
-		<use_monki>0</use_monki>
+		<use_monki>1</use_monki>
 		<v_coll_after_sample>9.999000e+03</v_coll_after_sample>
 		<v_coll_ana>9.999000e+03</v_coll_ana>
 		<v_coll_before_sample>9.999000e+03</v_coll_before_sample>

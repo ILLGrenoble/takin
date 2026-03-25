@@ -80,12 +80,12 @@
 		<sample_scatter_sense>0</sample_scatter_sense>
 		<scatter_kf_angle>0.000000e+00</scatter_kf_angle>
 		<use_alt_R0>0</use_alt_R0>
-		<use_guide>1</use_guide>
-		<use_kf3>0</use_kf3>
-		<use_kfki>0</use_kfki>
+		<use_guide>0</use_guide>
+		<use_kf3>1</use_kf3>
 		<use_ki3>0</use_ki3>
+		<use_kfki>1</use_kfki>
 		<use_mon>1</use_mon>
-		<use_monki>0</use_monki>
+		<use_monki>1</use_monki>
 		<use_resvol>0</use_resvol>
 		<use_samplevol>1</use_samplevol>
 		<v_coll_after_sample>9.999000e+03</v_coll_after_sample>
