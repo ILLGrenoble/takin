@@ -232,7 +232,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 			tl::log_err("Cannot load ana reflectivity file \"", strAnaEffic, "\".");
 	}
 
-
+	// flags
 	if(xml.Query<int>((strXmlRoot + "reso/use_ki3").c_str(), 0))
 		m_reso.flags |= CALC_KI3;
 	else
@@ -269,24 +269,31 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 		m_reso.flags |= NORM_TO_RESVOL;
 	else
 		m_reso.flags &= ~NORM_TO_RESVOL;
+	m_R0_scale = xml.Query<t_real>((strXmlRoot + "reso/r0_scale").c_str(), 1.);
 
 	// for compatibility with old version
-	if(xml.Query<int>((strXmlRoot + "reso/use_general_R0").c_str(), 0))
-		m_reso.flags &= ~CALC_ALT_R0;
-	else
-		m_reso.flags |= CALC_ALT_R0;
-	if(xml.Query<int>((strXmlRoot + "reso/use_kfki").c_str(), 0))
+	boost::optional<int> opGenR0 = xml.QueryOpt<int>((strXmlRoot + "reso/use_general_R0").c_str());
+	if(opGenR0)
 	{
-		m_reso.flags |= CALC_KI;
-		m_reso.flags |= CALC_KF;
+		if(*opGenR0)
+			m_reso.flags &= ~CALC_ALT_R0;
+		else
+			m_reso.flags |= CALC_ALT_R0;
 	}
-	else
+	boost::optional<int> opKfKi = xml.QueryOpt<int>((strXmlRoot + "reso/use_kfki").c_str());
+	if(opKfKi)
 	{
-		m_reso.flags &= ~CALC_KI;
-		m_reso.flags &= ~CALC_KF;
+		if(*opKfKi)
+		{
+			m_reso.flags |= CALC_KI;
+			m_reso.flags |= CALC_KF;
+		}
+		else
+		{
+			m_reso.flags &= ~CALC_KI;
+			m_reso.flags &= ~CALC_KF;
+		}
 	}
-
-	m_R0_scale = xml.Query<t_real>((strXmlRoot + "reso/r0_scale").c_str(), 1.);
 
 	m_reso.dmono_sense = (xml.Query<int>((strXmlRoot+"reso/mono_scatter_sense").c_str(), 0) ? +1. : -1.);
 	m_reso.dana_sense = (xml.Query<int>((strXmlRoot+"reso/ana_scatter_sense").c_str(), 0) ? +1. : -1.);
