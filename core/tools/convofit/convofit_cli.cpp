@@ -105,6 +105,9 @@ int convofit_main(int argc, char** argv)
 		args.add(boost::make_shared<opts::option_description>(
 			"max-threads", opts::value<decltype(g_iMaxThreads)>(&g_iMaxThreads),
 			"maximum number of threads"));
+		args.add(boost::make_shared<opts::option_description>(
+			"max-processes", opts::value<decltype(g_iMaxProcesses)>(&g_iMaxProcesses),
+			"maximum number of processes"));
 
 		// dummy arg if launched from takin executable
 		bool bStartedFromTakin = false;

@@ -1070,6 +1070,10 @@ int monteconvo_main(int argc, char** argv)
 			opts::value<decltype(g_iMaxThreads)>(&g_iMaxThreads),
 			"maximum number of threads")));
 		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("max-processes",
+			opts::value<decltype(g_iMaxThreads)>(&g_iMaxProcesses),
+			"maximum number of processes")));
+		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("neutron-count",
 			opts::value<decltype(neutron_count_override)>(&neutron_count_override),
 			"simulated neutron count")));
