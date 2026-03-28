@@ -99,7 +99,6 @@ using Sunny
 
 num_sites = 1
 calc = nothing
-magsys = nothing
 
 
 #
@@ -120,14 +119,14 @@ function TakinInit()
 
 
 	# set up spin magnitudes and magnetic system
-	global magsys = System(magsites,
+	magsys = System(magsites, ( 1, 1, 1 ),
 		[
-			1 => Moment(s = g_S, g = -[ ge 0 0; 0 ge 0; 0 0 ge ]),
+			SpinInfo(1, S = g_S, g = -[ ge 0 0; 0 ge 0; 0 0 ge ]),
 		], :dipole)
 
 
 	# spin directions
-	polarize_spins!(magsys, [ 0, 0, 1 ])
+	set_dipole!(magsys, [ 0, 0, 1 ], ( 1, 1, 1, 1 ))
 
 
 	# set up magnetic couplings
@@ -140,8 +139,7 @@ function TakinInit()
 
 
 	# set up spin-wave calculator
-	cholesky_eps = 1e-8
-	global calc = SpinWaveTheory(magsys; measure = ssf_perp(magsys), regularization = cholesky_eps)
+	global calc = SpinWaveTheory(magsys; apply_g = true)
 
 	println("TakinInit: Finished setting up magnetic model.")
 end
@@ -152,16 +150,13 @@ end
 #
 function TakinDisp(h::Float64, k::Float64, l::Float64)
 	# momentum transfer
-	Q = [h, k, l]
-	Q2 = [h+1, k, l]  # second dummy point
-	momenta = q_space_path(magsys.crystal, [ Q, Q2 ], 2)
+	Q = vec([h, k, l])
 
-	# energy and correlation function
-	bands = intensities_bands(calc, momenta)
-	energies = bands.disp
-	correlations = bands.data
+	momenta = collect(range(Q, Q, 1))
+	energies, correlations = intensities_bands(calc, momenta,
+		intensity_formula(calc, :trace; kernel = delta_function_kernel))
 
-	return [ energies[:, 1], correlations[:, 1] / Float64(num_sites) ]
+	return [ energies[1, :], correlations[1, :] / Float64(num_sites) ]
 end
 
 
