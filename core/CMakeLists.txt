@@ -475,6 +475,7 @@ add_executable(takin
 	dialogs/DarkAnglesDlg.cpp dialogs/LogDlg.cpp
 
 	# reso
+	tools/res/factors.cpp
 	tools/res/algos/cn.cpp tools/res/algos/pop.cpp tools/res/algos/pop_cn.cpp
 	tools/res/algos/eck.cpp tools/res/algos/eck_ext.cpp
 	tools/res/algos/vio.cpp tools/res/algos/vio_ext.cpp
