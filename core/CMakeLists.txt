@@ -147,7 +147,7 @@ else()
 	set(BOOST_SUFFIX)
 endif()
 
-set(BOOST_COMPS program_options${BOOST_SUFFIX} iostreams${BOOST_SUFFIX} filesystem${BOOST_SUFFIX} system${BOOST_SUFFIX})
+set(BOOST_COMPS program_options${BOOST_SUFFIX} iostreams${BOOST_SUFFIX} filesystem${BOOST_SUFFIX}) # system${BOOST_SUFFIX})
 set(BOOST_OPT_COMPS)
 
 
@@ -435,7 +435,7 @@ if(USE_GENTAB)
 
 	target_link_libraries(gentab
 		${QtLibs}
-		Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+		Boost::iostreams${BOOST_SUFFIX} #Boost::system${BOOST_SUFFIX}
 		Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 		${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
 		#${Clipper_LIBRARIES}
@@ -540,7 +540,7 @@ target_link_libraries(takin
 	${LIBS_3D}
 	${PNG_LIBRARIES}
 	${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES}
-	Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+	Boost::iostreams${BOOST_SUFFIX} #Boost::system${BOOST_SUFFIX}
 	Boost::filesystem${BOOST_SUFFIX} Boost::program_options${BOOST_SUFFIX}
 	Threads::Threads ${Mp_LIBRARIES} ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 	${HDF5_CXX_LIBRARIES}
@@ -575,7 +575,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 target_link_libraries(takinmod_py
-	Boost::iostreams${BOOST_SUFFIX} Boost::system Boost::filesystem${BOOST_SUFFIX}
+	Boost::iostreams${BOOST_SUFFIX} Boost::filesystem${BOOST_SUFFIX} #Boost::system
 	${_BOOST_PY_TARGET} ${Python3_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES} ${Dl_LIBRARIES}
 )
@@ -593,7 +593,7 @@ add_executable(takinmod_jl
 )
 
 target_link_libraries(takinmod_jl
-	Boost::iostreams${BOOST_SUFFIX} Boost::system${BOOST_SUFFIX}
+	Boost::iostreams${BOOST_SUFFIX} #Boost::system${BOOST_SUFFIX}
 	Boost::filesystem${BOOST_SUFFIX}
 	${Julia_LIBRARIES}
 	Threads::Threads ${Rt_LIBRARIES}
