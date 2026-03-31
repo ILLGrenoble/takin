@@ -454,7 +454,7 @@ endif()
 # -----------------------------------------------------------------------------
 add_executable(takin
 	# main
-	tools/taz/taz_main.cpp
+	tools/taz/taz_main.cpp tools/taz/healthcheck.cpp
 	tools/taz/taz.cpp tools/taz/tas_layout.cpp tools/taz/tof_layout.cpp
 	tools/taz/taz_crys.cpp
 	tools/taz/taz_file.cpp tools/taz/taz_export.cpp

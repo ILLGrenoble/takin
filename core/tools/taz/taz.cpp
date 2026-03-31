@@ -637,109 +637,90 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 	// add menu entries for external tools
 	std::string strTools = find_resource("res/conf/tools.xml");
 	bool toolconfloaded = false;
-	if(strTools != "")
+	tl::Prop<std::string> propTools;
+	if(strTools != "" && propTools.Load(strTools.c_str(), tl::PropType::XML))
 	{
-		tl::Prop<std::string> propTools;
-		if(propTools.Load(strTools.c_str(), tl::PropType::XML))
+		// to avoid two separators in a row
+		bool bJustAddedSeparator = false;
+		// add all menu entries
+		for(std::size_t entry = 0; true; ++entry)
 		{
-			// to avoid two separators in a row
-			bool bJustAddedSeparator = false;
-
-			// add all menu entries
-			for(std::size_t entry = 0; true; ++entry)
+			std::ostringstream _xmlpath;
+			_xmlpath << "tools/entry_" << entry;
+			std::string xmlpath = _xmlpath.str();
+			if(!propTools.Exists(xmlpath))
+				break;
+			std::string tooltype = propTools.Query<std::string>(xmlpath + "/type", "");
+			if(tooltype == "separator" && !bJustAddedSeparator)
 			{
-				std::ostringstream _xmlpath;
-				_xmlpath << "tools/entry_" << entry;
-				std::string xmlpath = _xmlpath.str();
-				if(!propTools.Exists(xmlpath))
-					break;
-
-				std::string tooltype = propTools.Query<std::string>(xmlpath + "/type", "");
-
-				if(tooltype == "separator" && !bJustAddedSeparator)
+				pMenuTools->addSeparator();
+				bJustAddedSeparator = true;
+			}
+			// external tools
+			else if(tooltype == "program")
+			{
+				std::string toolname = propTools.Query<std::string>(xmlpath + "/name", "");
+				std::string toolprog = propTools.Query<std::string>(xmlpath + "/program", "");
+				if(toolname == "")
 				{
-					pMenuTools->addSeparator();
-					bJustAddedSeparator = true;
+					tl::log_err("Invalid tool name");
+					continue;
 				}
-				// external tools
-				else if(tooltype == "program")
+				std::string toolbin = find_program_binary(toolprog);
+				if(toolbin == "")
 				{
-					std::string toolname = propTools.Query<std::string>(xmlpath + "/name", "");
-					std::string toolprog = propTools.Query<std::string>(xmlpath + "/program", "");
-
-					if(toolname == "")
-					{
-						tl::log_err("Invalid tool name");
-						continue;
-					}
-
-					std::string toolbin = find_program_binary(toolprog);
-					if(toolbin == "")
-					{
-						tl::log_warn("Tool binary \"", toolprog, "\" was not found.");
-						continue;
-					}
-
-					// add menu item for external tool
-					QAction *actionTool = new QAction(toolname.c_str(), this);
+					tl::log_warn("Tool binary \"", toolprog, "\" was not found.");
+					continue;
+				}
+				// add menu item for external tool
+				QAction *actionTool = new QAction(toolname.c_str(), this);
+				pMenuTools->addAction(actionTool);
+				bJustAddedSeparator = false;
+				QObject::connect(actionTool, &QAction::triggered, [toolbin]()
+				{
+					// run exernal tool process
+					tl::log_debug("Running process \"", toolbin, "\"...");
+					tl::PipeProc<char> proc(("\"" + toolbin + "\"&").c_str(), false);
+					if(!proc.IsReady())
+						tl::log_err("Process \"", toolbin, "\" could not be created.");
+				});
+			}
+			// internal tools
+			else if(tooltype == "program_internal")
+			{
+				std::string toolname = propTools.Query<std::string>(xmlpath + "/name", "");
+				std::string toolprog = propTools.Query<std::string>(xmlpath + "/program", "");
+				QAction *actionTool = new QAction(toolname.c_str(), this);
+				if(toolprog == "takin_scanviewer")
+				{
+					QObject::connect(actionTool, &QAction::triggered, this, &TazDlg::ShowScanViewer);
+				}
+				else if(toolprog == "takin_scanpos")
+				{
+					QObject::connect(actionTool, &QAction::triggered, this, &TazDlg::ShowScanPos);
+				}
+				else if(toolprog == "takin_sgbrowser")
+				{
+					QObject::connect(actionTool, &QAction::triggered, this, &TazDlg::ShowSgListDlg);
+				}
+				else
+				{
+					tl::log_err("Unknown internal tool \"", toolprog, "\".");
+					delete actionTool;
+					actionTool = nullptr;
+				}
+				if(actionTool)
+				{
 					pMenuTools->addAction(actionTool);
 					bJustAddedSeparator = false;
-
-					QObject::connect(actionTool, &QAction::triggered, [toolbin]()
-					{
-						// run exernal tool process
-						tl::log_debug("Running process \"", toolbin, "\"...");
-
-						tl::PipeProc<char> proc(("\"" + toolbin + "\"&").c_str(), false);
-						if(!proc.IsReady())
-							tl::log_err("Process \"", toolbin, "\" could not be created.");
-					});
-				}
-				// internal tools
-				else if(tooltype == "program_internal")
-				{
-					std::string toolname = propTools.Query<std::string>(xmlpath + "/name", "");
-					std::string toolprog = propTools.Query<std::string>(xmlpath + "/program", "");
-
-					QAction *actionTool = new QAction(toolname.c_str(), this);
-
-					if(toolprog == "takin_scanviewer")
-					{
-						QObject::connect(actionTool, &QAction::triggered, this, &TazDlg::ShowScanViewer);
-					}
-					else if(toolprog == "takin_scanpos")
-					{
-						QObject::connect(actionTool, &QAction::triggered, this, &TazDlg::ShowScanPos);
-					}
-					else if(toolprog == "takin_sgbrowser")
-					{
-						QObject::connect(actionTool, &QAction::triggered, this, &TazDlg::ShowSgListDlg);
-					}
-					else
-					{
-						tl::log_err("Unknown internal tool \"", toolprog, "\".");
-						delete actionTool;
-						actionTool = nullptr;
-					}
-
-					if(actionTool)
-					{
-						pMenuTools->addAction(actionTool);
-						bJustAddedSeparator = false;
-					}
 				}
 			}
-
-			toolconfloaded = true;
 		}
-		else
-		{
-			tl::log_err("Cannot load tool configuration file \"", strTools, "\".");
-		}
+		toolconfloaded = true;
 	}
 	else
 	{
-		tl::log_err("No tool configuration file found.");
+		tl::log_err("Cannot load tool configuration file \"", strTools, "\".");
 	}
 
 	// default tools menu configuration, if nothing else given

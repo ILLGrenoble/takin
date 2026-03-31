@@ -41,9 +41,9 @@ template<class t_ch = char>
 class PipeProc
 {
 protected:
-	bool m_bOk = 0;
+	bool m_bOk = false;
 	FILE *m_pipe = nullptr;
-	bool m_bWrite = 1;
+	bool m_bWrite = true;
 
 	std::unique_ptr<boost::iostreams::file_descriptor_sink> m_pfdsOut;
 	std::unique_ptr<boost::iostreams::file_descriptor_source> m_pfdsIn;
@@ -54,8 +54,9 @@ protected:
 	std::unique_ptr<std::basic_ostream<t_ch>> m_postr;
 	std::unique_ptr<std::basic_istream<t_ch>> m_pistr;
 
+
 public:
-	PipeProc(const char* pcProc, bool bWrite=1) : m_bOk{0}, m_bWrite{bWrite}
+	PipeProc(const char* pcProc, bool bWrite = true) : m_bOk{false}, m_bWrite{bWrite}
 	{
 		namespace ios = boost::iostreams;
 
@@ -72,7 +73,7 @@ public:
 			if(m_psbufOut && m_psbufOut->is_open())
 				m_postr.reset(new std::basic_ostream<t_ch>(m_psbufOut.get()));
 			if(m_postr && m_postr->good())
-				m_bOk = 1;
+				m_bOk = true;
 		}
 		else
 		{
@@ -82,7 +83,7 @@ public:
 			if(m_psbufIn && m_psbufIn->is_open())
 				m_pistr.reset(new std::basic_istream<t_ch>(m_psbufIn.get()));
 			if(m_pistr && m_pistr->good())
-				m_bOk = 1;
+				m_bOk = true;
 		}
 	}
 
@@ -119,6 +120,7 @@ public:
 
 }
 
+
 template<class t_ch, class T>
 std::basic_ostream<t_ch>& operator<<(tl::PipeProc<t_ch>& proc, const T& t)
 {
@@ -131,5 +133,6 @@ std::basic_istream<t_ch>& operator>>(T& t, tl::PipeProc<t_ch>& proc)
 {
 	return (t >> proc.GetIstr());
 }
+
 
 #endif

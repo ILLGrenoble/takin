@@ -278,15 +278,20 @@ int main(int argc, char** argv)
 		bool bStartMontereso = false;
 		bool bStartTakinMain = true;
 
-		bool bShowHelp = false;  // show program options
-		bool bStartGUI = true;   // choose between QApplication or QCoreApplication
-		bool bOwnApp = false;    // don't set up any QApplication at all here
+		bool bShowHelp = false;    // show program options
+		bool bHealthCheck = false; // check program integrity
+		bool bStartGUI = true;     // choose between QApplication or QCoreApplication
+		bool bOwnApp = false;      // don't set up any QApplication at all here
 
 		opts::options_description args("Takin options");
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("help",
 			opts::bool_switch(&bShowHelp),
 			"shows the program options")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("healthcheck", 
+			opts::bool_switch(&bHealthCheck),
+			"check the program integrity")));
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("taz-file",
 			opts::value<decltype(vecTazFiles)>(&vecTazFiles),
@@ -437,6 +442,29 @@ int main(int argc, char** argv)
 
 			QCoreApplication::addLibraryPath((g_strApp + "/../lib/plugins").c_str());
 			QCoreApplication::addLibraryPath((g_strApp + "/lib/plugins").c_str());
+		}
+
+
+		// test program integrity
+		if(bHealthCheck)
+		{
+			tl::log_info("--------------------------------------------------------------------------------");
+			tl::log_info("Starting health checks...");
+			tl::log_info("--------------------------------------------------------------------------------");
+			extern bool healthcheck();
+
+			if(!healthcheck())
+			{
+				tl::log_err("--------------------------------------------------------------------------------");
+				tl::log_err("Health check summary: Program integrity check failed!");
+				tl::log_err("--------------------------------------------------------------------------------");
+				return -1;
+			}
+
+			tl::log_info("--------------------------------------------------------------------------------");
+			tl::log_info("Health check summary: All OK.");
+			tl::log_info("--------------------------------------------------------------------------------");
+			return 0;
 		}
 
 
