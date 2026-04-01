@@ -17,6 +17,7 @@
 		<type>program</type>
 		<name>Scan Browser (Beta)...</name>
 		<program>takin_scanbrowser</program>
+		<mandatory>0</mandatory>
 	</entry_2>
 
 	<entry_3>
@@ -33,12 +34,14 @@
 		<type>program</type>
 		<name>Nuclear Stucture Factors...</name>
 		<program>takin_structfact</program>
+		<mandatory>1</mandatory>
 	</entry_5>
 
 	<entry_6>
 		<type>program</type>
 		<name>Brillouin Zones...</name>
 		<program>takin_bz</program>
+		<mandatory>1</mandatory>
 	</entry_6>
 
 	<entry_7>
@@ -49,18 +52,21 @@
 		<type>program</type>
 		<name>Magnetic Space Groups...</name>
 		<program>takin_magsgbrowser</program>
+		<mandatory>0</mandatory>
 	</entry_8>
 
 	<entry_9>
 		<type>program</type>
 		<name>Magnetic Stucture Factors...</name>
 		<program>takin_magstructfact</program>
+		<mandatory>1</mandatory>
 	</entry_9>
 
 	<entry_10>
 		<type>program</type>
 		<name>Magnetic Dynamics [Magpie]...</name>
 		<program>magpie</program>
+		<mandatory>1</mandatory>
 	</entry_10>
 
 <!--
@@ -72,6 +78,7 @@
 		<type>program</type>
 		<name>Molecular Dynamics...</name>
 		<program>takin_moldyn</program>
+		<mandatory>0</mandatory>
 	</entry_12>
 
 	<entry_13>
@@ -82,6 +89,7 @@
 		<type>program</type>
 		<name>TAS Pathfinding...</name>
 		<program>taspaths</program>
+		<mandatory>0</mandatory>
 	</entry_14>
 -->
 </tools>

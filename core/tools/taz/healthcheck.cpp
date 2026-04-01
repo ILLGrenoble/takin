@@ -60,6 +60,7 @@ bool healthcheck()
 
 			std::string toolname = propTools.Query<std::string>(xmlpath + "/name", "");
 			std::string toolprog = propTools.Query<std::string>(xmlpath + "/program", "");
+			bool toolmand = propTools.Query<bool>(xmlpath + "/mandatory", false);
 			if(toolname == "")
 			{
 				tl::log_err("Invalid tool name");
@@ -69,8 +70,15 @@ bool healthcheck()
 			std::string toolbin = find_program_binary(toolprog);
 			if(toolbin == "")
 			{
-				tl::log_warn("Tool binary \"", toolprog, "\" was not found.");
-				//ok = false;
+				if(toolmand)
+				{
+					ok = false;
+					tl::log_err("Tool binary \"", toolprog, "\" was not found.");
+				}
+				else
+				{
+					tl::log_warn("Tool binary \"", toolprog, "\" was not found.");
+				}
 				continue;
 			}
 
