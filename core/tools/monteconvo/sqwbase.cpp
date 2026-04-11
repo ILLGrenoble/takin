@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -30,12 +30,23 @@
 #include "tlibs/log/log.h"
 
 
+/**
+ * copy member variables
+ */
+const SqwBase& SqwBase::operator=(const SqwBase& sqw)
+{
+	this->m_bOk = sqw.m_bOk;
+	this->m_vecFit = sqw.m_vecFit;
+
+	return *this;
+}
+
 
 /**
  * set or override S(Q, E) model parameters from a string
  */
-std::tuple<bool, std::string> SqwBase::SetVars(const std::string& sqw_params,
-	bool print_messages,
+std::tuple<bool, std::string> SqwBase::SetVars(
+  const std::string& sqw_params, bool print_messages,
 	const std::unordered_set<std::string> *ingored_params,
 	std::unordered_map<std::string, std::string> *all_params)
 {
@@ -166,10 +177,12 @@ void SqwBase::InitFitVars(const std::vector<t_var_fit>& vecFit)
  */
 void SqwBase::SetFitVars(const std::vector<t_var_fit>& vecFitVars)
 {
+	using t_iter = typename decltype(m_vecFit)::iterator;
+
 	for(const t_var_fit& var : vecFitVars)
 	{
 		const std::string& name = std::get<0>(var);
-		auto iter = std::find_if(m_vecFit.begin(), m_vecFit.end(), [&name](const t_var_fit& fitvar)
+		t_iter iter = std::find_if(m_vecFit.begin(), m_vecFit.end(), [&name](const t_var_fit& fitvar)
 		{
 			return std::get<0>(fitvar) == name;
 		});
@@ -185,13 +198,4 @@ void SqwBase::SetFitVars(const std::vector<t_var_fit>& vecFitVars)
 			tl::log_err("Tried to update non-existing fit variable \"", name, "\".");
 		}
 	}
-}
-
-
-const SqwBase& SqwBase::operator=(const SqwBase& sqw)
-{
-	this->m_bOk = sqw.m_bOk;
-	this->m_vecFit = sqw.m_vecFit;
-
-	return *this;
 }

@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -36,7 +36,12 @@
 #include <unordered_set>
 #include <unordered_map>
 
-#include "../res/defs.h"
+#ifndef __MCONV_OWN_DEFS__
+	#include "../res/defs.h"
+#else
+	using t_real_reso = double;
+#endif
+
 #include "tlibs/string/string.h"
 
 
@@ -70,10 +75,12 @@ public:
 	}
 
 	// S(Q,E) dynamical structure factor function which is queried for every mc point
-	virtual t_real_reso operator()(t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const = 0;
+	virtual t_real_reso operator()(
+		t_real_reso dh, t_real_reso dk, t_real_reso dl, t_real_reso dE) const = 0;
 
 	// background which is queried for every nominal (Q, E) point
-	virtual t_real_reso GetBackground(t_real_reso /*dh*/, t_real_reso /*dk*/, t_real_reso /*dl*/, t_real_reso /*dE*/) const
+	virtual t_real_reso GetBackground(
+		t_real_reso /*dh*/, t_real_reso /*dk*/, t_real_reso /*dl*/, t_real_reso /*dE*/) const
 	{
 		return 0.;
 	}
@@ -109,7 +116,10 @@ public:
 	virtual ~SqwBase() = default;
 
 	virtual const SqwBase& operator=(const SqwBase& sqw);
-	SqwBase(const SqwBase& sqw) { this->operator=(sqw); }
+	SqwBase(const SqwBase& sqw)
+	{
+		this->operator=(sqw);
+	}
 
 	virtual SqwBase* shallow_copy() const = 0;
 };
@@ -124,6 +134,7 @@ std::string vec_to_str(const t_vec& vec)
 	std::ostringstream ostr;
 	for(const typename t_vec::value_type& t : vec)
 		ostr << t << " ";
+
 	return ostr.str();
 }
 
@@ -131,14 +142,15 @@ std::string vec_to_str(const t_vec& vec)
 template<class t_vec = std::vector<double>>
 t_vec str_to_vec(const std::string& str)
 {
-	typedef typename t_vec::value_type T;
+	using T = typename t_vec::value_type;
 
 	std::vector<T> vec0;
 	tl::get_tokens<T, std::string, std::vector<T>>(str, " \t", vec0);
 
 	t_vec vec(vec0.size());
-	for(std::size_t i=0; i<vec0.size(); ++i)
-		vec[i] = vec0[i];
+	for(std::size_t idx = 0; idx < vec0.size(); ++idx)
+		vec[idx] = vec0[idx];
+
 	return vec;
 }
 

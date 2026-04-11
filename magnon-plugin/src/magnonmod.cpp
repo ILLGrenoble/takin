@@ -106,7 +106,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 		if(m_channel >= 0 && m_channel < 3)
 			weights.push_back(std::abs(mode.S_perp(m_channel, m_channel).real()));
 		else
-			weights.push_back(mode.weight);
+			weights.push_back(mode.weight_perp);
 	}
 
 	return std::make_tuple(energies, weights);
