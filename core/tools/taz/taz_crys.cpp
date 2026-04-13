@@ -185,12 +185,12 @@ void TazDlg::CalcPeaks()
 		t_real dX0 = editScatX0->text().toDouble();
 		t_real dX1 = editScatX1->text().toDouble();
 		t_real dX2 = editScatX2->text().toDouble();
-		ublas::vector<t_real> vecPlaneXRLU = tl::make_vec({dX0, dX1, dX2});
+		ublas::vector<t_real> vecPlaneXRLU = tl::make_vec({ dX0, dX1, dX2 });
 
 		t_real dY0 = editScatY0->text().toDouble();
 		t_real dY1 = editScatY1->text().toDouble();
 		t_real dY2 = editScatY2->text().toDouble();
-		ublas::vector<t_real> vecPlaneYRLU = tl::make_vec({dY0, dY1, dY2});
+		ublas::vector<t_real> vecPlaneYRLU = tl::make_vec({ dY0, dY1, dY2 });
 
 		// display up vector
 		ublas::matrix<t_real> matGCov = recip.GetMetricCov();

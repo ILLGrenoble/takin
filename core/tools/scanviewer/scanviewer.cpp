@@ -60,6 +60,7 @@
 
 using t_real = t_real_glob;
 using t_vec = tl::ublas::vector<t_real>;
+using t_mat = tl::ublas::matrix<t_real>;
 
 namespace fs = boost::filesystem;
 
@@ -325,10 +326,17 @@ void ScanViewerDlg::ShowMetaData()
 	std::array<t_real, 3> arrPlaneX = instr->GetScatterPlane0();
 	std::array<t_real, 3> arrPlaneY = instr->GetScatterPlane1();
 
+	tl::Lattice<t_real> lattice(arrLatt[0],arrLatt[1],arrLatt[2], arrAng[0],arrAng[1],arrAng[2]);
+	tl::Lattice<t_real> recip = lattice.GetRecip();
+
 	// scattering plane normal
 	t_vec plane_1 = tl::make_vec<t_vec>({ arrPlaneX[0],  arrPlaneX[1], arrPlaneX[2] });
 	t_vec plane_2 = tl::make_vec<t_vec>({ arrPlaneY[0],  arrPlaneY[1], arrPlaneY[2] });
-	t_vec plane_n = tl::cross_3(plane_1, plane_2);
+
+	t_mat matGCov = recip.GetMetricCov();
+	t_vec plane_n = tl::cross_prod_contra(matGCov, plane_1, plane_2, false);
+	plane_n /= tl::veclen(plane_n);
+	tl::set_eps_0(plane_n, g_dEpsGfx);
 
 	editA->setText(tl::var_to_str(arrLatt[0], g_iPrec).c_str());
 	editB->setText(tl::var_to_str(arrLatt[1], g_iPrec).c_str());
