@@ -37,6 +37,7 @@
 
 using t_real = t_real_glob;
 
+
 int main(int argc, char **argv)
 {
 	if(argc < 3)
@@ -53,18 +54,26 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+
 	std::string strCnt = dat0->GetCountVar();
 	std::string strMon = dat0->GetMonVar();
 	std::string strTime = dat0->GetTimerVar();
-//	std::string strMon2 = "M2";
+	// additional columns to add
+	std::vector<std::string> strAdditional = { /*"M2"*/ };
 
 	//std::string strMon = "M2";
 	tl::log_info("Count var: ", strCnt, ", monitor var: ", strMon, ", timer var: ", strTime);
 
+	t_real Q_eps = 0.01;
+	t_real E_eps = 0.05;
+	std::array<t_real, 4> pos0 = dat0->GetPosHKLE();
+
 	tl::FileInstrBase<>::t_vecVals& vecCnt0 = dat0->GetCol(strCnt);
 	tl::FileInstrBase<>::t_vecVals& vecMon0 = dat0->GetCol(strMon);
-//	tl::FileInstrBase<>::t_vecVals& vecMon0_2 = dat0->GetCol(strMon2);
 	tl::FileInstrBase<>::t_vecVals& vecTime0 = dat0->GetCol(strTime);
+	std::vector<tl::FileInstrBase<>::t_vecVals*> vecAdditional0;
+	for(const std::string& strAdd : strAdditional)
+		vecAdditional0.push_back(&dat0->GetCol(strAdd));
 
 
 	for(int iArg = 2; iArg < argc - 1; ++iArg)
@@ -79,10 +88,14 @@ int main(int argc, char **argv)
 			return -1;
 		}
 
+		std::array<t_real, 4> pos = dat->GetPosHKLE();
+
 		const tl::FileInstrBase<>::t_vecVals& vecCnt = dat->GetCol(strCnt);
 		const tl::FileInstrBase<>::t_vecVals& vecMon = dat->GetCol(strMon);
-//		const tl::FileInstrBase<>::t_vecVals& vecMon2 = dat->GetCol(strMon2);
 		const tl::FileInstrBase<>::t_vecVals& vecTime = dat->GetCol(strTime);
+		std::vector<const tl::FileInstrBase<>::t_vecVals*> vecAdditional;
+		for(const std::string& strAdd : strAdditional)
+			vecAdditional.push_back(&dat->GetCol(strAdd));
 
 		if(vecCnt.size() != vecCnt0.size() || vecMon.size() != vecMon0.size() || vecTime.size() != vecTime0.size())
 		{
@@ -92,22 +105,32 @@ int main(int argc, char **argv)
 
 		for(unsigned int i = 0; i < vecCnt0.size(); ++i)
 		{
+			if(!tl::float_equal<t_real>(std::get<0>(pos0), std::get<0>(pos), Q_eps))
+				tl::log_warn("Mismatching h in index ", i, ".");
+			if(!tl::float_equal<t_real>(std::get<1>(pos0), std::get<1>(pos), Q_eps))
+				tl::log_warn("Mismatching k in index ", i, ".");
+			if(!tl::float_equal<t_real>(std::get<2>(pos0), std::get<2>(pos), Q_eps))
+				tl::log_warn("Mismatching l in index ", i, ".");
+			if(!tl::float_equal<t_real>(std::get<3>(pos0), std::get<3>(pos), E_eps))
+				tl::log_warn("Mismatching E in index ", i, ".");
+	
 			vecCnt0[i] += vecCnt[i];
 			vecMon0[i] += vecMon[i];
-			//vecMon0_2[i] += vecMon2[i];
 			vecTime0[i] += vecTime[i];
+
+			for(unsigned int iAdd = 0; iAdd < vecAdditional.size(); ++iAdd)
+				(*vecAdditional0[iAdd])[i] += (*vecAdditional[iAdd])[i];
 		}
 
 		delete dat;
 	}
 
 
-
-	tl::log_info("Saving file ", argv[argc-1]);
+	tl::log_info("Saving file ", argv[argc - 1]);
 	std::ofstream ofstr(argv[argc-1]);
 	if(!ofstr.is_open())
 	{
-		tl::log_err("Cannot save data file ", argv[argc-1], ".");
+		tl::log_err("Cannot save data file ", argv[argc - 1], ".");
 		return -1;
 	}
 
