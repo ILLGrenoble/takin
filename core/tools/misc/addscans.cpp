@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 
 
 	tl::log_info("Saving file ", argv[argc - 1]);
-	std::ofstream ofstr(argv[argc-1]);
+	std::ofstream ofstr(argv[argc - 1]);
 	if(!ofstr.is_open())
 	{
 		tl::log_err("Cannot save data file ", argv[argc - 1], ".");

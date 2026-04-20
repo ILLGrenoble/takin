@@ -25,15 +25,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * ----------------------------------------------------------------------------
  */
-// g++ -I../.. -I. -DNO_IOSTR -o subscans ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp subscans.cpp -std=c++17 -lboost_system -lboost_filesystem
+
+// g++ -I../.. -I. -I/opt/homebrew/include -L/opt/homebrew/lib -DNO_IOSTR -o subscans ../../tlibs/file/loadinstr.cpp ../../tlibs/log/log.cpp subscans.cpp -std=c++17 -lboost_system -lboost_filesystem
 
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+
 #include "tlibs/file/loadinstr.h"
 #include "tlibs/log/log.h"
 #include "tlibs/phys/neutrons.h"
+#include "tlibs/math/stat.h"
+
 #include "libs/globals.h"
+
 
 using t_real = t_real_glob;
 
@@ -42,60 +47,60 @@ int main(int argc, char **argv)
 {
 	if(argc < 3)
 	{
-		tl::log_err("Usage:\n\t", argv[0], "<file_+> <file_-> <file_out>");
+		tl::log_err("Usage:\n\t", argv[0], "<file_add> <file_sub> <file_out>");
 		return -1;
 	}
 
 
 	// original file
-	tl::log_info("Loading file ", argv[1], "...");
-	tl::FileInstrBase<t_real> *dat_add = tl::FileInstrBase<t_real>::LoadInstr(argv[1]);
-
+	const char* pcFileAdd = argv[1];
+	tl::log_info("Loading file ", pcFileAdd, "...");
+	tl::FileInstrBase<t_real> *dat_add = tl::FileInstrBase<t_real>::LoadInstr(pcFileAdd);
 	if(!dat_add)
 	{
-		tl::log_err("Cannot load data file ", argv[1], ".");
+		tl::log_err("Cannot load data file ", pcFileAdd, ".");
 		return -1;
 	}
 
-
 	std::string strCnt = dat_add->GetCountVar();
 	std::string strMon = dat_add->GetMonVar();
-	std::string strTime = dat_add->GetTimerVar();
-	tl::log_info("Count var: ", strCnt, ", monitor var: ", strMon, ", timer var: ", strTime);
+	std::string strTemp = "TT";
+	tl::log_info("Count var: ", strCnt, ", monitor var: ", strMon, ".");
 
 	t_real Q_eps = 0.01;
 	t_real E_eps = 0.05;
 	std::array<t_real, 4> pos_add = dat_add->GetPosHKLE();
 
 	tl::FileInstrBase<>::t_vecVals& vecCntAdd = dat_add->GetCol(strCnt);
-	std::vector<t_real> vecCntAdd_err;;
 	tl::FileInstrBase<>::t_vecVals& vecMonAdd = dat_add->GetCol(strMon);
-	tl::FileInstrBase<>::t_vecVals& vecTimeAdd = dat_add->GetCol(strTime);
+	tl::FileInstrBase<>::t_vecVals& vecTempAdd = dat_add->GetCol(strTemp);
+	t_real T_add = tl::mean_value(vecTempAdd);
+	std::vector<t_real> vecCntAdd_err;
 
 
 	// file to subtract
-	const char* pcFile = argv[2];
-	tl::log_info("Loading file ", pcFile, "...");
-	tl::FileInstrBase<t_real> *dat_sub = tl::FileInstrBase<t_real>::LoadInstr(pcFile);
+	const char* pcFileSub = argv[2];
+	tl::log_info("Loading file ", pcFileSub, "...");
+	tl::FileInstrBase<t_real> *dat_sub = tl::FileInstrBase<t_real>::LoadInstr(pcFileSub);
 	if(!dat_sub)
 	{
-		tl::log_err("Cannot load data file ", pcFile, ".");
+		tl::log_err("Cannot load data file ", pcFileSub, ".");
 		return -1;
 	}
+
 	std::array<t_real, 4> pos_sub = dat_sub->GetPosHKLE();
+
 	const tl::FileInstrBase<>::t_vecVals& vecCntSub = dat_sub->GetCol(strCnt);
 	const tl::FileInstrBase<>::t_vecVals& vecMonSub = dat_sub->GetCol(strMon);
-	const tl::FileInstrBase<>::t_vecVals& vecTimeSub = dat_sub->GetCol(strTime);
+	const tl::FileInstrBase<>::t_vecVals& vecTempSub = dat_sub->GetCol(strTemp);
+	t_real T_sub = tl::mean_value(vecTempSub);
+	tl::log_info("T_add: ", T_add, "K, T_sub: ", T_sub, " K.");
 
-	if(vecCntSub.size() != vecCntAdd.size() || vecMonSub.size() != vecMonAdd.size() || vecTimeSub.size() != vecTimeAdd.size())
+	if(vecCntSub.size() != vecCntAdd.size() || vecMonSub.size() != vecMonAdd.size())
 	{
-		tl::log_err("Size mismatch in file ", pcFile, ".");
+		tl::log_err("Size mismatch in file ", pcFileSub, ".");
 		return -1;
 	}
-
-	// TODO
-	t_real T_add = 300.;
-	t_real T_sub = 300.;
 
 	for(unsigned int i = 0; i < vecCntAdd.size(); ++i)
 	{
@@ -127,11 +132,13 @@ int main(int argc, char **argv)
 	delete dat_sub;
 
 
-	tl::log_info("Saving file ", argv[argc - 1]);
-	std::ofstream ofstr(argv[argc-1]);
+	// output file
+	const char* pcFileOut = argv[3];
+	tl::log_info("Saving file ", pcFileOut);
+	std::ofstream ofstr(pcFileOut);
 	if(!ofstr.is_open())
 	{
-		tl::log_err("Cannot save data file ", argv[argc - 1], ".");
+		tl::log_err("Cannot save data file ", pcFileOut, ".");
 		return -1;
 	}
 

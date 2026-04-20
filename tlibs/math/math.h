@@ -62,7 +62,8 @@ template<class T=double> constexpr T m2r(T min) { return min/T(180*60)*get_pi<T>
 template<typename T>
 T sign(T t)
 {
-	if(t<0.) return -T(1);
+	if(t < 0.)
+		return -T(1);
 	return T(1);
 }
 
