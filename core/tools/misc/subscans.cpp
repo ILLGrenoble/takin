@@ -78,7 +78,6 @@ int main(int argc, char **argv)
 
 	t_real Q_eps = 0.01;
 	t_real E_eps = 0.05;
-	std::array<t_real, 4> pos_add = dat_add->GetPosHKLE();
 
 	tl::FileInstrBase<>::t_vecVals& vecCntAdd = dat_add->GetCol(strCnt);
 	tl::FileInstrBase<>::t_vecVals& vecMonAdd = dat_add->GetCol(strMon);
@@ -97,8 +96,6 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	std::array<t_real, 4> pos_sub = dat_sub->GetPosHKLE();
-
 	const tl::FileInstrBase<>::t_vecVals& vecCntSub = dat_sub->GetCol(strCnt);
 	const tl::FileInstrBase<>::t_vecVals& vecMonSub = dat_sub->GetCol(strMon);
 	const tl::FileInstrBase<>::t_vecVals& vecTempSub = dat_sub->GetCol(strTemp);
@@ -113,14 +110,17 @@ int main(int argc, char **argv)
 
 	for(unsigned int i = 0; i < vecCntAdd.size(); ++i)
 	{
+		std::array<t_real, 4> pos_add = dat_add->GetScanHKLE(i);
+		std::array<t_real, 4> pos_sub = dat_sub->GetScanHKLE(i);
+
 		if(!tl::float_equal<t_real>(std::get<0>(pos_add), std::get<0>(pos_sub), Q_eps))
-			tl::log_warn("Mismatching h in index ", i, ".");
+			tl::log_warn("Mismatching h in index ", i, ": ", std::get<0>(pos_add), " != ", std::get<0>(pos_sub), ".");
 		if(!tl::float_equal<t_real>(std::get<1>(pos_add), std::get<1>(pos_sub), Q_eps))
-			tl::log_warn("Mismatching k in index ", i, ".");
+			tl::log_warn("Mismatching k in index ", i, ": ", std::get<1>(pos_add), " != ", std::get<1>(pos_sub), ".");
 		if(!tl::float_equal<t_real>(std::get<2>(pos_add), std::get<2>(pos_sub), Q_eps))
-			tl::log_warn("Mismatching l in index ", i, ".");
+			tl::log_warn("Mismatching l in index ", i, ": ", std::get<2>(pos_add), " != ", std::get<2>(pos_sub), ".");
 		if(!tl::float_equal<t_real>(std::get<3>(pos_add), std::get<3>(pos_sub), E_eps))
-			tl::log_warn("Mismatching E in index ", i, ".");
+			tl::log_warn("Mismatching E in index ", i, ": ", std::get<3>(pos_add), " != ", std::get<3>(pos_sub), ".");
 
 		t_real bose_add = tl::bose<t_real>(std::get<3>(pos_add), T_add);
 		t_real bose_sub = tl::bose<t_real>(std::get<3>(pos_sub), T_sub);
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 	ofstr << "# orient1_y    = " << std::get<1>(vec0) << "\n";
 	ofstr << "# orient1_z    = " << std::get<2>(vec0) << "\n";
 
-	std::array<t_real, 3> vec1 = dat_add->GetScatterPlane0();
+	std::array<t_real, 3> vec1 = dat_add->GetScatterPlane1();
 	ofstr << "# orient2_x    = " << std::get<0>(vec1) << "\n";
 	ofstr << "# orient2_y    = " << std::get<1>(vec1) << "\n";
 	ofstr << "# orient2_z    = " << std::get<2>(vec1) << "\n";
@@ -218,23 +218,6 @@ int main(int argc, char **argv)
 		ofstr << std::setw(w) << std::right << vecMonAdd[i] << " ";
 		ofstr << std::setw(w) << std::right << vecMonAdd_err[i] << "\n";
 	}
-
-	/*const tl::FileInstrBase<>::t_vecColNames& vecColNames = dat_add->GetColNames();
-	for(const std::string& strColName : vecColNames)
-		ofstr << std::setw(w) << std::right << strColName << " ";
-	ofstr << std::setw(w) << std::right << "cnt_err" << " ";
-	ofstr << "\n";
-
-	for(unsigned int i = 0; i < vecCntAdd.size(); ++i)
-	{
-		for(const std::string& strColName : vecColNames)
-		{
-			tl::FileInstrBase<>::t_vecVals& vecCol = dat_add->GetCol(strColName);
-			ofstr << std::setw(w) << std::right << vecCol[i] << " ";
-		}
-		ofstr << std::setw(w) << std::right << vecCntAdd_err[i] << " ";
-		ofstr << "\n";
-	}*/
 
 	delete dat_add;
 	return 0;
