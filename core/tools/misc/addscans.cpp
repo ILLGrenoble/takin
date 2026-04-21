@@ -200,6 +200,17 @@ int main(int argc, char **argv)
 		ofstr << "# cols_scanned = 4" << "\n";
 		ofstr << "#\n";
 
+		// column header
+		ofstr << "#" << std::setw(w - 1) << std::right << "h" << " ";
+		ofstr << std::setw(w) << std::right << "k" << " ";
+		ofstr << std::setw(w) << std::right << "l" << " ";
+		ofstr << std::setw(w) << std::right << "E" << " ";
+		ofstr << std::setw(w) << std::right << "ctr" << " ";
+		ofstr << std::setw(w) << std::right << "ctr_err" << " ";
+		ofstr << std::setw(w) << std::right << "mon" << " ";
+		ofstr << std::setw(w) << std::right << "mon_err" << " ";
+		ofstr << std::setw(w) << std::right << "time" << "\n";
+
 		// write data columns
 		for(unsigned int i = 0; i < vecCnt0.size(); ++i)
 		{

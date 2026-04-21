@@ -85,9 +85,11 @@ int main(int argc, char **argv)
 
 	tl::FileInstrBase<>::t_vecVals& vecCntAdd = dat_add->GetCol(strCnt);
 	tl::FileInstrBase<>::t_vecVals& vecMonAdd = dat_add->GetCol(strMon);
-	tl::FileInstrBase<>::t_vecVals& vecTempAdd = dat_add->GetCol(strTemp);
+	const tl::FileInstrBase<>::t_vecVals& vecTempAdd = dat_add->GetCol(strTemp);
 	t_real T_add = tl::mean_value(vecTempAdd);
-	std::vector<t_real> vecCntAdd_err, vecMonAdd_err;
+
+	tl::FileInstrBase<>::t_vecVals vecCntAdd_err, vecMonAdd_err, vecCntSub_err;
+	tl::FileInstrBase<>::t_vecVals vecCntOrg = vecCntAdd, vecCntOrg_err;
 
 
 	// file to subtract
@@ -100,7 +102,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	const tl::FileInstrBase<>::t_vecVals& vecCntSub = dat_sub->GetCol(strCnt);
+	tl::FileInstrBase<>::t_vecVals& vecCntSub = dat_sub->GetCol(strCnt);
 	const tl::FileInstrBase<>::t_vecVals& vecMonSub = dat_sub->GetCol(strMon);
 	const tl::FileInstrBase<>::t_vecVals& vecTempSub = dat_sub->GetCol(strTemp);
 	t_real T_sub = tl::mean_value(vecTempSub);
@@ -126,21 +128,27 @@ int main(int argc, char **argv)
 		if(!tl::float_equal<t_real>(std::get<3>(pos_add), std::get<3>(pos_sub), E_eps))
 			tl::log_warn("Mismatching E in index ", i, ": ", std::get<3>(pos_add), " != ", std::get<3>(pos_sub), ".");
 
-		t_real bose_add = norm_to_bose ? tl::bose<t_real>(std::get<3>(pos_add), T_add) : 1.;
-		t_real bose_sub = norm_to_bose ? tl::bose<t_real>(std::get<3>(pos_sub), T_sub) : 1.;
-
 		t_real err_add = get_err(vecCntAdd[i]);
 		t_real err_sub = get_err(vecCntSub[i]);
 		t_real err_mon_add = get_err(vecMonAdd[i]);
 		t_real err_mon_sub = get_err(vecMonSub[i]);
 
-		vecCntAdd[i] -= vecCntSub[i] * vecMonAdd[i]/vecMonSub[i] * bose_add/bose_sub;
+		vecCntSub[i] *= vecMonAdd[i]/vecMonSub[i];
 
+		if(norm_to_bose)
+		{
+			t_real bose_add = tl::bose<t_real>(std::get<3>(pos_add), T_add);
+			t_real bose_sub = tl::bose<t_real>(std::get<3>(pos_sub), T_sub);
+			vecCntSub[i] *= bose_add/bose_sub;
+		}
+
+		vecCntAdd[i] -= vecCntSub[i];
 		err_sub *= vecMonAdd[i]/vecMonSub[i];
+		vecCntOrg_err.push_back(err_add);
+		vecCntSub_err.push_back(err_sub);
 		vecCntAdd_err.push_back(std::sqrt(err_add*err_add + err_sub*err_sub));
 		vecMonAdd_err.push_back(std::sqrt(err_mon_add*err_mon_add + err_mon_sub*err_mon_sub));
 	}
-	delete dat_sub;
 
 
 	// output file
@@ -202,6 +210,19 @@ int main(int argc, char **argv)
 	ofstr << "# cols_scanned = 4" << "\n";
 	ofstr << "#\n";
 
+	// column header
+	ofstr << "#" << std::setw(w - 1) << std::right << "h" << " ";
+	ofstr << std::setw(w) << std::right << "k" << " ";
+	ofstr << std::setw(w) << std::right << "l" << " ";
+	ofstr << std::setw(w) << std::right << "E" << " ";
+	ofstr << std::setw(w) << std::right << "ctr" << " ";
+	ofstr << std::setw(w) << std::right << "ctr_err" << " ";
+	ofstr << std::setw(w) << std::right << "mon" << " ";
+	ofstr << std::setw(w) << std::right << "mon_err" << " ";
+	ofstr << std::setw(w) << std::right << "ctr_org" << " ";
+	ofstr << std::setw(w) << std::right << "ctr_org_err" << " ";
+	ofstr << std::setw(w) << std::right << "ctr_sub" << " ";
+	ofstr << std::setw(w) << std::right << "ctr_sub_err" << "\n";
 
 	// write data columns
 	for(unsigned int i = 0; i < vecCntAdd.size(); ++i)
@@ -219,9 +240,14 @@ int main(int argc, char **argv)
 		ofstr << std::setw(w) << std::right << vecCntAdd[i] << " ";
 		ofstr << std::setw(w) << std::right << vecCntAdd_err[i] << " ";
 		ofstr << std::setw(w) << std::right << vecMonAdd[i] << " ";
-		ofstr << std::setw(w) << std::right << vecMonAdd_err[i] << "\n";
+		ofstr << std::setw(w) << std::right << vecMonAdd_err[i] << " ";
+		ofstr << std::setw(w) << std::right << vecCntOrg[i] << " ";
+		ofstr << std::setw(w) << std::right << vecCntOrg_err[i] << " ";
+		ofstr << std::setw(w) << std::right << vecCntSub[i] << " ";
+		ofstr << std::setw(w) << std::right << vecCntSub_err[i] << "\n";
 	}
 
 	delete dat_add;
+	delete dat_sub;
 	return 0;
 }
