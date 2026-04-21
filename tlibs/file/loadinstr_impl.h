@@ -200,6 +200,27 @@ FileInstrBase<t_real>* FileInstrBase<t_real>::LoadInstr(const char* pcFile)
 
 
 template<class t_real>
+std::array<t_real, 4> FileInstrBase<t_real>::GetScanHKLE(const char* pcH, const char* pcK,
+	const char* pcL, const char* pcE, std::size_t i) const
+{
+	// zero position to fallback if no position is given in scan rows
+	const std::array<t_real, 4> arrZeroPos = GetPosHKLE();
+
+	const t_vecVals& vecH = GetCol(pcH);
+	const t_vecVals& vecK = GetCol(pcK);
+	const t_vecVals& vecL = GetCol(pcL);
+	const t_vecVals& vecE = GetCol(pcE);
+
+	t_real h = i < vecH.size() ? vecH[i] : std::get<0>(arrZeroPos);
+	t_real k = i < vecK.size() ? vecK[i] : std::get<1>(arrZeroPos);
+	t_real l = i < vecL.size() ? vecL[i] : std::get<2>(arrZeroPos);
+	t_real E = i < vecE.size() ? vecE[i] : std::get<3>(arrZeroPos);
+
+	return std::array<t_real, 4>{{ h, k, l, E }};
+}
+
+
+template<class t_real>
 std::array<t_real, 5> FileInstrBase<t_real>::GetScanHKLKiKf(const char* pcH, const char* pcK,
 	const char* pcL, const char* pcE, std::size_t i) const
 {
@@ -222,7 +243,7 @@ std::array<t_real, 5> FileInstrBase<t_real>::GetScanHKLKiKf(const char* pcH, con
 		(E*get_one_meV<t_real>(), kfix/get_one_angstrom<t_real>(), bKiFix) *
 			get_one_angstrom<t_real>();
 
-	return std::array<t_real,5>{{h,k,l, bKiFix?kfix:kother, bKiFix?kother:kfix}};
+	return std::array<t_real,5>{{ h, k, l, bKiFix?kfix:kother, bKiFix?kother:kfix }};
 }
 
 

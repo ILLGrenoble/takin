@@ -750,6 +750,29 @@ std::size_t FilePsi<t_real>::GetScanCount() const
 
 
 template<class t_real>
+std::array<t_real, 4> FilePsi<t_real>::GetScanHKLE(std::size_t i) const
+{
+	// default column names
+	const char *h = "QH";
+	const char *k = "QK";
+	const char *l = "QL";
+	const char *E = "EN";
+
+	// alternate column names
+	if(!FileInstrBase<t_real>::HasCol("QH") && FileInstrBase<t_real>::HasCol("H"))
+		h = "H";
+	if(!FileInstrBase<t_real>::HasCol("QK") && FileInstrBase<t_real>::HasCol("K"))
+		k = "K";
+	if(!FileInstrBase<t_real>::HasCol("QL") && FileInstrBase<t_real>::HasCol("L"))
+		l = "L";
+	if(!FileInstrBase<t_real>::HasCol("EN") && FileInstrBase<t_real>::HasCol("E"))
+		E = "E";
+
+	return FileInstrBase<t_real>::GetScanHKLE(h, k, l, E, i);
+}
+
+
+template<class t_real>
 std::array<t_real, 5> FilePsi<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
 	// default column names

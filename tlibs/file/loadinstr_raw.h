@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * tlibs -- a physical-mathematical C++ template library
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2015-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -57,8 +57,8 @@ bool FileRaw<t_real>::Load(const char* pcFile)
 {
 	bool bOk = m_dat.Load(pcFile);
 	m_vecCols.clear();
-	for(std::size_t iCol=0; iCol<m_dat.GetColumnCount(); ++iCol)
-		m_vecCols.emplace_back(var_to_str(iCol+1));
+	for(std::size_t iCol = 0; iCol < m_dat.GetColumnCount(); ++iCol)
+		m_vecCols.emplace_back(var_to_str(iCol + 1));
 	return bOk;
 }
 
@@ -75,7 +75,7 @@ template<class t_real>
 typename FileInstrBase<t_real>::t_vecVals&
 FileRaw<t_real>::GetCol(const std::string& strName, std::size_t *pIdx)
 {
-	std::size_t iCol = str_to_var<std::size_t>(strName)-1;
+	std::size_t iCol = str_to_var<std::size_t>(strName) - 1;
 	if(iCol < m_dat.GetColumnCount())
 	{
 		if(pIdx) *pIdx = iCol;
@@ -222,7 +222,7 @@ std::array<bool, 3> FileRaw<t_real>::GetScatterSenses() const
 			a = str_to_var<t_real>(iter->second);
 	}
 
-	return std::array<bool,3>{{m>0., s>0., a>0.}};
+	return std::array<bool,3>{{ m > 0., s > 0., a > 0. }};
 }
 
 
@@ -361,6 +361,21 @@ std::size_t FileRaw<t_real>::GetScanCount() const
 	if(m_dat.GetColumnCount() != 0)
 		return m_dat.GetRowCount();
 	return 0;
+}
+
+
+template<class t_real>
+std::array<t_real, 4> FileRaw<t_real>::GetScanHKLE(std::size_t i) const
+{
+	// get column names
+	std::string strColH = GetColNameFromParam("col_h", "1");
+	std::string strColK = GetColNameFromParam("col_k", "2");
+	std::string strColL = GetColNameFromParam("col_l", "3");
+	std::string strColE = GetColNameFromParam("col_E", "4");
+
+	return FileInstrBase<t_real>::GetScanHKLE(
+		strColH.c_str(), strColK.c_str(), strColL.c_str(),
+		strColE.c_str(), i);
 }
 
 

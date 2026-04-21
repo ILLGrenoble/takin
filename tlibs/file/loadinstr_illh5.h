@@ -553,6 +553,16 @@ std::size_t FileILLH5<t_real>::GetScanCount() const
 
 
 template<class t_real>
+std::array<t_real, 4> FileILLH5<t_real>::GetScanHKLE(std::size_t i) const
+{
+	using t_map = typename FileInstrBase<t_real>::t_mapParams;
+	//const t_map& params = GetAllParams();
+
+	return FileInstrBase<t_real>::GetScanHKLE("QH", "QK", "QL", "EN", i);
+}
+
+
+template<class t_real>
 std::array<t_real, 5> FileILLH5<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
 	using t_map = typename FileInstrBase<t_real>::t_mapParams;

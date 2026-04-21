@@ -365,6 +365,13 @@ std::size_t FileTrisp<t_real>::GetScanCount() const
 
 
 template<class t_real>
+std::array<t_real, 4> FileTrisp<t_real>::GetScanHKLE(std::size_t i) const
+{
+	return FileInstrBase<t_real>::GetScanHKLE("QH", "QK", "QL", "E", i);
+}
+
+
+template<class t_real>
 std::array<t_real, 5> FileTrisp<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
 	return FileInstrBase<t_real>::GetScanHKLKiKf("QH", "QK", "QL", "E", i);

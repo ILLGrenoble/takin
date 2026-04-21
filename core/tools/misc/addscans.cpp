@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 {
 	if(argc < 3)
 	{
-		tl::log_err("Usage:\n\t", argv[0], "<file1> <file2> ... <fileN> <file_out>");
+		tl::log_err("Usage:\n\t", argv[0], " <file1> <file2> ... <fileN> <file_out>");
 		return -1;
 	}
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 				tl::log_warn("Mismatching l in index ", i, ".");
 			if(!tl::float_equal<t_real>(std::get<3>(pos0), std::get<3>(pos), E_eps))
 				tl::log_warn("Mismatching E in index ", i, ".");
-	
+
 			vecCnt0[i] += vecCnt[i];
 			vecMon0[i] += vecMon[i];
 			vecTime0[i] += vecTime[i];

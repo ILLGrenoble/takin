@@ -57,6 +57,8 @@ class FileInstrBase
 	protected:
 		void RenameDuplicateCols();
 
+		std::array<t_real, 4> GetScanHKLE(const char* pcH, const char* pcK,
+			const char* pcL, const char* pcE, std::size_t i) const;
 		std::array<t_real, 5> GetScanHKLKiKf(const char* pcH, const char* pcK,
 			const char* pcL, const char* pcE, std::size_t i) const;
 
@@ -85,6 +87,7 @@ class FileInstrBase
 		virtual std::array<t_real, 4> GetPosHKLE() const = 0;  // zero pos.
 
 		virtual std::size_t GetScanCount() const = 0;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const = 0;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const = 0;
 		virtual bool IsCompatible(const FileInstrBase<t_real>* pDat);
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false);
@@ -204,6 +207,7 @@ class FilePsi : public FileInstrBase<_t_real>
 		std::array<t_real, 4> GetDeltaHKLE() const;  // scan steps
 
 		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
@@ -286,6 +290,7 @@ class FileFrm : public FileInstrBase<_t_real>
 		virtual bool IsKiFixed() const override;
 
 		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
@@ -360,6 +365,7 @@ public:
 	virtual bool IsKiFixed() const override;
 
 	virtual std::size_t GetScanCount() const override;
+	virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 	virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 	virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
@@ -433,6 +439,7 @@ class FileMacs : public FileInstrBase<_t_real>
 		virtual bool IsKiFixed() const override;
 
 		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
@@ -505,6 +512,7 @@ class FileTrisp : public FileInstrBase<_t_real>
 		virtual bool IsKiFixed() const override;
 
 		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
@@ -575,6 +583,7 @@ class FileTax : public FileInstrBase<_t_real>
 		virtual bool IsKiFixed() const override;
 
 		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
@@ -642,6 +651,7 @@ class FileRaw : public FileInstrBase<_t_real>
 		virtual bool IsKiFixed() const override;
 
 		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 
@@ -748,6 +758,7 @@ class FileILLH5 : public FileInstrBase<_t_real>
 		virtual bool IsKiFixed() const override;
 
 		virtual std::size_t GetScanCount() const override;
+		virtual std::array<t_real, 4> GetScanHKLE(std::size_t i) const override;
 		virtual std::array<t_real, 5> GetScanHKLKiKf(std::size_t i) const override;
 		virtual bool MergeWith(const FileInstrBase<t_real>* pDat, bool allow_col_mismatch = false) override;
 

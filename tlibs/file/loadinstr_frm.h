@@ -172,7 +172,7 @@ void FileFrm<t_real>::ReadData(std::istream& istr)
 			t_real tok = vecToks[iTok];
 			if(using_THz && iTok == E_idx)
 				tok *= tl::get_h<t_real>() / tl::get_one_picosecond<t_real>() / tl::get_one_meV<t_real>();
-			
+
 			m_vecData[iTok].push_back(tok);
 		}
 	}
@@ -403,6 +403,13 @@ std::size_t FileFrm<t_real>::GetScanCount() const
 	if(m_vecData.size() < 1)
 		return 0;
 	return m_vecData[0].size();
+}
+
+
+template<class t_real>
+std::array<t_real, 4> FileFrm<t_real>::GetScanHKLE(std::size_t i) const
+{
+	return FileInstrBase<t_real>::GetScanHKLE("h", "k", "l", "E", i);
 }
 
 

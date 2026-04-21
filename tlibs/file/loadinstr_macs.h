@@ -374,6 +374,13 @@ std::size_t FileMacs<t_real>::GetScanCount() const
 
 
 template<class t_real>
+std::array<t_real, 4> FileMacs<t_real>::GetScanHKLE(std::size_t i) const
+{
+	return FileInstrBase<t_real>::GetScanHKLE("QX", "QY", "QZ", "E", i);
+}
+
+
+template<class t_real>
 std::array<t_real, 5> FileMacs<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
 	return FileInstrBase<t_real>::GetScanHKLKiKf("QX", "QY", "QZ", "E", i);

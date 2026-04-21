@@ -385,6 +385,13 @@ std::size_t FileTax<t_real>::GetScanCount() const
 
 
 template<class t_real>
+std::array<t_real, 4> FileTax<t_real>::GetScanHKLE(std::size_t i) const
+{
+	return FileInstrBase<t_real>::GetScanHKLE("h", "k", "l", "e", i);
+}
+
+
+template<class t_real>
 std::array<t_real, 5> FileTax<t_real>::GetScanHKLKiKf(std::size_t i) const
 {
 	return FileInstrBase<t_real>::GetScanHKLKiKf("h", "k", "l", "e", i);
