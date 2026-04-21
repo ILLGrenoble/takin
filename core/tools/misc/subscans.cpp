@@ -54,6 +54,13 @@ static t_real get_err(t_real cnt)
 
 int main(int argc, char **argv)
 {
+	bool norm_to_bose = true;
+	t_real Q_eps = 0.01;
+	t_real E_eps = 0.05;
+	int w = 15;    // output column width
+	int prec = 8;  // output precision
+
+
 	if(argc < 3)
 	{
 		tl::log_err("Usage:\n\t", argv[0], " <file_add> <file_sub> <file_out>");
@@ -75,9 +82,6 @@ int main(int argc, char **argv)
 	std::string strMon = dat_add->GetMonVar();
 	std::string strTemp = "TT";
 	tl::log_info("Count var: ", strCnt, ", monitor var: ", strMon, ".");
-
-	t_real Q_eps = 0.01;
-	t_real E_eps = 0.05;
 
 	tl::FileInstrBase<>::t_vecVals& vecCntAdd = dat_add->GetCol(strCnt);
 	tl::FileInstrBase<>::t_vecVals& vecMonAdd = dat_add->GetCol(strMon);
@@ -122,8 +126,8 @@ int main(int argc, char **argv)
 		if(!tl::float_equal<t_real>(std::get<3>(pos_add), std::get<3>(pos_sub), E_eps))
 			tl::log_warn("Mismatching E in index ", i, ": ", std::get<3>(pos_add), " != ", std::get<3>(pos_sub), ".");
 
-		t_real bose_add = tl::bose<t_real>(std::get<3>(pos_add), T_add);
-		t_real bose_sub = tl::bose<t_real>(std::get<3>(pos_sub), T_sub);
+		t_real bose_add = norm_to_bose ? tl::bose<t_real>(std::get<3>(pos_add), T_add) : 1.;
+		t_real bose_sub = norm_to_bose ? tl::bose<t_real>(std::get<3>(pos_sub), T_sub) : 1.;
 
 		t_real err_add = get_err(vecCntAdd[i]);
 		t_real err_sub = get_err(vecCntSub[i]);
@@ -149,8 +153,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	int w = 15;
-	ofstr.precision(8);
+	ofstr.precision(prec);
 
 
 	// header
