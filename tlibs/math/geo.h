@@ -1172,7 +1172,7 @@ public:
 
 
 	/**
-	 * only valid in principal axis system:
+	 * only valid in principal axis system with diagonal Q:
 	 * x^T Q x + rx = 0
 	 * q11*x1^2 + r1*x1 + ... = 0
 	 * q11*(x1^2 + r1/q11*x1) = 0
@@ -1180,11 +1180,23 @@ public:
 	 */
 	t_vec GetPrincipalOffset() const
 	{
+		/*
+		// component version (only valid in principal axis system)
 		t_vec vecOffs = GetR();
 
-		for(std::size_t i=0; i<vecOffs.size(); ++i)
+		for(std::size_t i = 0; i < vecOffs.size(); ++i)
 			vecOffs[i] /= -T(2)*GetQ()(i,i);
+		*/
 
+		// matrix version
+		t_mat Qinv;
+		if(!tl::inverse(GetQ(), Qinv))
+		{
+			tl::log_err("Could not invert quadric matrix.");
+			return tl::zero_vector<t_vec>(GetR().size());
+		}
+
+		t_vec vecOffs = -0.5*tl::prod_mv(Qinv, GetR());
 		return vecOffs;
 	}
 
