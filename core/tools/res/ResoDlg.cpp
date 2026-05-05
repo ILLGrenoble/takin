@@ -197,7 +197,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	m_vecCheckBoxes = {
 		checkUseAltR0,
 		checkUseKi3, checkUseKf3,
-		checkUseKf, checkUseKi,
+		checkUseKi, checkUseKf,
 		checkUseMonKi, checkUseMonitor,
 		checkUseSampleVol, checkUseResVol,
 

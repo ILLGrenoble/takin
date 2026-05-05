@@ -462,8 +462,7 @@ Ellipse2d<t_real> calc_res_ellipse(
 
 
 	// linear part of quadric
-	const ublas::vector<t_real> vecTrans
-		= ublas::prod(ell.rot, quad.GetPrincipalOffset());
+	const ublas::vector<t_real> vecTrans = ublas::prod(ell.rot, quad.GetPrincipalOffset());
 
 	if(vecTrans.size() == 2)
 	{
