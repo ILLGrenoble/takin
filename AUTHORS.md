@@ -16,7 +16,8 @@ CONTRIBUTORS
   - mail: c.tragser\<AT\>fz-juelich.de
   - active: 2025 - 2026
   - contributions:
-    - migration Qt5 -> Qt6.
+    - help with migration Qt5 -> Qt6.
+    - bug reports and feature requests.
 
 
 **Victor Mecoli**
