@@ -467,10 +467,10 @@ add_executable(takin
 	dialogs/ScatteringFactorsDlg.cpp dialogs/DynPlaneDlg.cpp
 	dialogs/NeutronDlg.cpp dialogs/TOFDlg.cpp
 	dialogs/SpurionDlg.cpp dialogs/PowderDlg.cpp
-	dialogs/FavDlg.cpp
+	dialogs/FavDlg.cpp dialogs/PowderFitDlg.cpp
 	dialogs/RecipParamDlg.cpp dialogs/RealParamDlg.cpp
 	dialogs/SrvDlg.cpp dialogs/NetCacheDlg.cpp dialogs/ScanMonDlg.cpp
-	dialogs/EllipseDlg.cpp tools/ffact/FormfactorDlg.cpp
+	dialogs/EllipseDlg.cpp dialogs/FormfactorDlg.cpp
 	dialogs/AtomsDlg.cpp dialogs/AboutDlg.cpp
 	dialogs/DarkAnglesDlg.cpp dialogs/LogDlg.cpp
 
@@ -512,7 +512,6 @@ add_executable(takin
 	tools/scanviewer/scanviewer_pol.cpp
 	tools/scanviewer/FitParamDlg.cpp
 	tools/scanpos/ScanPosDlg.cpp
-	tools/powderfit/PowderFitDlg.cpp
 
 	# libs
 	libs/spacegroups/spacegroup.cpp tools/sglist/SgListDlg.cpp
