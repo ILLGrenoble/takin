@@ -99,14 +99,30 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	energies.reserve(modes.size());
 	weights.reserve(modes.size());
 
-	for(const auto& mode : modes)
+	auto push_mode = [this, &modes, &energies, &weights](std::size_t mode_idx)
 	{
+		if(mode_idx >= modes.size())
+			return;
+
+		const auto& mode = modes[mode_idx];
 		energies.push_back(mode.E);
 
 		if(m_channel >= 0 && m_channel < 3)
 			weights.push_back(std::abs(mode.S_perp(m_channel, m_channel).real()));
 		else
 			weights.push_back(mode.weight_perp);
+	};
+
+	if(m_mode_idx < 0)
+	{
+		// add all modes
+		for(std::size_t mode_idx = 0; mode_idx < modes.size(); ++mode_idx)
+			push_mode(mode_idx);
+	}
+	else
+	{
+		// add a single selected mode
+		push_mode(m_mode_idx);
 	}
 
 	return std::make_tuple(energies, weights);
@@ -184,6 +200,8 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"channel", "int", tl::var_to_str(m_channel)});
 	vars.push_back(SqwBase::t_var{
+		"mode_idx", "int", tl::var_to_str(m_mode_idx)});
+	vars.push_back(SqwBase::t_var{
 		"B_dir", "vector", vec_to_str(B)});
 	vars.push_back(SqwBase::t_var{
 		"B_mag", "real", tl::var_to_str(field.mag)});
@@ -254,6 +272,8 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 		}
 		else if(strVar == "channel")
 			m_channel = tl::str_to_var<int>(strVal);
+		else if(strVar == "mode_idx")
+			m_mode_idx = tl::str_to_var<int>(strVal);
 		else if(strVar == "B_dir")
 		{
 			std::vector<t_real> dir = str_to_vec<std::vector<t_real>>(strVal);
@@ -366,6 +386,7 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_S0 = this->m_S0;
 	mod->m_dyn = this->m_dyn;
 	mod->m_channel = this->m_channel;
+	mod->m_mode_idx = this->m_mode_idx;
 	mod->m_use_model_bose = this->m_use_model_bose;
 	mod->m_T = this->m_T;
 	mod->m_uc_01 = this->m_uc_01;

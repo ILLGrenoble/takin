@@ -60,7 +60,7 @@ class MagnonMod : public SqwBase
 		// peak width
 		t_real m_sigma = t_real(0.025);
 
-		// S(q,E) scaling factor
+		// S(q, E) scaling factor
 		t_real m_S0 = t_real(1.);
 
 		// incoherent amplitude and width
@@ -69,6 +69,8 @@ class MagnonMod : public SqwBase
 
 		// polarisation channel, -1: unpolarised
 		int m_channel{-1};
+		// mode index, -1: all
+		int m_mode_idx{-1};
 
 		// use model's implementation of the bose factor
 		bool m_use_model_bose{false};

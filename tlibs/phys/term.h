@@ -52,24 +52,24 @@ namespace tl
 	std::tuple<t_real, t_real, t_real>
 	hund(std::uint16_t l, std::uint16_t iNumEs)
 	{
-		std::uint16_t iNumOrbitals = 2*l+1;
+		std::uint16_t iNumOrbitals = 2*l + 1;
 		if(iNumEs > iNumOrbitals*2)
 			throw Err("Too many electrons.");
 
-		std::vector<std::uint8_t> vecOrbitals;	// orbitals
-		std::vector<std::int16_t> vec_ml;		// mag. q.number
+		std::vector<std::uint8_t> vecOrbitals;  // orbitals
+		std::vector<std::int16_t> vec_ml;       // mag. q.number
 		vecOrbitals.resize(iNumOrbitals);
 		vec_ml.resize(iNumOrbitals);
 		std::iota(vec_ml.rbegin(), vec_ml.rend(), -l);
 
-		for(std::uint16_t iE=0; iE<iNumEs; ++iE)
-			++vecOrbitals[iE%iNumOrbitals];
+		for(std::uint16_t iE = 0; iE < iNumEs; ++iE)
+			++vecOrbitals[iE % iNumOrbitals];
 
-		t_real S=0, L=0, J=0;
-		for(std::size_t iOrbital=0; iOrbital<vecOrbitals.size(); ++iOrbital)
+		t_real S = 0, L = 0, J = 0;
+		for(std::size_t iOrbital = 0; iOrbital < vecOrbitals.size(); ++iOrbital)
 		{
 			std::uint8_t iEs = vecOrbitals[iOrbital];
-			if(iEs==1)	// unpaired electron
+			if(iEs == 1)  // unpaired electron
 				S += t_real(0.5);
 
 			std::int16_t ml = vec_ml[iOrbital];
@@ -77,11 +77,11 @@ namespace tl
 		}
 
 		if(iNumEs <= iNumOrbitals)
-			J = std::abs(L-S);
+			J = std::abs(L - S);
 		else
-			J = L+S;
+			J = L + S;
 
-		return std::make_tuple(S,L,J);
+		return std::make_tuple(S, L, J);
 	}
 
 
@@ -89,9 +89,11 @@ namespace tl
 	t_str get_termsymbol(t_real S, t_real L, t_real J)
 	{
 		static const std::vector<t_str> vecL =
-			{"S","P","D","F","G","H","I","K","L","M","N","O"};
+			{ "S", "P", "D", "F",
+			  "G", "H", "I", "K",
+			  "L", "M", "N", "O" };
 
-		t_str strS = var_to_str<t_real, t_str>(t_real(2)*S+1);
+		t_str strS = var_to_str<t_real, t_str>(t_real(2)*S + 1);
 		t_str strL = vecL[std::size_t(L)];
 		t_str strJ = var_to_str<t_real, t_str>(J);
 
@@ -110,9 +112,9 @@ namespace tl
 		using t_ch = typename t_str::value_type;
 		static const std::unordered_map<t_ch, uint16_t> mapSubOrbitals =
 		{
-			{'s',0}, {'p',1}, {'d',2}, {'f',3},
-			{'g',4}, {'h',5}, {'i',6}, {'k',7},
-			{'l',8}, {'m',9}, {'n',10}, {'o',11},
+			{'s', 0}, {'p', 1}, {'d', 2}, {'f', 3},
+			{'g', 4}, {'h', 5}, {'i', 6}, {'k', 7},
+			{'l', 8}, {'m', 9}, {'n', 10}, {'o', 11},
 		};
 
 		std::istringstream istr(strOrbital);
@@ -137,7 +139,7 @@ namespace tl
 	std::tuple<t_real, t_real, t_real>
 	hund(const t_str& strOrbitals)
 	{
-		std::tuple<t_real, t_real, t_real> tupTerm(0,0,0);
+		std::tuple<t_real, t_real, t_real> tupTerm(0, 0, 0);
 		std::vector<t_str> vecOrbitals;
 		tl::get_tokens<t_str,t_str>(strOrbitals, " ,;", vecOrbitals);
 
@@ -163,11 +165,11 @@ namespace tl
 	 * @see (Khomskii 2014), equ. (2.13)
 	 */
 	template<class T = double>
-	T eff_gJ(T S, T L, T J, T gL=T(1), T gS=T(2))
+	T eff_gJ(T S, T L, T J, T gL = T(1), T gS = T(2))
 	{
 		T g = T(0.5) * (gL+gS) -
-			(S*(S+T(1)) - L*(L+T(1)))
-				/ (T(2)*J*(J+T(1))) * (gL-gS);
+			(S*(S + T(1)) - L*(L + T(1)))
+				/ (T(2)*J*(J + T(1))) * (gL - gS);
 		return g;
 	}
 
@@ -179,7 +181,7 @@ namespace tl
 	template<class T = double>
 	T eff_magnetons(T gJ, T J)
 	{
-		return gJ * std::sqrt(J * (J+T(1)));
+		return gJ * std::sqrt(J * (J + T(1)));
 	}
 }
 
