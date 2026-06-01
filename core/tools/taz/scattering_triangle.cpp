@@ -1970,7 +1970,7 @@ ScatteringTriangleView::ScatteringTriangleView(QWidget* pParent)
 		QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
-	setMouseTracking(1);
+	setMouseTracking(true);
 	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
