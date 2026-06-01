@@ -568,11 +568,16 @@ LatticeView::LatticeView(QWidget* pParent)
 
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setMouseTracking(true);
+	grabGesture(Qt::PinchGesture);
 	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 }
 
+
 LatticeView::~LatticeView()
-{}
+{
+	ungrabGesture(Qt::PinchGesture);
+	setMouseTracking(false);
+}
 
 
 void LatticeView::DoZoom(t_real_glob dDelta)
@@ -595,15 +600,39 @@ void LatticeView::keyPressEvent(QKeyEvent *pEvt)
 	QGraphicsView::keyPressEvent(pEvt);
 }
 
+
 void LatticeView::keyReleaseEvent(QKeyEvent *pEvt)
 {
 	QGraphicsView::keyReleaseEvent(pEvt);
 }
 
+
 void LatticeView::wheelEvent(QWheelEvent *pEvt)
 {
 	const t_real dDelta = pEvt->angleDelta().y()/8. / 150.;
 	DoZoom(dDelta);
+}
+
+
+bool LatticeView::event(QEvent *pEvt)
+{
+	if(pEvt->type() == QEvent::Gesture)
+	{
+		QGestureEvent *pGestureEvt = static_cast<QGestureEvent*>(pEvt);
+		for(QGesture *gesture : pGestureEvt->gestures())
+		{
+			if(gesture->gestureType() != Qt::PinchGesture)
+				continue;
+			QPinchGesture *pinch = static_cast<QPinchGesture*>(gesture);
+
+			t_real zoom = pinch->scaleFactor();
+			zoom = std::log2(zoom) * 0.5;
+			DoZoom(zoom);
+		}
+		pGestureEvt->accept();
+	}
+
+	return QGraphicsView::event(pEvt);
 }
 
 

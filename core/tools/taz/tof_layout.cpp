@@ -633,11 +633,14 @@ TofLayoutView::TofLayoutView(QWidget* pParent) : QGraphicsView(pParent)
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setDragMode(QGraphicsView::ScrollHandDrag);
 	setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+	grabGesture(Qt::PinchGesture);
 }
 
 
 TofLayoutView::~TofLayoutView()
-{}
+{
+	ungrabGesture(Qt::PinchGesture);
+}
 
 
 void TofLayoutView::DoZoom(t_real_glob dDelta)
@@ -671,6 +674,28 @@ void TofLayoutView::wheelEvent(QWheelEvent *pEvt)
 {
 	const t_real dDelta = pEvt->angleDelta().y()/8. / 150.;
 	DoZoom(dDelta);
+}
+
+
+bool TofLayoutView::event(QEvent *pEvt)
+{
+	if(pEvt->type() == QEvent::Gesture)
+	{
+		QGestureEvent *pGestureEvt = static_cast<QGestureEvent*>(pEvt);
+		for(QGesture *gesture : pGestureEvt->gestures())
+		{
+			if(gesture->gestureType() != Qt::PinchGesture)
+				continue;
+			QPinchGesture *pinch = static_cast<QPinchGesture*>(gesture);
+
+			t_real zoom = pinch->scaleFactor();
+			zoom = std::log2(zoom) * 0.5;
+			DoZoom(zoom);
+		}
+		pGestureEvt->accept();
+	}
+
+	return QGraphicsView::event(pEvt);
 }
 
 
