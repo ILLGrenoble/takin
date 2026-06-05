@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<taz>
+	<convofit>
+		<counter/>
+		<field_override>MAG</field_override>
+		<flip_coords>0</flip_coords>
+		<max_calls>250</max_calls>
+		<minimiser>0</minimiser>
+		<monitor/>
+		<normalise>1</normalise>
+		<recycle_neutrons>1</recycle_neutrons>
+		<rel_paths>1</rel_paths>
+		<scanaxis>4</scanaxis>
+		<scanaxis2>0</scanaxis2>
+		<strategy>1</strategy>
+		<temp_override>TT</temp_override>
+		<tolerance>2.500000e+01</tolerance>
+	</convofit>
+	<meta>
+		<doi>https://dx.doi.org/10.5281/zenodo.4117437</doi>
+		<info>Created with Takin/Convo.</info>
+		<module>takin/convo</module>
+		<timestamp>1780643144.131025</timestamp>
+		<url>https://github.com/ILLGrenoble/takin</url>
+		<user>tw</user>
+		<version>2.9.5</version>
+	</meta>
+	<monteconvo>
+		<E_from>7.501700e+00</E_from>
+		<E_to>1.240400e+01</E_to>
+		<E_to_2>-3.000000e-01</E_to_2>
+		<S_offs>1.e-5</S_offs>
+		<S_scale>2.5e-3</S_scale>
+		<S_slope>0</S_slope>
+		<algo>pop</algo>
+		<algo_idx>3</algo_idx>
+		<allow_scan_merging>0</allow_scan_merging>
+		<ana_foc>0</ana_foc>
+		<autosave>convosim.dat</autosave>
+		<crys>model.taz</crys>
+		<eps_plane_dist>0.0005</eps_plane_dist>
+		<eps_rlu>0.001</eps_rlu>
+		<filter_col/>
+		<filter_val/>
+		<fixedk>1</fixedk>
+		<h_from>1.500000e+00</h_from>
+		<h_to>1.500300e+00</h_to>
+		<h_to_2>9.300000e-01</h_to_2>
+		<has_scanfile>1</has_scanfile>
+		<instr>instr.taz</instr>
+		<k_from>1.500000e+00</k_from>
+		<k_to>1.500300e+00</k_to>
+		<k_to_2>1.070000e+00</k_to_2>
+		<kfix>1.500100e+00</kfix>
+		<l_from>5.997000e-01</l_from>
+		<l_to>6.003000e-01</l_to>
+		<l_to_2>0.000000e+00</l_to_2>
+		<mono_foc>0</mono_foc>
+		<neutron_count>2500</neutron_count>
+		<sample_step_count>1</sample_step_count>
+		<scan_2d>0</scan_2d>
+		<scanfile>scan.dat</scanfile>
+		<sqw>magnonmod</sqw>
+		<sqw_conf>model.magdyn</sqw_conf>
+		<sqw_errors>
+			<B_align_spins>0</B_align_spins>
+			<B_dir>0</B_dir>
+			<B_mag>0</B_mag>
+			<D1x>0</D1x>
+			<D1y>0</D1y>
+			<D1z>0</D1z>
+			<D2x>0</D2x>
+			<D2y>0</D2y>
+			<D2z>0</D2z>
+			<G>0</G>
+			<J1>0</J1>
+			<J2>0</J2>
+			<S0>0</S0>
+			<T>0</T>
+			<channel>0</channel>
+			<checks>0</checks>
+			<cutoff>0</cutoff>
+			<inc_amp>0</inc_amp>
+			<inc_sigma>0</inc_sigma>
+			<mode_idx>0</mode_idx>
+			<sigma>0</sigma>
+			<silent>0</silent>
+			<uc_01>0</uc_01>
+			<use_model_bose>0</use_model_bose>
+		</sqw_errors>
+		<sqw_fitvar>
+			<B_align_spins>0</B_align_spins>
+			<B_dir>0</B_dir>
+			<B_mag>0</B_mag>
+			<D1x>0</D1x>
+			<D1y>0</D1y>
+			<D1z>0</D1z>
+			<D2x>0</D2x>
+			<D2y>0</D2y>
+			<D2z>0</D2z>
+			<G>0</G>
+			<J1>0</J1>
+			<J2>0</J2>
+			<S0>0</S0>
+			<T>0</T>
+			<channel>0</channel>
+			<checks>0</checks>
+			<cutoff>0</cutoff>
+			<inc_amp>0</inc_amp>
+			<inc_sigma>0</inc_sigma>
+			<mode_idx>0</mode_idx>
+			<sigma>0</sigma>
+			<silent>0</silent>
+			<uc_01>0</uc_01>
+			<use_model_bose>0</use_model_bose>
+		</sqw_fitvar>
+		<sqw_params>
+			<B_align_spins>1</B_align_spins>
+			<B_dir>0 0 -1 </B_dir>
+			<B_mag>0.4</B_mag>
+			<D1x>-0.107</D1x>
+			<D1y>-0.618</D1y>
+			<D1z>0.0175</D1z>
+			<D2x>-0.755</D2x>
+			<D2y>-0.234</D2y>
+			<D2z>0.303</D2z>
+			<G>1</G>
+			<J1>-0.6</J1>
+			<J2>-0.97</J2>
+			<S0>1</S0>
+			<T>1.79</T>
+			<channel>-1</channel>
+			<checks>0</checks>
+			<cutoff>0.025</cutoff>
+			<inc_amp>0</inc_amp>
+			<inc_sigma>0.05</inc_sigma>
+			<mode_idx>-1</mode_idx>
+			<sigma>0.005</sigma>
+			<silent>0</silent>
+			<uc_01>0</uc_01>
+			<use_model_bose>0</use_model_bose>
+		</sqw_params>
+		<sqw_ranges>
+			<B_align_spins>open : open</B_align_spins>
+			<B_dir>open : open</B_dir>
+			<B_mag>open : open</B_mag>
+			<D1x>open : open</D1x>
+			<D1y>open : open</D1y>
+			<D1z>open : open</D1z>
+			<D2x>open : open</D2x>
+			<D2y>open : open</D2y>
+			<D2z>open : open</D2z>
+			<G>open : open</G>
+			<J1>open : open</J1>
+			<J2>open : open</J2>
+			<S0>open : open</S0>
+			<T>open : open</T>
+			<channel>open : open</channel>
+			<checks>open : open</checks>
+			<cutoff>open : open</cutoff>
+			<inc_amp>open : open</inc_amp>
+			<inc_sigma>open : open</inc_sigma>
+			<mode_idx>open : open</mode_idx>
+			<sigma>open : open</sigma>
+			<silent>open : open</silent>
+			<uc_01>open : open</uc_01>
+			<use_model_bose>open : open</use_model_bose>
+		</sqw_ranges>
+		<step_count>256</step_count>
+	</monteconvo>
+</taz>
