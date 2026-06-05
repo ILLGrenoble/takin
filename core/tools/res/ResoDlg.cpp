@@ -289,7 +289,7 @@ void ResoDlg::setupAlgos()
 	comboAlgo->insertSeparator(6);
 	comboAlgo->addItem("TOF: Violini", static_cast<int>(ResoAlgo::VIO));
 	comboAlgo->addItem("TOF: Violini (Extended)", static_cast<int>(ResoAlgo::VIO_EXT));
-	comboAlgo->insertSeparator(8);
+	comboAlgo->insertSeparator(9);
 	comboAlgo->addItem("Simple", static_cast<int>(ResoAlgo::SIMPLE));
 }
 
