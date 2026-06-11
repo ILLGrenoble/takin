@@ -47,21 +47,21 @@ cp -v bin/*.exe			${INSTDIR}/
 
 
 # info files
-cp -v *.txt			${INSTDIR}/
-cp -v ../LICENSE		${INSTDIR}/LICENSE.txt
-cp -v ../LICENSES		${INSTDIR}/LICENSES.txt
+cp -v *.txt						${INSTDIR}/
+cp -v ../LICENSE			${INSTDIR}/LICENSE.txt
+cp -v ../LICENSES			${INSTDIR}/LICENSES.txt
 cp -v ../LITERATURE		${INSTDIR}/LITERATURE.txt
-cp -v ../AUTHORS		${INSTDIR}/AUTHORS.txt
+cp -v ../AUTHORS			${INSTDIR}/AUTHORS.txt
 
 cp -rv 3rdparty_licenses/	${INSTDIR}/
 rm -v ${INSTDIR}/CMakeLists.txt
 
 
 # examples
-cp -rv examples			${INSTDIR}/
-cp -rv data/samples		${INSTDIR}/
+cp -rv examples						${INSTDIR}/
+cp -rv data/samples				${INSTDIR}/
 cp -rv data/instruments		${INSTDIR}/
-cp -rv demos			${INSTDIR}/
+cp -rv ../demos						${INSTDIR}/
 
 
 # resources
@@ -72,35 +72,35 @@ gunzip -v ${INSTDIR}/res/data/*
 
 
 # libraries
-cp -v $MINGW_BIN_DIR/libstdc++-6.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libstdc++-6.dll			${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libwinpthread-1.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libpng16-16.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libpng16-16.dll			${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libgcc_s_sjlj-1.dll	${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libgcc_s_seh-1.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libbz2-1.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/zlib1.dll			${INSTDIR}/
-cp -v $MINGW_BIN_DIR/iconv.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libbz2-1.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/zlib1.dll						${INSTDIR}/
+cp -v $MINGW_BIN_DIR/iconv.dll						${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libpcre2-16-0.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libpcre2-8-0.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libpcre-1.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libpcre2-8-0.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libpcre-1.dll				${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libharfbuzz-0.dll		${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libglib-2.0-0.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libintl-8.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libssp-0.dll		${INSTDIR}/
-cp -v $MINGW_LIB_DIR/libMinuit2.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libintl-8.dll				${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libssp-0.dll					${INSTDIR}/
+cp -v $MINGW_LIB_DIR/libMinuit2.dll				${INSTDIR}/
 cp -v $MINGW_LIB_DIR/libMinuit2Math.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libMinuit2.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libMinuit2.dll				${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libMinuit2Math.dll		${INSTDIR}/
 
-cp -v $MINGW_BIN_DIR/libboost_regex-x64.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_system-x64.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_iostreams-x64.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_filesystem-x64.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_program_options-x64.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_regex-mt-x64.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_system-mt-x64.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_iostreams-mt-x64.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libboost_filesystem-mt-x64.dll	${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_regex-x64.dll								${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_system-x64.dll							${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_iostreams-x64.dll						${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_filesystem-x64.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_program_options-x64.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_regex-mt-x64.dll						${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_system-mt-x64.dll						${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_iostreams-mt-x64.dll				${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libboost_filesystem-mt-x64.dll				${INSTDIR}/
 cp -v $MINGW_BIN_DIR/libboost_program_options-mt-x64.dll	${INSTDIR}/
 
 #cp -v $MINGW_BIN_DIR/libboost_python39.dll	${INSTDIR}/
@@ -108,24 +108,31 @@ cp -v $MINGW_BIN_DIR/libboost_program_options-mt-x64.dll	${INSTDIR}/
 #cp -v $MINGW_BIN_DIR/libcrypto-1_1-x64.dll	${INSTDIR}/
 #cp -v $MINGW_BIN_DIR/libffi-6.dll		${INSTDIR}/
 
-cp -v $MINGW_BIN_DIR/Qt5Core.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5Gui.dll			${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5Widgets.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5OpenGL.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5Svg.dll			${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5Xml.dll			${INSTDIR}/
-cp -v $MINGW_BIN_DIR/Qt5PrintSupport.dll	${INSTDIR}/
-cp -v $MINGW_BIN_DIR/qwt-qt5.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libfreetype-6.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6Core.dll						${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6Gui.dll							${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6Widgets.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6OpenGL.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6OpenGLWidgets.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6Svg.dll							${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6Xml.dll							${INSTDIR}/
+cp -v $MINGW_BIN_DIR/Qt6PrintSupport.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/qwt-qt6.dll						${INSTDIR}/
 
-cp -v $MINGW_BIN_DIR/liblapack.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/liblapacke.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libblas.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libquadmath-0.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libgfortran-5.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libfreetype-6.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libfontconfig-1.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libexpat-1.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/icuuc76.dll						${INSTDIR}/
+cp -v $MINGW_BIN_DIR/icudata76.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/icui18n76.dll					${INSTDIR}/
 
-cp -v $MINGW_BIN_DIR/libqcustomplot.dll		${INSTDIR}/
-cp -v $MINGW_BIN_DIR/libqhull_r.dll		${INSTDIR}/
+cp -v $MINGW_BIN_DIR/liblapack.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/liblapacke.dll					${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libblas.dll						${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libquadmath-0.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libgfortran-5.dll			${INSTDIR}/
+
+cp -v $MINGW_BIN_DIR/libqcustomplot.dll			${INSTDIR}/
+cp -v $MINGW_BIN_DIR/libqhull_r.dll					${INSTDIR}/
 
 
 # qt plugins
@@ -133,9 +140,9 @@ mkdir -p ${INSTDIR}/lib/plugins/platforms/
 mkdir -p ${INSTDIR}/lib/plugins/iconengines/
 mkdir -p ${INSTDIR}/lib/plugins/imageformats
 
-cp -v $MINGW_LIB_DIR/qt5/plugins/platforms/*.dll		${INSTDIR}/lib/plugins/platforms/
-cp -v $MINGW_LIB_DIR/qt5/plugins/iconengines/qsvgicon.dll	${INSTDIR}/lib/plugins/iconengines/
-cp -v $MINGW_LIB_DIR/qt5/plugins/imageformats/qsvg.dll		${INSTDIR}/lib/plugins/imageformats/
+cp -v $MINGW_LIB_DIR/qt6/plugins/platforms/*.dll					${INSTDIR}/lib/plugins/platforms/
+cp -v $MINGW_LIB_DIR/qt6/plugins/iconengines/qsvgicon.dll	${INSTDIR}/lib/plugins/iconengines/
+cp -v $MINGW_LIB_DIR/qt6/plugins/imageformats/qsvg.dll		${INSTDIR}/lib/plugins/imageformats/
 
 
 # convo plugins
