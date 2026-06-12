@@ -35,7 +35,7 @@ fix_libs=1
 NAME_TOOL=install_name_tool
 STRIP=llvm-strip
 
-PY_VER=3.13
+PY_VER=3.14
 echo -e "Py version: ${PY_VER}"
 
 # files whose linkage is to be changed
@@ -95,7 +95,7 @@ declare -a changefrom=(
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_atomic.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_iostreams.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_program_options.dylib\""
-	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_python313.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libboost_python314.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libMinuit2.0.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libjpeg.9.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libpng16.16.dylib\""
@@ -118,13 +118,13 @@ declare -a changefrom=(
 	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libzstd.1.dylib\""
 	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/liblzma.5.dylib\""
 	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libqhull_r.8.0.dylib\""
-	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libhdf5_cpp.310.dylib\""
-	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libhdf5.310.dylib\""
+	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libhdf5_cpp.320.dylib\""
+	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libhdf5.320.dylib\""
 	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libsz.2.dylib\""
 	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libaec.0.dylib\""
-	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libicudata.77.dylib\""
-	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libicui18n.77.dylib\""
-	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libicuuc.77.dylib\""
+	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libicudata.78.dylib\""
+	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libicui18n.78.dylib\""
+	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libicuuc.78.dylib\""
 	"otool -L __BIN_FILE__ | grep -E -o -m1 \"(/|@rpath)[-_/@.a-zA-Z0-9]*/libqcustomplot[_a-zA-Z0-9]*.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libmd4c.0.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libgemmi_cpp.dylib\""
@@ -133,6 +133,9 @@ declare -a changefrom=(
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libdbus-1.3.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libdouble-conversion.3.dylib\""
 	"otool -L __BIN_FILE__ | grep -o -m1 \"/[-_/@.a-zA-Z0-9]*/libb2.1.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/usr/local/opt/llvm/lib/c++/libc++.1.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/usr/local/opt/llvm/lib/c++/libc++abi.1.dylib\""
+	"otool -L __BIN_FILE__ | grep -o -m1 \"/usr/local/opt/llvm/lib/c++/libunwind.1.dylib\""
 )
 
 # symbols to change into
@@ -159,7 +162,7 @@ declare -a changeto=(
 	"@executable_path/../Libraries/libboost_atomic.dylib"
 	"@executable_path/../Libraries/libboost_iostreams.dylib"
 	"@executable_path/../Libraries/libboost_program_options.dylib"
-	"@executable_path/../Libraries/libboost_python313.dylib"
+	"@executable_path/../Libraries/libboost_python314.dylib"
 	"@executable_path/../Libraries/libMinuit2.0.dylib"
 	"@executable_path/../Libraries/libjpeg.9.dylib"
 	"@executable_path/../Libraries/libpng16.16.dylib"
@@ -182,13 +185,13 @@ declare -a changeto=(
 	"@executable_path/../Libraries/libzstd.1.dylib"
 	"@executable_path/../Libraries/liblzma.5.dylib"
 	"@executable_path/../Libraries/libqhull_r.8.0.dylib"
-	"@executable_path/../Libraries/libhdf5_cpp.310.dylib"
-	"@executable_path/../Libraries/libhdf5.310.dylib"
+	"@executable_path/../Libraries/libhdf5_cpp.320.dylib"
+	"@executable_path/../Libraries/libhdf5.320.dylib"
 	"@executable_path/../Libraries/libsz.2.dylib"
 	"@executable_path/../Libraries/libaec.0.dylib"
-	"@executable_path/../Libraries/libicudata.77.dylib"
-	"@executable_path/../Libraries/libicui18n.77.dylib"
-	"@executable_path/../Libraries/libicuuc.77.dylib"
+	"@executable_path/../Libraries/libicudata.78.dylib"
+	"@executable_path/../Libraries/libicui18n.78.dylib"
+	"@executable_path/../Libraries/libicuuc.78.dylib"
 	"@executable_path/../Libraries/libqcustomplot.dylib"
 	"@executable_path/../Libraries/libmd4c.0.dylib"
 	"@executable_path/../Libraries/libgemmi_cpp.dylib"
@@ -197,6 +200,9 @@ declare -a changeto=(
 	"@executable_path/../Libraries/libdbus-1.3.dylib"
 	"@executable_path/../Libraries/libdouble-conversion.3.dylib"
 	"@executable_path/../Libraries/libb2.1.dylib"
+	"@executable_path/../Libraries/libc++.1.dylib"
+	"@executable_path/../Libraries/libc++abi.1.dylib"
+	"@executable_path/../Libraries/libunwind.1.dylib"
 )
 
 CNT=$(expr ${#changefrom[*]} - 1)
