@@ -727,7 +727,7 @@ void ResoDlg::AlgoChanged()
 
 			strAlgo += "<b>V. Mecoli <i>et al.</i></b>,<br>\n";
 			strAlgo += "<a href=https://doi.org/10.1016/j.nima.2026.171695>"
-				"NIM A ???, <br>pp. ??-??</a>,<br>\n";
+				"NIM A 1091, <br>p. 171695</a>,<br>\n";
 			strAlgo += "2026.";
 
 			strAlgo += "<br><br><b>N. Violini <i>et al.</i></b>,<br>\n";
