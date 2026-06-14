@@ -7,7 +7,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -74,6 +74,7 @@ codesign --remove-signature ${DST_PY_DIR}/Versions/Current/Python
 
 # clean site-packages
 rm -rfv ${DST_SITEPACKAGES_DIR}/PyQt5*
+rm -rfv ${DST_SITEPACKAGES_DIR}/PyQt6*
 rm -rfv ${DST_SITEPACKAGES_DIR}/wheel*
 rm -rfv ${DST_SITEPACKAGES_DIR}/setuptools*
 rm -rfv ${DST_SITEPACKAGES_DIR}/pip*
@@ -96,8 +97,8 @@ rm -fv ${DST_PY_DIR}/Versions/Current/lib/tcl*
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/tcl*
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/tk*
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/pkgconfig/tk.pc
-rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.13/tkinter
-rm -fv ${DST_PY_DIR}/Versions/Current/lib/python3.13/lib-dynload/_tkinter*.so
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.14/tkinter
+rm -fv ${DST_PY_DIR}/Versions/Current/lib/python3.14/lib-dynload/_tkinter*.so
 rm -fv ${DST_PY_DIR}/Versions/Current/lib/Tk*
 
 
@@ -106,8 +107,8 @@ pushd ${PRG}/Contents
 	ln -sf Frameworks/Python.framework/Versions/Current/lib/python3.13/site-packages
 popd
 
-rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.13/test
-rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.13/idlelib
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.14/test
+rm -rfv ${DST_PY_DIR}/Versions/Current/lib/python3.14/idlelib
 
 rm -rfv ${PRG}/Contents/site-packages/setuptools*
 rm -rfv ${PRG}/Contents/site-packages/pip*
