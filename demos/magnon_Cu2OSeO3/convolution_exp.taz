@@ -29,8 +29,8 @@
 		<E_from>7.501700e+00</E_from>
 		<E_to>1.240400e+01</E_to>
 		<E_to_2>-3.000000e-01</E_to_2>
-		<S_offs>1.e-5</S_offs>
-		<S_scale>2.5e-3</S_scale>
+		<S_offs>0.5e-5</S_offs>
+		<S_scale>2.75e-3</S_scale>
 		<S_slope>0</S_slope>
 		<algo>pop</algo>
 		<algo_idx>3</algo_idx>
