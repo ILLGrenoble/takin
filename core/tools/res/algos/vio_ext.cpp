@@ -7,7 +7,7 @@
  *
  * @desc for extended method, see: [mec25] V. Mecoli, PhD thesis in preparation, https://github.com/ILLGrenoble/takin-pytools/blob/main/resolution/algos/vio_ext.py
  * @desc for extended method, see: [mec25b] V. Mecoli et al., NIM A 1091, 171695 (2026), doi: https://doi.org/10.1016/j.nima.2026.171695
- * @desc for original method, see: [vio14] N. Violini et al., NIM A 736 (2014) pp. 31-39, doi: 10.1016/j.nima.2013.10.042
+ * @desc for original method, see: [vio14] N. Violini et al., NIM A 736, pp. 31-39 (2014), doi: 10.1016/j.nima.2013.10.042
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
