@@ -28,7 +28,7 @@
 find_path(Julia_INCLUDE_DIRS
 	NAMES julia.h
 	PATH_SUFFIXES julia
-	HINTS /usr/local/include /usr/include /opt/local/include
+	HINTS /usr/local/include /usr/include /opt/local/includ ~/build/julia/usr/include
 	DOC "Julia include directories"
 )
 
@@ -37,7 +37,7 @@ list(APPEND Julia_INCLUDE_DIRS "${Julia_INCLUDE_DIRS}/..")
 
 find_library(Julia_LIBRARIES
 	NAMES julia
-	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/lib32 /usr/local/lib32
+	HINTS /usr/local/lib64 /usr/local/lib /usr/lib64 /usr/lib /opt/local/lib /usr/lib32 /usr/local/lib32 ~/build/julia/usr/lib
 	DOC "Julia libraries"
 )
 

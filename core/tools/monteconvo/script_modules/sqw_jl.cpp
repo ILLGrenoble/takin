@@ -74,7 +74,7 @@ SqwJl::SqwJl(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 	}
 
 	// get include function
-	jl_function_t *pInc = reinterpret_cast<jl_function_t*>(
+	jl_value_t *pInc = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_base_module, jl_symbol("include")));
 	if(!pInc)
 	{
@@ -96,7 +96,7 @@ SqwJl::SqwJl(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 	// working dir
 	if(bSetScriptCWD)
 	{
-		jl_function_t *pCwd = reinterpret_cast<jl_function_t*>(
+		jl_value_t *pCwd = reinterpret_cast<jl_value_t*>(
 			jl_get_global(jl_base_module, jl_symbol("cd")));
 		jl_value_t *pDir = jl_cstr_to_string(strDir.c_str());
 
@@ -108,13 +108,13 @@ SqwJl::SqwJl(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 
 
 	// import takin functions
-	m_pInit = reinterpret_cast<jl_function_t*>(
+	m_pInit = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_main_module, jl_symbol("TakinInit")));
-	m_pSqw = reinterpret_cast<jl_function_t*>(
+	m_pSqw = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_main_module, jl_symbol("TakinSqw")));
-	m_pDisp = reinterpret_cast<jl_function_t*>(
+	m_pDisp = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_main_module, jl_symbol("TakinDisp")));
-	m_pBackground = reinterpret_cast<jl_function_t*>(
+	m_pBackground = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_main_module, jl_symbol("TakinBackground")));
 
 	PrintExceptions();
@@ -152,7 +152,7 @@ SqwJl::SqwJl(const std::string& strFile) : m_pmtx(std::make_shared<std::mutex>()
 	}
 
 	if(m_pInit)
-		jl_call0((jl_function_t*)m_pInit);
+		jl_call0((jl_value_t*)m_pInit);
 }
 
 
@@ -174,7 +174,7 @@ std::string SqwJl::GetJlString(void* _pVal) const
 	std::string str;
 	jl_value_t *pStr = nullptr;
 
-	jl_function_t *pToStr = reinterpret_cast<jl_function_t*>(
+	jl_value_t *pToStr = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_base_module, jl_symbol("string")));
 	if(!pToStr)
 	{
@@ -236,7 +236,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 			tl::jl_traits<t_real>::box(dl)
 		};
 		jl_array_t *pEW = reinterpret_cast<jl_array_t*>(
-			jl_call((jl_function_t*)m_pDisp, phkl, 3));
+			jl_call((jl_value_t*)m_pDisp, phkl, 3));
 
 		if(jl_array_len(pEW) != 2)
 		{
@@ -288,7 +288,7 @@ t_real SqwJl::operator()(t_real dh, t_real dk, t_real dl, t_real dE) const
 		tl::jl_traits<t_real>::box(dl),
 		tl::jl_traits<t_real>::box(dE)
 	};
-	jl_value_t *pSqw = jl_call((jl_function_t*)m_pSqw, phklE, 4);
+	jl_value_t *pSqw = jl_call((jl_value_t*)m_pSqw, phklE, 4);
 
 	PrintExceptions();
 	return t_real(tl::jl_traits<t_real>::unbox(pSqw));
@@ -318,7 +318,7 @@ t_real SqwJl::GetBackground(t_real dh, t_real dk, t_real dl, t_real dE) const
 			tl::jl_traits<t_real>::box(dl),
 			tl::jl_traits<t_real>::box(dE)
 		};
-		jl_value_t *pVal = jl_call((jl_function_t*)m_pBackground, phklE, 4);
+		jl_value_t *pVal = jl_call((jl_value_t*)m_pBackground, phklE, 4);
 
 		val = t_real(tl::jl_traits<t_real>::unbox(pVal));
 	}
@@ -337,11 +337,11 @@ std::vector<SqwBase::t_var> SqwJl::GetVars() const
 		return vecVars;
 	}
 
-	jl_function_t *pNames = reinterpret_cast<jl_function_t*>(
+	jl_value_t *pNames = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_base_module, jl_symbol("names")));
-	jl_function_t *pGetField = reinterpret_cast<jl_function_t*>(
+	jl_value_t *pGetField = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_base_module, jl_symbol("getfield")));
-	jl_function_t *pPrint = reinterpret_cast<jl_function_t*>(
+	jl_value_t *pPrint = reinterpret_cast<jl_value_t*>(
 		jl_get_global(jl_base_module, jl_symbol("string")));
 
 	if(!pNames || !pGetField || !pPrint)
@@ -431,7 +431,7 @@ void SqwJl::SetVars(const std::vector<SqwBase::t_var>& vecVars)
 
 	// TODO: check for changed parameters and if reinit is needed
 	if(m_pInit)
-		jl_call0((jl_function_t*)m_pInit);
+		jl_call0((jl_value_t*)m_pInit);
 
 	PrintExceptions();
 }
