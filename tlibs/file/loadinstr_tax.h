@@ -287,20 +287,7 @@ std::array<t_real, 3> FileTax<t_real>::GetScatterPlaneVector(int i) const
 		std::array<t_real, 3> lattice = GetSampleLattice();
 		std::array<t_real, 3> angles = GetSampleAngles();
 
-		tl::Lattice<t_real> latt(
-			lattice[0], lattice[1], lattice[2],
-			angles[0], angles[1], angles[2]);
-		latt.RotateEuler(-gl, -gu, 0.);
-
-		t_mat B = tl::get_B(latt, true);
-		t_mat B_inv;
-		tl::inverse(B, B_inv);
-
-		t_mat U = prod_mm(UB, B_inv);
-		t_vec vec = tl::make_vec<t_vec>({ U(0, i), U(1, i), U(2, i) });
-		vec = prod_mv(B_inv, vec);
-		vec /= tl::veclen(vec);
-
+		t_vec vec = tl::get_scattering_plane(UB, lattice, angles, gu, gl)[i];
 		x = vec[0]; y = vec[1]; z = vec[2];
 	}
 

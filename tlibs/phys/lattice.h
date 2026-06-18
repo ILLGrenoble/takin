@@ -29,15 +29,20 @@
 #ifndef __TLIBS_LATTICE_H__
 #define __TLIBS_LATTICE_H__
 
+
 #include "../math/linalg.h"
 #include "../math/quat.h"
 #include "../math/math.h"
 #include "../math/tensor.h"
 #include "../math/geo.h"
+
 #include "neutrons.h"
+
 #include <ostream>
 
+
 namespace tl {
+
 
 /**
  * reciprocal matrix to A: B = 2*pi * A^(-T)
@@ -434,6 +439,42 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 }
 
 
+/**
+ * get the scattering plane from a UB matrix
+ */
+template<typename t_real = double>
+std::array<ublas::vector<t_real>, 3> get_scattering_plane(
+	const ublas::matrix<t_real>& UB,
+	const std::array<t_real, 3>& lattice,
+	const std::array<t_real, 3>& angles,
+	t_real gu = 0., t_real gl = 0.)
+{
+	using t_mat = ublas::matrix<t_real>;
+	using t_vec = ublas::vector<t_real>;
+
+	tl::Lattice<t_real> latt(
+		lattice[0], lattice[1], lattice[2],
+		angles[0], angles[1], angles[2]);
+	latt.RotateEuler(-gl, -gu, 0.);
+
+	t_mat B = tl::get_B(latt, true);
+	t_mat B_inv;
+	tl::inverse(B, B_inv);
+
+	t_mat U = tl::prod_mm(UB, B_inv);
+
+	std::array<ublas::vector<t_real>, 3> plane;
+	for(int i = 0; i < 3; ++i)
+	{
+		t_vec vec = tl::make_vec<t_vec>({ U(0, i), U(1, i), U(2, i) });
+		vec = prod_mv(B_inv, vec);
+		vec /= tl::veclen(vec);
+
+		plane[i] = std::move(vec);
+	}
+
+	return plane;
+}
 // -----------------------------------------------------------------------------
 
 
@@ -626,9 +667,9 @@ math::quaternion<T> get_euler_angles(const Lattice<T>& lattice_real,
 	t_vec vecG;
 	// matrix to rotate G into Q
 	t_quat quatRot = get_hkl_orient<T>(lattice_real,
-		dh, dk, dl, 
+		dh, dk, dl,
 		dh_new, dk_new, dl_new,
-		up_h, up_k, up_l, 
+		up_h, up_k, up_l,
 		&vecG,
 		vecQx_rlu, vecQy_rlu);
 
@@ -640,7 +681,7 @@ math::quaternion<T> get_euler_angles(const Lattice<T>& lattice_real,
 	// theta angle of vecQx
 	bool bSense = true;
 	t_mat matUB = get_UB(lattice_real, vecQx_rlu, vecQy_rlu);
-	t_vec vecQx = prod_mv(matUB, vecQx_rlu);	
+	t_vec vecQx = prod_mv(matUB, vecQx_rlu);
 	T dKiQ = get_angle_ki_Q(dKi/angs, dKi/angs, dG/angs, bSense) / rad;
 
 	vecQx.resize(2, true);
