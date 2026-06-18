@@ -445,6 +445,38 @@ ublas::matrix<T> get_UB(const Lattice<T>& lattice_real,
 template<typename t_real = double>
 std::array<ublas::vector<t_real>, 3> get_scattering_plane(
 	const ublas::matrix<t_real>& UB,
+	const tl::Lattice<t_real>& latt_real,
+	t_real gu = 0., t_real gl = 0.)
+{
+	using t_mat = ublas::matrix<t_real>;
+	using t_vec = ublas::vector<t_real>;
+
+	t_mat B = tl::get_B(latt_real, true);
+	t_mat B_inv;
+	tl::inverse(B, B_inv);
+
+	t_mat U = tl::prod_mm(UB, B_inv);
+
+	std::array<ublas::vector<t_real>, 3> plane;
+	for(int i = 0; i < 3; ++i)
+	{
+		t_vec vec = tl::make_vec<t_vec>({ U(i, 0), U(i, 1), U(i, 2) });
+		vec = prod_mv(B_inv, vec);
+		vec /= tl::veclen(vec);
+
+		plane[i] = std::move(vec);
+	}
+
+	return plane;
+}
+
+
+/**
+ * get the scattering plane from a UB matrix
+ */
+template<typename t_real = double>
+std::array<ublas::vector<t_real>, 3> get_scattering_plane(
+	const ublas::matrix<t_real>& UB,
 	const std::array<t_real, 3>& lattice,
 	const std::array<t_real, 3>& angles,
 	t_real gu = 0., t_real gl = 0.)
@@ -457,23 +489,7 @@ std::array<ublas::vector<t_real>, 3> get_scattering_plane(
 		angles[0], angles[1], angles[2]);
 	latt.RotateEuler(-gl, -gu, 0.);
 
-	t_mat B = tl::get_B(latt, true);
-	t_mat B_inv;
-	tl::inverse(B, B_inv);
-
-	t_mat U = tl::prod_mm(UB, B_inv);
-
-	std::array<ublas::vector<t_real>, 3> plane;
-	for(int i = 0; i < 3; ++i)
-	{
-		t_vec vec = tl::make_vec<t_vec>({ U(0, i), U(1, i), U(2, i) });
-		vec = prod_mv(B_inv, vec);
-		vec /= tl::veclen(vec);
-
-		plane[i] = std::move(vec);
-	}
-
-	return plane;
+	return get_scattering_plane<t_real>(UB, latt);
 }
 // -----------------------------------------------------------------------------
 

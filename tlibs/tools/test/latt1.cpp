@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------------
  */
 
-// gcc -I. -o latt1 latt1.cpp ../log/log.cpp -std=c++11 -lstdc++ -lm
+// g++ -I.. -o latt1 latt1.cpp ../../log/log.cpp -std=c++17
 
 
 #include "../phys/lattice.h"

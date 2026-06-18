@@ -280,9 +280,9 @@ std::array<t_real, 3> FileTax<t_real>::GetScatterPlaneVector(int i) const
 		std::vector<t_real> vecToks;
 		get_tokens<t_real, std::string>(iter->second, ",", vecToks);
 		t_mat UB = tl::make_mat<t_mat>({
-			{ vecToks[0], vecToks[3], vecToks[6] },
-			{ vecToks[1], vecToks[4], vecToks[7] },
-			{ vecToks[2], vecToks[5], vecToks[8] } });
+			{ vecToks[0], vecToks[1], vecToks[2] },
+			{ vecToks[3], vecToks[4], vecToks[5] },
+			{ vecToks[6], vecToks[7], vecToks[8] } });
 
 		std::array<t_real, 3> lattice = GetSampleLattice();
 		std::array<t_real, 3> angles = GetSampleAngles();
