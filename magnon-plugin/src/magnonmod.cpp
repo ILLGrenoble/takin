@@ -213,6 +213,8 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"checks", "int", tl::var_to_str((int)m_dyn.GetPerformChecks())});
 	vars.push_back(SqwBase::t_var{
 		"uc_01", "int", tl::var_to_str((int)m_uc_01)});
+	vars.push_back(SqwBase::t_var{
+		"use_pol_coords", "int", tl::var_to_str((int)m_use_polcoords)});
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
@@ -318,6 +320,11 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			else
 				m_dyn.SetUnitCellExtents(-0.5, 0.5);
 		}
+		else if(strVar == "use_pol_coords")
+		{
+			m_use_polcoords = (tl::str_to_var<int>(strVal) != 0);
+			m_dyn.SetCalcPolarisation(m_use_polcoords);
+		}
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{
@@ -390,6 +397,7 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_use_model_bose = this->m_use_model_bose;
 	mod->m_T = this->m_T;
 	mod->m_uc_01 = this->m_uc_01;
+	mod->m_use_polcoords = this->m_use_polcoords;
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;
 #endif

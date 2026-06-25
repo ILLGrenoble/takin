@@ -77,7 +77,11 @@ class MagnonMod : public SqwBase
 		// temperature
 		t_real m_T{300};
 
+		// unit cell from 0 to 1 (or from -0.5 to 0.5)?
 		bool m_uc_01{false};
+
+		// rotate spin-spin correlation matrix
+		bool m_use_polcoords{false};
 
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		// for quickly flipping coordinates
