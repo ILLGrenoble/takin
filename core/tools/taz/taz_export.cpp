@@ -325,8 +325,6 @@ void TazDlg::ExportUCModel()
 		return;
 	}
 
-	const tl::Lattice<t_real>& lattice = m_latticecommon.lattice;
-
 	std::vector<t_vec> vecAtoms;
 	std::vector<std::string> vecAtomNames;
 	for(const xtl::AtomPos<t_real>& atom : m_vecAtoms)

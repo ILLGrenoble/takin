@@ -747,7 +747,7 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 
 	// -------------------------------------------------------------------------
 	// find axis labels and ranges
-	std::string strScanVar1 = "";
+	/*std::string strScanVar1 = "";
 	t_real dStart1{}, dStop1{};
 	if(cfg.scanaxis == 1 || (cfg.scanaxis == 0 && !tl::float_equal(cfg.h_from, cfg.h_to, g_dEpsRlu)))
 	{
@@ -799,8 +799,7 @@ static bool start_convo_2d(ConvoConfig& cfg, const tl::Prop<std::string>& xml, c
 		strScanVar2 = "E (meV)";
 		dStart2 = cfg.E_from;
 		dStop2 = cfg.E_to_2;
-	}
-
+	}*/
 	// -------------------------------------------------------------------------
 
 

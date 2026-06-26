@@ -645,7 +645,7 @@ void ElasticDlg::GotoPosition(ElasticDlgGoto which)
 	}
 
 	int pos_idx = spinPosIdx->value() - 1;
-	if(pos_idx >= positions->size() || pos_idx < 0)
+	if(pos_idx >= (int)positions->size() || pos_idx < 0)
 	{
 		QMessageBox::critical(this, "Error", "Invalid position index.");
 		return;

@@ -522,8 +522,7 @@ void LatticeScene::mouseMoveEvent(QGraphicsSceneMouseEvent *pEvt)
 		QGraphicsItem* pCurItem = mouseGrabberItem();
 		if(pCurItem)
 		{
-			const int iNodeType = pCurItem->data(REAL_LATTICE_NODE_TYPE_KEY).toInt();
-
+			//const int iNodeType = pCurItem->data(REAL_LATTICE_NODE_TYPE_KEY).toInt();
 			// nothing there yet...
 		}
 	}

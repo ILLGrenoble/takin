@@ -153,7 +153,7 @@ const std::vector<t_real>& ScanViewerDlg::GetCol(const tl::FileInstrBase<t_real_
 	{
 		for(const std::string& alias : iter->second)
 		{
-			const std::vector<t_real>& aliascol = instr->GetCol(colname, &idx);
+			const std::vector<t_real>& aliascol = instr->GetCol(alias, &idx);
 			if(idx != invalid_idx)
 				return aliascol;
 		}
