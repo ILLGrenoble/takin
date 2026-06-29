@@ -118,11 +118,13 @@ static bool check_ext_plugins()
 		if(!tl::begins_with<std::string>(strPluginNoDir, "takinmod_", false))
 			continue;
 
+		tl::log_debug("Running integrity check for external S(Q, E) plugin \"", strPlugin, "\"...");
+
 		// get module infos
 		tl::PipeProc<char> proc(("\"" + strPlugin + "\"").c_str(), false);
 		if(!proc.IsReady())
 		{
-			tl::log_err("Cannot query external plugin infos for \"", strPlugin, "\".");
+			tl::log_err("Cannot query external S(Q, E) plugin infos for \"", strPlugin, "\".");
 			ok = false;
 			continue;
 		}
@@ -246,6 +248,8 @@ static bool check_plugins()
 					pmod->unload();
 					continue;
 				}
+
+				tl::log_debug("Running integrity check for S(Q, E) plugin \"", strPlugin, "\"...");
 
 				auto tupInfo = fktInfo();
 				const std::string& strTakVer = std::get<0>(tupInfo);
