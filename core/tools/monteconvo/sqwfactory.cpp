@@ -6,7 +6,7 @@
  *
  * ----------------------------------------------------------------------------
  * Takin (inelastic neutron scattering software package)
- * Copyright (C) 2017-2023  Tobias WEBER (Institut Laue-Langevin (ILL),
+ * Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
  *                          Grenoble, France).
  * Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
  *                          (TUM), Garching, Germany).
@@ -27,6 +27,7 @@
  */
 
 #include "sqwfactory.h"
+#include "sqwfactory_defs.h"
 
 #include "modules/simple_phonon.h"
 #include "modules/simple_magnon.h"
@@ -44,12 +45,9 @@
 #include "tlibs/file/file.h"
 #include "tlibs/string/string.h"
 #include "tlibs/helper/proc.h"
-#include "libs/globals.h"
 #include "libs/version.h"
 
 #include <algorithm>
-#include <functional>
-#include <unordered_map>
 
 
 // sqw info function: "takin_sqw_info"
@@ -276,7 +274,7 @@ void unload_sqw_ext_plugins()
 
 void load_sqw_ext_plugins()
 {
-	static bool bPluginsLoaded = 0;
+	static bool bPluginsLoaded = false;
 	if(!bPluginsLoaded)
 	{
 		tl::log_info("Loading external plugins from directory: ", g_strApp, ".");
@@ -362,7 +360,7 @@ void load_sqw_ext_plugins()
 		}
 
 		tl::log_debug("Loaded all exernal plugins.");
-		bPluginsLoaded = 1;
+		bPluginsLoaded = true;
 	}
 }
 
@@ -430,7 +428,7 @@ void unload_sqw_plugins()
 
 void load_sqw_plugins()
 {
-	static bool bPluginsLoaded = 0;
+	static bool bPluginsLoaded = false;
 	if(!bPluginsLoaded)
 	{
 		// look in the directories "plugins" and "takin_plugins"
@@ -550,7 +548,7 @@ void load_sqw_plugins()
 					}
 					else
 					{
-						tl::log_err("No valid constructor interface found in \"", strPlugin, "\".");
+						tl::log_err("No valid constructor interface found in S(Q, E) plugin \"", strPlugin, "\".");
 						continue;
 					}
 
@@ -561,13 +559,13 @@ void load_sqw_plugins()
 				}
 				catch(const std::exception& ex)
 				{
-					tl::log_err("Could not load ", strPlugin, ". Reason: ", ex.what());
+					tl::log_err("Could not load S(Q, E) plugin \"", strPlugin, "\". Reason: ", ex.what());
 				}
 			}
 		}
 
 		tl::log_debug("Loaded all plugins.");
-		bPluginsLoaded = 1;
+		bPluginsLoaded = true;
 	}
 
 
@@ -601,7 +599,8 @@ void load_sqw_plugins()
 bool save_sqw_params(const SqwBase* pSqw,
     std::map<std::string, std::string>& mapConf, const std::string& strXmlRoot)
 {
-	if(!pSqw) return 0;
+	if(!pSqw)
+		return false;
 
 	const std::vector<SqwBase::t_var> vecVars = pSqw->GetVars();
 	const std::vector<SqwBase::t_var_fit>& vecFitVars = pSqw->GetFitVars();
@@ -626,14 +625,15 @@ bool save_sqw_params(const SqwBase* pSqw,
 		mapConf[strXmlRoot + "sqw_ranges/" + strVar] = strRange;
 	}
 
-	return 1;
+	return true;
 }
 
 
 bool load_sqw_params(SqwBase* pSqw,
 	const tl::Prop<std::string>& xml, const std::string& strXmlRoot)
 {
-	if(!pSqw) return 0;
+	if(!pSqw)
+		return false;
 
 	std::vector<std::string> vecChildren =
 		xml.GetChildNodes(strXmlRoot + "sqw_params/");
@@ -672,6 +672,6 @@ bool load_sqw_params(SqwBase* pSqw,
 	pSqw->SetVars(vecVars);
 	pSqw->InitFitVars(vecVarsFit);
 
-	return 1;
+	return true;
 }
 // ----------------------------------------------------------------------------
