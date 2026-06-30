@@ -1052,7 +1052,7 @@ int monteconvo_main(int argc, char** argv)
 		std::vector<std::string> vecJobs;
 
 		// overrides for quickly changing input and output files
-		std::string scanfile_override, autosave_override;
+		std::string scanfile_override, autosave_override, sqw_conf_override;
 		unsigned int neutron_count_override = 0;
 
 		// parameter overrides for sqw model
@@ -1084,6 +1084,10 @@ int monteconvo_main(int argc, char** argv)
 			new opts::option_description("autosave-override",
 			opts::value<decltype(autosave_override)>(&autosave_override),
 			"autosave file override")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("sqw-conf-override",
+			opts::value<decltype(sqw_conf_override)>(&sqw_conf_override),
+			"S(Q, E) config file override")));
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("sqw-param-override",
 			opts::value<decltype(sqw_params)>(&sqw_params),
@@ -1168,6 +1172,12 @@ int monteconvo_main(int argc, char** argv)
 		{
 			cfg.scanfile = scanfile_override;
 			tl::log_info("Overriding scan input file with \"", cfg.scanfile, "\".");
+		}
+
+		if(sqw_conf_override != "")
+		{
+			cfg.sqw_conf = sqw_conf_override;
+			tl::log_info("Overriding S(Q, E) configuration file with \"", cfg.sqw_conf, "\".");
 		}
 
 		if(autosave_override != "")
