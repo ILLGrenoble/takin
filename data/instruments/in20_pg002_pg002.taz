@@ -49,7 +49,7 @@
 		<pop_det_h>2.500000e+00</pop_det_h>
 		<pop_det_rect>1</pop_det_rect>
 		<pop_det_w>2.500000e+00</pop_det_w>
-		<pop_dist_ana_det>2.350000e+01</pop_dist_ana_det>
+		<pop_dist_ana_det>7.350000e+01</pop_dist_ana_det>
 		<pop_dist_hsrc_mono>2.275000e+02</pop_dist_hsrc_mono>
 		<pop_dist_mono_monitor>1.000000e+02</pop_dist_mono_monitor>
 		<pop_dist_mono_sample>2.275000e+02</pop_dist_mono_sample>
