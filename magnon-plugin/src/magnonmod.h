@@ -83,6 +83,13 @@ class MagnonMod : public SqwBase
 		// rotate spin-spin correlation matrix
 		bool m_use_polcoords{false};
 
+		// use powder calculation (otherwise single crystal)?
+		bool m_is_powder{false};
+
+		// number of Q points to use for powder
+		unsigned int m_powder_Qs{512};
+
+
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		// for quickly flipping coordinates
 		std::vector<t_real> m_Qsigns = { 1., 1., 1. };

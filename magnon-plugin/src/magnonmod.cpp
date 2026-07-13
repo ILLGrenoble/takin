@@ -92,14 +92,38 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 #endif
 
 	// calculate dispersion relation
-	auto modes = m_dyn.CalcEnergies(h, k, l, false);
-
+	std::vector<typename t_magdyn::EnergiesAndWeights> all_modes;
 	std::vector<t_real> energies;
 	std::vector<t_real> weights;
-	energies.reserve(modes.size());
-	weights.reserve(modes.size());
 
-	auto push_mode = [this, &modes, &energies, &weights](std::size_t mode_idx)
+	if(m_is_powder)
+	{
+		// get Q length in A^(-1)
+		const t_mat_real& B = m_dyn.GetCrystalBTrafo();
+		t_vec_real Qvec_invA = B * tl2::create<t_vec_real>({ h, k, l });
+		t_real Q_invA = tl2::norm(Qvec_invA);
+
+		t_size num_modes = 0;
+		typename t_magdyn::SofQEs SQEs = m_dyn.CalcPowder(Q_invA, m_powder_Qs, 1, true);
+		for(const typename t_magdyn::SofQE& SQE : SQEs)
+		{
+			num_modes += SQE.E_and_S.size();
+			all_modes.push_back(SQE.E_and_S);
+		}
+
+		energies.reserve(num_modes);
+		weights.reserve(num_modes);
+	}
+	else  // single crystal
+	{
+		all_modes.emplace_back(m_dyn.CalcEnergies(h, k, l, false));
+		energies.reserve(all_modes[0].size());
+		weights.reserve(all_modes[0].size());
+	}
+
+	// add a mode
+	auto push_mode = [this, &energies, &weights](
+		const typename t_magdyn::EnergiesAndWeights& modes, std::size_t mode_idx)
 	{
 		if(mode_idx >= modes.size())
 			return;
@@ -116,13 +140,17 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	if(m_mode_idx < 0)
 	{
 		// add all modes
-		for(std::size_t mode_idx = 0; mode_idx < modes.size(); ++mode_idx)
-			push_mode(mode_idx);
+		for(const auto& modes : all_modes)
+		{
+			for(std::size_t mode_idx = 0; mode_idx < modes.size(); ++mode_idx)
+				push_mode(modes, mode_idx);
+		}
 	}
 	else
 	{
 		// add a single selected mode
-		push_mode(m_mode_idx);
+		for(const auto& modes : all_modes)
+			push_mode(modes, m_mode_idx);
 	}
 
 	return std::make_tuple(energies, weights);
@@ -215,6 +243,10 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"uc_01", "int", tl::var_to_str((int)m_uc_01)});
 	vars.push_back(SqwBase::t_var{
 		"use_pol_coords", "int", tl::var_to_str((int)m_use_polcoords)});
+	vars.push_back(SqwBase::t_var{
+		"powder", "int", tl::var_to_str((int)m_is_powder)});
+	vars.push_back(SqwBase::t_var{
+		"powder_num_Qs", "uint", tl::var_to_str(m_powder_Qs)});
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
@@ -325,6 +357,10 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_use_polcoords = (tl::str_to_var<int>(strVal) != 0);
 			m_dyn.SetCalcPolarisation(m_use_polcoords);
 		}
+		else if(strVar == "powder")
+			m_is_powder = (tl::str_to_var<int>(strVal) != 0);
+		else if(strVar == "powder_num_Qs")
+			m_powder_Qs = tl::str_to_var<unsigned int>(strVal);
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{
@@ -398,6 +434,8 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_T = this->m_T;
 	mod->m_uc_01 = this->m_uc_01;
 	mod->m_use_polcoords = this->m_use_polcoords;
+	mod->m_is_powder = this->m_is_powder;
+	mod->m_powder_Qs = this->m_powder_Qs;
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;
 #endif
