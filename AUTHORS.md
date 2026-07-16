@@ -32,4 +32,16 @@ CONTRIBUTORS
   - mail: jens.krueger\<AT\>frm2.tum.de
   - active: 2024
   - contributions:
-    - build scripts for more debian systems.
+    - additional build scripts for more debian systems.
+
+
+
+ACKNOWLEDGEMENTS
+----------------
+
+**Robert Georgii**
+  - for the many discussions during the time of my thesis.
+
+
+**Peter Böni**
+  - for the many discussions during the time of my thesis.
