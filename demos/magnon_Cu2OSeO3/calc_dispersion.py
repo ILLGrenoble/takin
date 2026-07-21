@@ -32,7 +32,7 @@ try:
 	from takin import magdyn
 except ModuleNotFoundError:
 	# try importing unpackaged version
-	import magdyn
+	import magpy as magdyn
 
 
 # -----------------------------------------------------------------------------
