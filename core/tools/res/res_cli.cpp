@@ -232,7 +232,7 @@ void calc(const std::vector<std::string>& vecArgs)
 
 	std::vector<std::future<Ellipse2d<t_real>>> tasks_ell_proj, tasks_ell_slice;
 
-	for(unsigned int iEll=0; iEll<4; ++iEll)
+	for(unsigned int iEll = 0; iEll < 4; ++iEll)
 	{
 		const int *iP = iParams[0][iEll];
 		const int *iS = iParams[1][iEll];
@@ -317,7 +317,8 @@ int res_main(int argc, char** argv)
 			for(std::string& strTok : vecToks)
 				tl::trim(strTok);
 
-			if(!vecToks.size()) continue;
+			if(!vecToks.size())
+				continue;
 
 			if(vecToks[0] == "exit")
 				break;

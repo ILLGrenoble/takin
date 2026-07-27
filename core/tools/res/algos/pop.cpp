@@ -174,7 +174,7 @@ ResoResults calc_pop(const PopParams& pop)
 
 	// sample extents
 	t_mat sample_dims = tl::diag_matrix<t_mat>({
-			pop.sample_w_q * pop.sample_w_q/ cm/cm,
+			pop.sample_w_q * pop.sample_w_q / cm/cm,
 			pop.sample_w_perpq * pop.sample_w_perpq / cm/cm,
 			pop.sample_h * pop.sample_h / cm/cm });
 

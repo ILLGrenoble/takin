@@ -724,6 +724,7 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		m_reso.pos_x = m_reso.pos_y = m_reso.pos_z = t_real(0)*cm;
 	}
 
+	//std::cout << "reso = " << resores.reso << ", R0 = " << resores.dR0 << std::endl;
 	return resores.bOk;
 }
 
@@ -756,7 +757,7 @@ Ellipsoid4d<t_real> TASReso::GenerateMC(std::size_t iNum, std::vector<t_vec>& ve
 		{
 			std::vector<t_vec>::iterator iterBegin = vecNeutrons.begin() + iNumPerThread*iThread + iCurIter*iNum;
 			std::size_t iNumNeutr = iNumPerThread;
-			if(iThread == iNumThreads-1)
+			if(iThread == iNumThreads - 1)
 				iNumNeutr = iNumPerThread + iRemaining;
 
 			tp.AddTask([iterBegin, iNumNeutr, this, &ell4d]()
