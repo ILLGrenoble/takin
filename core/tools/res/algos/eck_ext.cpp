@@ -398,7 +398,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	bool bKfVertical = (eck.angle_kf/rads > t_real(0));
 	if(bKfVertical)
 	{
-		t_mat matTvert = tl::rotation_matrix_3d_x(-eck.angle_kf/rads);
+		t_mat matTvert = tl::rotation_matrix_3d_x<t_mat>(-eck.angle_kf/rads);
 
 		// T_vert has to be applied at the same positions in the formulas as Dtwotheta, see eck.cpp
 		E = tl::transform(E, matTvert, true);
@@ -447,9 +447,9 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	}
 
 	// equ. 54 in [eck14]
-	t_mat Dalph_i = tl::rotation_matrix_3d_z(-ki_Q/rads);
-	t_mat Dalph_f = tl::rotation_matrix_3d_z(-kf_Q/rads);
-	t_mat Dtwotheta = tl::rotation_matrix_3d_z(-twotheta/rads);
+	t_mat Dalph_i = tl::rotation_matrix_3d_z<t_mat>(-ki_Q/rads);
+	t_mat Dalph_f = tl::rotation_matrix_3d_z<t_mat>(-kf_Q/rads);
+	t_mat Dtwotheta = tl::rotation_matrix_3d_z<t_mat>(-twotheta/rads);
 	t_mat Arot = tl::transform(A, Dalph_i, true);
 	t_mat Erot = tl::transform(E, Dalph_f, true);
 
