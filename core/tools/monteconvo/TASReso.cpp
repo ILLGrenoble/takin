@@ -322,6 +322,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.bAnaIsOptimallyCurvedV = (xml.Query<int>((strXmlRoot + "reso/pop_ana_use_curvv").c_str(), 1) == 1);
 
 	m_reso.bSampleCub = (xml.Query<int>((strXmlRoot + "reso/pop_sample_cuboid").c_str(), 0) != 0);
+	m_reso.bSampleInOrientedSys = (xml.Query<int>((strXmlRoot + "reso/pop_sample_oriented_sys").c_str(), 0) != 0);
 	m_reso.sample_w_q = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_wq").c_str(), 0.)*cm;
 	m_reso.sample_w_perpq = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_wperpq").c_str(), 0.)*cm;
 	m_reso.sample_h = xml.Query<t_real>((strXmlRoot + "reso/pop_sample_h").c_str(), 0.)*cm;
@@ -591,21 +592,21 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 		// for TOF we don't use the monochromator and analyser crystals
 		m_reso.thetam = units::abs(
 			tl::get_mono_twotheta(m_reso.ki, m_reso.mono_d,
-				/*m_reso.dmono_sense>=0.*/true)*t_real(0.5));
+				/*m_reso.dmono_sense >= 0.*/true)*t_real(0.5));
 		m_reso.thetaa = units::abs(
 			tl::get_mono_twotheta(m_reso.kf, m_reso.ana_d,
-				/*m_reso.dana_sense>=0.*/true)*t_real(0.5));
+				/*m_reso.dana_sense >= 0.*/true)*t_real(0.5));
 	}
 	m_tofreso.twotheta = m_reso.twotheta = units::abs(
 		tl::get_sample_twotheta(m_reso.ki, m_reso.kf, m_reso.Q,
-			/*m_reso.dsample_sense>=0.*/true));
+			/*m_reso.dsample_sense >= 0.*/true));
 
 	m_tofreso.angle_ki_Q = m_reso.angle_ki_Q =
 		tl::get_angle_ki_Q(m_reso.ki, m_reso.kf, m_reso.Q,
-			/*m_reso.dsample_sense>=0.*/true, false);
+			/*m_reso.dsample_sense >= 0.*/true, false);
 	m_tofreso.angle_kf_Q = m_reso.angle_kf_Q =
 		tl::get_angle_kf_Q(m_reso.ki, m_reso.kf, m_reso.Q,
-			/*m_reso.dsample_sense>=0.*/true, true);
+			/*m_reso.dsample_sense >= 0.*/true, true);
 
 
 	// apply focusing overrides
@@ -640,6 +641,11 @@ bool TASReso::SetHKLE(t_real h, t_real k, t_real l, t_real E)
 
 	vecQ.resize(2, true);
 	m_opts.dAngleQVec0 = -tl::vec_angle(vecQ);
+	/*m_tofreso.thetas =*/ m_reso.thetas =
+		- m_reso.dsample_sense*m_reso.angle_ki_Q + m_opts.dAngleQVec0*rads + tl::get_pi<t_real>()/t_real(2)*rads;
+	//std::cout << "kiQ   = " << m_reso.angle_ki_Q/rads/M_PI*180. << std::endl;
+	//std::cout << "QVec0 = " << m_opts.dAngleQVec0/M_PI*180. << std::endl;
+	//std::cout << "thetas = " << m_reso.thetas/M_PI*180. << std::endl;
 
 	for(ResoResults& resores_cur : m_res)
 	{

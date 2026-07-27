@@ -214,13 +214,16 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 	};
 
 	m_vecRadioPlus = {radioMonoScatterPlus, radioAnaScatterPlus, radioSampleScatterPlus,
-		radioSampleCub, radioSrcRect, radioDetRect, radioMonitorRect,
+		radioSampleCub, radioSampleKi,
+		radioSrcRect, radioDetRect, radioMonitorRect,
 		radioTofDetSph};
 	m_vecRadioMinus = {radioMonoScatterMinus, radioAnaScatterMinus, radioSampleScatterMinus,
-		radioSampleCyl, radioSrcCirc, radioDetCirc, radioMonitorCirc,
+		radioSampleCyl, radioSampleQ,
+		radioSrcCirc, radioDetCirc, radioMonitorCirc,
 		radioTofDetCyl};
 	m_vecRadioNames = {"reso/mono_scatter_sense", "reso/ana_scatter_sense", "reso/sample_scatter_sense",
-		"reso/pop_sample_cuboid", "reso/pop_source_rect", "reso/pop_det_rect", "reso/pop_monitor_rect",
+		"reso/pop_sample_cuboid", "reso/pop_sample_oriented_sys",
+		"reso/pop_source_rect", "reso/pop_det_rect", "reso/pop_monitor_rect",
 		"reso/viol_det_sph"};
 
 	m_vecComboBoxes = {/*comboAlgo,*/
@@ -320,6 +323,7 @@ void ResoDlg::RefreshQEPos()
 		m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta = twotheta;
 		m_simpleparams.angle_ki_Q = m_tofparams.angle_ki_Q = m_tasparams.angle_ki_Q = kiQ;
 		m_simpleparams.angle_kf_Q = m_tofparams.angle_kf_Q = m_tasparams.angle_kf_Q = kfQ;
+		m_tasparams.thetas = 0.*rads;  // TODO
 
 		m_tasparams.thetam = t_real_reso(0.5) * tl::get_mono_twotheta(ki, dMono*angs, true);
 		m_tasparams.thetaa = t_real_reso(0.5) * tl::get_mono_twotheta(kf, dAna*angs, true);
@@ -467,6 +471,7 @@ void ResoDlg::RecipParamsChanged(const RecipParams& parms)
 	{
 		m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta =
 			t_real_reso(parms.d2Theta) * rads;
+		m_tasparams.thetas = t_real_reso(parms.dTheta) * rads;
 
 		m_simpleparams.ki = m_tofparams.ki = m_tasparams.ki = t_real_reso(parms.dki) / angs;
 		m_simpleparams.kf = m_tofparams.kf = m_tasparams.kf = t_real_reso(parms.dkf) / angs;
@@ -521,6 +526,7 @@ void ResoDlg::RealParamsChanged(const RealParams& parms)
 
 	m_simpleparams.twotheta = m_tofparams.twotheta = m_tasparams.twotheta =
 		t_real_reso(parms.dSampleTT) * rads;
+	m_tasparams.thetas = t_real_reso(parms.dSampleT) * rads;
 
 	m_bDontCalc = bOldDontCalc;
 	if(m_bUpdateOnRealEvent)

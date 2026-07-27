@@ -518,7 +518,8 @@ void get_tas_angles(const Lattice<T>& lattice_real,
 
 	t_vec vechkl = make_vec({ dh, dk, dl });
 	t_vec vecQ = prod_mv(matUB, vechkl);
-	if(pVecQ) *pVecQ = vecQ;
+	if(pVecQ)
+		*pVecQ = vecQ;
 
 	if(std::fabs(vecQ[2]) > dDelta)
 	{

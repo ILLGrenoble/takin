@@ -206,6 +206,7 @@ void ResoDlg::Calc()
 			tas.bAnaIsCurvedV = tas.bAnaIsOptimallyCurvedV = 1;
 
 		tas.bSampleCub = radioSampleCub->isChecked();
+		tas.bSampleInOrientedSys = radioSampleKi->isChecked();
 		tas.sample_w_q = t_real_reso(spinSampleW_Q->value()) * cm;
 		tas.sample_w_perpq = t_real_reso(spinSampleW_perpQ->value()) * cm;
 		tas.sample_h = t_real_reso(spinSampleH->value()) * cm;

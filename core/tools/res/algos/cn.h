@@ -87,7 +87,7 @@ struct CNParams
 	tl::t_energy_si<t_real_reso> E;
 
 	tl::t_angle_si<t_real_reso> thetaa, thetam;
-	tl::t_angle_si<t_real_reso> twotheta;
+	tl::t_angle_si<t_real_reso> twotheta, thetas;
 
 	tl::t_angle_si<t_real_reso> angle_ki_Q;
 	tl::t_angle_si<t_real_reso> angle_kf_Q;

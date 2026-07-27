@@ -144,6 +144,7 @@ ResoResults calc_pop(const PopParams& pop)
 	angle thetam = pop.thetam * pop.dmono_sense;
 	angle ki_Q = pop.angle_ki_Q * pop.dsample_sense * manually_changed_sense;
 	angle kf_Q = pop.angle_kf_Q * pop.dsample_sense * manually_changed_sense;
+	angle Q_vec0 = pop.thetas + ki_Q;
 
 	// B matrix, [pop75], Appendix 1 -> U matrix in CN
 	t_mat B_trafo_QE = get_trafo_dkidkf_dQdE(ki_Q, kf_Q, pop.ki, pop.kf);
@@ -171,6 +172,27 @@ ResoResults calc_pop(const PopParams& pop)
 	if(tl::float_equal<t_real>(ana_mosaic_v/rads, 0.), 0.)
 		ana_mosaic_v = pop.ana_mosaic;
 
+	// visible sample dimensions with respect to the sample theta
+	t_real csample = std::abs(std::cos(Q_vec0/rads));
+	t_real ssample = std::abs(std::sin(Q_vec0/rads));
+	t_vec sample_dims;
+	if(pop.bSampleInOrientedSys)
+	{
+		sample_dims = tl::make_vec<t_vec>({
+			pop.sample_w_perpq / cm * ssample + pop.sample_w_q / cm * csample,
+			pop.sample_w_perpq / cm * csample + pop.sample_w_q / cm * ssample,
+			pop.sample_h / cm });
+	}
+	else
+	{
+		sample_dims = tl::make_vec<t_vec>({
+			pop.sample_w_q / cm,
+			pop.sample_w_perpq / cm,
+			pop.sample_h / cm });
+	}
+
+	//std::cout << "thetas: " << pop.thetas/rads/M_PI*180. << std::endl;
+	//std::cout << "sample dims at " << Q_vec0/rads/M_PI*180. << ": " << sample_dims[0] << " " << sample_dims[1] << std::endl;
 
 	// --------------------------------------------------------------------
 	// instrument property matrices
@@ -262,9 +284,9 @@ ResoResults calc_pop(const PopParams& pop)
 	SI_geo(POP_MONO_Y, POP_MONO_Y) = dMultMono * pop.mono_w*pop.mono_w /cm/cm;
 	SI_geo(POP_MONO_Z, POP_MONO_Z) = dMultMono * pop.mono_h*pop.mono_h /cm/cm;
 
-	SI_geo(POP_SAMPLE_X, POP_SAMPLE_X) = dMultSample * pop.sample_w_perpq*pop.sample_w_perpq /cm/cm;
-	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = dMultSample * pop.sample_w_q*pop.sample_w_q /cm/cm;
-	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = var_uniform * pop.sample_h*pop.sample_h /cm/cm;
+	SI_geo(POP_SAMPLE_X, POP_SAMPLE_X) = dMultSample * sample_dims[0]*sample_dims[0];  // || Q
+	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = dMultSample * sample_dims[1]*sample_dims[1];  // perp. Q
+	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = var_uniform * sample_dims[2]*sample_dims[2];  // up
 
 	SI_geo(POP_ANA_X, POP_ANA_X) = dMultAna * pop.ana_thick*pop.ana_thick /cm/cm;
 	SI_geo(POP_ANA_Y, POP_ANA_Y) = dMultAna * pop.ana_w*pop.ana_w /cm/cm;

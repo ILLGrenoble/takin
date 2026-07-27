@@ -61,6 +61,7 @@ struct PopParams : public CNParams
 	unsigned int ana_numtiles_v, ana_numtiles_h;
 
 	bool bSampleCub = true;
+	bool bSampleInOrientedSys = true;
 	tl::t_length_si<t_real_reso> sample_w_q;
 	tl::t_length_si<t_real_reso> sample_w_perpq;
 	tl::t_length_si<t_real_reso> sample_h;
