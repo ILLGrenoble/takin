@@ -1054,7 +1054,8 @@ int monteconvo_main(int argc, char** argv)
 		// overrides for quickly changing input and output files
 		std::string scanfile_override, autosave_override, sqw_conf_override;
 		unsigned int neutron_count_override = 0;
-
+		// override for instrument parameters
+		std::string instr_override;
 		// parameter overrides for sqw model
 		std::string sqw_params;
 
@@ -1076,6 +1077,10 @@ int monteconvo_main(int argc, char** argv)
 			new opts::option_description("neutron-count",
 			opts::value<decltype(neutron_count_override)>(&neutron_count_override),
 			"simulated neutron count")));
+		args.add(boost::shared_ptr<opts::option_description>(
+			new opts::option_description("instrfile-override",
+			opts::value<decltype(instr_override)>(&instr_override),
+			"override instrument parameters file")));
 		args.add(boost::shared_ptr<opts::option_description>(
 			new opts::option_description("scanfile-override",
 			opts::value<decltype(scanfile_override)>(&scanfile_override),
@@ -1178,6 +1183,12 @@ int monteconvo_main(int argc, char** argv)
 		{
 			cfg.sqw_conf = sqw_conf_override;
 			tl::log_info("Overriding S(Q, E) configuration file with \"", cfg.sqw_conf, "\".");
+		}
+
+		if(instr_override != "")
+		{
+			cfg.instr = instr_override;
+			tl::log_info("Overriding instrument configuration file with \"", cfg.instr, "\".");
 		}
 
 		if(autosave_override != "")
