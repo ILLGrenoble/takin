@@ -144,7 +144,7 @@ ResoResults calc_pop(const PopParams& pop)
 	angle thetam = pop.thetam * pop.dmono_sense;
 	angle ki_Q = pop.angle_ki_Q * pop.dsample_sense * manually_changed_sense;
 	angle kf_Q = pop.angle_kf_Q * pop.dsample_sense * manually_changed_sense;
-	angle Q_vec0 = pop.thetas + ki_Q;
+	angle Q_vec0 = pop.thetas + ki_Q - pi/t_real(2)*rads;
 
 	// B matrix, [pop75], Appendix 1 -> U matrix in CN
 	t_mat B_trafo_QE = get_trafo_dkidkf_dQdE(ki_Q, kf_Q, pop.ki, pop.kf);
