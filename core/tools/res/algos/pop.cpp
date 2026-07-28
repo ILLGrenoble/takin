@@ -125,6 +125,12 @@ static inline PopPosIdx get_ki_pos(PopPosIdx posidx)
 
 ResoResults calc_pop(const PopParams& pop)
 {
+	// uniform distribution variance = L^2/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
+	// circular distribution variance = R^2/4 = D^2/16, see: https://en.wikipedia.org/wiki/Wigner_semicircle_distribution
+	// these factors are used to approximate a uniform or circular variance by a gaussian variance
+	const t_real var_uniform = t_real(1. / 12.);
+	const t_real var_circular = t_real(1. / 16.);
+
 	ResoResults res;
 
 	res.Q_avg.resize(4);
@@ -150,6 +156,11 @@ ResoResults calc_pop(const PopParams& pop)
 	angle Q_bisector = ((pi*rads + kf_Q) + ki_Q)/2.;
 	if(pop.dsample_sense * manually_changed_sense > 0.)
 		Q_bisector = Q_bisector - pi*rads;
+	// angle between bisector and vector 0
+	//angle bisec_vec0 = -Q_vec0 + Q_bisector;
+	//angle bisect_ki = ki_Q + Q_bisector;
+	//angle bisector_to_thetas = (pop.thetas - pi/2.*rads) + bisect_ki;
+	angle bisector_to_thetas = Q_vec0 + Q_bisector;
 
 	// B matrix, [pop75], Appendix 1 -> U matrix in CN
 	t_mat B_trafo_QE = get_trafo_dkidkf_dQdE(ki_Q, kf_Q, pop.ki, pop.kf);
@@ -178,21 +189,24 @@ ResoResults calc_pop(const PopParams& pop)
 		ana_mosaic_v = pop.ana_mosaic;
 
 	// sample extents
-	// without the rotation below the sample x axis is not
-	// generally along Q, but the bisector of ki and kf
+	t_real dMultSample = pop.bSampleCub ? var_uniform : var_circular;
 	t_mat sample_dims = tl::diag_matrix<t_mat>({
-		pop.sample_w_q * pop.sample_w_q / cm/cm,
-		pop.sample_w_perpq * pop.sample_w_perpq / cm/cm,
-		pop.sample_h * pop.sample_h / cm/cm });
+		dMultSample * pop.sample_w_q * pop.sample_w_q / cm/cm,
+		dMultSample * pop.sample_w_perpq * pop.sample_w_perpq / cm/cm,
+		var_uniform * pop.sample_h * pop.sample_h / cm/cm });
 
+	// without this rotation the sample x axis is not
+	// generally along Q, but the bisector of ki and kf
 	if(pop.bSampleInOrientedSys)
 	{
-		t_mat sample_rot = tl::rotation_matrix_3d_z((-Q_vec0 + Q_bisector)/rads);
+		//t_mat sample_rot = tl::rotation_matrix_3d_z<t_mat>((-Q_vec0 + Q_bisector)/rads);
+		// sample rotation in the bisector system
+		t_mat sample_rot = tl::rotation_matrix_3d_z<t_mat>(-bisector_to_thetas/rads);
 		sample_dims = tl::transform<t_mat>(sample_dims, sample_rot, true);
 	}
 
-	//std::cout << "thetas: " << pop.thetas/rads/M_PI*180. << std::endl;
-	//std::cout << "sample dims at " << Q_vec0/rads/M_PI*180. << ": " << sample_dims << std::endl;
+	//std::cout << "bisector to thetas: " << bisector_to_thetas/rads/M_PI*180. << std::endl;
+	//std::cout << "sample dims: " << sample_dims << std::endl;
 
 	// --------------------------------------------------------------------
 	// instrument property matrices
@@ -263,19 +277,13 @@ ResoResults calc_pop(const PopParams& pop)
 	A_div_kikf_trafo(POP_KF_Y, POP_POSTSAMPLE_H) = pop.kf * angs;
 	A_div_kikf_trafo(POP_KF_Z, POP_POSTSAMPLE_V) = sign_z * pop.kf * angs;
 
-	// covariance matrix of component geometries, S, [pop75], Appendices 2 and 3
-	// uniform distribution variance = L^2/12, see: https://en.wikipedia.org/wiki/Continuous_uniform_distribution
-	// circular distribution variance = R^2/4 = D^2/16, see: https://en.wikipedia.org/wiki/Wigner_semicircle_distribution
-	// these factors are used to approximate a uniform or circular variance by a gaussian variance
-	t_real var_uniform = t_real(1. / 12.);
-	t_real var_circular = t_real(1. / 16.);
 	t_real dMultSrc = pop.bSrcRect ? var_uniform : var_circular;
 	t_real dMultMono = var_uniform;
-	t_real dMultSample = pop.bSampleCub ? var_uniform : var_circular;
 	t_real dMultAna = var_uniform;
 	t_real dMultDet = pop.bDetRect ? var_uniform : var_circular;
 	t_real dMultMonitor = pop.bMonitorRect ? var_uniform : var_circular;
 
+	// covariance matrix of component geometries, S, [pop75], Appendices 2 and 3
 	t_mat SI_geo = tl::zero_matrix(POP_NUM_POS, POP_NUM_POS);
 	SI_geo(POP_SRC_Y, POP_SRC_Y) = dMultSrc * pop.src_w*pop.src_w /cm/cm;
 	SI_geo(POP_SRC_Z, POP_SRC_Z) = dMultSrc * pop.src_h*pop.src_h /cm/cm;
@@ -284,16 +292,15 @@ ResoResults calc_pop(const PopParams& pop)
 	SI_geo(POP_MONO_Y, POP_MONO_Y) = dMultMono * pop.mono_w*pop.mono_w /cm/cm;
 	SI_geo(POP_MONO_Z, POP_MONO_Z) = dMultMono * pop.mono_h*pop.mono_h /cm/cm;
 
-	t_real dMultSampleXZ = std::sqrt(dMultSample)*std::sqrt(var_uniform);
-	SI_geo(POP_SAMPLE_X, POP_SAMPLE_X) = dMultSample   * sample_dims(0, 0);
-	SI_geo(POP_SAMPLE_X, POP_SAMPLE_Y) = dMultSample   * sample_dims(0, 1);
-	SI_geo(POP_SAMPLE_X, POP_SAMPLE_Z) = dMultSampleXZ * sample_dims(0, 2);
-	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_X) = dMultSample   * sample_dims(1, 0);
-	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = dMultSample   * sample_dims(1, 1);
-	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_Z) = dMultSampleXZ * sample_dims(1, 2);
-	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_X) = dMultSampleXZ * sample_dims(2, 0);
-	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Y) = dMultSampleXZ * sample_dims(2, 1);
-	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = var_uniform   * sample_dims(2, 2);
+	SI_geo(POP_SAMPLE_X, POP_SAMPLE_X) = sample_dims(0, 0);
+	SI_geo(POP_SAMPLE_X, POP_SAMPLE_Y) = sample_dims(0, 1);
+	SI_geo(POP_SAMPLE_X, POP_SAMPLE_Z) = sample_dims(0, 2);
+	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_X) = sample_dims(1, 0);
+	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = sample_dims(1, 1);
+	SI_geo(POP_SAMPLE_Y, POP_SAMPLE_Z) = sample_dims(1, 2);
+	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_X) = sample_dims(2, 0);
+	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Y) = sample_dims(2, 1);
+	SI_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = sample_dims(2, 2);
 
 	SI_geo(POP_ANA_X, POP_ANA_X) = dMultAna * pop.ana_thick*pop.ana_thick /cm/cm;
 	SI_geo(POP_ANA_Y, POP_ANA_Y) = dMultAna * pop.ana_w*pop.ana_w /cm/cm;

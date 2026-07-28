@@ -560,10 +560,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	//--------------------------------------------------------------------------
 	// integrate over sample shape
 	//--------------------------------------------------------------------------
-	// sample rotation
-	t_mat T_E = ublas::identity_matrix<t_real>(3);
-	if(eck.bSampleInOrientedSys)
-		T_E = tl::rotation_matrix_3d_z(-Q_vec0/rads);
+	// sample rotation, TODO: check
 
 	// cuboid sample integration, page 16 in [end25]
 	t_real sample_var[3] = { 6., 6., 6. };
@@ -576,13 +573,23 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		V_sample = pi * 0.5*eck.sample_w_perpq * 0.5*eck.sample_w_q * eck.sample_h;
 	}
 
-	// equ. 5.4 in [end25]
-	t_mat matN = matK;
-	matN += tl::transform<t_mat>(tl::diag_matrix<t_mat>({
+	t_mat sample_dims = tl::diag_matrix<t_mat>({
 		sample_var[0] / (eck.sample_w_q*eck.sample_w_q /angs/angs),
 		sample_var[1] / (eck.sample_w_perpq*eck.sample_w_perpq /angs/angs),
-		sample_var[2] / (eck.sample_h*eck.sample_h /angs/angs) }),
-		ublas::trans(T_E), true);
+		sample_var[2] / (eck.sample_h*eck.sample_h /angs/angs)
+	});
+	//sample_dims = tl::transform<t_mat>(sample_dims, Dalph_i, true);
+
+	t_mat T_E = ublas::identity_matrix<t_real>(3);
+	if(eck.bSampleInOrientedSys)
+	{
+		T_E = tl::rotation_matrix_3d_z<t_mat>(/*-Q_vec0/rads*/ -eck.thetas/rads + pi/t_real(2));
+		sample_pos = ublas::prod(ublas::trans(T_E), sample_pos);
+	}
+
+	// equ. 5.4 in [end25]
+	t_mat matN = matK;
+	matN += tl::transform<t_mat>(sample_dims, ublas::trans(T_E), true);
 
 	t_real detN = tl::determinant(matN);
 	//t_mat Nadj = tl::adjugate(matN, true);
@@ -606,7 +613,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	// page 15 in [end25]
 	Z *= std::sqrt(pi*pi*pi / detN);
-	Z *= std::sqrt(6.*6.*6. / pi*pi*pi);
+	Z *= std::sqrt(6.*6.*6. / pi/pi/pi);
 
 	// normalise R0 to sample volume (TODO: already taken care of?)
 	if(eck.flags & NORM_TO_SAMPLE)
