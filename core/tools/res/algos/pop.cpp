@@ -139,12 +139,17 @@ ResoResults calc_pop(const PopParams& pop)
 	if(pop.twotheta/rads < t_real(0))
 		manually_changed_sense = t_real(-1);
 
+	// angles
 	angle twotheta = pop.twotheta * pop.dsample_sense;
 	angle thetaa = pop.thetaa * pop.dana_sense;
 	angle thetam = pop.thetam * pop.dmono_sense;
 	angle ki_Q = pop.angle_ki_Q * pop.dsample_sense * manually_changed_sense;
 	angle kf_Q = pop.angle_kf_Q * pop.dsample_sense * manually_changed_sense;
 	angle Q_vec0 = pop.thetas + ki_Q - pi/t_real(2)*rads;
+	// angle to rotate Q into the bisector of ki and kf
+	angle Q_bisector = ((pi*rads + kf_Q) + ki_Q)/2.;
+	if(pop.dsample_sense * manually_changed_sense > 0.)
+		Q_bisector = Q_bisector - pi*rads;
 
 	// B matrix, [pop75], Appendix 1 -> U matrix in CN
 	t_mat B_trafo_QE = get_trafo_dkidkf_dQdE(ki_Q, kf_Q, pop.ki, pop.kf);
@@ -173,14 +178,16 @@ ResoResults calc_pop(const PopParams& pop)
 		ana_mosaic_v = pop.ana_mosaic;
 
 	// sample extents
+	// without the rotation below the sample x axis is not
+	// generally along Q, but the bisector of ki and kf
 	t_mat sample_dims = tl::diag_matrix<t_mat>({
-			pop.sample_w_q * pop.sample_w_q / cm/cm,
-			pop.sample_w_perpq * pop.sample_w_perpq / cm/cm,
-			pop.sample_h * pop.sample_h / cm/cm });
+		pop.sample_w_q * pop.sample_w_q / cm/cm,
+		pop.sample_w_perpq * pop.sample_w_perpq / cm/cm,
+		pop.sample_h * pop.sample_h / cm/cm });
 
 	if(pop.bSampleInOrientedSys)
 	{
-		t_mat sample_rot = tl::rotation_matrix_3d_z(Q_vec0/rads);
+		t_mat sample_rot = tl::rotation_matrix_3d_z((-Q_vec0 + Q_bisector)/rads);
 		sample_dims = tl::transform<t_mat>(sample_dims, sample_rot, true);
 	}
 

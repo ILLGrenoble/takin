@@ -1703,6 +1703,9 @@
           </item>
           <item row="1" column="0">
            <widget class="QRadioButton" name="radioSampleKi">
+            <property name="toolTip">
+             <string>The sample dimensions are given in the system of the scattering plane orientation vectors.</string>
+            </property>
             <property name="text">
              <string>x along Orient1</string>
             </property>
@@ -1716,6 +1719,9 @@
           </item>
           <item row="1" column="1">
            <widget class="QRadioButton" name="radioSampleQ">
+            <property name="toolTip">
+             <string>The sample dimensions are given in the (Q_∥, Q_⟂, Q_up) system.</string>
+            </property>
             <property name="text">
              <string>x along Q</string>
             </property>

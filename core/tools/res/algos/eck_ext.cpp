@@ -563,7 +563,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// sample rotation
 	t_mat T_E = ublas::identity_matrix<t_real>(3);
 	if(eck.bSampleInOrientedSys)
-		T_E = tl::rotation_matrix_3d_z(Q_vec0/rads);
+		T_E = tl::rotation_matrix_3d_z(-Q_vec0/rads);
 
 	// cuboid sample integration, page 16 in [end25]
 	t_real sample_var[3] = { 6., 6., 6. };
