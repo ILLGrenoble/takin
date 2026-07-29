@@ -116,6 +116,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		// eck
 		spinMonoMosaicV, spinSampleMosaicV, spinAnaMosaicV,
 		spinSamplePosX, spinSamplePosY, spinSamplePosZ,
+		spinSampleRotationZ,
 
 		// vio
 		spinDistTofPulseMono, spinDistTofMonoSample, spinDistTofSampleDet,
@@ -164,6 +165,7 @@ ResoDlg::ResoDlg(QWidget *pParent, QSettings* pSettings)
 		// eck
 		"reso/eck_mono_mosaic_v", "reso/eck_sample_mosaic_v", "reso/eck_ana_mosaic_v",
 		"reso/eck_sample_pos_x", "reso/eck_sample_pos_y", "reso/eck_sample_pos_z",
+		"reso/eck_sample_rot_z",
 
 		// vio
 		"reso/viol_dist_pulse_mono", "reso/viol_dist_mono_sample", "reso/viol_dist_sample_det",

@@ -360,6 +360,7 @@ bool TASReso::LoadRes(const char* pcXmlFile)
 	m_reso.pos_x = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_x").c_str(), 0.)*cm;
 	m_reso.pos_y = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_y").c_str(), 0.)*cm;
 	m_reso.pos_z = xml.Query<t_real>((strXmlRoot + "reso/eck_sample_pos_z").c_str(), 0.)*cm;
+	m_reso.sample_rot_z = tl::d2r(xml.Query<t_real>((strXmlRoot + "reso/eck_sample_rot_z").c_str(), 0.))*rads;
 	// for compatibility with old version
 	if(xml.Query<int>((strXmlRoot+"reso/scatter_kf_vert").c_str(), 0) != 0)
 		m_reso.angle_kf = t_real_reso(0.5)*tl::get_pi<t_real_reso>() * rads;

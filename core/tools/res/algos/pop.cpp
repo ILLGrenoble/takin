@@ -195,6 +195,10 @@ ResoResults calc_pop(const PopParams& pop)
 		dMultSample * pop.sample_w_perpq * pop.sample_w_perpq / cm/cm,
 		var_uniform * pop.sample_h * pop.sample_h / cm/cm });
 
+	// internal sample rotation
+	t_mat sample_obj_rot = tl::rotation_matrix_3d_z<t_mat>(pop.sample_rot_z/rads);
+	sample_dims = tl::transform<t_mat>(sample_dims, sample_obj_rot, true);
+
 	// without this rotation the sample x axis is not
 	// generally along Q, but the bisector of ki and kf
 	if(pop.bSampleInOrientedSys)

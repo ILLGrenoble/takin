@@ -241,6 +241,7 @@ void ResoDlg::Calc()
 		tas.pos_y = t_real_reso(spinSamplePosY->value()) * cm;
 		tas.pos_z = t_real_reso(spinSamplePosZ->value()) * cm;
 		tas.angle_kf = tl::d2r(t_real_reso(spinScatterKfAngle->value())) * rads;
+		tas.sample_rot_z = tl::d2r(t_real_reso(spinSampleRotationZ->value())) * rads;
 
 		// TODO
 		tas.mono_numtiles_h = 1;

@@ -244,12 +244,16 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	if(eck.twotheta/rads < t_real(0))
 		manually_changed_sense = t_real(-1);
 
+	// angles, same as in pop.cpp
 	angle twotheta = eck.twotheta * eck.dsample_sense;
 	angle thetaa = eck.thetaa * eck.dana_sense;
 	angle thetam = eck.thetam * eck.dmono_sense;
 	angle ki_Q = eck.angle_ki_Q * eck.dsample_sense * manually_changed_sense;
 	angle kf_Q = eck.angle_kf_Q * eck.dsample_sense * manually_changed_sense;
 	angle Q_vec0 = eck.thetas + ki_Q - pi/t_real(2)*rads;
+	angle Q_bisector = ((pi*rads + kf_Q) + ki_Q)/2.;
+	if(eck.dsample_sense * manually_changed_sense > 0.)
+		Q_bisector = Q_bisector - pi*rads;
 	//kf_Q = ki_Q + twotheta;
 
 
@@ -578,12 +582,17 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		sample_var[1] / (eck.sample_w_perpq*eck.sample_w_perpq /angs/angs),
 		sample_var[2] / (eck.sample_h*eck.sample_h /angs/angs)
 	});
+
+	// internal sample rotation
+	t_mat sample_obj_rot = tl::rotation_matrix_3d_z<t_mat>(eck.sample_rot_z/rads);
+	sample_dims = tl::transform<t_mat>(sample_dims, sample_obj_rot, true);
+
 	//sample_dims = tl::transform<t_mat>(sample_dims, Dalph_i, true);
 
 	t_mat T_E = ublas::identity_matrix<t_real>(3);
 	if(eck.bSampleInOrientedSys)
 	{
-		T_E = tl::rotation_matrix_3d_z<t_mat>(/*-Q_vec0/rads*/ -eck.thetas/rads + pi/t_real(2));
+		T_E = tl::rotation_matrix_3d_z<t_mat>((eck.thetas + Q_bisector /*- pi/t_real(2)*/)/rads);
 		sample_pos = ublas::prod(ublas::trans(T_E), sample_pos);
 	}
 

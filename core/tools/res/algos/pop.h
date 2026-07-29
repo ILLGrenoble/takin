@@ -65,6 +65,7 @@ struct PopParams : public CNParams
 	tl::t_length_si<t_real_reso> sample_w_q;
 	tl::t_length_si<t_real_reso> sample_w_perpq;
 	tl::t_length_si<t_real_reso> sample_h;
+	tl::t_angle_si<t_real_reso> sample_rot_z;
 
 	bool bSrcRect = true;
 	tl::t_length_si<t_real_reso> src_w;
