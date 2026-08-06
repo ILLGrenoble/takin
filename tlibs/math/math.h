@@ -373,6 +373,10 @@ T lorentz_model_amp(T x, T x0, T hwhm, T amp, T offs)
 }
 
 
+/**
+ * gaussian distribution
+ * @see https://en.wikipedia.org/wiki/Gaussian_function
+ */
 template<class T=double>
 T gauss_model_amp_slope(T x, T x0, T sigma, T amp, T offs, T slope)
 {
@@ -380,6 +384,10 @@ T gauss_model_amp_slope(T x, T x0, T sigma, T amp, T offs, T slope)
 }
 
 
+/**
+ * lorentzian distribution
+ * @see https://en.wikipedia.org/wiki/Cauchy_distribution
+ */
 template<class T=double>
 T lorentz_model_amp_slope(T x, T x0, T hwhm, T amp, T offs, T slope)
 {
@@ -402,6 +410,19 @@ T parabola_model(T x, T x0, T amp, T offs)
  */
 template<class T=double>
 T rect_model(T x, T x0, T hw, T amp, T offs)
+{
+	if(x - hw < x0 || x + hw > x0)
+		return offs;
+	else
+		return amp/(T(2)*hw) + offs;
+}
+
+
+/**
+ * rectangular distribution
+ */
+template<class T=double>
+T rect_model_amp(T x, T x0, T hw, T amp, T offs)
 {
 	if(x - hw < x0 || x + hw > x0)
 		return offs;
