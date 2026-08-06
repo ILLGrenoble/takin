@@ -173,8 +173,14 @@ t_real MagnonMod::operator()(t_real h, t_real k, t_real l, t_real E) const
 	// incoherent peak
 	t_real incoh = 0.;
 	if(!tl::float_equal(m_incoh_amp, t_real(0)))
-		incoh = tl::gauss_model(E, t_real(0),
-			m_incoh_sigma, m_incoh_amp, t_real(0));
+	{
+		if(m_incoh_lineshape == 0)
+			incoh = tl::gauss_model(E, t_real(0), m_incoh_sigma, m_incoh_amp, t_real(0));
+		else if(m_incoh_lineshape == 1)
+			incoh = tl::lorentz_model(E, t_real(0), m_incoh_sigma, m_incoh_amp, t_real(0));
+		else if(m_incoh_lineshape == 2)
+			incoh = tl::rect_model(E, t_real(0), m_incoh_sigma, m_incoh_amp, t_real(0));
+	}
 
 	// magnon peaks
 	t_real S = 0.;
@@ -222,6 +228,8 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"lineshape", "int", tl::var_to_str(m_lineshape)});
 	vars.push_back(SqwBase::t_var{
 		"sigma", "real", tl::var_to_str(m_sigma)});
+	vars.push_back(SqwBase::t_var{
+		"inc_lineshape", "int", tl::var_to_str(m_incoh_lineshape)});
 	vars.push_back(SqwBase::t_var{
 		"inc_amp", "real", tl::var_to_str(m_incoh_amp)});
 	vars.push_back(SqwBase::t_var{
@@ -297,6 +305,8 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_lineshape = tl::str_to_var<int>(strVal);
 		else if(strVar == "sigma")
 			m_sigma = tl::str_to_var<t_real>(strVal);
+		else if(strVar == "inc_lineshape")
+			m_incoh_lineshape = tl::str_to_var<int>(strVal);
 		else if(strVar == "inc_amp")
 			m_incoh_amp = tl::str_to_var<decltype(m_incoh_amp)>(strVal);
 		else if(strVar == "inc_sigma")
@@ -436,6 +446,7 @@ SqwBase* MagnonMod::shallow_copy() const
 
 	mod->m_lineshape = this->m_lineshape;
 	mod->m_sigma = this->m_sigma;
+	mod->m_incoh_lineshape = this->m_incoh_lineshape;
 	mod->m_incoh_amp = this->m_incoh_amp;
 	mod->m_incoh_sigma = this->m_incoh_sigma;
 	mod->m_S0 = this->m_S0;
