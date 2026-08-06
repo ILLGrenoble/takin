@@ -180,8 +180,15 @@ t_real MagnonMod::operator()(t_real h, t_real k, t_real l, t_real E) const
 	t_real S = 0.;
 	for(std::size_t iE = 0; iE < Es.size(); ++iE)
 	{
-		if(!tl::float_equal(Ws[iE], t_real(0)))
+		if(tl::float_equal(Ws[iE], t_real(0)))
+			continue;
+
+		if(m_lineshape == 0)
 			S += tl::gauss_model(E, Es[iE], m_sigma, Ws[iE], t_real(0));
+		else if(m_lineshape == 1)
+			S += tl::lorentz_model(E, Es[iE], m_sigma, Ws[iE], t_real(0));
+		else if(m_lineshape == 2)
+			S += tl::rect_model(E, Es[iE], m_sigma, Ws[iE], t_real(0));
 	}
 
 	return m_S0*S*bose + incoh;
@@ -211,6 +218,8 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		B = std::vector<t_real>{{ 0., 0., 1. }};
 	}
 
+	vars.push_back(SqwBase::t_var{
+		"lineshape", "int", tl::var_to_str(m_lineshape)});
 	vars.push_back(SqwBase::t_var{
 		"sigma", "real", tl::var_to_str(m_sigma)});
 	vars.push_back(SqwBase::t_var{
@@ -284,7 +293,9 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 		const std::string& strVar = std::get<0>(var);
 		const std::string& strVal = std::get<2>(var);
 
-		if(strVar == "sigma")
+		if(strVar == "lineshape")
+			m_lineshape = tl::str_to_var<int>(strVal);
+		else if(strVar == "sigma")
 			m_sigma = tl::str_to_var<t_real>(strVal);
 		else if(strVar == "inc_amp")
 			m_incoh_amp = tl::str_to_var<decltype(m_incoh_amp)>(strVal);
@@ -423,6 +434,7 @@ SqwBase* MagnonMod::shallow_copy() const
 {
 	MagnonMod *mod = new MagnonMod();
 
+	mod->m_lineshape = this->m_lineshape;
 	mod->m_sigma = this->m_sigma;
 	mod->m_incoh_amp = this->m_incoh_amp;
 	mod->m_incoh_sigma = this->m_incoh_sigma;

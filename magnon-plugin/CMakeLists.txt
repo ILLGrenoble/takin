@@ -90,7 +90,7 @@ include_directories(core)
 
 add_library(magnonmod SHARED
 	src/magnonmod.cpp src/magnonmod.h
-	tlibs2/libs/magdyn.h
+	mag-core/libs/magdyn.h
 	tlibs2/libs/maths.h
 
 	tlibs/log/log.cpp

@@ -30,7 +30,7 @@
 #define __MAGNON_SQW_MOD_H__
 
 #include "core/tools/monteconvo/sqwbase.h"
-#include "tlibs2/libs/magdyn.h"
+#include "mag-core/libs/magdyn.h"
 
 
 class MagnonMod : public SqwBase
@@ -48,7 +48,7 @@ class MagnonMod : public SqwBase
 		using t_vec_cplx = tl2::vec<t_cplx, std::vector>;
 		using t_mat_cplx = tl2::mat<t_cplx, std::vector>;
 
-		using t_magdyn = tl2_mag::MagDyn<
+		using t_magdyn = magdyn::MagDyn<
 			t_mat_cplx, t_vec_cplx,
 			t_mat_real, t_vec_real,
 			t_cplx, t_real, t_size>;
@@ -59,6 +59,7 @@ class MagnonMod : public SqwBase
 
 		// peak width
 		t_real m_sigma = t_real(0.025);
+		int m_lineshape = 0;  // 0: gaussian, 1: lorentzian, 2: rectangular
 
 		// S(q, E) scaling factor
 		t_real m_S0 = t_real(1.);

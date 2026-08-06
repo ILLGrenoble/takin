@@ -329,7 +329,7 @@ static const double FWHM2SIGMA = 1./SIGMA2FWHM;
 
 
 /**
- * gaussian
+ * gaussian distribution
  * @see https://en.wikipedia.org/wiki/Gaussian_function
  */
 template<class T=double>
@@ -340,6 +340,10 @@ T gauss_model(T x, T x0, T sigma, T amp, T offs)
 }
 
 
+/**
+ * gaussian distribution
+ * @see https://en.wikipedia.org/wiki/Gaussian_function
+ */
 template<class T=double>
 T gauss_model_amp(T x, T x0, T sigma, T amp, T offs)
 {
@@ -348,7 +352,18 @@ T gauss_model_amp(T x, T x0, T sigma, T amp, T offs)
 
 
 /**
- * lorentzian
+ * lorentzian distribution
+ * @see https://en.wikipedia.org/wiki/Cauchy_distribution
+ */
+template<class T=double>
+T lorentz_model(T x, T x0, T hwhm, T amp, T offs)
+{
+	return amp*hwhm/get_pi<T>() / ((x-x0)*(x-x0) + hwhm*hwhm) + offs;
+}
+
+
+/**
+ * lorentzian distribution
  * @see https://en.wikipedia.org/wiki/Cauchy_distribution
  */
 template<class T=double>
@@ -372,10 +387,26 @@ T lorentz_model_amp_slope(T x, T x0, T hwhm, T amp, T offs, T slope)
 }
 
 
+/**
+ * parabolic distribution
+ */
 template<class T=double>
 T parabola_model(T x, T x0, T amp, T offs)
 {
 	return amp*(x-x0)*(x-x0) + offs;
+}
+
+
+/**
+ * rectangular distribution
+ */
+template<class T=double>
+T rect_model(T x, T x0, T hw, T amp, T offs)
+{
+	if(x - hw < x0 || x + hw > x0)
+		return offs;
+	else
+		return amp + offs;
 }
 
 
