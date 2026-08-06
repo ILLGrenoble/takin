@@ -67,6 +67,7 @@ class MagnonMod : public SqwBase
 		// incoherent amplitude and width
 		t_real m_incoh_amp = t_real(0.);
 		t_real m_incoh_sigma = t_real(0.025);
+		int m_incoh_lineshape = 0;  // 0: gaussian, 1: lorentzian, 2: rectangular
 
 		// polarisation channel, -1: unpolarised
 		int m_channel{-1};
