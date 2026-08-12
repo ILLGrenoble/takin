@@ -42,11 +42,11 @@ class MagnonMod : public SqwBase
 		using t_real = t_real_reso;
 		using t_cplx = std::complex<t_real>;
 
-		using t_vec_real = tl2::vec<t_real, std::vector>;
-		using t_mat_real = tl2::mat<t_real, std::vector>;
+		using t_vec_real = tl2::vec<t_real>;
+		using t_mat_real = tl2::mat<t_real>;
 
-		using t_vec_cplx = tl2::vec<t_cplx, std::vector>;
-		using t_mat_cplx = tl2::mat<t_cplx, std::vector>;
+		using t_vec_cplx = tl2::vec<t_cplx>;
+		using t_mat_cplx = tl2::mat<t_cplx>;
 
 		using t_magdyn = magdyn::MagDyn<
 			t_mat_cplx, t_vec_cplx,
