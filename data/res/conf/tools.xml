@@ -40,7 +40,8 @@
 	<entry_6>
 		<type>program</type>
 		<name>Brillouin Zones...</name>
-		<program>takin_bz</program>
+		<program>magpie</program>
+		<arguments>--bz</arguments>
 		<mandatory>1</mandatory>
 	</entry_6>
 

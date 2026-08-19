@@ -661,6 +661,7 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 			{
 				std::string toolname = propTools.Query<std::string>(xmlpath + "/name", "");
 				std::string toolprog = propTools.Query<std::string>(xmlpath + "/program", "");
+				std::string toolargs = propTools.Query<std::string>(xmlpath + "/arguments", "");
 				if(toolname == "")
 				{
 					tl::log_err("Invalid tool name");
@@ -676,11 +677,11 @@ TazDlg::TazDlg(QWidget* pParent, const std::string& strLogFile)
 				QAction *actionTool = new QAction(toolname.c_str(), this);
 				pMenuTools->addAction(actionTool);
 				bJustAddedSeparator = false;
-				QObject::connect(actionTool, &QAction::triggered, [toolbin]()
+				QObject::connect(actionTool, &QAction::triggered, [toolbin, toolargs]()
 				{
 					// run exernal tool process
-					tl::log_debug("Running process \"", toolbin, "\"...");
-					tl::PipeProc<char> proc(("\"" + toolbin + "\"&").c_str(), false);
+					tl::log_debug("Running process \"", toolbin, " ", toolargs, "\"...");
+					tl::PipeProc<char> proc(("\"" + toolbin + "\"" + " " + toolargs + "&").c_str(), false);
 					if(!proc.IsReady())
 						tl::log_err("Process \"", toolbin, "\" could not be created.");
 				});

@@ -68,6 +68,7 @@ static bool check_tools()
 
 		std::string toolname = propTools.Query<std::string>(xmlpath + "/name", "");
 		std::string toolprog = propTools.Query<std::string>(xmlpath + "/program", "");
+		std::string toolargs = propTools.Query<std::string>(xmlpath + "/arguments", "");
 		bool toolmand = propTools.Query<bool>(xmlpath + "/mandatory", false);
 		if(toolname == "")
 		{
@@ -89,12 +90,14 @@ static bool check_tools()
 			}
 			continue;
 		}
+		if(toolargs != "")
+			toolargs = " " + toolargs;
 
 		// run exernal tool process
-		tl::log_debug("Running integrity check for process \"", toolbin, "\"...");
-		if(std::system(("\"" + toolbin + "\" --healthcheck").c_str()) != 0)
+		tl::log_debug("Running integrity check for process \"", toolbin, "\"", toolargs, "...");
+		if(std::system(("\"" + toolbin + "\" " + toolargs + " --healthcheck").c_str()) != 0)
 		{
-			tl::log_err("Integrity check for process \"", toolbin, "\" failed.");
+			tl::log_err("Integrity check for process \"", toolbin, "\"", toolargs, " failed.");
 			ok = false;
 		}
 	}
