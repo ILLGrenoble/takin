@@ -99,8 +99,8 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	if(m_is_powder)
 	{
 		// get Q length in A^(-1)
-		const t_mat_real& B = m_dyn.GetCrystalBTrafo();
-		t_vec_real Qvec_invA = B * tl2::create<t_vec_real>({ h, k, l });
+		const t_mat33_real& B = m_dyn.GetCrystalBTrafo();
+		t_vec3_real Qvec_invA = B * tl2::create<t_vec3_real>({ h, k, l });
 		t_real Q_invA = tl2::norm(Qvec_invA);
 
 		t_size num_modes = 0;
@@ -214,15 +214,10 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	// get external field
 	const t_magdyn::ExternalField& field = m_dyn.GetExternalField();
 	std::vector<t_real> B;
-	if(field.dir.size() == 3)
-	{
-		B = std::vector<t_real>{{
-			field.dir[0], field.dir[1], field.dir[2] }};
-	}
+	if(field.dir)
+		B = std::vector<t_real>{{ (*field.dir)[0], (*field.dir)[1], (*field.dir)[2] }};
 	else
-	{
 		B = std::vector<t_real>{{ 0., 0., 1. }};
-	}
 
 	vars.push_back(SqwBase::t_var{
 		"lineshape", "int", tl::var_to_str(m_lineshape)});
@@ -335,7 +330,7 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			if(dir.size() == 3)
 			{
 				t_magdyn::ExternalField field = m_dyn.GetExternalField();
-				field.dir = tl2::create<t_vec_real>({dir[0], dir[1], dir[2]});
+				field.dir = tl2::create<t_vec3_real>({dir[0], dir[1], dir[2]});
 
 				m_dyn.SetExternalField(field);
 				calc_sites = true;

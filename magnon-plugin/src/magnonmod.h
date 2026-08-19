@@ -42,59 +42,58 @@ class MagnonMod : public SqwBase
 		using t_real = t_real_reso;
 		using t_cplx = std::complex<t_real>;
 
-		using t_vec_real = tl2::vec<t_real>;
-		using t_mat_real = tl2::mat<t_real>;
-
 		using t_vec_cplx = tl2::vec<t_cplx>;
 		using t_mat_cplx = tl2::mat<t_cplx>;
 
 		using t_magdyn = magdyn::MagDyn<
 			t_mat_cplx, t_vec_cplx,
-			t_mat_real, t_vec_real,
 			t_cplx, t_real, t_size>;
+
+		using t_vec3_real = typename t_magdyn::t_vec3_real;
+		using t_mat33_real = typename t_magdyn::t_mat33_real;
 
 
 	protected:
 		t_magdyn m_dyn{};
 
 		// peak width
-		t_real m_sigma = t_real(0.025);
-		int m_lineshape = 0;  // 0: gaussian, 1: lorentzian, 2: rectangular
+		t_real m_sigma { t_real(0.025) };
+		int m_lineshape { 0 };  // 0: gaussian, 1: lorentzian, 2: rectangular
 
 		// S(q, E) scaling factor
-		t_real m_S0 = t_real(1.);
+		t_real m_S0 { t_real(1.) };
 
 		// incoherent amplitude and width
-		t_real m_incoh_amp = t_real(0.);
-		t_real m_incoh_sigma = t_real(0.025);
-		int m_incoh_lineshape = 0;  // 0: gaussian, 1: lorentzian, 2: rectangular
+		t_real m_incoh_amp { t_real(0.) };
+		t_real m_incoh_sigma { t_real(0.025) };
+		int m_incoh_lineshape { 0 };  // 0: gaussian, 1: lorentzian, 2: rectangular
 
 		// polarisation channel, -1: unpolarised
-		int m_channel{-1};
+		int m_channel { -1 };
 		// mode index, -1: all
-		int m_mode_idx{-1};
+		int m_mode_idx { -1 };
 
 		// use model's implementation of the bose factor
 		bool m_use_model_bose{false};
 		// temperature
-		t_real m_T{300};
+		t_real m_T { 300 };
 
 		// unit cell from 0 to 1 (or from -0.5 to 0.5)?
-		bool m_uc_01{false};
+		bool m_uc_01 { false };
 
 		// rotate spin-spin correlation matrix
-		bool m_use_polcoords{false};
+		bool m_use_polcoords { false };
 
 		// use powder calculation (otherwise single crystal)?
-		bool m_is_powder{false};
+		bool m_is_powder { false };
 
 		// number of Q points to use for powder
-		unsigned int m_powder_Qs{512};
+		unsigned int m_powder_Qs { 512 };
 
 
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		// for quickly flipping coordinates
-		std::vector<t_real> m_Qsigns = { 1., 1., 1. };
+		std::vector<t_real> m_Qsigns { 1., 1., 1. };
 #endif
 
 
