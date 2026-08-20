@@ -91,8 +91,11 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	}
 #endif
 
+	// Q in rlu
+	const t_vec3_real Q = tl2::create<t_vec3_real>({ h, k, l });
+
 	// calculate dispersion relation
-	std::vector<typename t_magdyn::EnergiesAndWeights> all_modes;
+	std::vector<EnergiesAndWeights> all_modes;
 	std::vector<t_real> energies;
 	std::vector<t_real> weights;
 
@@ -100,7 +103,7 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	{
 		// get Q length in A^(-1)
 		const t_mat33_real& B = m_dyn.GetCrystalBTrafo();
-		t_vec3_real Qvec_invA = B * tl2::create<t_vec3_real>({ h, k, l });
+		t_vec3_real Qvec_invA = B * Q;
 		t_real Q_invA = tl2::norm(Qvec_invA);
 
 		t_size num_modes = 0;
@@ -116,14 +119,47 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	}
 	else  // single crystal
 	{
-		all_modes.emplace_back(m_dyn.CalcEnergies(h, k, l, false));
+		// main modes
+		t_real main_population = std::clamp<t_real>(m_twinning_fraction, 0., 1.);
+		{
+			EnergiesAndWeights E_and_S = m_dyn.CalcEnergies(Q, false).E_and_S;
+			if(m_use_twinning)
+			{
+				for(auto& mode : E_and_S)
+				{
+					mode.S_perp *= main_population;
+					mode.weight_perp *= main_population;
+				}
+			}
+
+			all_modes.emplace_back(std::move(E_and_S));
+		}
+
+		// twinned modes
+		if(m_use_twinning)
+		{
+			t_real twin_population = 1. - main_population;
+
+			t_vec3_real hkl_rot = m_dyn.RotateQ(Q,
+				m_twinning_axis, m_twinning_angle / 180. * tl::get_pi<t_real>());
+
+			EnergiesAndWeights E_and_S = m_dyn.CalcEnergies(hkl_rot, false).E_and_S;
+			for(auto& mode : E_and_S)
+			{
+				mode.S_perp *= twin_population;
+				mode.weight_perp *= twin_population;
+			}
+
+			all_modes.emplace_back(std::move(E_and_S));
+		}
+
 		energies.reserve(all_modes[0].size());
 		weights.reserve(all_modes[0].size());
 	}
 
 	// add a mode
 	auto push_mode = [this, &energies, &weights](
-		const typename t_magdyn::EnergiesAndWeights& modes, std::size_t mode_idx)
+		const EnergiesAndWeights& modes, std::size_t mode_idx)
 	{
 		if(mode_idx >= modes.size())
 			return;
@@ -259,7 +295,15 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"powder", "int", tl::var_to_str((int)m_is_powder)});
 	vars.push_back(SqwBase::t_var{
 		"powder_num_Qs", "uint", tl::var_to_str(m_powder_Qs)});
-#ifdef MAGNONMOD_ALLOW_QSIGNS
+	vars.push_back(SqwBase::t_var{
+		"twinning_enabled", "int", tl::var_to_str((int)m_use_twinning)});
+	vars.push_back(SqwBase::t_var{
+		"twinning_axis", "vector", vec_to_str(m_twinning_axis)});
+	vars.push_back(SqwBase::t_var{
+		"twinning_angle", "real", tl::var_to_str(m_twinning_angle)});
+	vars.push_back(SqwBase::t_var{
+		"twinning_fraction", "real", tl::var_to_str(m_twinning_fraction)});
+	#ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
 #endif
@@ -330,7 +374,7 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			if(dir.size() == 3)
 			{
 				t_magdyn::ExternalField field = m_dyn.GetExternalField();
-				field.dir = tl2::create<t_vec3_real>({dir[0], dir[1], dir[2]});
+				field.dir = tl2::create<t_vec3_real>({ dir[0], dir[1], dir[2] });
 
 				m_dyn.SetExternalField(field);
 				calc_sites = true;
@@ -377,7 +421,21 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_is_powder = (tl::str_to_var<int>(strVal) != 0);
 		else if(strVar == "powder_num_Qs")
 			m_powder_Qs = tl::str_to_var<unsigned int>(strVal);
-#ifdef MAGNONMOD_ALLOW_QSIGNS
+		else if(strVar == "twinning_enabled")
+			m_use_twinning = (tl::str_to_var<int>(strVal) != 0);
+		else if(strVar == "twinning_axis")
+		{
+			std::vector<t_real> dir = str_to_vec<std::vector<t_real>>(strVal);
+			if(dir.size() == 3)
+				m_twinning_axis = tl2::create<t_vec3_real>({ dir[0], dir[1], dir[2] });
+			else
+				tl::log_err("Invalid twinning axis.");
+		}
+		else if(strVar == "twinning_angle")
+			m_twinning_angle = tl::str_to_var<decltype(m_twinning_angle)>(strVal);
+		else if(strVar == "twinning_fraction")
+			m_twinning_fraction = tl::str_to_var<decltype(m_twinning_fraction)>(strVal);
+		#ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{
 			std::vector<t_real> signs = str_to_vec<std::vector<t_real>>(strVal);
@@ -439,21 +497,32 @@ SqwBase* MagnonMod::shallow_copy() const
 {
 	MagnonMod *mod = new MagnonMod();
 
+	mod->m_dyn = this->m_dyn;
+
 	mod->m_lineshape = this->m_lineshape;
 	mod->m_sigma = this->m_sigma;
+	mod->m_S0 = this->m_S0;
+
 	mod->m_incoh_lineshape = this->m_incoh_lineshape;
 	mod->m_incoh_amp = this->m_incoh_amp;
 	mod->m_incoh_sigma = this->m_incoh_sigma;
-	mod->m_S0 = this->m_S0;
-	mod->m_dyn = this->m_dyn;
-	mod->m_channel = this->m_channel;
-	mod->m_mode_idx = this->m_mode_idx;
+
 	mod->m_use_model_bose = this->m_use_model_bose;
 	mod->m_T = this->m_T;
+
 	mod->m_uc_01 = this->m_uc_01;
 	mod->m_use_polcoords = this->m_use_polcoords;
+	mod->m_mode_idx = this->m_mode_idx;
+	mod->m_channel = this->m_channel;
+
 	mod->m_is_powder = this->m_is_powder;
 	mod->m_powder_Qs = this->m_powder_Qs;
+
+	mod->m_use_twinning = this->m_use_twinning;
+	mod->m_twinning_axis = this->m_twinning_axis;
+	mod->m_twinning_angle = this->m_twinning_angle;
+	mod->m_twinning_fraction = this->m_twinning_fraction;
+
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;
 #endif

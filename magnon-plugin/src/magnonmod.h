@@ -52,6 +52,8 @@ class MagnonMod : public SqwBase
 		using t_vec3_real = typename t_magdyn::t_vec3_real;
 		using t_mat33_real = typename t_magdyn::t_mat33_real;
 
+		using EnergiesAndWeights = typename t_magdyn::EnergiesAndWeights;
+
 
 	protected:
 		t_magdyn m_dyn{};
@@ -61,11 +63,11 @@ class MagnonMod : public SqwBase
 		int m_lineshape { 0 };  // 0: gaussian, 1: lorentzian, 2: rectangular
 
 		// S(q, E) scaling factor
-		t_real m_S0 { t_real(1.) };
+		t_real m_S0 { 1. };
 
 		// incoherent amplitude and width
-		t_real m_incoh_amp { t_real(0.) };
-		t_real m_incoh_sigma { t_real(0.025) };
+		t_real m_incoh_amp { 0. };
+		t_real m_incoh_sigma { 0.025 };
 		int m_incoh_lineshape { 0 };  // 0: gaussian, 1: lorentzian, 2: rectangular
 
 		// polarisation channel, -1: unpolarised
@@ -74,7 +76,7 @@ class MagnonMod : public SqwBase
 		int m_mode_idx { -1 };
 
 		// use model's implementation of the bose factor
-		bool m_use_model_bose{false};
+		bool m_use_model_bose{ false };
 		// temperature
 		t_real m_T { 300 };
 
@@ -89,6 +91,12 @@ class MagnonMod : public SqwBase
 
 		// number of Q points to use for powder
 		unsigned int m_powder_Qs { 512 };
+
+		// twinning
+		bool m_use_twinning { false };
+		t_vec3_real m_twinning_axis { 0., 0., 1 };
+		t_real m_twinning_angle { 5. };
+		t_real m_twinning_fraction { 0.5 };  // population factor for main grain
 
 
 #ifdef MAGNONMOD_ALLOW_QSIGNS
