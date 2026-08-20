@@ -33,7 +33,8 @@
 	<entry_5>
 		<type>program</type>
 		<name>Nuclear Stucture Factors...</name>
-		<program>takin_structfact</program>
+		<program>magpie</program>
+		<arguments>--structfact</arguments>
 		<mandatory>1</mandatory>
 	</entry_5>
 
@@ -59,7 +60,8 @@
 	<entry_9>
 		<type>program</type>
 		<name>Magnetic Stucture Factors...</name>
-		<program>takin_magstructfact</program>
+		<program>magpie</program>
+		<arguments>--magstructfact</arguments>
 		<mandatory>1</mandatory>
 	</entry_9>
 
