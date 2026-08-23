@@ -52,27 +52,27 @@
 
 	<entry_8>
 		<type>program</type>
+		<name>Magnetic Stucture Factors...</name>
+		<program>magpie</program>
+		<arguments>--magstructfact</arguments>
+		<mandatory>1</mandatory>
+	</entry_8>
+
+	<entry_9>
+		<type>program</type>
+		<name>Magnetic Dynamics [Magpie]...</name>
+		<program>magpie</program>
+		<mandatory>1</mandatory>
+	</entry_9>
+
+<!--
+	<entry_8>
+		<type>program</type>
 		<name>Magnetic Space Groups...</name>
 		<program>takin_magsgbrowser</program>
 		<mandatory>0</mandatory>
 	</entry_8>
 
-	<entry_9>
-		<type>program</type>
-		<name>Magnetic Stucture Factors...</name>
-		<program>magpie</program>
-		<arguments>--magstructfact</arguments>
-		<mandatory>1</mandatory>
-	</entry_9>
-
-	<entry_10>
-		<type>program</type>
-		<name>Magnetic Dynamics [Magpie]...</name>
-		<program>magpie</program>
-		<mandatory>1</mandatory>
-	</entry_10>
-
-<!--
 	<entry_11>
 		<type>separator</type>
 	</entry_11>
