@@ -119,8 +119,16 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 	}
 	else  // single crystal
 	{
-		// main modes
-		t_real main_population = std::clamp<t_real>(m_twinning_fraction, 0., 1.);
+		// main mode population
+		t_real main_population = 1.;
+		if(m_use_twinning)
+		{
+			for(t_real twinning_fraction : m_twinning_fractions)
+				main_population -= twinning_fraction;
+
+			main_population = std::clamp<t_real>(main_population, 0., 1.);
+		}
+
 		{
 			EnergiesAndWeights E_and_S = m_dyn.CalcEnergies(Q, false).E_and_S;
 			if(m_use_twinning)
@@ -138,19 +146,23 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 		// twinned modes
 		if(m_use_twinning)
 		{
-			t_real twin_population = 1. - main_population;
+			t_size num_twins = std::min(m_twinning_axes.size(), m_twinning_angles.size());
+			num_twins = std::min(num_twins, m_twinning_fractions.size());
 
-			t_vec3_real hkl_rot = m_dyn.RotateQ(Q,
-				m_twinning_axis, m_twinning_angle / 180. * tl::get_pi<t_real>());
-
-			EnergiesAndWeights E_and_S = m_dyn.CalcEnergies(hkl_rot, false).E_and_S;
-			for(auto& mode : E_and_S)
+			for(t_size twin = 0; twin < num_twins; ++twin)
 			{
-				mode.S_perp *= twin_population;
-				mode.weight_perp *= twin_population;
-			}
+				t_vec3_real hkl_rot = m_dyn.RotateQ(Q,
+					m_twinning_axes[twin], m_twinning_angles[twin] / 180. * tl::get_pi<t_real>());
 
-			all_modes.emplace_back(std::move(E_and_S));
+				EnergiesAndWeights E_and_S = m_dyn.CalcEnergies(hkl_rot, false).E_and_S;
+				for(auto& mode : E_and_S)
+				{
+					mode.S_perp *= m_twinning_fractions[twin];
+					mode.weight_perp *= m_twinning_fractions[twin];
+				}
+
+				all_modes.emplace_back(std::move(E_and_S));
+			}
 		}
 
 		energies.reserve(all_modes[0].size());
@@ -298,11 +310,11 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"twinning_enabled", "int", tl::var_to_str((int)m_use_twinning)});
 	vars.push_back(SqwBase::t_var{
-		"twinning_axis", "vector", vec_to_str(m_twinning_axis)});
+		"twinning_axes", "vectors", vecs_to_str(m_twinning_axes, "; ")});
 	vars.push_back(SqwBase::t_var{
-		"twinning_angle", "real", tl::var_to_str(m_twinning_angle)});
+		"twinning_angles", "reals", vec_to_str(m_twinning_angles, "; ")});
 	vars.push_back(SqwBase::t_var{
-		"twinning_fraction", "real", tl::var_to_str(m_twinning_fraction)});
+		"twinning_fractions", "reals", vec_to_str(m_twinning_fractions, "; ")});
 	#ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
@@ -423,18 +435,23 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_powder_Qs = tl::str_to_var<unsigned int>(strVal);
 		else if(strVar == "twinning_enabled")
 			m_use_twinning = (tl::str_to_var<int>(strVal) != 0);
-		else if(strVar == "twinning_axis")
+		else if(strVar == "twinning_axes")
 		{
-			std::vector<t_real> dir = str_to_vec<std::vector<t_real>>(strVal);
-			if(dir.size() == 3)
-				m_twinning_axis = tl2::create<t_vec3_real>({ dir[0], dir[1], dir[2] });
-			else
-				tl::log_err("Invalid twinning axis.");
+			m_twinning_axes.clear();
+
+			std::vector<std::vector<t_real>> dirs = str_to_vecs<std::vector<t_real>>(strVal);
+			for(const std::vector<t_real>& dir : dirs)
+			{
+				if(dir.size() == 3)
+					m_twinning_axes.emplace_back(tl2::create<t_vec3_real>({ dir[0], dir[1], dir[2] }));
+				else
+					tl::log_err("Invalid twinning axis.");
+			}
 		}
-		else if(strVar == "twinning_angle")
-			m_twinning_angle = tl::str_to_var<decltype(m_twinning_angle)>(strVal);
-		else if(strVar == "twinning_fraction")
-			m_twinning_fraction = tl::str_to_var<decltype(m_twinning_fraction)>(strVal);
+		else if(strVar == "twinning_angles")
+			m_twinning_angles = str_to_vec<std::vector<t_real>>(strVal, ";,");
+		else if(strVar == "twinning_fractions")
+			m_twinning_fractions = str_to_vec<std::vector<t_real>>(strVal, ";,");
 		#ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{
@@ -519,9 +536,9 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_powder_Qs = this->m_powder_Qs;
 
 	mod->m_use_twinning = this->m_use_twinning;
-	mod->m_twinning_axis = this->m_twinning_axis;
-	mod->m_twinning_angle = this->m_twinning_angle;
-	mod->m_twinning_fraction = this->m_twinning_fraction;
+	mod->m_twinning_axes = this->m_twinning_axes;
+	mod->m_twinning_angles = this->m_twinning_angles;
+	mod->m_twinning_fractions = this->m_twinning_fractions;
 
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;

@@ -128,30 +128,79 @@ public:
 // ----------------------------------------------------------------------------
 
 
+/**
+ * [1, 2, 3] -> "1 2 3"
+ */
 template<class t_vec = std::vector<double>>
-std::string vec_to_str(const t_vec& vec)
+std::string vec_to_str(const t_vec& vec, const std::string& sep = " ")
 {
 	std::ostringstream ostr;
+
 	for(const typename t_vec::value_type& t : vec)
-		ostr << t << " ";
+		ostr << t << sep;
 
 	return ostr.str();
 }
 
 
+/**
+ * "1 2 3" -> [1, 2, 3]
+ */
 template<class t_vec = std::vector<double>>
-t_vec str_to_vec(const std::string& str)
+t_vec str_to_vec(const std::string& str, const std::string& sep = " \t")
 {
 	using T = typename t_vec::value_type;
 
 	std::vector<T> vec0;
-	tl::get_tokens<T, std::string, std::vector<T>>(str, " \t", vec0);
+	tl::get_tokens<T, std::string, std::vector<T>>(str, sep, vec0);
 
 	t_vec vec(vec0.size());
 	for(std::size_t idx = 0; idx < vec0.size(); ++idx)
 		vec[idx] = vec0[idx];
 
 	return vec;
+}
+
+
+/**
+ * [[1, 2, 3], [4, 5, 6]] -> "1 2 3; 4 5 6"
+ */
+template<class t_vec = std::vector<double>>
+std::string vecs_to_str(const std::vector<t_vec>& vecs, const std::string& sep = ";")
+{
+	std::ostringstream ostr;
+
+	for(const t_vec& vec : vecs)
+		ostr << vec_to_str<t_vec>(vec) << sep;
+
+	return ostr.str();
+}
+
+
+/**
+ * "1 2 3; 4 5 6" -> [[1, 2, 3], [4, 5, 6]]
+ */
+template<class t_vec = std::vector<double>>
+std::vector<t_vec> str_to_vecs(const std::string& str, const std::string& sep = ";,")
+{
+	using T = typename t_vec::value_type;
+
+	std::vector<std::string> strs;
+	tl::get_tokens<std::string, std::string, std::vector<std::string>>(str, sep, strs);
+
+	std::vector<t_vec> vecs;
+	vecs.reserve(strs.size());
+
+	for(std::string& str : strs)
+	{
+		tl::trim(str);
+		if(str == "")
+			continue;
+
+		vecs.emplace_back(str_to_vec<t_vec>(str));
+	}
+
+	return vecs;
 }
 
 // ----------------------------------------------------------------------------

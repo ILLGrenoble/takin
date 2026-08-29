@@ -94,9 +94,9 @@ class MagnonMod : public SqwBase
 
 		// twinning
 		bool m_use_twinning { false };
-		t_vec3_real m_twinning_axis { 0., 0., 1 };
-		t_real m_twinning_angle { 5. };
-		t_real m_twinning_fraction { 0.5 };  // population factor for main grain
+		std::vector<t_vec3_real> m_twinning_axes {{ 0., 0., 1 }};
+		std::vector<t_real> m_twinning_angles { 5. };
+		std::vector<t_real> m_twinning_fractions { 0.5 };  // population factor
 
 
 #ifdef MAGNONMOD_ALLOW_QSIGNS
