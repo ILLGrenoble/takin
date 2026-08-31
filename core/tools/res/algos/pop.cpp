@@ -394,7 +394,6 @@ ResoResults calc_pop(const PopParams& pop)
 			+ t_real(0.5) / dist_mono_sample * cm ) / s_th_m
 			- inv_curvv * cm;
 		arr[POP_SAMPLE_Z] = t_real(-0.5) / (dist_mono_sample/cm * s_th_m);
-
 		return arr;
 	};
 
@@ -602,8 +601,8 @@ ResoResults calc_pop(const PopParams& pop)
 		monitor_w = pop.mono_w;
 	if(tl::float_equal<t_real>(monitor_h / cm, 0.))
 		monitor_h = pop.mono_h;
-	if(tl::float_equal<t_real>(monitor_thick / cm, 0.))
-		monitor_thick = pop.mono_thick;
+	//if(tl::float_equal<t_real>(monitor_thick / cm, 0.))
+	//	monitor_thick = pop.mono_thick;
 
 	t_mat G_mono_collis = G_collis;
 	G_mono_collis.resize(POP_PRESAMPLE_V+1, POP_PRESAMPLE_V+1, true);
@@ -624,7 +623,6 @@ ResoResults calc_pop(const PopParams& pop)
 	SI_mono_geo(POP_SAMPLE_X, POP_SAMPLE_X) = var_uniform * monitor_thick*monitor_thick /cm/cm;;
 	SI_mono_geo(POP_SAMPLE_Y, POP_SAMPLE_Y) = dMultMonitor * monitor_w*monitor_w /cm/cm;
 	SI_mono_geo(POP_SAMPLE_Z, POP_SAMPLE_Z) = dMultMonitor * monitor_h*monitor_h /cm/cm;
-
 	SI_mono_geo *= sig2fwhm*sig2fwhm;  // convert gaussian variance to gaussian fwhm
 
 	t_mat S_mono_geo;
@@ -649,7 +647,7 @@ ResoResults calc_pop(const PopParams& pop)
 	T_mono_mosaic_trafo(POP_MONO_H, POP_SAMPLE_Y) = mon_mosaic_trafo[POP_SAMPLE_Y];
 	T_mono_mosaic_trafo(POP_MONO_V, POP_SRC_Z) = sign_z_mon*mon_mosaic_trafo[POP_SRC_Z];
 	T_mono_mosaic_trafo(POP_MONO_V, POP_MONO_Z) = sign_z_mon*mon_mosaic_trafo[POP_MONO_Z];
-	T_mono_mosaic_trafo(POP_MONO_V, POP_SAMPLE_Z) = sign_z_mon*mon_mosaic_trafo[POP_SAMPLE_Z];
+	T_mono_mosaic_trafo(POP_MONO_V, POP_SAMPLE_Z) = sign_z_mon*mon_mosaic_trafo[POP_SAMPLE_Z]; // -> 0?
 
 	t_mat D_mono_geo_div_trafo = ublas::zero_matrix<t_real>(POP_PRESAMPLE_V+1, POP_SAMPLE_Z+1);
 	auto mon_geo_trafo = get_geo_trafo(pop.dist_vsrc_mono,
@@ -665,16 +663,9 @@ ResoResults calc_pop(const PopParams& pop)
 	D_mono_geo_div_trafo(POP_PREMONO_V, POP_SRC_Z) = sign_z_mon*mon_geo_trafo[7];
 	D_mono_geo_div_trafo(POP_PREMONO_V, POP_MONO_Z) = sign_z_mon*mon_geo_trafo[8];
 	D_mono_geo_div_trafo(POP_PRESAMPLE_V, POP_MONO_Z) = sign_z_mon*mon_geo_trafo[9];
-	D_mono_geo_div_trafo(POP_PRESAMPLE_V, POP_SAMPLE_Z) = sign_z_mon*mon_geo_trafo[10];
+	D_mono_geo_div_trafo(POP_PRESAMPLE_V, POP_SAMPLE_Z) = sign_z_mon*mon_geo_trafo[10];  // -> 0?
 
 	t_mat K_mono_geo = S_mono_geo + tl::transform(F_mono_mosaics, T_mono_mosaic_trafo, true);
-	t_mat Ki_mono_geo;
-	if(!tl::inverse(K_mono_geo, Ki_mono_geo))
-	{
-		res.bOk = false;
-		res.strErr = "Matrix K_mono cannot be inverted.";
-		return res;
-	}
 	// --------------------------------------------------------------------
 
 
@@ -734,6 +725,14 @@ ResoResults calc_pop(const PopParams& pop)
 
 		if(pop.flags & CALC_MON)
 		{
+			t_mat Ki_mono_geo;
+			if(!tl::inverse(K_mono_geo, Ki_mono_geo))
+			{
+				res.bOk = false;
+				res.strErr = "Matrix K_mono cannot be inverted.";
+				return res;
+			}
+
 			t_mat Hi_mono_div = tl::transform_inv(Ki_mono_geo, D_mono_geo_div_trafo, true);
 			t_mat HG_mono_div;
 			if(!tl::inverse(Hi_mono_div, HG_mono_div))
