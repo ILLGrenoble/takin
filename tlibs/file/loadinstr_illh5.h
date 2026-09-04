@@ -136,45 +136,82 @@ bool FileILLH5<t_real>::Load(const char* pcFile)
 			vals_idx.push_back(idx);
 		m_data.emplace(m_data.begin(), std::move(vals_idx));
 
-		// if Q, E coordinates are among the scan variables, move them to the front
-		auto iterQL = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "QL");
-		if(iterQL != m_scanned_vars.end())
-		{
-			m_scanned_vars.erase(iterQL);
-			m_scanned_vars.insert(m_scanned_vars.begin(), "QL");
-		}
-		auto iterQK = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "QK");
-		if(iterQK != m_scanned_vars.end())
-		{
-			m_scanned_vars.erase(iterQK);
-			m_scanned_vars.insert(m_scanned_vars.begin(), "QK");
-		}
-		auto iterQH = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "QH");
-		if(iterQH != m_scanned_vars.end())
-		{
-			m_scanned_vars.erase(iterQH);
-			m_scanned_vars.insert(m_scanned_vars.begin(), "QH");
-		}
-		auto iterEN = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "EN");
-		if(iterEN != m_scanned_vars.end())
-		{
-			m_scanned_vars.erase(iterEN);
-			m_scanned_vars.insert(m_scanned_vars.begin(), "EN");
-		}
+		// check if the scan variable names are lower case?
+		if(auto iterQH = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "qh"); iterQH != m_scanned_vars.end())
+			m_strQH = "qh";
+		if(auto iterQK = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "qk"); iterQK != m_scanned_vars.end())
+			m_strQK = "qk";
+		if(auto iterQL = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "ql"); iterQL != m_scanned_vars.end())
+			m_strQL = "ql";
+		if(auto iterEN = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), "en"); iterEN != m_scanned_vars.end())
+			m_strEN = "en";
 
-		// move the first scan variable with non-zero deviation to the front
+		// if Q, E coordinates are among the scan variables, move them to the front
+		auto move_scanvar_to_front = [this, &scanned_stddevs](const std::string& var)
+		{
+			auto iter = std::find(m_scanned_vars.begin(), m_scanned_vars.end(), var);
+			if(iter != m_scanned_vars.end())
+			{
+				auto iterstddev = scanned_stddevs.begin() + (iter - m_scanned_vars.begin());
+				t_real stddev = *iterstddev;
+				scanned_stddevs.erase(iterstddev);
+				scanned_stddevs.insert(scanned_stddevs.begin(), stddev);
+
+				m_scanned_vars.erase(iter);
+				m_scanned_vars.insert(m_scanned_vars.begin(), var);
+			}
+		};
+
+		move_scanvar_to_front(m_strQL);
+		move_scanvar_to_front(m_strQK);
+		move_scanvar_to_front(m_strQH);
+		move_scanvar_to_front(m_strEN);
+
+		// move the scan variable with the largest deviation to the front
+		t_real largest_stddev = 0.;
+		std::size_t largest_idx = 0;
+		bool largest_found = false;
 		for(std::size_t i = 0; i < m_scanned_vars.size(); ++i)
 		{
+			// prioritise qh, qk, ql, and en variables
+			if(m_scanned_vars[i] != m_strQH && m_scanned_vars[i] != m_strQK
+				&& m_scanned_vars[i] != m_strQL && m_scanned_vars[i] != m_strEN)
+				continue;
 			if(tl::float_equal<t_real>(scanned_stddevs[i], t_real(0), eps))
 				continue;
 
-			if(i > 0)
+			if(scanned_stddevs[i] > largest_stddev)
 			{
-				std::string cur_var = m_scanned_vars[i];
-				m_scanned_vars.erase(m_scanned_vars.begin() + i);
-				m_scanned_vars.insert(m_scanned_vars.begin(), cur_var);
-				break;
+				largest_stddev = scanned_stddevs[i];
+				largest_idx = i;
+				largest_found = true;
 			}
+		}
+		// look for further variables besides qh, qk, ql, and en
+		if(!largest_found)
+		{
+			for(std::size_t i = 0; i < m_scanned_vars.size(); ++i)
+			{
+				// already treated qh, qk, ql, and en variables
+				if(m_scanned_vars[i] == m_strQH || m_scanned_vars[i] == m_strQK
+					|| m_scanned_vars[i] == m_strQL || m_scanned_vars[i] == m_strEN)
+					continue;
+				if(tl::float_equal<t_real>(scanned_stddevs[i], t_real(0), eps))
+					continue;
+
+				if(scanned_stddevs[i] > largest_stddev)
+				{
+					largest_stddev = scanned_stddevs[i];
+					largest_idx = i;
+					largest_found = true;
+				}
+			}
+		}
+		if(largest_idx > 0)
+		{
+			std::string cur_var = m_scanned_vars[largest_idx];
+			m_scanned_vars.erase(m_scanned_vars.begin() + largest_idx);
+			m_scanned_vars.insert(m_scanned_vars.begin(), cur_var);
 		}
 
 		// get the name of the instrument if available
@@ -558,7 +595,8 @@ std::array<t_real, 4> FileILLH5<t_real>::GetScanHKLE(std::size_t i) const
 	using t_map = typename FileInstrBase<t_real>::t_mapParams;
 	//const t_map& params = GetAllParams();
 
-	return FileInstrBase<t_real>::GetScanHKLE("QH", "QK", "QL", "EN", i);
+	return FileInstrBase<t_real>::GetScanHKLE(
+		m_strQH.c_str(), m_strQK.c_str(), m_strQL.c_str(), m_strEN.c_str(), i);
 }
 
 
@@ -568,7 +606,8 @@ std::array<t_real, 5> FileILLH5<t_real>::GetScanHKLKiKf(std::size_t i) const
 	using t_map = typename FileInstrBase<t_real>::t_mapParams;
 	//const t_map& params = GetAllParams();
 
-	return FileInstrBase<t_real>::GetScanHKLKiKf("QH", "QK", "QL", "EN", i);
+	return FileInstrBase<t_real>::GetScanHKLKiKf(
+		m_strQH.c_str(), m_strQK.c_str(), m_strQL.c_str(), m_strEN.c_str(), i);
 }
 
 
@@ -597,9 +636,13 @@ template<class t_real> std::string FileILLH5<t_real>::GetCountVar() const
 		return strRet;
 	if(FileInstrBase<t_real>::MatchColumn(R"REX(det)REX", strRet))
 		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX(TotalCount)REX", strRet))
+		return strRet;
 
 	// also include counters without counts
 	if(FileInstrBase<t_real>::MatchColumn(R"REX((Single)?Detector[0-9]*)REX", strRet, false, false))
+		return strRet;
+	if(FileInstrBase<t_real>::MatchColumn(R"REX((TotalCount)REX", strRet, false, false))
 		return strRet;
 
 	return "";

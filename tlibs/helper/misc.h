@@ -192,30 +192,33 @@ struct sort_obj
 
 template<class T>
 bool comp_fkt(const sort_obj<T>& t0, const sort_obj<T>& t1)
-{ return t0.vec[0] < t1.vec[0]; }
+{
+	return t0.vec[0] < t1.vec[0];
+}
 
 
 /**
  * simultaneously sort two arrays
  */
-template<class Iter=double*>
+template<class Iter = double*>
 void sort_2(Iter begin1, Iter end1, Iter begin2)
 {
 	typedef typename std::iterator_traits<Iter>::value_type T;
 
-	const std::size_t N = end1-begin1;
+	const std::size_t N = end1 - begin1;
 	sort_obj<T> *pObj = new sort_obj<T>[N];
+
 	for(std::size_t i = 0; i < N; ++i)
 	{
-		pObj[i].vec.push_back(*(begin1+i));
-		pObj[i].vec.push_back(*(begin2+i));
+		pObj[i].vec.push_back(*(begin1 + i));
+		pObj[i].vec.push_back(*(begin2 + i));
 	}
 
-	std::stable_sort(pObj, pObj+N, comp_fkt<T>);
+	std::stable_sort(pObj, pObj + N, comp_fkt<T>);
 	for(std::size_t i = 0; i < N; ++i)
 	{
-		*(begin1+i) = pObj[i].vec[0];
-		*(begin2+i) = pObj[i].vec[1];
+		*(begin1 + i) = pObj[i].vec[0];
+		*(begin2 + i) = pObj[i].vec[1];
 	}
 
 	delete[] pObj;
@@ -225,26 +228,27 @@ void sort_2(Iter begin1, Iter end1, Iter begin2)
 /**
  * simultaneously sort three arrays
  */
-template<class Iter=double*>
+template<class Iter = double*>
 void sort_3(Iter begin1, Iter end1, Iter begin2, Iter begin3)
 {
 	typedef typename std::iterator_traits<Iter>::value_type T;
 
 	const std::size_t N = end1-begin1;
 	sort_obj<T> *pObj = new sort_obj<T>[N];
-	for(std::size_t i=0; i<N; ++i)
+
+	for(std::size_t i=0; i < N; ++i)
 	{
-		pObj[i].vec.push_back(*(begin1+i));
-		pObj[i].vec.push_back(*(begin2+i));
-		pObj[i].vec.push_back(*(begin3+i));
+		pObj[i].vec.push_back(*(begin1 + i));
+		pObj[i].vec.push_back(*(begin2 + i));
+		pObj[i].vec.push_back(*(begin3 + i));
 	}
 
 	std::stable_sort(pObj, pObj+N, comp_fkt<T>);
 	for(std::size_t i = 0; i < N; ++i)
 	{
-		*(begin1+i) = pObj[i].vec[0];
-		*(begin2+i) = pObj[i].vec[1];
-		*(begin3+i) = pObj[i].vec[2];
+		*(begin1 + i) = pObj[i].vec[0];
+		*(begin2 + i) = pObj[i].vec[1];
+		*(begin3 + i) = pObj[i].vec[2];
 	}
 
 	delete[] pObj;
