@@ -66,13 +66,19 @@ hkl_end                = numpy.array([ 1., 1., 0.5 ])
 # create the magdyn object
 mag = magdyn.MagDyn()
 
+
+# setup crystal
+mag.SetCrystalLattice(8.9, 8.9, 8.9,
+	90./180.*numpy.pi, 90./180.*numpy.pi, 120./180.*numpy.pi)
+
+
 #
 # add variables
 #
 magdyn.add_variable(mag, "J1", -0.58)
 magdyn.add_variable(mag, "J2", -0.93)
 
-magdyn.add_variable(mag, "D1x", +0.15)
+magdyn.add_variable(mag, "D1x", -0.15)
 magdyn.add_variable(mag, "D1y", -0.24)
 magdyn.add_variable(mag, "D1z", -0.05)
 

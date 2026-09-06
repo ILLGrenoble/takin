@@ -78,7 +78,7 @@
 		</variable>
 		<variable>
 			<name>D1x</name>
-			<value>(0.15,0)</value>
+			<value>(-0.15,0)</value>
 		</variable>
 		<variable>
 			<name>D1y</name>
