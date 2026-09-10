@@ -98,6 +98,12 @@ class MagnonMod : public SqwBase
 		std::vector<t_real> m_twinning_angles { 5. };
 		std::vector<t_real> m_twinning_fractions { 0.5 };  // population factor
 
+#ifdef MAGNONMOD_ALLOW_COORDSWAP
+		// coordinate swapping
+		bool m_swap_hk { false };
+		bool m_swap_hl { false };
+		bool m_swap_kl { false };
+#endif
 
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 		// for quickly flipping coordinates

@@ -28,6 +28,7 @@
 
 //#define MAGNONMOD_USE_CPLX
 //#define MAGNONMOD_ALLOW_QSIGNS
+//#define MAGNONMOD_ALLOW_COORDSWAP
 
 #include "magnonmod.h"
 
@@ -207,6 +208,15 @@ std::tuple<std::vector<t_real>, std::vector<t_real>>
 
 t_real MagnonMod::operator()(t_real h, t_real k, t_real l, t_real E) const
 {
+#ifdef MAGNONMOD_ALLOW_COORDSWAP
+	if(m_swap_hk)
+		std::swap(h, k);
+	if(m_swap_hl)
+		std::swap(h, l);
+	if(m_swap_kl)
+		std::swap(k, l);
+#endif
+
 	// bose factor
 	t_real bose = 1.;
 	if(!m_use_model_bose)
@@ -315,7 +325,12 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 		"twinning_angles", "reals", vec_to_str(m_twinning_angles, "; ")});
 	vars.push_back(SqwBase::t_var{
 		"twinning_fractions", "reals", vec_to_str(m_twinning_fractions, "; ")});
-	#ifdef MAGNONMOD_ALLOW_QSIGNS
+#ifdef MAGNONMOD_ALLOW_COORDSWAP
+	vars.push_back(SqwBase::t_var{"swap_hk", "int", tl::var_to_str((int)m_swap_hk)});
+	vars.push_back(SqwBase::t_var{"swap_hl", "int", tl::var_to_str((int)m_swap_hl)});
+	vars.push_back(SqwBase::t_var{"swap_kl", "int", tl::var_to_str((int)m_swap_kl)});
+#endif
+#ifdef MAGNONMOD_ALLOW_QSIGNS
 	vars.push_back(SqwBase::t_var{
 		"Q_signs", "vector", vec_to_str(m_Qsigns)});
 #endif
@@ -452,7 +467,15 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_twinning_angles = str_to_vec<std::vector<t_real>>(strVal, ";,");
 		else if(strVar == "twinning_fractions")
 			m_twinning_fractions = str_to_vec<std::vector<t_real>>(strVal, ";,");
-		#ifdef MAGNONMOD_ALLOW_QSIGNS
+#ifdef MAGNONMOD_ALLOW_COORDSWAP
+		else if(strVar == "swap_hk")
+			m_swap_hk = (tl::str_to_var<int>(strVal) != 0);
+		else if(strVar == "swap_hl")
+			m_swap_hl = (tl::str_to_var<int>(strVal) != 0);
+		else if(strVar == "swap_kl")
+			m_swap_kl = (tl::str_to_var<int>(strVal) != 0);
+#endif
+#ifdef MAGNONMOD_ALLOW_QSIGNS
 		else if(strVar == "Q_signs")
 		{
 			std::vector<t_real> signs = str_to_vec<std::vector<t_real>>(strVal);
@@ -539,6 +562,12 @@ SqwBase* MagnonMod::shallow_copy() const
 	mod->m_twinning_axes = this->m_twinning_axes;
 	mod->m_twinning_angles = this->m_twinning_angles;
 	mod->m_twinning_fractions = this->m_twinning_fractions;
+
+#ifdef MAGNONMOD_ALLOW_COORDSWAP
+	mod->m_swap_hk = this->m_swap_hk;
+	mod->m_swap_hl = this->m_swap_hl;
+	mod->m_swap_kl = this->m_swap_kl;
+#endif
 
 #ifdef MAGNONMOD_ALLOW_QSIGNS
 	mod->m_Qsigns = this->m_Qsigns;
