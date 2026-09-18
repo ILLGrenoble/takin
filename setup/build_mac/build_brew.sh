@@ -7,7 +7,7 @@
 #
 # ----------------------------------------------------------------------------
 # Takin (inelastic neutron scattering software package)
-# Copyright (C) 2017-2024  Tobias WEBER (Institut Laue-Langevin (ILL),
+# Copyright (C) 2017-2026  Tobias WEBER (Institut Laue-Langevin (ILL),
 #                          Grenoble, France).
 # Copyright (C) 2013-2017  Tobias WEBER (Technische Universitaet Muenchen
 #                          (TUM), Garching, Germany).
@@ -152,17 +152,17 @@ if [ $build_magpie -ne 0 ]; then
 
 		# copy py modules
 		if [ $build_py_modules -ne 0 ]; then
-			cp -v tools_py/magdyn/_magpy.dylib "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/magdyn/_magpy.so "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/magdyn/magpy.py "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/*.dylib "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/*.so "${TAKIN_ROOT}"/core/pymods/
+			cp -v tools_py/magdyn/*.py "${TAKIN_ROOT}"/core/pymods/
 
-			cp -v tools_py/instr/_instr_py.dylib "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/instr/instr.py "${TAKIN_ROOT}"/core/pymods/
+			#cp -v tools_py/instr/_instr_py.dylib "${TAKIN_ROOT}"/core/pymods/
+			#cp -v tools_py/instr/_instr_py.so "${TAKIN_ROOT}"/core/pymods/
+			#cp -v tools_py/instr/instr.py "${TAKIN_ROOT}"/core/pymods/
 
-			cp -v tools_py/bz/_bz_py.dylib "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/bz/_bz_py.so "${TAKIN_ROOT}"/core/pymods/
-			cp -v tools_py/bz/bzcalc.py "${TAKIN_ROOT}"/core/pymods/
+			#cp -v tools_py/bz/_bz_py.dylib "${TAKIN_ROOT}"/core/pymods/
+			#cp -v tools_py/bz/_bz_py.so "${TAKIN_ROOT}"/core/pymods/
+			#cp -v tools_py/bz/bzcalc.py "${TAKIN_ROOT}"/core/pymods/
 		fi
 		popd
 fi
