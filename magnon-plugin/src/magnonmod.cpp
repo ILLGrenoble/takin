@@ -314,7 +314,7 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"use_pol_coords", "int", tl::var_to_str((int)m_use_polcoords)});
 	vars.push_back(SqwBase::t_var{
-		"powder", "int", tl::var_to_str((int)m_is_powder)});
+		"powder_enabled", "int", tl::var_to_str((int)m_is_powder)});
 	vars.push_back(SqwBase::t_var{
 		"powder_num_Qs", "uint", tl::var_to_str(m_powder_Qs)});
 	vars.push_back(SqwBase::t_var{
@@ -444,7 +444,7 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			m_use_polcoords = (tl::str_to_var<int>(strVal) != 0);
 			m_dyn.SetCalcPolarisation(m_use_polcoords);
 		}
-		else if(strVar == "powder")
+		else if(strVar == "powder_enabled")
 			m_is_powder = (tl::str_to_var<int>(strVal) != 0);
 		else if(strVar == "powder_num_Qs")
 			m_powder_Qs = tl::str_to_var<unsigned int>(strVal);
