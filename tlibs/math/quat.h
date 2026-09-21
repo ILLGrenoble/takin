@@ -31,8 +31,10 @@
 #define __TLIBS_QUAT_H__
 
 #include <boost/math/quaternion.hpp>
+#include <limits>
 #include "linalg.h"
 #include "linalg_ops.h"
+#include "rand.h"
 #include "../phys/spin.h"
 
 namespace tl {
@@ -342,10 +344,20 @@ t_quat rotation_quat(const t_vec& _vec0, const t_vec& _vec1)
 	}
 	else if(vec_equal(vec0, t_vec(-vec1)))
 	{ // antiparallel vectors -> rotate about any perpendicular axis
-		t_vec vecPerp(3);
-		vecPerp[0] = vec0[2];
-		vecPerp[1] = 0;
-		vecPerp[2] = -vec0[0];
+		t_vec vecRnd(3), vecPerp(3);
+		T lenPerp2 = 0.;
+		const T eps = std::numeric_limits<T>::epsilon();
+
+		while(lenPerp2 <= eps)
+		{
+			vecRnd[0] = 1. - 2.*tl::rand01<T>(); // vec0[2];
+			vecRnd[1] = 1. - 2.*tl::rand01<T>(); // 0;
+			vecRnd[2] = 1. - 2.*tl::rand01<T>(); // -vec0[0];
+
+			vecPerp = cross_3<t_vec>(vec0, vecRnd);
+			lenPerp2 = vecPerp[0]*vecPerp[0] + vecPerp[1]*vecPerp[1] + vecPerp[2]*vecPerp[2];
+		}
+
 		return rotation_quat<t_quat, t_vec, T>(vecPerp, get_pi<T>());
 	}
 
