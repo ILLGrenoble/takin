@@ -306,7 +306,7 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{
 		"B_align_spins", "int", tl::var_to_str((int)field.align_spins)});
 	vars.push_back(SqwBase::t_var{
-		"silent", "real", tl::var_to_str((int)m_dyn.GetSilent())});
+		"silent", "int", tl::var_to_str((int)m_dyn.GetSilent())});
 	vars.push_back(SqwBase::t_var{
 		"checks", "int", tl::var_to_str((int)m_dyn.GetPerformChecks())});
 	vars.push_back(SqwBase::t_var{
