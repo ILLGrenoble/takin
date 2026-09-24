@@ -651,7 +651,7 @@ struct _str_to_var_impl<T, t_str, 0>
 /**
  * Tokenises string on any of the chars in strDelim
  */
-template<class T, class t_str = std::string, class t_cont=std::vector<T>>
+template<class T, class t_str = std::string, class t_cont = std::vector<T>>
 void get_tokens(const t_str& str, const t_str& strDelim, t_cont& vecRet)
 {
 	using t_char = typename t_str::value_type;

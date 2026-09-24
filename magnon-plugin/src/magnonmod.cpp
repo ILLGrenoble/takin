@@ -331,8 +331,7 @@ std::vector<MagnonMod::t_var> MagnonMod::GetVars() const
 	vars.push_back(SqwBase::t_var{"swap_kl", "int", tl::var_to_str((int)m_swap_kl)});
 #endif
 #ifdef MAGNONMOD_ALLOW_QSIGNS
-	vars.push_back(SqwBase::t_var{
-		"Q_signs", "vector", vec_to_str(m_Qsigns)});
+	vars.push_back(SqwBase::t_var{ "Q_signs", "vector", vec_to_str(m_Qsigns) });
 #endif
 
 	// get variables from the magdyn model
@@ -487,7 +486,7 @@ void MagnonMod::SetVars(const std::vector<MagnonMod::t_var>& vars)
 			}
 		}
 #endif
-		else
+		else  // unrecognised variables are registered as magpie model variables
 		{
 			// set model variables
 			tl::log_info("Model variable: ", strVar, " = ",  strVal, ".");

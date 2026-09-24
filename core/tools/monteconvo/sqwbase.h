@@ -136,8 +136,13 @@ std::string vec_to_str(const t_vec& vec, const std::string& sep = " ")
 {
 	std::ostringstream ostr;
 
-	for(const typename t_vec::value_type& t : vec)
-		ostr << t << sep;
+	for(std::size_t idx = 0; idx < vec.size(); ++idx)
+	{
+		const typename t_vec::value_type& t = vec[idx];
+		ostr << t;
+		if(idx + 1 < vec.size())
+			ostr << sep;
+	}
 
 	return ostr.str();
 }
@@ -170,8 +175,13 @@ std::string vecs_to_str(const std::vector<t_vec>& vecs, const std::string& sep =
 {
 	std::ostringstream ostr;
 
-	for(const t_vec& vec : vecs)
-		ostr << vec_to_str<t_vec>(vec) << sep;
+	for(std::size_t idx = 0; idx < vecs.size(); ++idx)
+	{
+		const t_vec& vec = vecs[idx];
+		ostr << vec_to_str<t_vec>(vec);
+		if(idx + 1 < vecs.size())
+			ostr << sep;
+	}
 
 	return ostr.str();
 }
