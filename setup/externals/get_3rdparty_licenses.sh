@@ -146,7 +146,7 @@ if ! wget https://git.savannah.gnu.org/cgit/gettext.git/plain/gettext-runtime/in
 fi
 
 # pcre
-if ! wget https://raw.githubusercontent.com/PCRE2Project/pcre2/refs/heads/master/LICENCE.md -O ${LICDIR}/pcre_license.txt; then
+if ! wget https://raw.githubusercontent.com/PCRE2Project/pcre2/refs/heads/main/LICENCE.md -O ${LICDIR}/pcre_license.txt; then
 	echo -e "Error: Cannot download pcre license.";
 fi
 
@@ -172,7 +172,7 @@ if ! wget https://raw.githubusercontent.com/HDFGroup/hdf5/refs/heads/develop/LIC
 fi
 
 # libaec / libsz2
-if ! wget https://gitlab.dkrz.de/k202009/libaec/-/raw/master/LICENSE.txt -O ${LICDIR}/libaec_license.txt; then
+if ! wget https://gitlab.dkrz.de/dkrz-sw/libaec/-/raw/main/LICENSE.txt -O ${LICDIR}/libaec_license.txt; then
 	echo -e "Error: Cannot download libaec license.";
 fi
 
