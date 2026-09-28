@@ -9,8 +9,8 @@ authors:
     email: tweber@ill.fr
     affiliation: "Institut Laue-Langevin (ILL), Grenoble, France"
 abstract: "A physical-mathematical C++ template library."
-message: "Please cite using the DOI 10.5281/zenodo.4117437."
-doi: 10.5281/zenodo.4117437
+message: "Please cite using the DOI 10.5281/zenodo.23009221."
+doi: 10.5281/zenodo.23009221
 type: software
-license: GPL-3.0-only
+license: GPL-2.0-only
 repository-code: "https://code.ill.fr/scientific-software/takin/tlibs"
