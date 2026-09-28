@@ -25,7 +25,13 @@ CONTRIBUTORS
   - active: 2025 - 2026
   - contributions:
     - cosmetic changes for the GUI.
-    - vio_ext algorithm.
+    - theory and python implementation of the *vio_ext* algorithm.
+
+
+**Mechthild Enderle**
+  - active: 2025
+  - contributions:
+    - theory of the *eck_ext* algorithm.
 
 
 **Jens Krüger**
