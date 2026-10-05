@@ -54,6 +54,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
 	add_compile_options("-DNDEBUG")
 	add_compile_options("-Wno-#pragma-messages")
+	#add_compile_options("-march=native")
 
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 		# see: https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html
