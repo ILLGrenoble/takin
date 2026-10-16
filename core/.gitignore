@@ -12,6 +12,7 @@ scanviewer.mk
 tango-icon-theme*.tar.gz
 takin.log
 convosim.dat
+out.dat
 Faddeeva.*
 
 ui/*.h
