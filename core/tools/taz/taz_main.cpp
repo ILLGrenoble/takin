@@ -65,7 +65,7 @@
 
 #include <QMetaType>
 #include <QTextCursor>
-#include <QDir>
+#include <QStandardPaths>
 #include <QMessageBox>
 #include <QSplashScreen>
 #include <QStyleFactory>
@@ -95,7 +95,7 @@ namespace opts = boost::program_options;
 
 // ----------------------------------------------------------------------------
 // logging
-static bool add_logfile(std::ofstream* postrLog, bool bAdd=1)
+static bool add_logfile(std::ofstream* postrLog, bool bAdd = true)
 {
 	if(!postrLog || !*postrLog)
 	{
@@ -165,7 +165,8 @@ public:
 
 	void DoPendingRequests()
 	{
-		if(!m_pTakDlg) return;
+		if(!m_pTakDlg)
+			return;
 
 		// user clicked on an associated file to load?
 		if(m_strToLoad != "")
@@ -179,7 +180,10 @@ public:
 	{
 		if(pEvt->type() == QEvent::FileOpen)
 		{
-			m_strToLoad = ((QFileOpenEvent*)pEvt)->file().toStdString();
+			if(m_pTakDlg)  // already running, load file
+				m_pTakDlg->Load(m_strToLoad.c_str());
+			else           // mark file for later loading
+				m_strToLoad = ((QFileOpenEvent*)pEvt)->file().toStdString();
 			return true;
 		}
 
@@ -211,6 +215,8 @@ public:
  */
 int main(int argc, char** argv)
 {
+	std::ofstream ofstrLog;
+
 	try
 	{
 		pid_t pidMain = getpid();
@@ -351,7 +357,7 @@ int main(int argc, char** argv)
 		if(bStartMonteconvo || bStartScanviewer || bStartMonteconvoCLI ||
 			bStartConvofit || bStartConvoseries || bStartRes || bStartMontereso)
 			bStartTakinMain = false;
-		if(bStartMonteconvoCLI || bStartConvofit || bStartConvoseries || bStartMontereso)
+		if(bStartMonteconvoCLI || bStartConvofit || bStartConvoseries || bStartMontereso || bStartRes)
 			bStartGUI = false;
 		if(bStartMontereso)
 			bOwnApp = true;
@@ -364,10 +370,10 @@ int main(int argc, char** argv)
 		// --------------------------------------------------------------------
 
 
-		std::string strLog = QDir::tempPath().toStdString();
+		std::string strLog = QStandardPaths::writableLocation(QStandardPaths::TempLocation).toStdString();
 		strLog += "/takin.log";
-		std::ofstream ofstrLog(strLog, std::ios_base::out|std::ios_base::app);
-		if(add_logfile(&ofstrLog, 1))
+		ofstrLog.open(strLog, std::ios_base::out|std::ios_base::app);
+		if(add_logfile(&ofstrLog, true))
 			tl::log_debug("Logging to file \"", strLog, "\".");
 
 
@@ -608,8 +614,7 @@ int main(int argc, char** argv)
 
 		if(bStartTakinMain)
 		{
-			show_splash_msg(app_gui, pSplash.get(),
-				strStarting + "\nLoading 1/2 ...");
+			show_splash_msg(app_gui, pSplash.get(), strStarting + "\nLoading 1/2 ...");
 			pTakDlg.reset(new TazDlg{nullptr, strLog});
 
 			// load configuration from a file
@@ -627,11 +632,14 @@ int main(int argc, char** argv)
 			}
 
 			app_gui->SetTakDlg(pTakDlg);
-			show_splash_msg(app_gui, pSplash.get(),
-				strStarting + "\nLoading 2/2 ...");
+			show_splash_msg(app_gui, pSplash.get(), strStarting + "\nLoading 2/2 ...");
 			app_gui->DoPendingRequests();
 
-			if(pSplash) pSplash->finish(pTakDlg.get());
+			if(pSplash)
+			{
+				pSplash->finish(pTakDlg.get());
+				pSplash->close();
+			}
 			if(vecTazFiles.size() >= 1)
 			{
 				tl::log_info("Loading \"", vecTazFiles[0], "\"...");
@@ -647,7 +655,7 @@ int main(int argc, char** argv)
 				std::string username, userpwd;
 
 				const std::regex regex_url(
-					"(([A-Za-z0-9]+)(:([A-Za-z0-9]+))?@)?([A-Za-z0-9]+)://([A-Za-z0-9\\.]+)(:([0-9]+))?",
+					"(([A-Za-z0-9]+)(:([A-Za-z0-9]+))?@)?([A-Za-z0-9]+)://([A-Za-z0-9\\.-_]+)(:([0-9]+))?",
 					std::regex::ECMAScript);
 				std::smatch match_url;
 
@@ -742,7 +750,7 @@ int main(int argc, char** argv)
 
 		tl::deinit_spec_chars();
 		tl::log_info("Shutting down Takin.");
-		add_logfile(&ofstrLog, 0);
+		add_logfile(&ofstrLog, false);
 
 		return iRet;
 	}

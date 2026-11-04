@@ -29,9 +29,10 @@
 #include "taz.h"
 
 void TazDlg::ShowConnectDlg() {}
-void TazDlg::ConnectTo(int iSys, const QString& _strHost, const QString& _strPort, const QString& _strUser, const QString& _strPass) {}
+void TazDlg::ConnectTo(ControlSystem control_sys, const QString& strHost, const QString& strPort, const QString& strUser, const QString& strPass) {}
 void TazDlg::Disconnect() {}
 void TazDlg::ShowNetCache() {}
+void TazDlg::ShowNetScanMonitor() {}
 void TazDlg::NetRefresh() {}
 void TazDlg::Connected(const QString& strHost, const QString& strSrv) {}
 void TazDlg::Disconnected() {}

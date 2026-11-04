@@ -154,8 +154,8 @@ void Log::begin_log()
 
 void Log::end_log()
 {
-        const std::vector<t_pairOstr>& vecOstrsTh = GetThreadOstrs();
-        std::vector<t_pairOstr> vecOstrs = arrayunion({m_vecOstrs, vecOstrsTh});
+	const std::vector<t_pairOstr>& vecOstrsTh = GetThreadOstrs();
+	std::vector<t_pairOstr> vecOstrs = arrayunion({m_vecOstrs, vecOstrsTh});
 
 	for(t_pairOstr& pairOstr : vecOstrs)
 	{

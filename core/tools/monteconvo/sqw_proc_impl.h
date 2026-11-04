@@ -35,6 +35,7 @@
 #include "tlibs/log/log.h"
 #include "tlibs/math/rand.h"
 
+#include <csignal>
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
@@ -449,6 +450,11 @@ SqwProc<t_sqw>::SqwProc(const char* pcCfg, SqwProcStartMode mode,
 					}
 					else if(pidChild == 0)
 					{
+						// reset default handlers, don't inherit takin's handlers
+						std::signal(SIGABRT, SIG_DFL);
+						std::signal(SIGTERM, SIG_DFL);
+						std::signal(SIGINT, SIG_DFL);
+
 						// start of child process
 						m_iNumChildProcesses = 1;
 						m_pidChild.resize(1);
@@ -456,8 +462,8 @@ SqwProc<t_sqw>::SqwProc(const char* pcCfg, SqwProcStartMode mode,
 
 						child_proc<t_sqw>(*m_pmsgIn[iChild], *m_pmsgOut[iChild], pcCfg, m_pSharedPars[iChild]);
 
-						exit(0);
-						// end of child process
+						_exit(0);
+						// should not get here, end of child process
 						return;
 					}
 
