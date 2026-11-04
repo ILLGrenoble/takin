@@ -26,3 +26,4 @@ Please cite the paper that is closest to the version you have used:
 - *Takin 1.5* (2017): [10.1016/j.softx.2017.06.002](https://doi.org/10.1016/j.softx.2017.06.002).  
 - *Takin 1.0* (2016): [10.1016/j.softx.2016.06.002](https://doi.org/10.1016/j.softx.2016.06.002).
 - *TAS-Paths* (2023): [10.1016/j.softx.2023.101455](https://doi.org/10.1016/j.softx.2023.101455).  
+- *Magpie* (preprint, 2026): [arXiv:2610.15790](https://arxiv.org/abs/2610.15790).
