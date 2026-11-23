@@ -749,6 +749,10 @@ ResoResults calc_pop(const PopParams& pop)
 		}
 	}
 
+	if(pop.flags & CALC_MON)
+		res.dR0 /= sig2fwhm*sig2fwhm;
+	else
+		res.dR0 /= sig2fwhm*sig2fwhm*sig2fwhm*sig2fwhm;
 	res.dR0 = std::abs(res.dR0);
 
 	if(pop.flags & NORM_TO_SAMPLE)

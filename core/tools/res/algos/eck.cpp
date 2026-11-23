@@ -57,6 +57,7 @@ static const auto angs = tl::get_one_angstrom<t_real>();
 static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
 static const t_real pi = tl::get_pi<t_real>();
+static const t_real twopi = t_real(2) * tl::get_pi<t_real>();
 static const t_real fwhm2sig = tl::get_FWHM2SIGMA<t_real>();
 
 
@@ -317,13 +318,9 @@ ResoResults calc_eck(const EckParams& eck)
 	const auto tupScFact = get_scatter_factors(eck.flags, eck.thetam, eck.ki, eck.thetaa, eck.kf);
 
 	const t_real s_th_m = units::abs(units::sin(thetam));
-	t_real dmono_refl = eck.dmono_refl * pi / (t_real(2.) * s_th_m);
-	if(!(eck.flags & CALC_KI3))
-	 dmono_refl /= std::get<0>(tupScFact);
+	t_real dmono_refl = eck.dmono_refl * pi / (t_real(2.) * s_th_m) * std::get<0>(tupScFact);
 	const t_real s_th_a = units::abs(units::sin(thetaa));
-	t_real dana_effic = eck.dana_effic * pi / (t_real(2.) * s_th_a);
-	if(!(eck.flags & CALC_KF3))
-		dana_effic /= std::get<1>(tupScFact);
+	t_real dana_effic = eck.dana_effic * pi / (t_real(2.) * s_th_a) * std::get<1>(tupScFact);
 	if(eck.mono_refl_curve)
 		dmono_refl *= (*eck.mono_refl_curve)(eck.ki);
 	if(eck.ana_effic_curve)
@@ -495,6 +492,15 @@ ResoResults calc_eck(const EckParams& eck)
 		* std::sqrt(pi/std::abs(U2(ECK_K_Y, ECK_K_Y)))
 		/ std::abs(tl::determinant(T));
 	t_real Z = dReflM * dReflA * Z0;
+
+	// these are already implicitly included
+	t_real ki_factor = tl::ana_effic_factor(eck.ki, units::abs(thetam)) * eck.ki*angs / t_real(2);
+	t_real kf_factor = tl::ana_effic_factor(eck.kf, units::abs(thetaa)) * eck.kf*angs / t_real(2);
+	Z /= ki_factor * kf_factor;
+
+	// mono & ana mosaics
+	Z /= twopi*fwhm2sig*(eck.mono_mosaic/rads * mono_mosaic_v/rads);
+	Z /= twopi*fwhm2sig*(eck.ana_mosaic/rads  * ana_mosaic_v/rads);
 	//--------------------------------------------------------------------------
 
 
@@ -540,7 +546,7 @@ ResoResults calc_eck(const EckParams& eck)
 	if(eck.flags & CALC_ALT_R0)
 	{
 		// alternate R0 normalisation factor, see [mit84], equ. A.57
-		res.dR0 = mitch_R0<t_real>(use_monitor, dReflM, dReflA,
+		res.dR0 = mitch_R0<t_real>(use_monitor, dReflM*ki_factor, dReflA*kf_factor,
 			tl::get_ellipsoid_volume(Arot), tl::get_ellipsoid_volume(Erot),
 			res.dResVol, false);
 	}
@@ -554,7 +560,7 @@ ResoResults calc_eck(const EckParams& eck)
 		{
 			// missing volume prefactor to normalise gaussian,
 			// cf. equ. 56 in [eck14] to equ. 1 in [pop75] and equ. A.57 in [mit84]
-			// res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
+			// res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (twopi*twopi);
 			res.dR0 *= res.dResVol * t_real(8);
 		}
 	}

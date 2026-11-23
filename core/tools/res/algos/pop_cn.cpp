@@ -99,11 +99,11 @@ ResoResults calc_pop_cn(const CNParams& pop)
 	res.Q_avg[2] = 0.;
 	res.Q_avg[3] = pop.E / meV;
 
-        // if the user moved the scattering angle to the other
-        // side of the scattering sense indicated by the flag
-        t_real manually_changed_sense = t_real(1);
-        if(pop.twotheta/rads < t_real(0))
-                manually_changed_sense = t_real(-1);
+	// if the user moved the scattering angle to the other
+	// side of the scattering sense indicated by the flag
+	t_real manually_changed_sense = t_real(1);
+	if(pop.twotheta/rads < t_real(0))
+		manually_changed_sense = t_real(-1);
 
 	angle thetaa = pop.thetaa * pop.dana_sense;
 	angle thetam = pop.thetam * pop.dmono_sense;
@@ -120,6 +120,7 @@ ResoResults calc_pop_cn(const CNParams& pop)
 	/*if(pop.bGuide)
 	{
 		length lam = tl::k2lam(pop.ki);
+
 		coll_h_pre_mono = lam*(pop.guide_div_h/angs);
 		coll_v_pre_mono = lam*(pop.guide_div_v/angs);
 	}*/
@@ -339,6 +340,10 @@ ResoResults calc_pop_cn(const CNParams& pop)
 		res.dR0 *= t_real(2.)/pi * s_th_m / dmono_refl;
 	}
 
+	if(pop.flags & CALC_MON)
+		res.dR0 /= sig2fwhm*sig2fwhm;
+	else
+		res.dR0 /= sig2fwhm*sig2fwhm*sig2fwhm*sig2fwhm;
 	res.dR0 = std::abs(res.dR0);
 
 	if(pop.flags & NORM_TO_RESVOL)
