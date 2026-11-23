@@ -57,6 +57,7 @@ using volume = tl::t_volume_si<t_real>;
 using inv_length = tl::t_length_inverse_si<t_real>;
 
 static const auto angs = tl::get_one_angstrom<t_real>();
+static const auto cm = tl::get_one_centimeter<t_real>();
 static const auto rads = tl::get_one_radian<t_real>();
 static const auto meV = tl::get_one_meV<t_real>();
 static const t_real pi = tl::get_pi<t_real>();
@@ -229,7 +230,7 @@ get_mono_vals(const length& src_w, const length& src_h,
 	C(2, 2) = Cv - t_real(0.25)*Bv[1]*Bv[1]/Av(1, 1);  // typo in paper? (thanks to F. Bourdarot for pointing this out)
 
 
-	// [eck14], equ. 54, in th paper the sqrt factor is missing in some other equations
+	// [eck14], equ. 54, in the paper the sqrt factor is missing in some other equations
 	t_real refl = dRefl * std::sqrt(pi / (Av(1, 1)));
 
 	return std::make_tuple(A, B, C, refl);
@@ -308,8 +309,14 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	// - if the instrument works in ki=const mode the kf^3 factor is needed.
 	const auto tupScFact = get_scatter_factors(eck.flags, eck.thetam, eck.ki, eck.thetaa, eck.kf);
 
-	t_real dmono_refl = eck.dmono_refl * std::get<0>(tupScFact);
-	t_real dana_effic = eck.dana_effic * std::get<1>(tupScFact);
+	const t_real s_th_m = units::abs(units::sin(thetam));
+	t_real dmono_refl = eck.dmono_refl * pi / (t_real(2.) * s_th_m);
+	if(!(eck.flags & CALC_KI3))
+	 dmono_refl /= std::get<0>(tupScFact);
+	const t_real s_th_a = units::abs(units::sin(thetaa));
+	t_real dana_effic = eck.dana_effic * pi / (t_real(2.) * s_th_a);
+	if(!(eck.flags & CALC_KF3))
+		dana_effic /= std::get<1>(tupScFact);
 	if(eck.mono_refl_curve)
 		dmono_refl *= (*eck.mono_refl_curve)(eck.ki);
 	if(eck.ana_effic_curve)
@@ -501,7 +508,8 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	// C_all,0 in [end25], equs. 1.1, 2.1
 	t_real Z0 = std::sqrt(pi/std::abs(U1(ECK_K_Z, ECK_K_Z)))
-		* std::sqrt(pi/std::abs(U2(ECK_K_Y, ECK_K_Y)));
+		* std::sqrt(pi/std::abs(U2(ECK_K_Y, ECK_K_Y)))
+		/ std::abs(tl::determinant(T));
 	t_real Z = dReflM * dReflA * Z0;
 	//--------------------------------------------------------------------------
 
@@ -531,7 +539,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 
 	// equ. 4.4 in [end25]
 	Z *= pi / std::sqrt(tl::determinant(mosaic));
-	Z *= fwhm2sig*fwhm2sig / (2.*pi * std::sqrt(mos_Q_sq[0] * mos_Q_sq[1]));
+	Z *= /*fwhm2sig*fwhm2sig*/ 1. / (2.*pi * std::sqrt(mos_Q_sq[0] * mos_Q_sq[1]));
 
 	// this ignores off-diagonals
 	/*for(int comp = 0; comp < 2; ++comp)  // horizontal and vertical components
@@ -624,9 +632,9 @@ ResoResults calc_eck_ext(const EckParams& eck)
 	Z *= std::sqrt(pi*pi*pi / detN);
 	Z *= std::sqrt(6.*6.*6. / pi/pi/pi);
 
-	// normalise R0 to sample volume (TODO: already taken care of?)
+	// normalise R0 to sample volume (already taken care of partially)
 	if(eck.flags & NORM_TO_SAMPLE)
-		Z /= V_sample*V_sample / units::pow<6>(angs);
+		Z /= V_sample / units::pow<3>(angs /*cm*/);
 	//--------------------------------------------------------------------------
 
 
@@ -652,7 +660,7 @@ ResoResults calc_eck_ext(const EckParams& eck)
 		// missing volume prefactor to normalise gaussian,
 		// cf. equ. 56 in [eck14] to  equ. 1 in [pop75] and equ. A.57 in [mit84]
 		// res.dR0 /= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
-		res.dR0 *= res.dResVol * pi * t_real(3.);  // TODO: check
+		res.dR0 *= res.dResVol * t_real(8);
 	}
 
 	res.dR0 *= std::exp(-res.reso_s);

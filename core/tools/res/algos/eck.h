@@ -69,7 +69,7 @@ t_real mitch_R0(bool norm_to_ki_vol,
 	// with std::normal_distribution is already normalised
 	// see: tools/test/tst_norm.cpp
 	if(bNormToResVol)
-		dR0 /= (dResVol * tl::get_pi<t_real>() * t_real{3});
+		dR0 /= (dResVol * t_real(8));
 
 	return dR0;
 }

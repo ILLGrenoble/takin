@@ -349,7 +349,7 @@ ResoResults calc_pop_cn(const CNParams& pop)
 		// is already taken care of in the MC step by the employed std::normal_distribution function
 		// res.dR0 *= std::sqrt(std::abs(tl::determinant(res.reso))) / (2.*pi*2.*pi);
 		// except for the (unimportant) prefactors this is the same as dividing by the resolution volume
-		res.dR0 /= res.dResVol * pi * t_real(3.);
+		res.dR0 /= res.dResVol * t_real(8.);
 	}
 	// --------------------------------------------------------------------
 

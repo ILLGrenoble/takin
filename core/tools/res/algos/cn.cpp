@@ -332,7 +332,7 @@ ResoResults calc_cn(const CNParams& cn)
 		dmono_refl, dana_effic);*/
 
 	if(cn.flags & NORM_TO_RESVOL)
-		res.dR0 /= res.dResVol * pi * t_real(3.);
+		res.dR0 /= res.dResVol * t_real(8.);
 
 	res.dR0 = std::abs(res.dR0);
 
